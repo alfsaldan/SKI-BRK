@@ -15,7 +15,6 @@
                         <div class="page-title-right">
                             <ol class="breadcrumb m-0">
                                 <li class="breadcrumb-item"><a href="javascript:void(0);">SKI-BRKS</a></li>
-                                <li class="breadcrumb-item"><a href="javascript:void(0);">Super Admin</a></li>
                                 <li class="breadcrumb-item active">Indikator Kinerja</li>
                             </ol>
                         </div>
@@ -30,8 +29,6 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-
-                            <!-- Form Tambah Sasaran Kerja -->
                             <h4 class="header-title mb-3">Form Indikator Kinerja</h4>
                             <form method="post" action="<?= base_url('SuperAdmin/addSasaranKerja'); ?>" class="mb-4">
                                 <label>Jabatan</label>
@@ -44,12 +41,19 @@
                                     <?php endforeach; ?>
                                 </select>
 
-                                <label>Sasaran Kerja</label>
-                                <input type="text" name="sasaran_kerja" class="form-control" required>
+                                <!-- Wrapper input Sasaran Kerja disembunyikan -->
+                                <div id="sasaranWrapper" style="display:none;">
+                                    <label>Sasaran Kerja</label>
+                                    <input type="text" name="sasaran_kerja" class="form-control" required>
+                                </div>
 
-                                <button type="submit" class="btn btn-primary mt-2">Tambah Sasaran Kerja</button>
+                                <!-- Tombol untuk menampilkan input Sasaran Kerja -->
+                                <button type="button" class="btn btn-primary mt-2" id="showSasaranBtn">Tambah
+                                    Sasaran</button>
+                                <!-- Tombol submit form -->
+                                <button type="submit" class="btn btn-success mt-2" id="submitSasaranBtn"
+                                    style="display:none;">Simpan Sasaran Kerja</button>
                             </form>
-
                             <!-- Form Tambah Indikator -->
                             <form method="post" action="<?= base_url('SuperAdmin/addIndikator'); ?>" class="mb-4">
                                 <label>Sasaran Kerja</label>
@@ -94,7 +98,7 @@
                                     </thead>
                                     <tbody>
                                         <?php
-                                        $grandTotal = 0; 
+                                        $grandTotal = 0;
                                         foreach ($indikator as $perspektif => $sasaranList): ?>
                                             <!-- Perspektif -->
                                             <tr style="background-color:#C8E6C9; font-weight:bold;">
@@ -130,9 +134,9 @@
                                                             <button type="button" class="btn btn-warning btn-sm editBtn">
                                                                 <i class="mdi mdi-pencil"></i>
                                                             </button>
-                                                            <a href="<?= base_url('SuperAdmin/deleteIndikator/' . $i->id); ?>"
-                                                                class="btn btn-danger btn-sm"
-                                                                onclick="return confirm('Yakin hapus?')">
+                                                            <a href="javascript:void(0);"
+                                                                class="btn btn-danger btn-sm deleteIndikatorBtn"
+                                                                data-id="<?= $i->id; ?>">
                                                                 <i class="mdi mdi-delete"></i>
                                                             </a>
                                                         </td>
@@ -208,7 +212,7 @@
             let bobotText = row.querySelector('.bobot-text').innerText;
             let id = row.dataset.id;
 
-            row.dataset.original = row.innerHTML; 
+            row.dataset.original = row.innerHTML;
 
             row.innerHTML = `
             <td></td>

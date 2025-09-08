@@ -15,6 +15,10 @@
     <link href="<?= base_url('assets/libs/bootstrap-select/bootstrap-select.min.css') ?>" rel="stylesheet"
         type="text/css" />
 
+
+    <!-- c3 plugin css -->
+    <link rel="stylesheet" type="text/css" href="<?= base_url('assets/libs/c3/c3.min.css') ?>">
+
     <!-- App css -->
     <link href="<?= base_url('assets/css/bootstrap.min.css') ?>" rel="stylesheet" type="text/css" />
     <link href="<?= base_url('assets/css/icons.min.css') ?>" rel="stylesheet" type="text/css" />
@@ -193,10 +197,11 @@
                         <div class="dropdown-divider"></div>
 
                         <!-- item-->
-                        <a href="javascript:void(0);" class="dropdown-item notify-item">
+                        <a href="<?= base_url('auth/logout'); ?>" class="dropdown-item notify-item">
                             <i class="fe-log-out"></i>
                             <span>Logout</span>
                         </a>
+
 
                     </div>
                 </li>
