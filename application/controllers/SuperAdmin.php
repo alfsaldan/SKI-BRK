@@ -91,4 +91,44 @@ class SuperAdmin extends CI_Controller
         redirect('SuperAdmin/indikatorKinerja');
     }
 
+
+    public function editIndikator($id)
+    {
+        $indikator = $this->input->post('indikator');
+        $bobot = $this->input->post('bobot');
+
+        $this->Indikator_model->updateIndikator($id, $indikator, $bobot);
+        redirect('SuperAdmin/indikatorKinerja');
+    }
+
+    // Update indikator / sasaran dengan fetch()
+    public function updateIndikator()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $id = $data['id'];
+
+        if (isset($data['sasaran_kerja'])) {
+            // Update sasaran kerja
+            $sasaranKerja = $data['sasaran_kerja'];
+            $success = $this->Indikator_model->updateSasaranKerja($id, $sasaranKerja);
+        } else {
+            // Update indikator
+            $indikator = $data['indikator'];
+            $bobot = $data['bobot'];
+            $success = $this->Indikator_model->updateIndikator($id, $indikator, $bobot);
+        }
+
+        echo json_encode(['success' => $success]);
+    }
+
+    public function updateSasaran()
+    {
+        $data = json_decode(file_get_contents("php://input"), true);
+        $id = $data['id'];
+        $sasaran = $data['sasaran'];
+
+        $success = $this->Indikator_model->updateSasaranKerja($id, $sasaran);
+
+        echo json_encode(['success' => $success]);
+    }
 }
