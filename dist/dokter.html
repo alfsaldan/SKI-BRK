@@ -1,0 +1,141 @@
+<!DOCTYPE html >
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Codefox - Responsive Bootstrap 4 Admin Dashboard</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
+        <meta content="Coderthemes" name="author" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <!-- App favicon -->
+        <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+        <!-- Bootstrap select pluings -->
+        <link href="assets/libs/bootstrap-select/bootstrap-select.min.css" rel="stylesheet" type="text/css" />
+
+        <!-- App css -->
+        <link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+        <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" />
+
+        <link href="assets/keyboard/virtual-keyboard.css" rel="stylesheet" type="text/css" />
+        <script src="assets/keyboard/virtual-keyboard.min.js"></script>
+        <style> 
+                input[type=text] {
+                  width: 100%;
+                  padding: 30px 30px;
+                  /*margin: 2px 0;*/
+                  box-sizing: border-box;
+                  border: 1px solid ;
+                  border-radius: 0px;
+                  font-size:20px;
+                }
+                button[type=button] {
+                  font-size:20px;
+                }
+                .bg {
+                    position: relative;
+                    /*opacity: 0.40;*/
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    background-size: cover;
+                }
+                body {
+                      background-image: url('../assets/images/bg-APM2.png');
+                }
+                h1 {
+                      color: white;
+                }
+                h2 {
+                      color: white;
+                }
+                
+        </style> 
+    </head>
+
+    <body class="bg-white" onload="playAudio()">
+        <div class="account-pages my-3 pt-3">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col">
+                        <div>
+                            <div class="text-center pt-5">
+                                <a href="index.html">
+                                    <span><img src="https://36.92.141.5/pegawaian/templates/assets/images/logo-blue.png" alt="" height="100%"></span>
+                                </a>
+                            </div>
+
+                            <div class="text-center mb-4 pt-2">
+                                    <h1>ANJUNGAN PENDAFTARAN MANDIRI</h1>
+                                    <h2>RS. BAKTI TIMAH PANGKALPINANG</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header bg-default">
+                                <h4 class="card-title text-black mb-0 text-center font-weight-bold">dr. Riko</h4>
+                            </div>
+                            <div class="card-body">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Kamis Pukul 10:00 s.d 14:00 WIB
+                                    <span class="badge badge-primary badge-pill">Buka</span>
+                                </li>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header bg-default">
+                                <h4 class="card-title text-black mb-0 text-center font-weight-bold">dr. Riko</h4>
+                            </div>
+                            <div class="card-body">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Kamis Pukul 16:00 s.d 20:00 WIB
+                                    <span class="badge badge-danger badge-pill">Tutup</span>
+                                </li>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header bg-default">
+                                <h4 class="card-title text-black mb-0 text-center font-weight-bold">dr. Riko</h4>
+                            </div>
+                            <div class="card-body">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Kamis Pukul 16:00 s.d 20:00 WIB
+                                    <span class="badge badge-danger badge-pill">Tutup</span>
+                                </li>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- end row -->
+            </div>
+            <!-- end container -->
+        </div>
+        <!-- end page -->
+    
+
+        <!-- Vendor js -->
+        <script src="assets/js/vendor.min.js"></script>
+
+        <!-- Bootstrap select plugin -->
+        <script src="assets/libs/bootstrap-select/bootstrap-select.min.js"></script>
+
+        <!-- App js -->
+        <script src="assets/js/app.min.js"></script>
+        <script>
+            var x = document.getElementById("myAudio"); 
+
+            function playAudio() { 
+              x.play(); 
+            } 
+        </script>
+        
+    </body>
+</html>

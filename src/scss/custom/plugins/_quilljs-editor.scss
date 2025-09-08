@@ -1,0 +1,14 @@
+//
+// quilljs-editor.scss
+//
+ 
+.ql-container {
+    font-family: $font-family-base;
+}
+
+.ql-toolbar {
+    font-family: $font-family-base !important;
+    span {
+        outline: none !important;
+    }
+}

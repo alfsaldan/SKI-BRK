@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>SKI-BRKS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
+    <meta content="Coderthemes" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="<?= base_url('assets/images/LogoKapalBRK.png') ?>">
+
+    <!-- Bootstrap select pluings -->
+    <link href="<?= base_url('assets/libs/bootstrap-select/bootstrap-select.min.css') ?>" rel="stylesheet"
+        type="text/css" />
+
+    <!-- App css -->
+    <link href="<?= base_url('assets/css/bootstrap.min.css') ?>" rel="stylesheet" type="text/css" />
+    <link href="<?= base_url('assets/css/icons.min.css') ?>" rel="stylesheet" type="text/css" />
+    <link href="<?= base_url('assets/css/app.min.css') ?>" rel="stylesheet" type="text/css" />
+
+    <script src="<?= base_url('assets/js/jquery.min.js') ?>"></script>
+    <script src="<?= base_url('assets/libs/jquery-steps/jquery.steps.min.js') ?>"></script>
+    <link href="<?= base_url('assets/libs/jquery-steps/jquery.steps.css') ?>" rel="stylesheet">
+
+
+</head>
+
+<body>
+
+    <!-- Begin page -->
+    <div id="wrapper">
+
+
+        <!-- Topbar Start -->
+        <div class="navbar-custom">
+            <ul class="list-unstyled topnav-menu float-right mb-0">
+
+                <!-- <li class="d-none d-sm-block">
+                    <form class="app-search">
+                        <div class="app-search-box">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search...">
+                                <div class="input-group-append">
+                                    <button class="btn" type="submit">
+                                        <i class="fe-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </li> -->
+
+                <li class="dropdown notification-list">
+                    <a class="nav-link dropdown-toggle  waves-effect waves-light" data-toggle="dropdown" href="#"
+                        role="button" aria-haspopup="false" aria-expanded="false">
+                        <i class="fe-bell noti-icon"></i>
+                        <span class="badge badge-danger rounded-circle noti-icon-badge">9</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right dropdown-lg">
+
+                        <!-- item-->
+                        <div class="dropdown-item noti-title">
+                            <h5 class="m-0">
+                                <span class="float-right">
+                                    <a href="" class="text-dark">
+                                        <small>Clear All</small>
+                                    </a>
+                                </span>Notification
+                            </h5>
+                        </div>
+
+                        <div class="slimscroll noti-scroll">
+
+                            <!-- item-->
+                            <a href="javascript:void(0);" class="dropdown-item notify-item">
+                                <div class="notify-icon bg-primary">
+                                    <i class="mdi mdi-settings-outline"></i>
+                                </div>
+                                <p class="notify-details">New settings
+                                    <small class="text-muted">There are new settings available</small>
+                                </p>
+                            </a>
+
+                            <!-- item-->
+                            <a href="javascript:void(0);" class="dropdown-item notify-item active">
+                                <div class="notify-icon">
+                                    <img src="<?= base_url('assets/images/users/avatar-1.png') ?>"
+                                        class="img-fluid rounded-circle" alt="" />
+                                </div>
+                                <p class="notify-details">Cristina Pride</p>
+                                <p class="text-muted mb-0 user-msg">
+                                    <small>Hi, How are you? What about our next meeting</small>
+                                </p>
+                            </a>
+
+
+                            <!-- item-->
+                            <a href="javascript:void(0);" class="dropdown-item notify-item">
+                                <div class="notify-icon bg-warning">
+                                    <i class="mdi mdi-bell-outline"></i>
+                                </div>
+                                <p class="notify-details">Updates
+                                    <small class="text-muted">There are 2 new updates available</small>
+                                </p>
+                            </a>
+
+                            <!-- item-->
+                            <a href="javascript:void(0);" class="dropdown-item notify-item">
+                                <div class="notify-icon">
+                                    <img src="<?= base_url('assets/images/users/avatar-4.jpg') ?>"
+                                        class="img-fluid rounded-circle" alt="" />
+                                </div>
+                                <p class="notify-details">Karen Robinson</p>
+                                <p class="text-muted mb-0 user-msg">
+                                    <small>Wow ! this admin looks good and awesome design</small>
+                                </p>
+                            </a>
+
+                            <!-- item-->
+                            <a href="javascript:void(0);" class="dropdown-item notify-item">
+                                <div class="notify-icon bg-danger">
+                                    <i class="mdi mdi-account-plus"></i>
+                                </div>
+                                <p class="notify-details">New user
+                                    <small class="text-muted">You have 10 unread messages</small>
+                                </p>
+                            </a>
+
+                            <!-- item-->
+                            <a href="javascript:void(0);" class="dropdown-item notify-item">
+                                <div class="notify-icon bg-info">
+                                    <i class="mdi mdi-comment-account-outline"></i>
+                                </div>
+                                <p class="notify-details">Caleb Flakelar commented on Admin
+                                    <small class="text-muted">4 days ago</small>
+                                </p>
+                            </a>
+
+                            <!-- item-->
+                            <a href="javascript:void(0);" class="dropdown-item notify-item">
+                                <div class="notify-icon bg-secondary">
+                                    <i class="mdi mdi-heart"></i>
+                                </div>
+                                <p class="notify-details">Carlos Crouch liked
+                                    <b>Admin</b>
+                                    <small class="text-muted">13 days ago</small>
+                                </p>
+                            </a>
+                        </div>
+
+                        <!-- All-->
+                        <a href="javascript:void(0);"
+                            class="dropdown-item text-center text-primary notify-item notify-all">
+                            View all
+                            <i class="fi-arrow-right"></i>
+                        </a>
+
+                    </div>
+                </li>
+
+                <li class="dropdown notification-list">
+                    <a class="nav-link dropdown-toggle nav-user mr-0 waves-effect waves-light" data-toggle="dropdown"
+                        href="#" role="button" aria-haspopup="false" aria-expanded="false">
+                        <img src="<?= base_url('assets/images/users/avatar-1.png') ?>" alt="user-image"
+                            class="rounded-circle">
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right profile-dropdown ">
+                        <!-- item-->
+                        <div class="dropdown-header noti-title">
+                            <h6 class="text-overflow m-0">Welcome !</h6>
+                        </div>
+
+                        <!-- item-->
+                        <a href="javascript:void(0);" class="dropdown-item notify-item">
+                            <i class="fe-user"></i>
+                            <span>Profile</span>
+                        </a>
+
+                        <!-- item-->
+                        <a href="javascript:void(0);" class="dropdown-item notify-item">
+                            <i class="fe-settings"></i>
+                            <span>Settings</span>
+                        </a>
+
+                        <!-- item-->
+                        <a href="javascript:void(0);" class="dropdown-item notify-item">
+                            <i class="fe-lock"></i>
+                            <span>Lock Screen</span>
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+
+                        <!-- item-->
+                        <a href="javascript:void(0);" class="dropdown-item notify-item">
+                            <i class="fe-log-out"></i>
+                            <span>Logout</span>
+                        </a>
+
+                    </div>
+                </li>
+
+            </ul>
+
+            <!-- LOGO -->
+            <div class="logo-box">
+                <a href="index.html" class="logo text-center">
+                    <span class="logo-lg">
+                        <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png') ?>" alt="" height="20">
+                        <!-- <span class="logo-lg-text-light">UBold</span> -->
+                    </span>
+                    <span class="logo-sm">
+                        <!-- <span class="logo-sm-text-dark">U</span> -->
+                        <img src="<?= base_url('assets/images/LogoKapalBRK.png') ?>" alt="" height="24">
+                    </span>
+                </a>
+            </div>
+
+            <ul class="list-unstyled topnav-menu topnav-menu-left m-0">
+                <li>
+                    <button class="button-menu-mobile waves-effect waves-light">
+                        <i class="fe-menu"></i>
+                    </button>
+                </li>
+
+            </ul>
+        </div>
+        <!-- end Topbar -->
+
+
+        <!-- ========== Left Sidebar Start ========== -->
+        <div class="left-side-menu">
+
+            <div class="slimscroll-menu">
+
+                <!--- Sidemenu -->
+                <div id="sidebar-menu">
+
+                    <ul class="metismenu" id="side-menu">
+
+                        <li class="menu-title">Navigation</li>
+
+                        <li class="<?= $this->uri->segment(2) == '' ? 'active' : '' ?>">
+                            <a href="<?= base_url('superadmin') ?>">
+                                <i class="fe-airplay"></i>
+                                <span> Dashboard </span>
+                            </a>
+                        </li>
+
+                        <li class="<?= $this->uri->segment(2) == 'datapegawai' ? 'active' : '' ?>">
+                            <a href="<?= base_url('superadmin/datapegawai') ?>">
+                                <i class="mdi mdi-account-card-details"></i>
+                                <span> Data Pegawai </span>
+                            </a>
+                        </li>
+
+                        <li class="<?= $this->uri->segment(2) == 'indikatorkinerja' ? 'active' : '' ?>">
+                            <a href="<?= base_url('superadmin/indikatorkinerja') ?>">
+                                <i class="mdi mdi-target-account"></i>
+                                <span> Indikator Kinerja </span>
+                            </a>
+                        </li>
+
+                        <li class="menu-title mt-2">More</li>
+
+                        <li class="<?= $this->uri->segment(2) == 'penilaiankinerja' ? 'active' : '' ?>">
+                            <a href="<?= base_url('superadmin/penilaiankinerja') ?>">
+                                <i class="mdi mdi-account-edit"></i>
+                                <span> Penilaian Kinerja </span>
+                            </a>
+                        </li>
+                    </ul>
+
+                </div>
+                <!-- End Sidebar -->
+
+                <div class="clearfix"></div>
+
+            </div>
+            <!-- Sidebar -left -->
+
+        </div>
+        <!-- Left Sidebar End -->

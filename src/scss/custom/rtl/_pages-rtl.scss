@@ -1,0 +1,23 @@
+// 
+// pages-rtl.scss
+//
+
+
+// Faq
+.faq-question-q-box{
+    float: right;
+}
+
+.faq-question, .faq-answer{
+    margin-left: 0px;
+    margin-right: 50px;
+}
+
+
+// authentication
+
+.home-btn {
+    position: absolute;
+    left: 25px;
+    right: auto;
+}

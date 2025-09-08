@@ -1,0 +1,73 @@
+// 
+// Extras pages.scss
+//
+
+
+// member-card
+
+.member-card{
+    .member-avatar{
+        position: relative;
+        .member-star{
+            position: absolute;
+            top: 1px;
+            right: 10px;
+            font-size: 16px;
+            background-color: $white;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            line-height: 20px;
+            text-align: center;
+        }
+    }
+    .member-card-social{
+        li{
+            a{
+                &:hover{
+                    color: $gray-600;
+                    border-color: $gray-600;
+                }
+            }
+        }
+    }
+}
+
+// 
+// faq.scss
+//
+
+.faq-question-q-box {
+    height: 30px;
+    width: 30px;
+    color: $white;
+    text-align: center;
+    border-radius: 4px;
+    float: left;
+    line-height: 30px;
+    background-color: $primary;
+}
+
+.faq-question {
+    margin-top: 0;
+    margin-left: 50px;
+    font-weight: 400;
+    font-size: 16px;
+}
+
+.faq-answer {
+    margin-left: 50px;
+    color: $gray-600;
+}
+
+
+// pricing
+
+
+.card-pricing{
+    .card-pricing-features{
+        li{
+            padding: 10px;
+        }
+    }
+}

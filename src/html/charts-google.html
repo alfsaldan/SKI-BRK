@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Codefox - Responsive Bootstrap 4 Admin Dashboard</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
+        <meta content="Coderthemes" name="author" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <!-- App favicon -->
+        <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+        <!-- Bootstrap select pluings -->
+        <link href="assets/libs/bootstrap-select/bootstrap-select.min.css" rel="stylesheet" type="text/css" />
+
+        <!-- App css -->
+        <link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+        <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+        <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" />
+
+    </head>
+
+    <body>
+
+        <!-- Begin page -->
+        <div id="wrapper">
+
+            @@include('./partials/topbar.html')
+
+            @@include('./partials/left-sidebar.html')
+
+            <!-- ============================================================== -->
+            <!-- Start Page Content here -->
+            <!-- ============================================================== -->
+
+            <div class="content-page">
+                <div class="content">
+                    
+                    <!-- Start Content-->
+                    <div class="container-fluid">
+                        
+                        <!-- start page title -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="page-title-box">
+                                    <div class="page-title-right">
+                                        <ol class="breadcrumb m-0">
+                                            <li class="breadcrumb-item"><a href="javascript: void(0);">Codefox</a></li>
+                                            <li class="breadcrumb-item"><a href="javascript: void(0);">Graphs</a></li>
+                                            <li class="breadcrumb-item active">Google Charts</li>
+                                        </ol>
+                                    </div>
+                                    <h4 class="page-title">Google Charts</h4>
+                                </div>
+                            </div>
+                        </div>     
+                        <!-- end page title --> 
+
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="header-title">Line chart</h4>
+                                        <p class="sub-header text-truncate">
+                                            You can smooth the lines by setting the <code>curveType</code> option
+                                            to <code>function</code>:
+                                        </p>
+    
+                                        <div class="chart" id="line-chart"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="header-title">Area Chart</h4>
+                                        <p class="sub-header text-truncate">
+                                            An area chart that is rendered within the browser using
+                                            <code>SVG</code> or
+                                            <code>VML</code>.
+                                            Displays tips when hovering over points.
+                                        </p>
+    
+                                        <div class="chart" id="area-chart"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end row -->
+
+
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="header-title">Column Chart</h4>
+                                        <p class="sub-header text-truncate">
+                                            A column chart is a vertical bar chart rendered in the browser using SVG or VML, whichever is appropriate for the user's browser.
+                                        </p>
+    
+                                        <div class="chart" id="column-chart"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="header-title">Bar Charts</h4>
+                                        <p class="sub-header text-truncate">
+                                            Google bar charts are rendered in the browser using SVG or VML, whichever is appropriate for the user's browser.
+                                        </p>
+    
+                                        <div class="chart" id="bar-chart"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end row -->
+
+
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="header-title">Stacked column charts</h4>
+                                        <p class="sub-header text-truncate">
+                                            A stacked column chart is a column chart that places related values atop one another. If there are any negative values, they are stacked in reverse order below the chart's baseline.
+                                        </p>
+    
+                                        <div class="chart" id="column-stacked-chart"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="header-title">Stacked bar charts</h4>
+                                        <p class="sub-header text-truncate">
+                                            A stacked bar chart is a bar chart that places related values atop one another. If there are any negative values, they are stacked in reverse order below the chart's axis baseline.
+                                        </p>
+    
+                                        <div class="chart" id="bar-stacked-chart"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end row -->
+
+
+
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="header-title">Pie Chart</h4>
+                                        <p class="sub-header text-truncate">
+                                            A pie chart that is rendered within the browser using SVG or VML. Displays tooltips when hovering over slices.
+                                        </p>
+
+                                        <div class="google-chart text-center">
+                                            <div class="chart d-inline-block" id="pie-chart"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="header-title">Donut Chart</h4>
+                                        <p class="sub-header text-truncate">
+                                            A <i>donut</i> chart is a pie chart with a hole in the center.  You
+    can create donut charts with the <code>pieHole</code> option:
+                                        </p>
+    
+                                        <div class="google-chart text-center">
+                                            <div class="chart d-inline-block" id="donut-chart"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end row -->
+
+
+
+                        <div class="row">
+                            <div class="col-xl-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="header-title">3D Pie Chart</h4>
+                                        <p class="sub-header text-truncate">
+                                            If you set the <code>is3D</code> option to <code>true</code>, your
+    pie chart will be drawn as though it has three dimensions:
+                                        </p>
+    
+                                        <div class="google-chart text-center">
+                                            <div class="chart d-inline-block" id="pie-3d-chart"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+
+                            <div class="col-xl-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="header-title">Exploding a Slice</h4>
+                                        <p class="sub-header text-truncate">
+                                            You can separate pie slices from the rest of the chart with the <code>offset</code> property of
+    the <code>slices</code> option:
+                                        </p>
+    
+                                        <div class="google-chart text-center">
+                                            <div class="chart d-inline-block" id="3d-exploded-chart"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- end row -->
+
+                        
+                    </div> <!-- end container-fluid -->
+
+                </div> <!-- end content -->
+
+                @@include('./partials/footer.html')
+
+            </div>
+
+            <!-- ============================================================== -->
+            <!-- End Page content -->
+            <!-- ============================================================== -->
+
+        </div>
+        <!-- END wrapper -->
+
+        @@include('./partials/right-sidebar.html')
+
+        <!-- Vendor js -->
+        <script src="assets/js/vendor.min.js"></script>
+
+        <!-- Bootstrap select plugin -->
+        <script src="assets/libs/bootstrap-select/bootstrap-select.min.js"></script>
+
+        <!-- Google Charts js -->
+        <script src="https://www.google.com/jsapi"></script>
+        
+        <!-- Init -->
+        <script src="assets/js/pages/google-charts.init.js"></script>
+
+        <!-- App js -->
+        <script src="assets/js/app.min.js"></script>
+        
+    </body>
+</html>

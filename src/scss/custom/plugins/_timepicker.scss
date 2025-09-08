@@ -1,0 +1,14 @@
+
+// 
+// timepicker.scss
+//
+
+
+.bootstrap-timepicker-widget {
+    table {
+        td input {
+            border: 1px solid rgba($dark, 0.3);
+            width: 35px;
+        }
+    }
+}

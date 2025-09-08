@@ -1,0 +1,147 @@
+//
+// components-rtl.scss
+//
+
+
+// Inbox-widget
+
+.inbox-widget {
+  .inbox-item {
+    .inbox-item-img {
+      float: right;
+      margin-left: 15px;
+      margin-right: 0;
+    }
+
+    .inbox-item-date {
+      right: auto;
+      left: 5px;
+    }
+  }
+}
+
+// widget user
+
+.user-position{
+  border-left: 0;
+  border-right: 1px solid $gray-300;
+  left: 0px;
+  right: auto;
+}
+
+// ribbons
+
+.ribbon-box {
+
+  .ribbon {
+    right: -5px;
+    left: auto;
+    text-align: left;
+
+    span {
+      transform: rotate(45deg);
+      right: -21px;
+      left: auto;
+    }
+  }
+}
+
+// icons
+
+.icons-list-demo{
+  i{
+    margin-left: 12px;
+    margin-right: 0;
+  }
+}
+
+
+// Custom-radio
+
+.checkbox {
+  label {
+    padding-right: 8px;
+    padding-left: 0;
+
+    &::before {
+      left: auto;
+      right: 0;
+      margin-left: 0;
+      margin-right: -18px;
+    }
+
+    &::after {
+      left: auto;
+      right: 0;
+      margin-right: -18px;
+      margin-left: 0;
+      padding-left: 0;
+      padding-right: 3px;
+    }
+  }
+
+  input[type="checkbox"]:checked+label {
+    &::after {
+      left: auto;
+      right: 7px;
+      transform: rotate(45deg);
+    }
+  }
+}
+
+.checkbox.checkbox-single {
+  label {
+    &:before {
+      margin-right: 0;
+    }
+
+    &:after {
+      margin-right: 0;
+    }
+  }
+}
+
+
+// custom-radio
+
+.radio {
+  label {
+    padding-left: 0;
+    padding-right: 8px;
+
+    &::before {
+      left: auto;
+      right: 0;
+      margin-left: 0;
+      margin-right: -18px;
+    }
+
+    &::after {
+      left: 0;
+      right: 6px;
+      margin-left: 0;
+      margin-right: -20px;
+    }
+  }
+}
+
+// popover
+
+.demo-popover {
+  .popover{
+    float: right;
+  }
+}
+
+// Invoice
+
+@media print {
+  .content-page,
+  .content,
+  body {
+      margin-right: 0;
+  }
+}
+
+
+

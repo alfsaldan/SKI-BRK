@@ -1,0 +1,70 @@
+// 
+// buttons.scss
+//
+
+.btn {
+    color: $white;
+
+    .mdi {
+        &:before {
+            margin-top: -1px;
+        }
+    }
+}
+
+.btn-rounded {
+    border-radius: 2em;
+}
+
+//
+// light button
+// 
+.btn-light,.btn-white {
+    color: $gray-900;
+}
+
+//
+// Link buttons
+//
+// Make a button look and behave like a link
+.btn-link {
+    font-weight: $font-weight-normal;
+    color: $link-color;
+    background-color: transparent;
+    @include hover {
+        color: $link-hover-color;
+        text-decoration: $link-hover-decoration;
+        background-color: transparent;
+        border-color: transparent;
+    }
+    &:focus,
+    &.focus {
+        text-decoration: $link-hover-decoration;
+        border-color: transparent;
+        box-shadow: none;
+    }
+    &:disabled,
+    &.disabled {
+        color: $btn-link-disabled-color;
+        pointer-events: none;
+    } // No need for an active state here
+} 
+//
+// Alternate buttons
+//
+@each $color,
+$value in $theme-colors {
+    .btn-outline-#{$color} {
+        @include button-outline-variant($value);
+    }
+}
+
+// 
+// Button Extra Small Size
+// 
+
+.btn-xs {
+    padding: .2rem .6rem;
+    font-size: .75rem;
+    border-radius: .15rem;
+}
