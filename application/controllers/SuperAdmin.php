@@ -7,6 +7,7 @@ class SuperAdmin extends CI_Controller
     {
         parent::__construct();
         $this->load->model('Indikator_model');
+        $this->load->model('Penilaian_model');
         $this->load->library('session');
 
         // Proteksi akses hanya untuk role superadmin
@@ -130,5 +131,82 @@ class SuperAdmin extends CI_Controller
         $success = $this->Indikator_model->updateSasaranKerja($id, $sasaran);
 
         echo json_encode(['success' => $success]);
+    }
+
+
+    // Halaman Penilaian Kinerja
+    public function penilaiankinerja()
+    {
+        $data['pegawai']   = $this->db->get('pegawai')->result();
+        $data['indikator'] = $this->db->get('indikator')->result();
+        $data['penilaian'] = $this->Penilaian_model->get_all_penilaian();
+
+        $this->load->view("layout/header");
+        $this->load->view("superadmin/penilaiankinerja", $data);
+        $this->load->view("layout/footer");
+    }
+
+    // Add Penilaian
+    public function addPenilaian()
+    {
+        $nik         = $this->input->post('nik');
+        $indikator_id = $this->input->post('indikator_id');
+        $target      = $this->input->post('target');
+        $batas_waktu = $this->input->post('batas_waktu');
+        $realisasi   = $this->input->post('realisasi');
+
+        $this->Penilaian_model->insertPenilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi);
+
+        redirect('SuperAdmin/penilaian');
+    }
+
+    public function cariPenilaian()
+    {
+        $nik = $this->input->post('nik');
+        $pegawai = $this->db->get_where('pegawai', ['nik' => $nik])->row();
+
+        if ($pegawai) {
+            // Ambil indikator berdasarkan jabatan
+            $this->load->model('Penilaian_model');
+            $indikator = $this->Penilaian_model->get_indikator_by_jabatan($pegawai->jabatan);
+
+            $data['pegawai_detail'] = $pegawai;
+            $data['indikator_by_jabatan'] = $indikator;
+        } else {
+            $data['pegawai_detail'] = null;
+            $data['indikator_by_jabatan'] = [];
+        }
+
+        $this->load->view("layout/header");
+        $this->load->view("superadmin/penilaiankinerja", $data);
+        $this->load->view("layout/footer");
+    }
+
+    // Simpan hasil penilaian
+    public function simpanPenilaian()
+    {
+        $nik         = $this->input->post('nik');
+        $targets     = $this->input->post('target');
+        $batas_waktu = $this->input->post('batas_waktu');
+        $realisasi   = $this->input->post('realisasi');
+
+        $data = [];
+        if ($targets && $realisasi) {
+            foreach ($targets as $indikator_id => $t) {
+                $data[] = [
+                    'nik'         => $nik,
+                    'indikator_id' => $indikator_id,
+                    'target'      => $t,
+                    'batas_waktu' => $batas_waktu[$indikator_id],
+                    'realisasi'   => $realisasi[$indikator_id],
+                ];
+            }
+
+            // Simpan sekaligus (lebih efisien)
+            $this->Penilaian_model->simpan_penilaian($data);
+        }
+
+        $this->session->set_flashdata('success', 'Penilaian berhasil disimpan.');
+        redirect('SuperAdmin/penilaiankinerja');
     }
 }
