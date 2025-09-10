@@ -53,6 +53,31 @@
 <!-- Init js-->
 <script src="<?= base_url('assets/js/pages/form-wizard.init.js') ?>"></script>
 
+<!-- Datatable plugin js -->
+<script src="<?= base_url('assets/libs/datatables/jquery.dataTables.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/dataTables.bootstrap4.min.js') ?>"></script>
+
+<script src="<?= base_url('assets/libs/datatables/dataTables.responsive.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/responsive.bootstrap4.min.js') ?>"></script>
+
+<script src="<?= base_url('assets/libs/datatables/dataTables.buttons.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/buttons.bootstrap4.min.js') ?>"></script>
+
+<script src="<?= base_url('assets/libs/datatables/buttons.html5.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/buttons.print.min.js') ?>"></script>
+
+<script src="<?= base_url('assets/libs/datatables/dataTables.keyTable.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/dataTables.fixedHeader.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/dataTables.scroller.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/dataTables.colVis.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/dataTables.fixedColumns.min.js') ?>"></script>
+
+<script src="<?= base_url('assets/libs/jszip/jszip.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/pdfmake/pdfmake.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/pdfmake/vfs_fonts.js') ?>"></script>
+
+<script src="<?= base_url('assets/js/pages/datatables.init.js') ?>"></script>
+
 
 <!-- plugins -->
 <script src="<?= base_url('assets/libs/c3/c3.min.js') ?>"></script>
@@ -128,65 +153,65 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
     var optionsTargetRealisasi = {
-    chart: {
-        type: 'line',
-        height: 350
-    },
-    series: [{
-        name: 'Target',
-        data: [80, 90, 70, 85, 95, 100, 110, 120, 125, 130, 140, 150] // Target per bulan
-    }, {
-        name: 'Realisasi',
-        data: [75, 85, 65, 82, 90, 95, 105, 115, 120, 125, 135, 145] // Realisasi per bulan
-    }],
-    xaxis: {
-        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
-    },
-    colors: ['#039046', '#e63946'], // hijau BRKS untuk Target, merah untuk Realisasi
-    stroke: {
-        curve: 'smooth',
-        width: 3
-    },
-    markers: {
-        size: 5
-    },
-    dataLabels: {
-        enabled: true
-    },
-    yaxis: {
-        title: {
-            text: 'Jumlah Kinerja'
+        chart: {
+            type: 'line',
+            height: 350
+        },
+        series: [{
+            name: 'Target',
+            data: [80, 90, 70, 85, 95, 100, 110, 120, 125, 130, 140, 150] // Target per bulan
+        }, {
+            name: 'Realisasi',
+            data: [75, 85, 65, 82, 90, 95, 105, 115, 120, 125, 135, 145] // Realisasi per bulan
+        }],
+        xaxis: {
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+        },
+        colors: ['#039046', '#e63946'], // hijau BRKS untuk Target, merah untuk Realisasi
+        stroke: {
+            curve: 'smooth',
+            width: 3
+        },
+        markers: {
+            size: 5
+        },
+        dataLabels: {
+            enabled: true
+        },
+        yaxis: {
+            title: {
+                text: 'Jumlah Kinerja'
+            }
         }
-    }
-};
+    };
 
-var chartTargetRealisasi = new ApexCharts(document.querySelector("#chart-target-vs-realisasi"), optionsTargetRealisasi);
-chartTargetRealisasi.render();
+    var chartTargetRealisasi = new ApexCharts(document.querySelector("#chart-target-vs-realisasi"), optionsTargetRealisasi);
+    chartTargetRealisasi.render();
 
 </script>
 
 <script>
     var optionsDonut = {
-    chart: {
-        type: 'donut',
-        height: 350
-    },
-    series: [10, 20, 30, 25, 15], // contoh data jumlah pegawai
-    labels: ['Minus', 'Fair', 'Good', 'Very Good', 'Excellent'],
-    colors: ['#d32f2f', '#f9a825', '#039be5', '#7cb342', '#039046'], // merah - kuning - biru - hijau muda - hijau BRKS
-    legend: {
-        position: 'bottom'
-    },
-    dataLabels: {
-        enabled: true,
-        formatter: function (val) {
-            return val.toFixed(1) + "%";
+        chart: {
+            type: 'donut',
+            height: 350
+        },
+        series: [10, 20, 30, 25, 15], // contoh data jumlah pegawai
+        labels: ['Minus', 'Fair', 'Good', 'Very Good', 'Excellent'],
+        colors: ['#d32f2f', '#f9a825', '#039be5', '#7cb342', '#039046'], // merah - kuning - biru - hijau muda - hijau BRKS
+        legend: {
+            position: 'bottom'
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function (val) {
+                return val.toFixed(1) + "%";
+            }
         }
-    }
-};
+    };
 
-var chartDonut = new ApexCharts(document.querySelector("#donut-charts"), optionsDonut);
-chartDonut.render();
+    var chartDonut = new ApexCharts(document.querySelector("#donut-charts"), optionsDonut);
+    chartDonut.render();
 
 </script>
 
@@ -227,6 +252,58 @@ chartDonut.render();
                 }
             });
         }
+    });
+</script>
+<style>
+    /* Atur jarak antar tombol di header aksi */
+    .action-buttons > * {
+        margin: 3px; /* jarak antar item */
+    }
+
+    /* Perkecil ukuran input file biar sejajar rapi */
+    .action-buttons input[type="file"] {
+        font-size: 0.85rem;
+        padding: 3px;
+    }
+</style>
+
+
+<style>
+    .dataTables_length select {
+        width: 70px !important;
+        /* kecilkan ukuran dropdown */
+        display: inline-block;
+        margin: 0 5px;
+        padding: 2px 5px;
+        font-size: 0.875rem;
+        /* font lebih kecil */
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        $('#datatable-pegawai').DataTable({
+            responsive: true,
+            pageLength: 5,
+            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Semua"]],
+            order: [], // biar gak auto urut NIK
+            dom: '<"row mb-1"<"col-md-6 d-flex align-items-center"l><"col-md-6 text-right"f>>' +
+                'rt' +
+                '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+            language: {
+                search: "Pencarian:",
+                searchPlaceholder: "Masukan keyword",
+                lengthMenu: "Tampilkan _MENU_ data",
+                zeroRecords: "Tidak ditemukan data",
+                info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                infoEmpty: "Tidak ada data tersedia",
+                infoFiltered: "(difilter dari _MAX_ total data)",
+                paginate: {
+                    previous: "Sebelumnya",
+                    next: "Berikutnya"
+                }
+            }
+        });
     });
 </script>
 

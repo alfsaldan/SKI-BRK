@@ -350,4 +350,84 @@ class SuperAdmin extends CI_Controller
         }
     }
 
+    // ==============================
+// Halaman Kelola Data Pegawai
+// ==============================
+// ==============================
+// Kelola Data Pegawai
+// ==============================
+public function kelolaDataPegawai()
+{
+    $this->load->model('DataPegawai_model');
+    $data['judul'] = "Kelola Data Pegawai";
+    $data['pegawai'] = $this->DataPegawai_model->getAllPegawai();
+
+    $this->load->view("layout/header");
+    $this->load->view("superadmin/keloladatapegawai", $data);
+    $this->load->view("layout/footer");
+}
+
+// Download template Excel
+public function downloadTemplatePegawai()
+{
+    $path = FCPATH . "uploads/template_pegawai.xlsx";
+    if (file_exists($path)) {
+        force_download($path, NULL);
+    } else {
+        $this->session->set_flashdata('error', 'Template tidak ditemukan.');
+        redirect('SuperAdmin/kelolaDataPegawai');
+    }
+}
+
+// Import Excel Pegawai
+public function importPegawai()
+{
+    $this->load->model('DataPegawai_model');
+    $file = $_FILES['file_excel']['tmp_name'];
+
+    if ($file) {
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
+        $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+
+        $rows = [];
+        foreach ($sheetData as $i => $row) {
+            if ($i == 1) continue; // skip header
+            $rows[] = [
+                'nik'        => $row['A'],
+                'nama'       => $row['B'],
+                'jabatan'    => $row['C'],
+                'unit_kerja' => $row['D'],
+                'password'   => password_hash($row['E'], PASSWORD_DEFAULT),
+            ];
+        }
+
+        if ($this->DataPegawai_model->insertBatch($rows)) {
+            $this->session->set_flashdata('success', 'Data pegawai berhasil diimport.');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal import data.');
+        }
+    }
+    redirect('SuperAdmin/kelolaDataPegawai');
+}
+
+// Tambah Pegawai Manual
+public function tambahPegawai()
+{
+    $this->load->model('DataPegawai_model');
+    $data = [
+        'nik'        => $this->input->post('nik'),
+        'nama'       => $this->input->post('nama'),
+        'jabatan'    => $this->input->post('jabatan'),
+        'unit_kerja' => $this->input->post('unit_kerja'),
+        'password'   => password_hash($this->input->post('password'), PASSWORD_DEFAULT),
+    ];
+    $this->DataPegawai_model->insertPegawai($data);
+
+    $this->session->set_flashdata('success', 'Pegawai berhasil ditambahkan.');
+    redirect('SuperAdmin/kelolaDataPegawai');
+}
+
+
+
+
 }

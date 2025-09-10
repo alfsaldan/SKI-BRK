@@ -3,13 +3,26 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class DataPegawai_model extends CI_Model
 {
-    // ambil detail pegawai by NIK
+    public function getAllPegawai()
+    {
+        return $this->db->get('pegawai')->result();
+    }
+
+    public function insertBatch($data)
+    {
+        return $this->db->insert_batch('pegawai', $data);
+    }
+
+    public function insertPegawai($data)
+    {
+        return $this->db->insert('pegawai', $data);
+    }
+
     public function getPegawaiByNik($nik)
     {
         return $this->db->get_where('pegawai', ['nik' => $nik])->row();
     }
 
-    // ambil data penilaian by NIK (dengan join indikator + sasaran kerja)
     public function getPenilaianByNik($nik)
     {
         $this->db->select('p.*, i.indikator, i.bobot, s.perspektif, s.sasaran_kerja');
@@ -19,4 +32,5 @@ class DataPegawai_model extends CI_Model
         $this->db->where('p.nik', $nik);
         return $this->db->get()->result();
     }
+
 }
