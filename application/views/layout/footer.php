@@ -127,29 +127,67 @@
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-    var options = {
-        chart: {
-            type: 'bar',
-            height: 350
-        },
-        series: [{
-            name: 'Target',
-            data: [80, 90, 70, 85, 95]
-        }, {
-            name: 'Realisasi',
-            data: [75, 88, 60, 80, 90]
-        }],
-        xaxis: {
-            categories: ['Pegawai A', 'Pegawai B', 'Pegawai C', 'Pegawai D', 'Pegawai E']
-        },
-        colors: ['#039046', '#e63946'], // hijau BRKS & merah realisasi
-        dataLabels: {
-            enabled: true
+    var optionsTargetRealisasi = {
+    chart: {
+        type: 'line',
+        height: 350
+    },
+    series: [{
+        name: 'Target',
+        data: [80, 90, 70, 85, 95, 100, 110, 120, 125, 130, 140, 150] // Target per bulan
+    }, {
+        name: 'Realisasi',
+        data: [75, 85, 65, 82, 90, 95, 105, 115, 120, 125, 135, 145] // Realisasi per bulan
+    }],
+    xaxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+    },
+    colors: ['#039046', '#e63946'], // hijau BRKS untuk Target, merah untuk Realisasi
+    stroke: {
+        curve: 'smooth',
+        width: 3
+    },
+    markers: {
+        size: 5
+    },
+    dataLabels: {
+        enabled: true
+    },
+    yaxis: {
+        title: {
+            text: 'Jumlah Kinerja'
         }
-    };
+    }
+};
 
-    var chart = new ApexCharts(document.querySelector("#chart-target-vs-realisasi"), options);
-    chart.render();
+var chartTargetRealisasi = new ApexCharts(document.querySelector("#chart-target-vs-realisasi"), optionsTargetRealisasi);
+chartTargetRealisasi.render();
+
+</script>
+
+<script>
+    var optionsDonut = {
+    chart: {
+        type: 'donut',
+        height: 350
+    },
+    series: [10, 20, 30, 25, 15], // contoh data jumlah pegawai
+    labels: ['Minus', 'Fair', 'Good', 'Very Good', 'Excellent'],
+    colors: ['#d32f2f', '#f9a825', '#039be5', '#7cb342', '#039046'], // merah - kuning - biru - hijau muda - hijau BRKS
+    legend: {
+        position: 'bottom'
+    },
+    dataLabels: {
+        enabled: true,
+        formatter: function (val) {
+            return val.toFixed(1) + "%";
+        }
+    }
+};
+
+var chartDonut = new ApexCharts(document.querySelector("#donut-charts"), optionsDonut);
+chartDonut.render();
+
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

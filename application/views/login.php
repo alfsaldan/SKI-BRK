@@ -37,7 +37,7 @@
                                     <span><img src="<?= base_url('assets/images/Logo_BRK_Syariah.png'); ?>" alt=""
                                             height="40"></span>
                                 </a>
-                                <h4 class="mt-3">Login Sistem</h4>
+                                <h4 class="mt-3">Login Sistem SKI-BRKS</h4>
                             </div>
 
                             <!-- Pesan error -->

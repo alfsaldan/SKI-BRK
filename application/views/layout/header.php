@@ -78,24 +78,14 @@
                         <div class="slimscroll noti-scroll">
 
                             <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item notify-item">
-                                <div class="notify-icon bg-primary">
-                                    <i class="mdi mdi-settings-outline"></i>
-                                </div>
-                                <p class="notify-details">New settings
-                                    <small class="text-muted">There are new settings available</small>
-                                </p>
-                            </a>
-
-                            <!-- item-->
                             <a href="javascript:void(0);" class="dropdown-item notify-item active">
                                 <div class="notify-icon">
                                     <img src="<?= base_url('assets/images/users/avatar-1.png') ?>"
                                         class="img-fluid rounded-circle" alt="" />
                                 </div>
-                                <p class="notify-details">Cristina Pride</p>
+                                <p class="notify-details">Kepala Bagian</p>
                                 <p class="text-muted mb-0 user-msg">
-                                    <small>Hi, How are you? What about our next meeting</small>
+                                    <small>Ada penilaian yang belum kamu nilai</small>
                                 </p>
                             </a>
 
@@ -110,48 +100,7 @@
                                 </p>
                             </a>
 
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item notify-item">
-                                <div class="notify-icon">
-                                    <img src="<?= base_url('assets/images/users/avatar-4.jpg') ?>"
-                                        class="img-fluid rounded-circle" alt="" />
-                                </div>
-                                <p class="notify-details">Karen Robinson</p>
-                                <p class="text-muted mb-0 user-msg">
-                                    <small>Wow ! this admin looks good and awesome design</small>
-                                </p>
-                            </a>
 
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item notify-item">
-                                <div class="notify-icon bg-danger">
-                                    <i class="mdi mdi-account-plus"></i>
-                                </div>
-                                <p class="notify-details">New user
-                                    <small class="text-muted">You have 10 unread messages</small>
-                                </p>
-                            </a>
-
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item notify-item">
-                                <div class="notify-icon bg-info">
-                                    <i class="mdi mdi-comment-account-outline"></i>
-                                </div>
-                                <p class="notify-details">Caleb Flakelar commented on Admin
-                                    <small class="text-muted">4 days ago</small>
-                                </p>
-                            </a>
-
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item notify-item">
-                                <div class="notify-icon bg-secondary">
-                                    <i class="mdi mdi-heart"></i>
-                                </div>
-                                <p class="notify-details">Carlos Crouch liked
-                                    <b>Admin</b>
-                                    <small class="text-muted">13 days ago</small>
-                                </p>
-                            </a>
                         </div>
 
                         <!-- All-->
@@ -188,12 +137,6 @@
                             <span>Settings</span>
                         </a>
 
-                        <!-- item-->
-                        <a href="javascript:void(0);" class="dropdown-item notify-item">
-                            <i class="fe-lock"></i>
-                            <span>Lock Screen</span>
-                        </a>
-
                         <div class="dropdown-divider"></div>
 
                         <!-- item-->
@@ -210,17 +153,17 @@
 
             <!-- LOGO -->
             <div class="logo-box">
-                <a href="index.html" class="logo text-center">
+                <a href="<?= base_url('SuperAdmin'); ?>" class="logo text-center">
                     <span class="logo-lg">
-                        <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png') ?>" alt="" height="20">
-                        <!-- <span class="logo-lg-text-light">UBold</span> -->
+                        <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png') ?>" alt="Logo BRK Syariah"
+                            height="20">
                     </span>
                     <span class="logo-sm">
-                        <!-- <span class="logo-sm-text-dark">U</span> -->
-                        <img src="<?= base_url('assets/images/LogoKapalBRK.png') ?>" alt="" height="24">
+                        <img src="<?= base_url('assets/images/LogoKapalBRK.png') ?>" alt="Logo Kapal BRK" height="24">
                     </span>
                 </a>
             </div>
+
 
             <ul class="list-unstyled topnav-menu topnav-menu-left m-0">
                 <li>
@@ -244,7 +187,7 @@
 
                     <ul class="metismenu" id="side-menu">
 
-                        <li class="menu-title">Navigation</li>
+                        <li class="menu-title">Halaman Utama</li>
 
                         <li class="<?= $this->uri->segment(2) == '' ? 'active' : '' ?>">
                             <a href="<?= base_url('superadmin') ?>">
@@ -253,10 +196,12 @@
                             </a>
                         </li>
 
-                        <li class="<?= $this->uri->segment(2) == 'datapegawai' ? 'active' : '' ?>">
-                            <a href="<?= base_url('superadmin/datapegawai') ?>">
+                        <li class="menu-title mt-2">Fitur Utama</li>
+
+                        <li class="<?= $this->uri->segment(2) == 'keloladatapegawai' ? 'active' : '' ?>">
+                            <a href="<?= base_url('superadmin/keloladatapegawai') ?>">
                                 <i class="mdi mdi-account-card-details"></i>
-                                <span> Data Pegawai </span>
+                                <span>Kelola Data Pegawai </span>
                             </a>
                         </li>
 
@@ -267,14 +212,22 @@
                             </a>
                         </li>
 
-                        <li class="menu-title mt-2">More</li>
-
                         <li class="<?= $this->uri->segment(2) == 'penilaiankinerja' ? 'active' : '' ?>">
                             <a href="<?= base_url('superadmin/penilaiankinerja') ?>">
                                 <i class="mdi mdi-account-edit"></i>
                                 <span> Penilaian Kinerja </span>
                             </a>
                         </li>
+
+                        <li class="menu-title mt-2">Lainnya</li>
+
+                        <li class="<?= $this->uri->segment(2) == 'datapegawai' ? 'active' : '' ?>">
+                            <a href="<?= base_url('superadmin/datapegawai') ?>">
+                                <i class="mdi mdi-account-card-details"></i>
+                                <span>Cek Kinerja Pegawai </span>
+                            </a>
+                        </li>
+
                     </ul>
 
                 </div>

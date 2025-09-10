@@ -26,7 +26,8 @@
                 </div>
             </div>
 
-            <?php if (isset($pegawai_detail) && $pegawai_detail): ?>
+            <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>
+
                 <!-- Detail Pegawai -->
                 <div class="row">
                     <div class="col-12">
@@ -36,6 +37,16 @@
                                 <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
                                 <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
                                 <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
+                                <p><b>Unit Kantor:</b> </p>
+                                <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
+                                <h5>Penilai I</h5>
+                                <p><b>NIK:</b></p>
+                                <p><b>Nama:</b></p>
+                                <p><b>Jabatan:</b></p>
+                                <h5>Penilai II</h5>
+                                <p><b>NIK:</b></p>
+                                <p><b>Nama:</b></p>
+                                <p><b>Jabatan:</b></p>
                             </div>
                         </div>
                     </div>
@@ -51,6 +62,7 @@
                         $grouped[$p][$s][] = $row;
                     }
                 }
+
                 function count_rows($arr)
                 {
                     $sum = 0;
@@ -62,165 +74,237 @@
                 <!-- Form Penilaian -->
                 <div class="row">
                     <div class="col-12">
-                        <form action="<?= base_url('SuperAdmin/simpanPenilaian'); ?>" method="post">
-                            <input type="hidden" name="nik" value="<?= $pegawai_detail->nik; ?>">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5>Form Penilaian</h5>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered">
-                                            <thead style="background-color:#2E7D32;color:#fff;text-align:center;">
-                                                <tr>
-                                                    <th>Perspektif</th>
-                                                    <th>Sasaran Kerja</th>
-                                                    <th>Bobot (%)</th>
-                                                    <th>Indikator</th>
-                                                    <th>Target</th>
-                                                    <th>Batas Waktu</th>
-                                                    <th>Realisasi</th>
-                                                    <th>Pencapaian (%)</th>
-                                                    <th>Nilai</th>
-                                                    <th>Nilai Dibobot</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
+                        <div class="card">
+                            <div class="card-body">
+                                <h5>Form Penilaian</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="tabel-penilaian">
+                                        <thead style="background-color:#2E7D32;color:#fff;text-align:center;">
+                                            <tr>
+                                                <th>Perspektif</th>
+                                                <th>Sasaran Kerja</th>
+                                                <th>Bobot (%)</th>
+                                                <th>Indikator</th>
+                                                <th>Target</th>
+                                                <th>Batas Waktu</th>
+                                                <th>Realisasi</th>
+                                                <th>Pencapaian (%)</th>
+                                                <th>Nilai</th>
+                                                <th>Nilai Dibobot</th>
+                                                <th>Status</th>
+                                                <th>Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                            $printed_any = false;
+                                            foreach ($order as $persp) {
+                                                if (empty($grouped[$persp])) continue;
+                                                $printed_any = true;
+                                                $persp_rows = count_rows($grouped[$persp]);
+                                                $first_persp_cell = true;
+                                                $subtotal_bobot_perspektif = 0;
+
+                                                foreach ($grouped[$persp] as $sasaran => $items) {
+                                                    $sasaran_rows = count($items);
+                                                    $first_sas_cell = true;
+
+                                                    foreach ($items as $i) {
+                                                        $id = $i->id;
+                                                        $bobot = $i->bobot ?? 0;
+                                                        $indik = $i->indikator ?? '';
+                                                        $subtotal_bobot_perspektif += $bobot;
+
+                                                        $statusClass = 'text-secondary';
+                                                        $statusText = 'Belum Dinilai';
+                                            ?>
+                                                        <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>" data-perspektif="<?= $persp; ?>">
+                                                            <?php if ($first_persp_cell) { ?>
+                                                                <td rowspan="<?= $persp_rows; ?>" style="vertical-align:middle;font-weight:600;background:#C8E6C9;"><?= $persp; ?></td>
+                                                            <?php $first_persp_cell = false;
+                                                            } ?>
+
+                                                            <?php if ($first_sas_cell) { ?>
+                                                                <td rowspan="<?= $sasaran_rows; ?>" style="vertical-align:middle;background:#E3F2FD;"><?= $sasaran; ?></td>
+                                                            <?php $first_sas_cell = false;
+                                                            } ?>
+
+                                                            <td class="text-center"><?= $bobot; ?>
+                                                                <input type="hidden" class="bobot" value="<?= $bobot ?>">
+                                                            </td>
+                                                            <td><?= $indik; ?></td>
+
+                                                            <td><input type="text" class="form-control target-input" value="<?= $i->target; ?>"></td>
+                                                            <td><input type="date" class="form-control" value="<?= $i->batas_waktu; ?>"></td>
+                                                            <td><input type="text" class="form-control realisasi-input" value="<?= $i->realisasi; ?>"></td>
+
+                                                            <td class="text-center"><input type="text" class="form-control form-control-sm pencapaian-output" readonly></td>
+                                                            <td class="text-center"><input type="text" class="form-control form-control-sm nilai-output" readonly></td>
+                                                            <td class="text-center"><input type="text" class="form-control form-control-sm nilai-bobot-output" readonly></td>
+
+                                                            <td class="text-center <?= $statusClass; ?>"><?= $statusText; ?></td>
+                                                            <td class="text-center">
+                                                                <button type="button" class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
+                                                            </td>
+                                                        </tr>
                                                 <?php
-                                                $printed_any = false;
-                                                foreach ($order as $persp):
-                                                    if (empty($grouped[$persp])) continue;
-                                                    $printed_any = true;
-
-                                                    $persp_rows = count_rows($grouped[$persp]);
-                                                    $first_persp_cell = true;
-                                                    $subtotal_bobot_perspektif = 0;
-
-                                                    foreach ($grouped[$persp] as $sasaran => $items):
-                                                        $sasaran_rows = count($items);
-                                                        $first_sas_cell = true;
-
-                                                        foreach ($items as $i):
-                                                            $id = $i->id;
-                                                            $bobot = $i->bobot ?? 0;
-                                                            $indik = $i->indikator ?? '';
-                                                            $subtotal_bobot_perspektif += $bobot;
+                                                    } // endforeach items
+                                                } // endforeach grouped
                                                 ?>
-                                                            <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>" data-perspektif="<?= $persp; ?>">
-                                                                <?php if ($first_persp_cell): ?>
-                                                                    <td rowspan="<?= $persp_rows; ?>" style="vertical-align:middle;font-weight:600;background:#C8E6C9;"><?= $persp; ?></td>
-                                                                <?php $first_persp_cell = false;
-                                                                endif; ?>
-                                                                <?php if ($first_sas_cell): ?>
-                                                                    <td rowspan="<?= $sasaran_rows; ?>" style="vertical-align:middle;background:#E3F2FD;"><?= $sasaran; ?></td>
-                                                                <?php $first_sas_cell = false;
-                                                                endif; ?>
-                                                                <td style="text-align:center;"><?= $bobot; ?></td>
-                                                                <td><?= $indik; ?></td>
-                                                                <td><input type="text" name="target[<?= $id; ?>]" class="form-control target-input"></td>
-                                                                <td><input type="date" name="batas_waktu[<?= $id; ?>]" class="form-control"></td>
-                                                                <td><input type="text" name="realisasi[<?= $id; ?>]" class="form-control realisasi-input"></td>
-                                                                <td class="text-center"><input type="text" class="form-control form-control-sm pencapaian-output" readonly></td>
-                                                                <td class="text-center"><input type="text" class="form-control form-control-sm nilai-output" readonly></td>
-                                                                <td class="text-center"><input type="text" class="form-control form-control-sm nilai-bobot-output" readonly></td>
-                                                            </tr>
-                                                    <?php
-                                                        endforeach;
-                                                    endforeach;
-                                                    ?>
-                                                    <!-- Baris subtotal perspektif -->
-                                                    <tr class="subtotal-row" style="font-weight:bold;background:#F1F8E9;">
-                                                        <td colspan="2">Sub Total <?= $persp; ?></td> <!-- Perspektif + Sasaran -->
-                                                        <td class="text-center"><span class="subtotal-bobot"><?= $subtotal_bobot_perspektif; ?></span></td> <!-- Bobot subtotal -->
-                                                        <td colspan="6" class="text-center">Sub Total Nilai <?= $persp; ?> Dibobot</td> <!-- Merge Target → Nilai Dibobot, hanya teks -->
-                                                        <td class="text-center"><span class="subtotal-nilai-bobot">0.00</span></td> <!-- Angka subtotal pindah ke kolom terakhir -->
-                                                    </tr>
-
-                                                <?php endforeach;
-                                                if (!$printed_any): ?>
-                                                    <tr>
-                                                        <td colspan="10" class="text-center">Tidak ada indikator untuk jabatan ini</td>
-                                                    </tr>
-                                                <?php endif; ?>
-                                            </tbody>
-                                            <tfoot style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
-                                                <tr>
-                                                    <td colspan="2">Total</td>
-                                                    <td><span id="total-bobot">0</span></td>
-                                                    <td colspan="6" class="text-center">Total Nilai Dibobot</td>
-                                                    <td><span id="total-nilai-bobot">0.00</span></td>
+                                                <tr class="subtotal-row" style="font-weight:bold;background:#F1F8E9;">
+                                                    <td colspan="2">Sub Total Bobot <?= $persp; ?></td>
+                                                    <td class="text-center"><span class="subtotal-bobot"><?= $subtotal_bobot_perspektif; ?></span></td>
+                                                    <td colspan="6" class="text-center">Sub Total Nilai <?= $persp; ?> Dibobot</td>
+                                                    <td class="text-center"><span class="subtotal-nilai-bobot">0.00</span></td>
+                                                    <td colspan="2"></td>
                                                 </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-
-                                    <button type="submit" class="btn btn-primary">Simpan Penilaian</button>
-                                    <p class="text-muted mt-2 mb-0" style="font-size:12px;">
-                                        *Kolom Pencapaian, Nilai, dan Nilai Dibobot sementara hanya tampilan. Perhitungan final bisa diaktifkan saat penyimpanan.
-                                    </p>
+                                            <?php
+                                            } // endforeach order
+                                            if (!$printed_any) { ?>
+                                                <tr>
+                                                    <td colspan="12" class="text-center">Tidak ada indikator untuk jabatan ini</td>
+                                                </tr>
+                                            <?php } ?>
+                                        </tbody>
+                                        <tfoot style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
+                                            <tr>
+                                                <td colspan="2">Total</td>
+                                                <td><span id="total-bobot">0</span></td>
+                                                <td colspan="6" class="text-center">Total Nilai Kinerja</td>
+                                                <td><span id="total-nilai-bobot">0.00</span></td>
+                                                <td colspan="2"></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
                                 </div>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
 
-            <?php endif; ?>
+            <?php } // endif 
+            ?>
+
         </div>
     </div>
 </div>
 
+<!-- SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<?php if ($this->session->flashdata('message')): ?>
 <script>
-    document.addEventListener('DOMContentLoaded', updateAllCalculations);
-    document.addEventListener('input', function(e) {
-        if (!e.target.classList.contains('target-input') && !e.target.classList.contains('realisasi-input')) return;
-        updateAllCalculations();
+    Swal.fire({
+        icon: '<?= $this->session->flashdata('message')['type']; ?>',
+        title: 'Informasi',
+        text: '<?= $this->session->flashdata('message')['text']; ?>',
+        confirmButtonColor: '#2E7D32'
     });
+</script>
+<?php endif; ?>
 
-    function updateAllCalculations() {
-        const parseNum = v => {
-            if (!v) return NaN;
-            v = (v + '').replace(/[^0-9.,-]/g, '').replace(/\./g, '').replace(',', '.');
-            return parseFloat(v);
-        };
-        let totalNilaiBobot = 0,
-            totalBobot = 0,
-            perspektifSubtotals = {};
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const nik = document.getElementById('nik')?.value;
 
-        document.querySelectorAll('tbody tr[data-perspektif]').forEach(row => {
-            const target = parseNum(row.querySelector('.target-input').value),
-                realisasi = parseNum(row.querySelector('.realisasi-input').value),
-                bobot = parseFloat(row.dataset.bobot || '0'),
-                perspektif = row.dataset.perspektif,
-                pencapaianEl = row.querySelector('.pencapaian-output'),
-                nilaiEl = row.querySelector('.nilai-output'),
-                nilaiBobotEl = row.querySelector('.nilai-bobot-output');
-            let nilaiBobot = 0;
-            if (!isNaN(target) && target !== 0 && !isNaN(realisasi)) {
-                let pc = (realisasi / target) * 100;
-                if (pc < 0) pc = 0;
-                pencapaianEl.value = pc.toFixed(2);
-                let nilai = Math.min(pc, 100);
-                nilaiEl.value = nilai.toFixed(2);
-                nilaiBobot = nilai * (bobot / 100);
-                nilaiBobotEl.value = nilaiBobot.toFixed(2);
-            } else {
-                pencapaianEl.value = '';
-                nilaiEl.value = '';
-                nilaiBobotEl.value = '';
+        function hitungRow(row) {
+            const target = parseFloat(row.querySelector('.target-input').value) || 0;
+            const realisasi = parseFloat(row.querySelector('.realisasi-input').value) || 0;
+            const bobot = parseFloat(row.querySelector('.bobot').value) || 0;
+
+            let pencapaian = 0,
+                nilai = 0,
+                nilaiBobot = 0;
+            if (target > 0) {
+                pencapaian = (realisasi / target) * 100;
+                nilai = Math.min(pencapaian, 100);
+                nilaiBobot = (nilai * bobot) / 100;
             }
-            if (!isNaN(bobot)) totalBobot += bobot;
-            totalNilaiBobot += nilaiBobot;
-            if (!perspektifSubtotals[perspektif]) perspektifSubtotals[perspektif] = 0;
-            perspektifSubtotals[perspektif] += nilaiBobot;
+
+            row.querySelector('.pencapaian-output').value = pencapaian.toFixed(2);
+            row.querySelector('.nilai-output').value = nilai.toFixed(2);
+            row.querySelector('.nilai-bobot-output').value = nilaiBobot.toFixed(2);
+            return {
+                bobot,
+                nilaiBobot,
+                perspektif: row.dataset.perspektif
+            };
+        }
+
+        function hitungTotal() {
+            let totalBobot = 0,
+                totalNilai = 0;
+            const subtotalMap = {};
+
+            document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
+                const { bobot, nilaiBobot, perspektif } = hitungRow(row);
+                totalBobot += bobot;
+                totalNilai += nilaiBobot;
+
+                if (!subtotalMap[perspektif]) {
+                    subtotalMap[perspektif] = 0;
+                }
+                subtotalMap[perspektif] += nilaiBobot;
+            });
+
+            document.getElementById('total-bobot').innerText = totalBobot.toFixed(2);
+            document.getElementById('total-nilai-bobot').innerText = totalNilai.toFixed(2);
+
+            document.querySelectorAll('.subtotal-row').forEach(row => {
+                const perspektif = row.querySelector('td[colspan="2"]').innerText.replace('Sub Total ', '');
+                const nilaiSub = subtotalMap[perspektif] || 0;
+                row.querySelector('.subtotal-nilai-bobot').innerText = nilaiSub.toFixed(2);
+            });
+        }
+
+        document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
+            input.addEventListener('input', hitungTotal);
         });
 
-        // Update subtotal
-        document.querySelectorAll('.subtotal-row').forEach(row => {
-            const perspektifName = row.querySelector('td').innerText.replace('Sub Total ', '').trim();
-            if (perspektifSubtotals[perspektifName] !== undefined) {
-                row.querySelector('.subtotal-nilai-bobot').innerText = perspektifSubtotals[perspektifName].toFixed(2);
-            }
-        });
+        hitungTotal();
 
-        document.getElementById('total-bobot').innerText = totalBobot.toFixed(0);
-        document.getElementById('total-nilai-bobot').innerText = totalNilaiBobot.toFixed(2);
-    }
+        document.querySelectorAll('.simpan-penilaian').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const indikator_id = row.dataset.id;
+                const target = row.querySelector('.target-input').value;
+                const batas_waktu = row.querySelector('input[type="date"]').value;
+                const realisasi = row.querySelector('.realisasi-input').value;
+
+                fetch('<?= base_url("SuperAdmin/simpanPenilaianBaris") ?>', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}`
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: res.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: res.message || 'Gagal menyimpan',
+                                confirmButtonColor: '#d33'
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Terjadi kesalahan server',
+                            confirmButtonColor: '#d33'
+                        });
+                    });
+            });
+        });
+    });
 </script>

@@ -1,5 +1,9 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
 
 class SuperAdmin extends CI_Controller
 {
@@ -133,11 +137,13 @@ class SuperAdmin extends CI_Controller
         echo json_encode(['success' => $success]);
     }
 
-
-    // Halaman Penilaian Kinerja
+    // ==============================
+// Halaman Penilaian Kinerja
+// ==============================
     public function penilaiankinerja()
     {
-        $data['pegawai']   = $this->db->get('pegawai')->result();
+        $data['judul'] = "Penilaian Kinerja Pegawai";
+        $data['pegawai'] = $this->db->get('pegawai')->result();
         $data['indikator'] = $this->db->get('indikator')->result();
         $data['penilaian'] = $this->Penilaian_model->get_all_penilaian();
 
@@ -146,35 +152,32 @@ class SuperAdmin extends CI_Controller
         $this->load->view("layout/footer");
     }
 
-    // Add Penilaian
-    public function addPenilaian()
-    {
-        $nik         = $this->input->post('nik');
-        $indikator_id = $this->input->post('indikator_id');
-        $target      = $this->input->post('target');
-        $batas_waktu = $this->input->post('batas_waktu');
-        $realisasi   = $this->input->post('realisasi');
-
-        $this->Penilaian_model->insertPenilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi);
-
-        redirect('SuperAdmin/penilaian');
-    }
-
+    // ==============================
+// Cari Penilaian Pegawai
+// ==============================
     public function cariPenilaian()
     {
         $nik = $this->input->post('nik');
         $pegawai = $this->db->get_where('pegawai', ['nik' => $nik])->row();
 
         if ($pegawai) {
-            // Ambil indikator berdasarkan jabatan
-            $this->load->model('Penilaian_model');
-            $indikator = $this->Penilaian_model->get_indikator_by_jabatan($pegawai->jabatan);
+            $indikator = $this->Penilaian_model->get_indikator_by_jabatan($pegawai->jabatan, $nik);
 
             $data['pegawai_detail'] = $pegawai;
             $data['indikator_by_jabatan'] = $indikator;
+
+            $this->session->set_flashdata('message', [
+                'type' => 'success',
+                'text' => 'Data penilaian pegawai ditemukan!'
+            ]);
         } else {
             $data['pegawai_detail'] = null;
             $data['indikator_by_jabatan'] = [];
+
+            $this->session->set_flashdata('message', [
+                'type' => 'error',
+                'text' => 'Pegawai dengan NIK tersebut tidak ditemukan.'
+            ]);
         }
 
         $this->load->view("layout/header");
@@ -182,31 +185,169 @@ class SuperAdmin extends CI_Controller
         $this->load->view("layout/footer");
     }
 
-    // Simpan hasil penilaian
+    // ==============================
+// Simpan seluruh form penilaian
+// ==============================
     public function simpanPenilaian()
     {
-        $nik         = $this->input->post('nik');
-        $targets     = $this->input->post('target');
+        $nik = $this->input->post('nik');
+        $targets = $this->input->post('target');
         $batas_waktu = $this->input->post('batas_waktu');
-        $realisasi   = $this->input->post('realisasi');
+        $realisasi = $this->input->post('realisasi');
 
-        $data = [];
-        if ($targets && $realisasi) {
+        $success = true;
+
+        if ($targets) {
             foreach ($targets as $indikator_id => $t) {
-                $data[] = [
-                    'nik'         => $nik,
-                    'indikator_id' => $indikator_id,
-                    'target'      => $t,
-                    'batas_waktu' => $batas_waktu[$indikator_id],
-                    'realisasi'   => $realisasi[$indikator_id],
-                ];
+                $btw = $batas_waktu[$indikator_id] ?? null;
+                $rls = $realisasi[$indikator_id] ?? null;
+                if (!$this->Penilaian_model->save_penilaian($nik, $indikator_id, $t, $btw, $rls)) {
+                    $success = false;
+                }
             }
-
-            // Simpan sekaligus (lebih efisien)
-            $this->Penilaian_model->simpan_penilaian($data);
         }
 
-        $this->session->set_flashdata('success', 'Penilaian berhasil disimpan.');
+        if ($success) {
+            $this->session->set_flashdata('message', [
+                'type' => 'success',
+                'text' => 'Seluruh penilaian berhasil disimpan!'
+            ]);
+        } else {
+            $this->session->set_flashdata('message', [
+                'type' => 'error',
+                'text' => 'Gagal menyimpan sebagian data penilaian.'
+            ]);
+        }
+
         redirect('SuperAdmin/penilaiankinerja');
     }
+
+    // ==============================
+// Simpan penilaian per baris (AJAX)
+// ==============================
+    public function simpanPenilaianBaris()
+    {
+        $nik = $this->input->post('nik');
+        $indikator_id = $this->input->post('indikator_id');
+        $target = $this->input->post('target');
+        $batas_waktu = $this->input->post('batas_waktu');
+        $realisasi = $this->input->post('realisasi');
+
+        $save = $this->Penilaian_model->save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi);
+
+        if (!$save) {
+            $error = $this->db->error();
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Gagal menyimpan data.',
+                'debug' => $error
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Penilaian berhasil disimpan!',
+                'data' => [
+                    'target' => $target,
+                    'batas_waktu' => $batas_waktu,
+                    'realisasi' => $realisasi
+                ]
+            ]);
+        }
+    }
+
+
+    // Halaman Data Pegawai
+    public function dataPegawai()
+    {
+        $data['judul'] = "Data Pegawai";
+        $data['pegawai_detail'] = null;
+        $data['penilaian_pegawai'] = [];
+
+        $this->load->view("layout/header");
+        $this->load->view('superadmin/datapegawai', $data);
+        $this->load->view("layout/footer");
+    }
+
+    // Cari Data Pegawai berdasarkan NIK
+    public function cariDataPegawai()
+    {
+        $nik = $this->input->post('nik');
+        $this->load->model('DataPegawai_model');
+
+        $pegawai = $this->DataPegawai_model->getPegawaiByNik($nik);
+        $penilaian = $this->DataPegawai_model->getPenilaianByNik($nik);
+
+        if (!$pegawai) {
+            $this->session->set_flashdata('error', 'Data pegawai dengan NIK ' . $nik . ' tidak ditemukan.');
+            redirect('SuperAdmin/dataPegawai');
+        } else {
+            $this->session->set_flashdata('success', 'Data pegawai berhasil ditemukan.');
+        }
+
+        $data['judul'] = "Data Pegawai";
+        $data['pegawai_detail'] = $pegawai;
+        $data['penilaian_pegawai'] = $penilaian;
+
+        $this->load->view("layout/header");
+        $this->load->view('superadmin/datapegawai', $data);
+        $this->load->view("layout/footer");
+    }
+
+    // Download Data Penilaian ke Excel
+    public function downloadDataPegawai($nik)
+    {
+        $this->load->model('DataPegawai_model');
+        $pegawai = $this->DataPegawai_model->getPegawaiByNik($nik);
+        $penilaian = $this->DataPegawai_model->getPenilaianByNik($nik);
+
+        if (!$pegawai) {
+            $this->session->set_flashdata('error', 'Data pegawai tidak ditemukan.');
+            redirect('SuperAdmin/dataPegawai');
+        }
+
+        try {
+            // Path template
+            $templatePath = FCPATH . "uploads/templatedatapenilaian.xls";
+            if (!file_exists($templatePath)) {
+                $this->session->set_flashdata('error', 'Template Excel tidak ditemukan.');
+                redirect('SuperAdmin/dataPegawai');
+            }
+
+            // Load template excel
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($templatePath);
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // Isi data pegawai
+            $sheet->setCellValue('B2', $pegawai->nik);
+            $sheet->setCellValue('B3', $pegawai->nama);
+            $sheet->setCellValue('B4', $pegawai->jabatan);
+
+            // Isi data penilaian mulai row ke-7
+            $row = 7;
+            foreach ($penilaian as $p) {
+                $sheet->setCellValue("A{$row}", $p->perspektif);
+                $sheet->setCellValue("B{$row}", $p->sasaran_kerja);
+                $sheet->setCellValue("C{$row}", $p->indikator);
+                $sheet->setCellValue("D{$row}", $p->bobot);
+                $sheet->setCellValue("E{$row}", $p->target);
+                $sheet->setCellValue("F{$row}", $p->batas_waktu);
+                $sheet->setCellValue("G{$row}", $p->realisasi);
+                $row++;
+            }
+
+            // Download file
+            $filename = "Data_Penilaian_{$pegawai->nama}_{$pegawai->nik}.xls";
+            header('Content-Type: application/vnd.ms-excel');
+            header("Content-Disposition: attachment;filename=\"{$filename}\"");
+            header('Cache-Control: max-age=0');
+
+            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xls');
+            $writer->save('php://output');
+            exit;
+        } catch (\Exception $e) {
+            $this->session->set_flashdata('error', 'Gagal mengunduh data: ' . $e->getMessage());
+            redirect('SuperAdmin/dataPegawai');
+        }
+    }
+
 }

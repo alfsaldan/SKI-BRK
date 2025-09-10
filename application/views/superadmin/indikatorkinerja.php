@@ -80,7 +80,7 @@
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary mt-3">Finish</button>
+                                <button type="submit" class="btn btn-primary mt-3">Simpan</button>
                             </form>
 
                             <!-- Tabel Data -->
@@ -134,11 +134,13 @@
                                                             <button type="button" class="btn btn-warning btn-sm editBtn">
                                                                 <i class="mdi mdi-pencil"></i>
                                                             </button>
+                                                            
                                                             <a href="javascript:void(0);"
-                                                                class="btn btn-danger btn-sm deleteIndikatorBtn"
+                                                                class="btn btn-danger btn-sm deleteIndikatorBtn mt-0.5"
                                                                 data-id="<?= $i->id; ?>">
                                                                 <i class="mdi mdi-delete"></i>
                                                             </a>
+
                                                         </td>
                                                     </tr>
                                                 <?php endforeach; ?>
@@ -221,7 +223,7 @@
             <td><input type="number" class="form-control bobotInput" value="${bobotText}"></td>
             <td>
                 <button class="btn btn-success btn-sm saveBtn"><i class="mdi mdi-content-save"></i></button>
-                <button class="btn btn-secondary btn-sm cancelBtn"><i class="mdi mdi-close"></i></button>
+                <button class="btn btn-secondary btn-sm cancelBtn mt-0.5"><i class="mdi mdi-close"></i></button>
             </td>
         `;
             row.querySelector('.indikatorInput').focus();
@@ -242,7 +244,7 @@
             </td>
             <td>
                 <button class="btn btn-success btn-sm saveSasaranBtn"><i class="mdi mdi-content-save"></i></button>
-                <button class="btn btn-secondary btn-sm cancelBtn"><i class="mdi mdi-close"></i></button>
+                <button class="btn btn-secondary btn-sm cancelBtn mt-0.5"><i class="mdi mdi-close"></i></button>
             </td>
         `;
             row.querySelector('.sasaranInput').focus();
