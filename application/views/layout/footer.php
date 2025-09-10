@@ -256,8 +256,9 @@
 </script>
 <style>
     /* Atur jarak antar tombol di header aksi */
-    .action-buttons > * {
-        margin: 3px; /* jarak antar item */
+    .action-buttons>* {
+        margin: 3px;
+        /* jarak antar item */
     }
 
     /* Perkecil ukuran input file biar sejajar rapi */
@@ -307,6 +308,96 @@
     });
 </script>
 
+<script>
+    // Update label saat file dipilih
+    $(document).on('change', '.custom-file-input', function (event) {
+        let fileName = event.target.files[0].name;
+        $(this).next('.custom-file-label').html(fileName);
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    <?php if ($this->session->flashdata('success')): ?>
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            html: '<?= $this->session->flashdata('success'); ?>',
+        });
+    <?php endif; ?>
+
+    <?php if ($this->session->flashdata('warning')): ?>
+        Swal.fire({
+            icon: 'warning',
+            title: 'Perhatian',
+            html: '<?= $this->session->flashdata('warning'); ?>',
+        });
+    <?php endif; ?>
+
+    <?php if ($this->session->flashdata('error')): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            html: '<?= $this->session->flashdata('error'); ?>',
+        });
+    <?php endif; ?>
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        <?php if ($this->session->flashdata('success')): ?>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                html: '<?= $this->session->flashdata('success'); ?>',
+                confirmButtonColor: '#3085d6'
+            });
+        <?php endif; ?>
+
+        <?php if ($this->session->flashdata('warning')): ?>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                html: '<?= $this->session->flashdata('warning'); ?>',
+                confirmButtonColor: '#f0ad4e'
+            });
+        <?php endif; ?>
+
+        <?php if ($this->session->flashdata('error')): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                html: '<?= $this->session->flashdata('error'); ?>',
+                confirmButtonColor: '#d33'
+            });
+        <?php endif; ?>
+    });
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).on('click', '.btn-delete', function (e) {
+        e.preventDefault();
+        let url = $(this).data('url');
+
+        Swal.fire({
+            title: 'Yakin hapus?',
+            text: "Data pegawai akan dihapus permanen!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+    });
+</script>
 
 
 </body>

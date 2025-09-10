@@ -33,4 +33,10 @@ class DataPegawai_model extends CI_Model
         return $this->db->get()->result();
     }
 
+    public function deletePegawai($nik)
+    {
+        return $this->db->delete('pegawai', ['nik' => $nik]);
+    }
+
+
 }

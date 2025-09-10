@@ -100,10 +100,12 @@
                                                                 href="<?= base_url('SuperAdmin/editPegawai/' . $p->nik) ?>">
                                                                 Edit
                                                             </a>
-                                                            <a class="dropdown-item text-danger"
-                                                                href="<?= base_url('SuperAdmin/deletePegawai/' . $p->nik) ?>">
+                                                            <a href="javascript:void(0);"
+                                                                class="dropdown-item text-danger btn-delete"
+                                                                data-url="<?= base_url('SuperAdmin/deletePegawai/' . $p->nik) ?>">
                                                                 Hapus
                                                             </a>
+
                                                         </div>
                                                     </div>
                                                 </td>
@@ -111,6 +113,20 @@
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
+                            </div>
+
+
+                            <!-- Petunjuk Import -->
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <strong>Catatan Import:</strong><br>
+                                    1. Gunakan <a href="<?= base_url('SuperAdmin/downloadTemplatePegawai') ?>">template
+                                        Excel resmi</a> untuk memastikan format sesuai.<br>
+                                    2. Kolom wajib diisi: <code>NIK, Nama, Jabatan, Unit Kerja, Password</code>.<br>
+                                    3. Pastikan <code>NIK</code> unik dan tidak duplikat dengan data yang sudah ada.<br>
+                                    4. Password tidak boleh kosong, minimal 6 karakter.<br>
+                                    5. Format file harus <code>.xls</code> atau <code>.xlsx</code>.
+                                </small>
                             </div>
 
                         </div>

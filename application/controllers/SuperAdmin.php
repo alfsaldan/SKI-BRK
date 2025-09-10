@@ -351,83 +351,195 @@ class SuperAdmin extends CI_Controller
     }
 
     // ==============================
-// Halaman Kelola Data Pegawai
-// ==============================
-// ==============================
 // Kelola Data Pegawai
 // ==============================
-public function kelolaDataPegawai()
-{
-    $this->load->model('DataPegawai_model');
-    $data['judul'] = "Kelola Data Pegawai";
-    $data['pegawai'] = $this->DataPegawai_model->getAllPegawai();
+    public function kelolaDataPegawai()
+    {
+        $this->load->model('DataPegawai_model');
+        $data['judul'] = "Kelola Data Pegawai";
+        $data['pegawai'] = $this->DataPegawai_model->getAllPegawai();
 
-    $this->load->view("layout/header");
-    $this->load->view("superadmin/keloladatapegawai", $data);
-    $this->load->view("layout/footer");
-}
-
-// Download template Excel
-public function downloadTemplatePegawai()
-{
-    $path = FCPATH . "uploads/template_pegawai.xlsx";
-    if (file_exists($path)) {
-        force_download($path, NULL);
-    } else {
-        $this->session->set_flashdata('error', 'Template tidak ditemukan.');
-        redirect('SuperAdmin/kelolaDataPegawai');
+        $this->load->view("layout/header");
+        $this->load->view("superadmin/keloladatapegawai", $data);
+        $this->load->view("layout/footer");
     }
-}
 
-// Import Excel Pegawai
-public function importPegawai()
-{
-    $this->load->model('DataPegawai_model');
-    $file = $_FILES['file_excel']['tmp_name'];
 
-    if ($file) {
-        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
+
+    // Download template Excel
+
+
+    public function downloadTemplatePegawai()
+    {
+        $this->load->helper('download'); // Load helper disini
+        $path = FCPATH . "uploads/template_pegawai.xlsx";
+        if (file_exists($path)) {
+            force_download($path, NULL);
+        } else {
+            $this->session->set_flashdata('error', 'Template tidak ditemukan.');
+            redirect('SuperAdmin/kelolaDataPegawai');
+        }
+    }
+
+
+    public function importPegawai()
+    {
+        $this->load->model('DataPegawai_model');
+
+        if (!isset($_FILES['file_excel']['tmp_name']) || $_FILES['file_excel']['error'] !== UPLOAD_ERR_OK) {
+            $this->session->set_flashdata('error', 'File tidak valid atau gagal diupload.');
+            redirect('SuperAdmin/kelolaDataPegawai');
+            return;
+        }
+
+        $fileTmp = $_FILES['file_excel']['tmp_name'];
+        $fileName = $_FILES['file_excel']['name'];
+        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+        // ✅ Hanya izinkan xls/xlsx
+        if (!in_array($ext, ['xls', 'xlsx'])) {
+            $this->session->set_flashdata('error', 'Format file salah. Hanya mendukung .xls atau .xlsx sesuai template.');
+            redirect('SuperAdmin/kelolaDataPegawai');
+            return;
+        }
+
+        // ✅ Validasi signature file agar tidak asal rename
+        $mime = mime_content_type($fileTmp);
+        $allowedMimes = [
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/octet-stream' // kadang Excel deteksi sebagai octet
+        ];
+
+        if (!in_array($mime, $allowedMimes)) {
+            $this->session->set_flashdata('error', "File tidak valid. Pastikan menggunakan file Excel asli (MIME: $mime).");
+            redirect('SuperAdmin/kelolaDataPegawai');
+            return;
+        }
+
+        try {
+            $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($fileTmp);
+            $spreadsheet = $reader->load($fileTmp);
+        } catch (\PhpOffice\PhpSpreadsheet\Reader\Exception $e) {
+            $this->session->set_flashdata('error', 'File Excel tidak dapat dibaca: ' . $e->getMessage());
+            redirect('SuperAdmin/kelolaDataPegawai');
+            return;
+        } catch (\Exception $e) {
+            $this->session->set_flashdata('error', 'Terjadi error saat membuka file: ' . $e->getMessage());
+            redirect('SuperAdmin/kelolaDataPegawai');
+            return;
+        }
+
         $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
 
+        // ✅ Cek isi minimal ada header + 1 baris
+        if (count($sheetData) <= 1) {
+            $this->session->set_flashdata('error', 'File kosong atau tidak sesuai template.');
+            redirect('SuperAdmin/kelolaDataPegawai');
+            return;
+        }
+
+        // ✅ Validasi header
+        $header = $sheetData[1];
+        if (
+            strtolower(trim($header['A'])) !== 'nik' ||
+            strtolower(trim($header['B'])) !== 'nama' ||
+            strtolower(trim($header['C'])) !== 'jabatan' ||
+            strtolower(trim($header['D'])) !== 'unit_kerja' ||
+            strtolower(trim($header['E'])) !== 'password'
+        ) {
+            $this->session->set_flashdata('error', 'Header tidak sesuai. Gunakan template resmi.');
+            redirect('SuperAdmin/kelolaDataPegawai');
+            return;
+        }
+
         $rows = [];
+        $errors = [];
         foreach ($sheetData as $i => $row) {
-            if ($i == 1) continue; // skip header
+            if ($i == 1)
+                continue; // skip header
+
+            $nik = trim($row['A']);
+            $nama = trim($row['B']);
+            $jabatan = trim($row['C']);
+            $unit_kerja = trim($row['D']);
+            $password = trim($row['E']);
+
+            if (empty($nik)) {
+                $errors[] = "Baris $i: NIK kosong.";
+                continue;
+            }
+
+            if ($this->db->get_where('pegawai', ['nik' => $nik])->row()) {
+                $errors[] = "Baris $i: NIK $nik sudah ada.";
+                continue;
+            }
+
+            if (empty($password)) {
+                $errors[] = "Baris $i: Password kosong.";
+                continue;
+            }
+
             $rows[] = [
-                'nik'        => $row['A'],
-                'nama'       => $row['B'],
-                'jabatan'    => $row['C'],
-                'unit_kerja' => $row['D'],
-                'password'   => password_hash($row['E'], PASSWORD_DEFAULT),
+                'nik' => $nik,
+                'nama' => $nama,
+                'jabatan' => $jabatan,
+                'unit_kerja' => $unit_kerja,
+                'password' => password_hash($password, PASSWORD_DEFAULT),
             ];
         }
 
-        if ($this->DataPegawai_model->insertBatch($rows)) {
-            $this->session->set_flashdata('success', 'Data pegawai berhasil diimport.');
-        } else {
-            $this->session->set_flashdata('error', 'Gagal import data.');
+        if (!empty($rows)) {
+            $this->DataPegawai_model->insertBatch($rows);
+            $this->session->set_flashdata('success', count($rows) . ' data berhasil diimport.');
         }
+
+        if (!empty($errors)) {
+            $this->session->set_flashdata('warning', implode("<br>", $errors));
+        }
+
+        if (empty($rows) && empty($errors)) {
+            $this->session->set_flashdata('error', 'Tidak ada data valid yang bisa diimport.');
+        }
+
+        redirect('SuperAdmin/kelolaDataPegawai');
     }
-    redirect('SuperAdmin/kelolaDataPegawai');
-}
-
-// Tambah Pegawai Manual
-public function tambahPegawai()
-{
-    $this->load->model('DataPegawai_model');
-    $data = [
-        'nik'        => $this->input->post('nik'),
-        'nama'       => $this->input->post('nama'),
-        'jabatan'    => $this->input->post('jabatan'),
-        'unit_kerja' => $this->input->post('unit_kerja'),
-        'password'   => password_hash($this->input->post('password'), PASSWORD_DEFAULT),
-    ];
-    $this->DataPegawai_model->insertPegawai($data);
-
-    $this->session->set_flashdata('success', 'Pegawai berhasil ditambahkan.');
-    redirect('SuperAdmin/kelolaDataPegawai');
-}
 
 
+    // Tambah Pegawai Manual
+    public function tambahPegawai()
+    {
+        $this->load->model('DataPegawai_model');
+        $data = [
+            'nik' => $this->input->post('nik'),
+            'nama' => $this->input->post('nama'),
+            'jabatan' => $this->input->post('jabatan'),
+            'unit_kerja' => $this->input->post('unit_kerja'),
+            'password' => password_hash($this->input->post('password'), PASSWORD_DEFAULT),
+        ];
+        $this->DataPegawai_model->insertPegawai($data);
 
+        $this->session->set_flashdata('success', 'Pegawai berhasil ditambahkan.');
+        redirect('SuperAdmin/kelolaDataPegawai');
+    }
+
+    // Hapus Pegawai
+    public function deletePegawai($nik)
+    {
+        $this->load->model('DataPegawai_model');
+        if ($this->DataPegawai_model->deletePegawai($nik)) {
+            $this->session->set_flashdata('message', [
+                'type' => 'success',
+                'text' => 'Pegawai berhasil dihapus!'
+            ]);
+        } else {
+            $this->session->set_flashdata('message', [
+                'type' => 'error',
+                'text' => 'Gagal menghapus pegawai.'
+            ]);
+        }
+
+        redirect('SuperAdmin/kelolaDataPegawai');
+    }
 
 }
