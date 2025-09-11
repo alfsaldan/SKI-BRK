@@ -3,14 +3,12 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Penilaian_model extends CI_Model
 {
-    // Ambil semua penilaian
     public function get_all_penilaian()
     {
         return $this->db->get('penilaian')->result();
     }
 
-    // Ambil indikator berdasarkan jabatan dan gabungkan data penilaian jika ada
-    public function get_indikator_by_jabatan($jabatan, $nik = null)
+    public function get_indikator_by_jabatan_dan_unit($jabatan, $unit_kerja, $nik = null)
     {
         $this->db->select('
             indikator.id,
@@ -35,13 +33,13 @@ class Penilaian_model extends CI_Model
         }
 
         $this->db->where('sasaran_kerja.jabatan', $jabatan);
+        $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
         $this->db->order_by('sasaran_kerja.perspektif', 'ASC');
         $this->db->order_by('sasaran_kerja.sasaran_kerja', 'ASC');
 
         return $this->db->get()->result();
     }
 
-    // Simpan atau update satu baris penilaian (safe)
     public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi)
     {
         $data = [
@@ -50,10 +48,8 @@ class Penilaian_model extends CI_Model
             'target'       => $target,
             'batas_waktu'  => $batas_waktu,
             'realisasi'    => $realisasi,
-            // jangan sentuh kolom status, biarkan default = 'Belum Dinilai'
         ];
 
-        // Cek apakah sudah ada penilaian untuk indikator ini
         $exists = $this->db->get_where('penilaian', [
             'nik' => $nik,
             'indikator_id' => $indikator_id
@@ -67,7 +63,6 @@ class Penilaian_model extends CI_Model
         }
     }
 
-    // Simpan batch penilaian (optional)
     public function simpan_penilaian($arr_data)
     {
         $saved = true;

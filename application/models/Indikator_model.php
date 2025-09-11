@@ -6,13 +6,22 @@ class Indikator_model extends CI_Model
 
     public function getSasaranKerja()
     {
+        $this->db->select('id, sasaran_kerja, perspektif, jabatan, unit_kerja');
         return $this->db->get('sasaran_kerja')->result();
     }
 
-    public function insertSasaranKerja($jabatan, $perspektif, $sasaran_kerja)
+    public function getUnitKerja()
+    {
+        $this->db->select('unit_kerja');
+        $this->db->distinct();
+        return $this->db->get('pegawai')->result();
+    }
+
+    public function insertSasaranKerja($jabatan, $unit_kerja, $perspektif, $sasaran_kerja)
     {
         $data = [
             'jabatan' => $jabatan,
+            'unit_kerja' => $unit_kerja,
             'perspektif' => $perspektif,
             'sasaran_kerja' => $sasaran_kerja
         ];
@@ -51,12 +60,20 @@ class Indikator_model extends CI_Model
         return $this->db->delete('indikator', ['id' => $id]);
     }
 
-    // Ambil indikator dengan grouping per perspektif → sasaran kerja
-    public function getGroupedIndikator()
+    public function getGroupedIndikator($unit_kerja = null, $jabatan = null)
     {
-        $this->db->select('indikator.*, sasaran_kerja.sasaran_kerja, sasaran_kerja.perspektif, sasaran_kerja.jabatan');
+        $this->db->select('indikator.*, sasaran_kerja.sasaran_kerja, sasaran_kerja.perspektif, sasaran_kerja.jabatan, sasaran_kerja.unit_kerja');
         $this->db->from('indikator');
         $this->db->join('sasaran_kerja', 'sasaran_kerja.id = indikator.sasaran_id');
+        
+        if ($unit_kerja) {
+            $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+        }
+        
+        if ($jabatan) {
+            $this->db->where('sasaran_kerja.jabatan', $jabatan);
+        }
+
         $this->db->order_by('sasaran_kerja.perspektif, sasaran_kerja.id, indikator.id');
         $result = $this->db->get()->result();
 
@@ -66,8 +83,4 @@ class Indikator_model extends CI_Model
         }
         return $grouped;
     }
-
-
-
-
 }

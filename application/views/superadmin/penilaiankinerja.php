@@ -2,7 +2,6 @@
     <div class="content">
         <div class="container-fluid">
 
-            <!-- Judul -->
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box">
@@ -11,7 +10,6 @@
                 </div>
             </div>
 
-            <!-- Form cari NIK -->
             <div class="row">
                 <div class="col-6">
                     <div class="card">
@@ -28,7 +26,6 @@
 
             <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>
 
-                <!-- Detail Pegawai -->
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
@@ -37,7 +34,7 @@
                                 <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
                                 <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
                                 <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
-                                <p><b>Unit Kantor:</b> </p>
+                                <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?></p>
                                 <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
                                 <h5>Penilai I</h5>
                                 <p><b>NIK:</b></p>
@@ -71,7 +68,6 @@
                 }
                 ?>
 
-                <!-- Form Penilaian -->
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
@@ -189,7 +185,6 @@
     </div>
 </div>
 
-<!-- SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <?php if ($this->session->flashdata('message')): ?>
