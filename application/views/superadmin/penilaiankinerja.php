@@ -25,25 +25,57 @@
             </div>
 
             <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>
-
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h5>Detail Pegawai</h5>
-                                <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
-                                <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
-                                <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
-                                <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?></p>
-                                <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
-                                <h5>Penilai I</h5>
-                                <p><b>NIK:</b></p>
-                                <p><b>Nama:</b></p>
-                                <p><b>Jabatan:</b></p>
-                                <h5>Penilai II</h5>
-                                <p><b>NIK:</b></p>
-                                <p><b>Nama:</b></p>
-                                <p><b>Jabatan:</b></p>
+
+                                <!-- Detail Pegawai & Informasi Penilaian -->
+                                <div class="row mb-0.25">
+                                    <div class="col-md-6">
+                                        <h5>Detail Pegawai</h5>
+                                        <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
+                                        <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
+                                        <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
+                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?></p>
+                                        <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <h5>Informasi Penilaian</h5>
+
+                                        <!-- 🔹 Pilih Periode Penilaian -->
+                                        <div class="form-inline mb-2">
+                                            <label class="mr-2"><b>Periode Penilaian:</b></label>
+                                            <input type="date" id="periode_awal" class="form-control mr-2" value="2025-01-01">
+                                            <span class="mr-2">s/d</span>
+                                            <input type="date" id="periode_akhir" class="form-control" value="2025-12-31">
+                                        </div>
+
+
+                                        <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?></p>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- Penilai I & Penilai II -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Penilai I</h5>
+                                        <p><b>NIK:</b></p>
+                                        <p><b>Nama:</b></p>
+                                        <p><b>Jabatan:</b></p>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <h5>Penilai II</h5>
+                                        <p><b>NIK:</b></p>
+                                        <p><b>Nama:</b></p>
+                                        <p><b>Jabatan:</b></p>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -68,6 +100,7 @@
                 }
                 ?>
 
+                <!-- Tabel Penilaian -->
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
@@ -79,16 +112,16 @@
                                             <tr>
                                                 <th>Perspektif</th>
                                                 <th>Sasaran Kerja</th>
-                                                <th>Bobot (%)</th>
+                                                <th class="text-center" style="width: 80px;">Bobot (%)</th>
                                                 <th>Indikator</th>
-                                                <th>Target</th>
-                                                <th>Batas Waktu</th>
-                                                <th>Realisasi</th>
-                                                <th>Pencapaian (%)</th>
-                                                <th>Nilai</th>
-                                                <th>Nilai Dibobot</th>
-                                                <th>Status</th>
-                                                <th>Aksi</th>
+                                                <th class="text-center" style="width: 120px;">Target</th>
+                                                <th class="text-center" style="width: 120px;">Batas Waktu</th>
+                                                <th class="text-center" style="width: 120px;">Realisasi</th>
+                                                <th class="text-center" style="width: 120px;">Pencapaian (%)</th>
+                                                <th class="text-center" style="width: 80px;">Nilai</th>
+                                                <th class="text-center" style="width: 120px;">Nilai Dibobot</th>
+                                                <th class="text-center" style="width: 100px;">Status</th>
+                                                <th class="text-center" style="width: 100px;">Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -144,10 +177,10 @@
                                                             </td>
                                                         </tr>
                                                 <?php
-                                                    } // endforeach items
-                                                } // endforeach grouped
+                                                    }
+                                                }
                                                 ?>
-                                                <tr class="subtotal-row" style="font-weight:bold;background:#F1F8E9;">
+                                                <tr class="subtotal-row" data-perspektif="<?= $persp; ?>" style="font-weight:bold;background:#F1F8E9;">
                                                     <td colspan="2">Sub Total Bobot <?= $persp; ?></td>
                                                     <td class="text-center"><span class="subtotal-bobot"><?= $subtotal_bobot_perspektif; ?></span></td>
                                                     <td colspan="6" class="text-center">Sub Total Nilai <?= $persp; ?> Dibobot</td>
@@ -155,7 +188,7 @@
                                                     <td colspan="2"></td>
                                                 </tr>
                                             <?php
-                                            } // endforeach order
+                                            }
                                             if (!$printed_any) { ?>
                                                 <tr>
                                                     <td colspan="12" class="text-center">Tidak ada indikator untuk jabatan ini</td>
@@ -178,9 +211,7 @@
                     </div>
                 </div>
 
-            <?php } // endif 
-            ?>
-
+            <?php } ?>
         </div>
     </div>
 </div>
@@ -188,19 +219,52 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <?php if ($this->session->flashdata('message')): ?>
-<script>
-    Swal.fire({
-        icon: '<?= $this->session->flashdata('message')['type']; ?>',
-        title: 'Informasi',
-        text: '<?= $this->session->flashdata('message')['text']; ?>',
-        confirmButtonColor: '#2E7D32'
-    });
-</script>
+    <script>
+        Swal.fire({
+            icon: '<?= $this->session->flashdata('message')['type']; ?>',
+            title: 'Informasi',
+            text: '<?= $this->session->flashdata('message')['text']; ?>',
+            confirmButtonColor: '#2E7D32'
+        });
+    </script>
 <?php endif; ?>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const nik = document.getElementById('nik')?.value;
+        const periodeAwal = document.getElementById('periode_awal');
+        const periodeAkhir = document.getElementById('periode_akhir');
+
+        // 🔹 Set default value (jaga-jaga kalau value di HTML kosong)
+        if (!periodeAwal.value) periodeAwal.value = "2025-01-01";
+        if (!periodeAkhir.value) periodeAkhir.value = "2025-12-31";
+
+        // 🔹 Validasi supaya periode akhir tidak lebih kecil dari awal
+        periodeAwal.addEventListener('change', function() {
+            if (periodeAkhir.value < this.value) {
+                periodeAkhir.value = this.value;
+            }
+        });
+
+        periodeAkhir.addEventListener('change', function() {
+            if (this.value < periodeAwal.value) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Periode salah',
+                    text: 'Tanggal akhir tidak boleh lebih kecil dari tanggal awal',
+                    confirmButtonColor: '#d33'
+                });
+                this.value = periodeAwal.value;
+            }
+        });
+
+        // 🔹 format angka
+        function formatAngka(nilai) {
+            let num = parseFloat(nilai);
+            if (isNaN(num)) return '';
+            return Number.isInteger(num) ? num.toString() : num.toFixed(2);
+        }
 
         function hitungRow(row) {
             const target = parseFloat(row.querySelector('.target-input').value) || 0;
@@ -216,9 +280,10 @@
                 nilaiBobot = (nilai * bobot) / 100;
             }
 
-            row.querySelector('.pencapaian-output').value = pencapaian.toFixed(2);
-            row.querySelector('.nilai-output').value = nilai.toFixed(2);
-            row.querySelector('.nilai-bobot-output').value = nilaiBobot.toFixed(2);
+            row.querySelector('.pencapaian-output').value = formatAngka(pencapaian);
+            row.querySelector('.nilai-output').value = formatAngka(nilai);
+            row.querySelector('.nilai-bobot-output').value = formatAngka(nilaiBobot);
+
             return {
                 bobot,
                 nilaiBobot,
@@ -232,32 +297,34 @@
             const subtotalMap = {};
 
             document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
-                const { bobot, nilaiBobot, perspektif } = hitungRow(row);
+                const {
+                    bobot,
+                    nilaiBobot,
+                    perspektif
+                } = hitungRow(row);
                 totalBobot += bobot;
                 totalNilai += nilaiBobot;
 
-                if (!subtotalMap[perspektif]) {
-                    subtotalMap[perspektif] = 0;
-                }
+                if (!subtotalMap[perspektif]) subtotalMap[perspektif] = 0;
                 subtotalMap[perspektif] += nilaiBobot;
             });
 
-            document.getElementById('total-bobot').innerText = totalBobot.toFixed(2);
-            document.getElementById('total-nilai-bobot').innerText = totalNilai.toFixed(2);
+            document.getElementById('total-bobot').innerText = formatAngka(totalBobot);
+            document.getElementById('total-nilai-bobot').innerText = formatAngka(totalNilai);
 
             document.querySelectorAll('.subtotal-row').forEach(row => {
-                const perspektif = row.querySelector('td[colspan="2"]').innerText.replace('Sub Total ', '');
-                const nilaiSub = subtotalMap[perspektif] || 0;
-                row.querySelector('.subtotal-nilai-bobot').innerText = nilaiSub.toFixed(2);
+                const perspektif = row.dataset.perspektif;
+                row.querySelector('.subtotal-nilai-bobot').innerText = formatAngka(subtotalMap[perspektif] || 0);
             });
         }
 
+        // 🔹 trigger perhitungan saat input diubah
         document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
             input.addEventListener('input', hitungTotal);
         });
-
         hitungTotal();
 
+        // 🔹 Simpan penilaian
         document.querySelectorAll('.simpan-penilaian').forEach(btn => {
             btn.addEventListener('click', function() {
                 const row = this.closest('tr');
@@ -265,11 +332,19 @@
                 const target = row.querySelector('.target-input').value;
                 const batas_waktu = row.querySelector('input[type="date"]').value;
                 const realisasi = row.querySelector('.realisasi-input').value;
+                const pencapaian = row.querySelector('.pencapaian-output').value;
+                const nilai = row.querySelector('.nilai-output').value;
+                const nilai_dibobot = row.querySelector('.nilai-bobot-output').value;
+
+                const periode_awal = periodeAwal.value;
+                const periode_akhir = periodeAkhir.value;
 
                 fetch('<?= base_url("SuperAdmin/simpanPenilaianBaris") ?>', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}`
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
                     })
                     .then(res => res.json())
                     .then(res => {
@@ -281,6 +356,7 @@
                                 timer: 2000,
                                 showConfirmButton: false
                             });
+                            hitungTotal();
                         } else {
                             Swal.fire({
                                 icon: 'error',
