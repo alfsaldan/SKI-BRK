@@ -8,8 +8,12 @@ class Penilaian_model extends CI_Model
         return $this->db->get('penilaian')->result();
     }
 
-    public function get_indikator_by_jabatan_dan_unit($jabatan, $unit_kerja, $nik = null)
+    public function get_indikator_by_jabatan_dan_unit($jabatan, $unit_kerja, $nik = null, $periode_awal = null, $periode_akhir = null)
     {
+        // default periode
+        if (!$periode_awal) $periode_awal = '2025-01-01';
+        if (!$periode_akhir) $periode_akhir = '2025-12-31';
+
         $this->db->select('
             indikator.id,
             indikator.indikator,
@@ -21,13 +25,23 @@ class Penilaian_model extends CI_Model
             penilaian.realisasi,
             penilaian.nilai,
             penilaian.nilai_dibobot,
-            penilaian.catatan
+            penilaian.catatan,
+            penilaian.periode_awal,
+            penilaian.periode_akhir
         ');
         $this->db->from('indikator');
         $this->db->join('sasaran_kerja', 'indikator.sasaran_id = sasaran_kerja.id');
 
         if ($nik) {
-            $this->db->join('penilaian', "penilaian.indikator_id = indikator.id AND penilaian.nik = '$nik'", 'left');
+            // join dengan filter periode
+            $this->db->join(
+                'penilaian',
+                "penilaian.indikator_id = indikator.id 
+                 AND penilaian.nik = '$nik' 
+                 AND penilaian.periode_awal >= '$periode_awal' 
+                 AND penilaian.periode_akhir <= '$periode_akhir'",
+                'left'
+            );
         } else {
             $this->db->join('penilaian', 'penilaian.indikator_id = indikator.id', 'left');
         }
@@ -40,14 +54,20 @@ class Penilaian_model extends CI_Model
         return $this->db->get()->result();
     }
 
-    public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi)
+    public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $periode_awal = null, $periode_akhir = null)
     {
+        // default periode
+        if (!$periode_awal) $periode_awal = '2025-01-01';
+        if (!$periode_akhir) $periode_akhir = '2025-12-31';
+
         $data = [
             'nik'          => $nik,
             'indikator_id' => $indikator_id,
             'target'       => $target,
             'batas_waktu'  => $batas_waktu,
             'realisasi'    => $realisasi,
+            'periode_awal' => $periode_awal,
+            'periode_akhir'=> $periode_akhir
         ];
 
         $exists = $this->db->get_where('penilaian', [
@@ -67,7 +87,15 @@ class Penilaian_model extends CI_Model
     {
         $saved = true;
         foreach ($arr_data as $d) {
-            $s = $this->save_penilaian($d['nik'], $d['indikator_id'], $d['target'] ?? null, $d['batas_waktu'] ?? null, $d['realisasi'] ?? null);
+            $s = $this->save_penilaian(
+                $d['nik'],
+                $d['indikator_id'],
+                $d['target'] ?? null,
+                $d['batas_waktu'] ?? null,
+                $d['realisasi'] ?? null,
+                $d['periode_awal'] ?? null,
+                $d['periode_akhir'] ?? null
+            );
             if (!$s) $saved = false;
         }
         return $saved;
@@ -75,6 +103,23 @@ class Penilaian_model extends CI_Model
 
     public function update_penilaian($id, $data)
     {
+        // pastikan periode ada default
+        if (empty($data['periode_awal'])) $data['periode_awal'] = '2025-01-01';
+        if (empty($data['periode_akhir'])) $data['periode_akhir'] = '2025-12-31';
+
         return $this->db->where('id', $id)->update('penilaian', $data);
+    }
+
+    public function updatePeriodeByNik($nik, $awal, $akhir)
+    {
+        // default periode
+        if (!$awal) $awal = '2025-01-01';
+        if (!$akhir) $akhir = '2025-12-31';
+
+        $this->db->where('nik', $nik)
+                 ->update('penilaian', [
+                     'periode_awal' => $awal,
+                     'periode_akhir'=> $akhir
+                 ]);
     }
 }
