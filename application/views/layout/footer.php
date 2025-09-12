@@ -280,7 +280,6 @@
         /* font lebih kecil */
     }
 </style>
-
 <script>
     $(document).ready(function () {
         $('#datatable-pegawai').DataTable({
@@ -289,8 +288,8 @@
             lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Semua"]],
             order: [], // biar gak auto urut NIK
             dom: '<"row mb-1"<"col-md-6 d-flex align-items-center"l><"col-md-6 text-right"f>>' +
-                'rt' +
-                '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+                 'rt' +
+                 '<"row mt-3"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
             language: {
                 search: "Pencarian:",
                 searchPlaceholder: "Masukan keyword",
@@ -307,6 +306,7 @@
         });
     });
 </script>
+
 
 <script>
     // Update label saat file dipilih

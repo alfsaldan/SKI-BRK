@@ -1,46 +1,45 @@
 <!-- ============================================================== -->
-<!-- Start Page Content here Tess-->
+<!-- Start Page Content -->
 <!-- ============================================================== -->
-
 <div class="content-page">
     <div class="content">
-
-        <!-- Start Content-->
         <div class="container-fluid">
 
-            <!-- start page title -->
+            <!-- Judul Halaman -->
             <div class="row">
                 <div class="col-12">
-                    <div class="page-title-box">
-                        <div class="page-title-right">
-                            <ol class="breadcrumb m-0">
-                                <li class="breadcrumb-item"><a href="javascript:void(0);">SKI-BRKS</a></li>
-                                <li class="breadcrumb-item active">Kelola Data Pegawai</li>
-                            </ol>
-                        </div>
-                        <h4 class="page-title">Kelola Data Pegawai</h4>
+                    <div class="page-title-box d-flex justify-content-between align-items-center">
+                        <h3 class="page-title">
+                            <i class="fas fa-users mr-2 text-primary"></i> Kelola Data Pegawai
+                        </h3>
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="#">SKI-BRKS</a></li>
+                            <li class="breadcrumb-item active">Kelola Data Pegawai</li>
+                        </ol>
                     </div>
                 </div>
             </div>
-            <!-- end page title -->
 
             <!-- Card Utama -->
             <div class="row">
                 <div class="col-12">
-                    <div class="card shadow-sm">
+                    <div class="card shadow-sm border-0">
                         <div class="card-body">
                             <!-- Header Aksi -->
+                            <!-- Header Aksi -->
                             <div class="mb-3">
-                                <h5 class="card-title mb-2">Daftar Pegawai</h5>
-                                <div class="d-flex flex-wrap align-items-center action-buttons">
+                                <!-- Judul di atas -->
+                                <h5 class="card-title mb-2">📋 Daftar Pegawai</h5>
 
+                                <!-- Tombol aksi di bawah -->
+                                <div class="d-flex flex-wrap align-items-center action-buttons">
                                     <!-- Button Template -->
                                     <a href="<?= base_url('SuperAdmin/downloadTemplatePegawai') ?>"
                                         class="btn btn-secondary btn-sm mr-2 mb-2">
                                         <i class="fas fa-file-download"></i> Template Excel
                                     </a>
 
-                                    <!-- Import Excel dengan Input Group -->
+                                    <!-- Import Excel -->
                                     <form action="<?= base_url('SuperAdmin/importPegawai') ?>" method="post"
                                         enctype="multipart/form-data" class="mr-2 mb-2">
                                         <div class="input-group input-group-sm">
@@ -57,19 +56,18 @@
                                         </div>
                                     </form>
 
-                                    <!-- Button Tambah Pegawai -->
+                                    <!-- Button Tambah -->
                                     <button class="btn btn-primary btn-sm mr-2 mb-2" data-toggle="modal"
                                         data-target="#tambahPegawaiModal">
                                         <i class="fas fa-plus"></i> Tambah Pegawai
                                     </button>
-
                                 </div>
                             </div>
 
-
                             <!-- Tabel Pegawai -->
                             <div class="table-responsive">
-                                <table id="datatable-pegawai" class="table table-striped table-bordered nowrap w-100">
+                                <table id="datatable-pegawai"
+                                    class="table table-hover table-striped table-bordered nowrap w-100">
                                     <thead class="thead-light">
                                         <tr>
                                             <th>No</th>
@@ -77,6 +75,7 @@
                                             <th>Nama</th>
                                             <th>Jabatan</th>
                                             <th>Unit Kerja</th>
+                                            <th>Status</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
@@ -90,6 +89,13 @@
                                                 <td><?= $p->jabatan ?></td>
                                                 <td><?= $p->unit_kerja ?></td>
                                                 <td>
+                                                    <?php if ($p->status == 'aktif'): ?>
+                                                        <span class="badge badge-success">Aktif</span>
+                                                    <?php else: ?>
+                                                        <span class="badge badge-danger">Nonaktif</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
                                                     <div class="dropdown">
                                                         <a href="#" class="dropdown-toggle text-secondary"
                                                             data-toggle="dropdown">
@@ -97,36 +103,34 @@
                                                         </a>
                                                         <div class="dropdown-menu dropdown-menu-right">
                                                             <a class="dropdown-item"
-                                                                href="<?= base_url('SuperAdmin/editPegawai/' . $p->nik) ?>">
-                                                                Edit
+                                                                href="<?= base_url('SuperAdmin/detailPegawai/' . $p->nik) ?>">
+                                                                <i class="fas fa-eye text-info"></i> Detail
                                                             </a>
                                                             <a href="javascript:void(0);"
                                                                 class="dropdown-item text-danger btn-delete"
                                                                 data-url="<?= base_url('SuperAdmin/deletePegawai/' . $p->nik) ?>">
-                                                                Hapus
+                                                                <i class="fas fa-trash"></i> Hapus
                                                             </a>
-
                                                         </div>
                                                     </div>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>
+
                                 </table>
                             </div>
 
-
-                            <!-- Petunjuk Import -->
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    <strong>Catatan Import:</strong><br>
-                                    1. Gunakan <a href="<?= base_url('SuperAdmin/downloadTemplatePegawai') ?>">template
-                                        Excel resmi</a> untuk memastikan format sesuai.<br>
-                                    2. Kolom wajib diisi: <code>NIK, Nama, Jabatan, Unit Kerja, Password</code>.<br>
-                                    3. Pastikan <code>NIK</code> unik dan tidak duplikat dengan data yang sudah ada.<br>
-                                    4. Password tidak boleh kosong, minimal 6 karakter.<br>
-                                    5. Format file harus <code>.xls</code> atau <code>.xlsx</code>.
-                                </small>
+                            <!-- Catatan Import -->
+                            <div class="alert alert-info mt-3">
+                                <strong>ℹ️ Catatan Import:</strong>
+                                <ul class="mb-0">
+                                    <li>Gunakan template Excel resmi untuk format sesuai.</li>
+                                    <li>Kolom wajib: <code>NIK, Nama, Jabatan, Unit Kerja, Password</code>.</li>
+                                    <li><code>NIK</code> harus unik (tidak boleh duplikat).</li>
+                                    <li>Password minimal 6 karakter.</li>
+                                    <li>File hanya mendukung <code>.xls</code> atau <code>.xlsx</code>.</li>
+                                </ul>
                             </div>
 
                         </div>
@@ -140,36 +144,38 @@
 
 <!-- Modal Tambah Pegawai -->
 <div class="modal fade" id="tambahPegawaiModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <form action="<?= base_url('SuperAdmin/tambahPegawai') ?>" method="post" class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Tambah Pegawai</h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-user-plus"></i> Tambah Pegawai</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label>NIK</label>
-                    <input type="text" name="nik" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Nama</label>
-                    <input type="text" name="nama" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Jabatan</label>
-                    <input type="text" name="jabatan" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Unit Kerja</label>
-                    <input type="text" name="unit_kerja" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="password" class="form-control" required>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>NIK</label>
+                        <input type="text" name="nik" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Nama</label>
+                        <input type="text" name="nama" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Jabatan</label>
+                        <input type="text" name="jabatan" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Unit Kerja</label>
+                        <input type="text" name="unit_kerja" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-success">Simpan</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Simpan</button>
             </div>
         </form>
     </div>

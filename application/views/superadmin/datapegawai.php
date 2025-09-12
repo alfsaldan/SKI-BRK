@@ -24,7 +24,8 @@
                         <div class="card-body">
                             <h5>Masukkan NIK Pegawai</h5>
                             <form action="<?= base_url('SuperAdmin/cariDataPegawai'); ?>" method="post">
-                                <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai" required>
+                                <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai"
+                                    required>
                                 <button type="submit" class="btn btn-success mt-2">Cari</button>
                             </form>
                         </div>
@@ -43,7 +44,7 @@
                                 <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
                                 <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
                                 <a href="<?= base_url('SuperAdmin/downloadDataPegawai/' . $pegawai_detail->nik); ?>"
-                                   class="btn btn-primary mt-2">
+                                    class="btn btn-primary mt-2">
                                     <i class="mdi mdi-file-excel"></i> Download Excel
                                 </a>
                             </div>
@@ -84,15 +85,18 @@
                                                     $grouped[$p][$s][] = $row;
                                                 }
 
-                                                function count_rows($arr) {
+                                                function count_rows($arr)
+                                                {
                                                     $sum = 0;
-                                                    foreach ($arr as $items) $sum += count($items);
+                                                    foreach ($arr as $items)
+                                                        $sum += count($items);
                                                     return $sum;
                                                 }
                                                 ?>
 
                                                 <?php foreach ($order as $persp): ?>
-                                                    <?php if (empty($grouped[$persp])) continue; ?>
+                                                    <?php if (empty($grouped[$persp]))
+                                                        continue; ?>
                                                     <?php
                                                     $persp_rows = count_rows($grouped[$persp]);
                                                     $first_persp_cell = true;
@@ -111,14 +115,16 @@
                                                             ?>
                                                             <tr>
                                                                 <?php if ($first_persp_cell): ?>
-                                                                    <td rowspan="<?= $persp_rows; ?>" style="vertical-align:middle;font-weight:600;background:#C8E6C9;">
+                                                                    <td rowspan="<?= $persp_rows; ?>"
+                                                                        style="vertical-align:middle;font-weight:600;background:#C8E6C9;">
                                                                         <?= $persp; ?>
                                                                     </td>
                                                                     <?php $first_persp_cell = false; ?>
                                                                 <?php endif; ?>
 
                                                                 <?php if ($first_sas_cell): ?>
-                                                                    <td rowspan="<?= $sasaran_rows; ?>" style="vertical-align:middle;background:#E3F2FD;">
+                                                                    <td rowspan="<?= $sasaran_rows; ?>"
+                                                                        style="vertical-align:middle;background:#E3F2FD;">
                                                                         <?= $sasaran; ?>
                                                                     </td>
                                                                     <?php $first_sas_cell = false; ?>
@@ -146,17 +152,20 @@
                                                 <?php endforeach; ?>
                                             <?php else: ?>
                                                 <tr>
-                                                    <td colspan="10" class="text-center">Belum ada data penilaian untuk pegawai ini</td>
+                                                    <td colspan="10" class="text-center">Belum ada data penilaian untuk pegawai
+                                                        ini</td>
                                                 </tr>
                                             <?php endif; ?>
                                         </tbody>
                                         <?php if (!empty($penilaian_pegawai)): ?>
-                                            <tfoot style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
+                                            <tfoot
+                                                style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
                                                 <tr>
                                                     <td colspan="3">Total</td>
                                                     <td><?= array_sum(array_column($penilaian_pegawai, 'bobot')); ?></td>
                                                     <td colspan="5">Total Nilai Dibobot</td>
-                                                    <td><?= number_format(array_sum(array_column($penilaian_pegawai, 'nilai_dibobot')), 2); ?></td>
+                                                    <td><?= number_format(array_sum(array_column($penilaian_pegawai, 'nilai_dibobot')), 2); ?>
+                                                    </td>
                                                 </tr>
                                             </tfoot>
                                         <?php endif; ?>
@@ -175,23 +184,23 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <?php if ($this->session->flashdata('success')): ?>
-<script>
-    Swal.fire({
-        icon: 'success',
-        title: 'Berhasil',
-        text: '<?= $this->session->flashdata('success'); ?>',
-        confirmButtonColor: '#039046'
-    });
-</script>
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: '<?= $this->session->flashdata('success'); ?>',
+            confirmButtonColor: '#039046'
+        });
+    </script>
 <?php endif; ?>
 
 <?php if ($this->session->flashdata('error')): ?>
-<script>
-    Swal.fire({
-        icon: 'error',
-        title: 'Gagal',
-        text: '<?= $this->session->flashdata('error'); ?>',
-        confirmButtonColor: '#d33'
-    });
-</script>
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal',
+            text: '<?= $this->session->flashdata('error'); ?>',
+            confirmButtonColor: '#d33'
+        });
+    </script>
 <?php endif; ?>

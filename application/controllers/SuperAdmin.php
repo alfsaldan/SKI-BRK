@@ -13,6 +13,7 @@ class SuperAdmin extends CI_Controller
         parent::__construct();
         $this->load->model('Indikator_model');
         $this->load->model('Penilaian_model');
+        $this->load->model('RiwayatJabatan_model');
         $this->load->library('session');
 
         if (!$this->session->userdata('logged_in') || $this->session->userdata('role') !== 'superadmin') {
@@ -223,6 +224,16 @@ class SuperAdmin extends CI_Controller
         }
     }
 
+    public function deleteIndikatorAjax()
+    {
+        $id = $this->input->post('id');
+        if ($this->Indikator_model->deleteIndikator($id)) {
+            echo json_encode(['success' => true, 'message' => 'Indikator berhasil dihapus!']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gagal menghapus indikator.']);
+        }
+    }
+
 
     public function penilaiankinerja()
     {
@@ -334,7 +345,7 @@ class SuperAdmin extends CI_Controller
         }
     }
 
-// ==============================
+    // ==============================
 // Kelola Data Pegawai
 // ==============================
     public function kelolaDataPegawai()
@@ -423,16 +434,22 @@ class SuperAdmin extends CI_Controller
             return;
         }
 
-        // ✅ Validasi header
         $header = $sheetData[1];
+        // ✅ Validasi header lebih fleksibel
+        $colA = strtolower(trim($header['A']));
+        $colB = strtolower(trim($header['B']));
+        $colC = strtolower(trim($header['C']));
+        $colD = strtolower(trim($header['D']));
+        $colE = strtolower(trim($header['E']));
+
         if (
-            strtolower(trim($header['A'])) !== 'nik' ||
-            strtolower(trim($header['B'])) !== 'nama' ||
-            strtolower(trim($header['C'])) !== 'jabatan' ||
-            strtolower(trim($header['D'])) !== 'unit_kerja' ||
-            strtolower(trim($header['E'])) !== 'password'
+            $colA !== 'nik' ||
+            $colB !== 'nama' ||
+            $colC !== 'jabatan' ||
+            !in_array($colD, ['unit_kerja', 'unit kerja', 'unit kantor', 'unitkantor']) ||
+            $colE !== 'password'
         ) {
-            $this->session->set_flashdata('error', 'Header tidak sesuai. Gunakan template resmi.');
+            $this->session->set_flashdata('error', 'Header tidak sesuai. Gunakan template resmi (Nik, Nama, Jabatan, Unit Kerja, Password).');
             redirect('SuperAdmin/kelolaDataPegawai');
             return;
         }
@@ -490,22 +507,35 @@ class SuperAdmin extends CI_Controller
     }
 
 
+
     // Tambah Pegawai Manual
     public function tambahPegawai()
     {
         $this->load->model('DataPegawai_model');
+
+        $nik = $this->input->post('nik');
+        $nama = $this->input->post('nama');
+        $jabatan = $this->input->post('jabatan');
+        $unit_kerja = $this->input->post('unit_kerja');
+        $password = password_hash($this->input->post('password'), PASSWORD_DEFAULT);
+
+        // Insert ke tabel pegawai
         $data = [
-            'nik' => $this->input->post('nik'),
-            'nama' => $this->input->post('nama'),
-            'jabatan' => $this->input->post('jabatan'),
-            'unit_kerja' => $this->input->post('unit_kerja'),
-            'password' => password_hash($this->input->post('password'), PASSWORD_DEFAULT),
+            'nik' => $nik,
+            'nama' => $nama,
+            'jabatan' => $jabatan,
+            'unit_kerja' => $unit_kerja,
+            'password' => $password,
         ];
         $this->DataPegawai_model->insertPegawai($data);
+
+        // Insert ke tabel riwayat_jabatan
+        $this->DataPegawai_model->insertRiwayatAwal($nik, $jabatan, $unit_kerja);
 
         $this->session->set_flashdata('success', 'Pegawai berhasil ditambahkan.');
         redirect('SuperAdmin/kelolaDataPegawai');
     }
+
 
     // Hapus Pegawai
     public function deletePegawai($nik)
@@ -524,6 +554,137 @@ class SuperAdmin extends CI_Controller
         }
 
         redirect('SuperAdmin/kelolaDataPegawai');
+    }
+
+    // Detail Pegawai + Riwayat
+    public function detailPegawai($nik)
+    {
+        $this->load->model('DataPegawai_model');
+        $data['pegawai'] = $this->DataPegawai_model->getPegawaiByNik($nik);
+        $data['riwayat'] = $this->DataPegawai_model->getRiwayatJabatan($nik);
+
+        // ambil semua jabatan & unit kerja unik dari tabel riwayat_jabatan
+        $data['jabatan_list'] = $this->DataPegawai_model->getAllJabatan();
+        $data['unitkerja_list'] = $this->DataPegawai_model->getAllUnitKerja();
+
+        $this->load->view("layout/header");
+        $this->load->view("superadmin/detailpegawai", $data);
+        $this->load->view("layout/footer");
+    }
+
+
+
+    // Tambah Jabatan Baru
+    public function updateJabatan()
+    {
+        $this->load->model('DataPegawai_model');
+
+        $nik = $this->input->post('nik');
+        $jabatan = $this->input->post('jabatan');
+        $unit_kerja = $this->input->post('unit_kerja');
+        $tgl_mulai = $this->input->post('tgl_mulai');
+
+        $this->DataPegawai_model->tambahRiwayatJabatan($nik, $jabatan, $unit_kerja, $tgl_mulai);
+
+        $this->session->set_flashdata('success', 'Riwayat jabatan baru berhasil ditambahkan.');
+        redirect('SuperAdmin/detailPegawai/' . $nik);
+    }
+
+
+    public function nonaktifPegawai($nik)
+    {
+        $this->RiwayatJabatan_model->updateStatusPegawai($nik, 'nonaktif');
+        $this->session->set_flashdata('success', 'Pegawai berhasil dinonaktifkan');
+        redirect('SuperAdmin/detailPegawai/' . $nik);
+    }
+
+    public function aktifkanPegawai($nik)
+    {
+        $this->RiwayatJabatan_model->updateStatusPegawai($nik, 'aktif');
+        $this->session->set_flashdata('success', 'Pegawai berhasil diaktifkan kembali');
+        redirect('SuperAdmin/detailPegawai/' . $nik);
+    }
+
+
+
+    // Halaman Data Pegawai
+    public function dataPegawai()
+    {
+        $data['judul'] = "Data Pegawai";
+        $data['pegawai_detail'] = null;
+        $data['penilaian_pegawai'] = [];
+
+        $this->load->view("layout/header");
+        $this->load->view('superadmin/datapegawai', $data);
+        $this->load->view("layout/footer");
+    }
+
+    // Cari Data Pegawai berdasarkan NIK
+    public function cariDataPegawai()
+    {
+        $nik = $this->input->post('nik');
+        $this->load->model('DataPegawai_model');
+
+        $pegawai = $this->DataPegawai_model->getPegawaiByNik($nik);
+        $penilaian = $this->DataPegawai_model->getPenilaianByNik($nik);
+
+        $data['judul'] = "Data Pegawai";
+        $data['pegawai_detail'] = $pegawai;
+        $data['penilaian_pegawai'] = $penilaian;
+
+        $this->load->view("layout/header");
+        $this->load->view('superadmin/datapegawai', $data);
+        $this->load->view("layout/footer");
+    }
+
+    // Download Data Penilaian ke Excel
+    public function downloadDataPegawai($nik)
+    {
+        $this->load->model('DataPegawai_model');
+        $pegawai = $this->DataPegawai_model->getPegawaiByNik($nik);
+        $penilaian = $this->DataPegawai_model->getPenilaianByNik($nik);
+
+        if (!$pegawai) {
+            $this->session->set_flashdata('error', 'Data pegawai tidak ditemukan.');
+            redirect('SuperAdmin/dataPegawai');
+        }
+
+        // Load library PhpSpreadsheet
+
+        // $this->load->library('excel');
+
+        // Load template excel
+        $templatePath = FCPATH . "uploads/templatedatapenilaian.xls";
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($templatePath);
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Isi data pegawai
+        $sheet->setCellValue('B2', $pegawai->nik);
+        $sheet->setCellValue('B3', $pegawai->nama);
+        $sheet->setCellValue('B4', $pegawai->jabatan);
+
+        // Isi data penilaian mulai row ke-7
+        $row = 7;
+        foreach ($penilaian as $p) {
+            $sheet->setCellValue("A{$row}", $p->perspektif);
+            $sheet->setCellValue("B{$row}", $p->sasaran_kerja);
+            $sheet->setCellValue("C{$row}", $p->indikator);
+            $sheet->setCellValue("D{$row}", $p->bobot);
+            $sheet->setCellValue("E{$row}", $p->target);
+            $sheet->setCellValue("F{$row}", $p->batas_waktu);
+            $sheet->setCellValue("G{$row}", $p->realisasi);
+            $row++;
+        }
+
+        // Download file
+        $filename = "Data_Penilaian_{$pegawai->nama}_{$pegawai->nik}.xls";
+        header('Content-Type: application/vnd.ms-excel');
+        header("Content-Disposition: attachment;filename=\"{$filename}\"");
+        header('Cache-Control: max-age=0');
+
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xls');
+        $writer->save('php://output');
+        exit;
     }
 
 }

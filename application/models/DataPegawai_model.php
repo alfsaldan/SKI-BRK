@@ -3,15 +3,56 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class DataPegawai_model extends CI_Model
 {
-    public function getAllPegawai()
-    {
-        return $this->db->get('pegawai')->result();
-    }
+
+public function getAllPegawai()
+{
+    $this->db->select('p.*, r.status');
+    $this->db->from('pegawai p');
+    $this->db->join(
+        '(SELECT r1.nik, r1.status 
+          FROM riwayat_jabatan r1
+          INNER JOIN (
+              SELECT nik, MAX(tgl_mulai) as tgl_terakhir
+              FROM riwayat_jabatan
+              GROUP BY nik
+          ) r2 ON r1.nik = r2.nik AND r1.tgl_mulai = r2.tgl_terakhir
+        ) r',
+        'p.nik = r.nik',
+        'left'
+    );
+    return $this->db->get()->result();
+}
+
 
     public function insertBatch($data)
     {
-        return $this->db->insert_batch('pegawai', $data);
+        // Insert ke tabel pegawai
+        $this->db->insert_batch('pegawai', $data);
+
+        // Loop data untuk buat riwayat awal per pegawai
+        foreach ($data as $row) {
+            $riwayat = [
+                'nik' => $row['nik'],
+                'jabatan' => $row['jabatan'],
+                'unit_kerja' => $row['unit_kerja'],
+                'tgl_mulai' => date('Y-m-d'),
+                'tgl_selesai' => NULL,
+                'status' => 'aktif'
+            ];
+            $this->db->insert('riwayat_jabatan', $riwayat);
+        }
+
+        return true;
     }
+
+    public function getRiwayatJabatan($nik)
+    {
+        $this->db->from('riwayat_jabatan');
+        $this->db->where('nik', $nik);
+        $this->db->order_by('tgl_mulai', 'ASC');
+        return $this->db->get()->result();
+    }
+
 
     public function insertPegawai($data)
     {
@@ -37,6 +78,60 @@ class DataPegawai_model extends CI_Model
     {
         return $this->db->delete('pegawai', ['nik' => $nik]);
     }
+    // Tambah riwayat jabatan baru & tutup jabatan lama otomatis
+    public function tambahRiwayatJabatan($nik, $jabatan_baru, $unit_baru, $tgl_mulai)
+    {
+        // Hitung tanggal selesai = 1 hari sebelum jabatan baru mulai
+        $tgl_selesai = date('Y-m-d', strtotime($tgl_mulai . ' -1 day'));
+
+        // 1️⃣ Tutup jabatan lama (hanya yang masih aktif / belum punya tgl_selesai)
+        $this->db->where('nik', $nik);
+        $this->db->where('tgl_selesai IS NULL');
+        $this->db->update('riwayat_jabatan', [
+            'tgl_selesai' => $tgl_selesai,
+            'status' => 'nonaktif'
+        ]);
+
+        // 2️⃣ Tambahkan jabatan baru (status aktif, tgl_selesai NULL)
+        $data = [
+            'nik' => $nik,
+            'jabatan' => $jabatan_baru,
+            'unit_kerja' => $unit_baru,
+            'tgl_mulai' => $tgl_mulai,
+            'tgl_selesai' => NULL,
+            'status' => 'aktif'
+        ];
+        return $this->db->insert('riwayat_jabatan', $data);
+    }
+
+    // Tambah riwayat jabatan pertama saat pegawai baru dibuat
+    public function insertRiwayatAwal($nik, $jabatan, $unit_kerja)
+    {
+        $data = [
+            'nik' => $nik,
+            'jabatan' => $jabatan,
+            'unit_kerja' => $unit_kerja,
+            'tgl_mulai' => date('Y-m-d'), // otomatis hari ini
+            'tgl_selesai' => NULL,
+            'status' => 'aktif'
+        ];
+        return $this->db->insert('riwayat_jabatan', $data);
+    }
+
+    public function getAllJabatan()
+    {
+        $this->db->select('DISTINCT(jabatan) as jabatan');
+        $query = $this->db->get('riwayat_jabatan');
+        return $query->result();
+    }
+
+    public function getAllUnitKerja()
+    {
+        $this->db->select('DISTINCT(unit_kerja) as unit_kerja');
+        $query = $this->db->get('riwayat_jabatan');
+        return $query->result();
+    }
+
 
 
 }

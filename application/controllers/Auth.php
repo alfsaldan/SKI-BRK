@@ -11,7 +11,7 @@ class Auth extends CI_Controller
         $this->load->library('session');
     }
 
-    // Tampilkan form login
+    // Tampilkan form login 
     public function index()
     {
         $this->load->view('login');
