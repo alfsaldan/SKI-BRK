@@ -11,10 +11,10 @@ class Auth extends CI_Controller
         $this->load->library('session');
     }
 
-    // Tampilkan form login 
+    // Tampilkan form login
     public function index()
     {
-        $this->load->view('login');
+        $this->load->view('login', ['role_options' => []]); // default kosong
     }
 
     // Proses login
@@ -22,32 +22,53 @@ class Auth extends CI_Controller
     {
         $nik = $this->input->post('nik', TRUE);
         $password = $this->input->post('password', TRUE);
+        $selected_role = $this->input->post('role', TRUE); // role pilihan superadmin
 
         $user = $this->Auth_model->get_user($nik);
 
-        if ($user) {
-            if (password_verify($password, $user->password)) {
-                // Simpan session
-                $userdata = [
-                    'nik' => $user->nik,
-                    'role' => $user->role,
-                    'logged_in' => TRUE
-                ];
-                $this->session->set_userdata($userdata);
-
-                // Arahkan sesuai role
-                if ($user->role === 'superadmin') {
-                    redirect('superadmin');
-                } else {
-                    redirect('pegawai');
-                }
-            } else {
-                $this->session->set_flashdata('error', 'Password salah');
-                redirect('auth');
-            }
-        } else {
+        if (!$user) {
             $this->session->set_flashdata('error', 'NIK tidak ditemukan');
             redirect('auth');
+            return;
+        }
+
+        // Cek password
+        if (!password_verify($password, $user->password)) {
+            $this->session->set_flashdata('error', 'Password salah');
+            redirect('auth');
+            return;
+        }
+
+        // Tentukan role login
+        $role_options = [];
+        if ($user->role == 'superadmin') {
+            // Jika superadmin, bisa pilih login sebagai apa
+            $role_options = ['superadmin', 'pegawai'];
+
+            // Jika belum pilih role, tampilkan kembali form dengan pilihan
+            if (!$selected_role) {
+                $this->load->view('login', ['role_options' => $role_options]);
+                return;
+            }
+
+            $login_role = $selected_role;
+        } else {
+            // Pegawai hanya bisa login sebagai pegawai
+            $login_role = 'pegawai';
+        }
+
+        // Simpan session
+        $this->session->set_userdata([
+            'nik' => $user->nik,
+            'role' => $login_role,
+            'logged_in' => TRUE
+        ]);
+
+        // Redirect sesuai role
+        if ($login_role === 'superadmin') {
+            redirect('superadmin');
+        } else {
+            redirect('pegawai');
         }
     }
 
@@ -57,10 +78,31 @@ class Auth extends CI_Controller
         $this->session->sess_destroy();
         redirect('auth');
     }
+    // Auth.php
+    public function check_role()
+    {
+        $nik = $this->input->post('nik', TRUE);
 
+        if (!$nik) {
+            echo json_encode(['is_superadmin' => false]);
+            return;
+        }
+
+        $this->load->model('Auth_model');
+        $user = $this->Auth_model->get_user($nik);
+
+        if ($user && $user->role === 'superadmin') {
+            echo json_encode(['is_superadmin' => true]);
+        } else {
+            echo json_encode(['is_superadmin' => false]);
+        }
+    }
+
+
+    // Buat superadmin default (opsional)
     public function create_superadmin()
     {
-        $password = password_hash("admin123", PASSWORD_DEFAULT); // password default superadmin
+        $password = password_hash("admin123", PASSWORD_DEFAULT);
         $data = [
             'nik' => '1234567890',
             'password' => $password,
@@ -69,5 +111,4 @@ class Auth extends CI_Controller
         $this->db->insert('users', $data);
         echo "Superadmin berhasil dibuat!";
     }
-
 }

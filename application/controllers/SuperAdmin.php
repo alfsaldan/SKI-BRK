@@ -433,19 +433,17 @@ class SuperAdmin extends CI_Controller
         $fileName = $_FILES['file_excel']['name'];
         $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-        // ✅ Hanya izinkan xls/xlsx
         if (!in_array($ext, ['xls', 'xlsx'])) {
             $this->session->set_flashdata('error', 'Format file salah. Hanya mendukung .xls atau .xlsx sesuai template.');
             redirect('SuperAdmin/kelolaDataPegawai');
             return;
         }
 
-        // ✅ Validasi signature file agar tidak asal rename
         $mime = mime_content_type($fileTmp);
         $allowedMimes = [
             'application/vnd.ms-excel',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/octet-stream' // kadang Excel deteksi sebagai octet
+            'application/octet-stream'
         ];
 
         if (!in_array($mime, $allowedMimes)) {
@@ -469,7 +467,6 @@ class SuperAdmin extends CI_Controller
 
         $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
 
-        // ✅ Cek isi minimal ada header + 1 baris
         if (count($sheetData) <= 1) {
             $this->session->set_flashdata('error', 'File kosong atau tidak sesuai template.');
             redirect('SuperAdmin/kelolaDataPegawai');
@@ -477,7 +474,6 @@ class SuperAdmin extends CI_Controller
         }
 
         $header = $sheetData[1];
-        // ✅ Validasi header lebih fleksibel
         $colA = strtolower(trim($header['A']));
         $colB = strtolower(trim($header['B']));
         $colC = strtolower(trim($header['C']));
@@ -499,14 +495,13 @@ class SuperAdmin extends CI_Controller
         $rows = [];
         $errors = [];
         foreach ($sheetData as $i => $row) {
-            if ($i == 1)
-                continue; // skip header
+            if ($i == 1) continue; // skip header
 
             $nik = trim($row['A']);
             $nama = trim($row['B']);
             $jabatan = trim($row['C']);
             $unit_kerja = trim($row['D']);
-            $password = trim($row['E']);
+            $password_plain = trim($row['E']);
 
             if (empty($nik)) {
                 $errors[] = "Baris $i: NIK kosong.";
@@ -518,18 +513,33 @@ class SuperAdmin extends CI_Controller
                 continue;
             }
 
-            if (empty($password)) {
+            if (empty($password_plain)) {
                 $errors[] = "Baris $i: Password kosong.";
                 continue;
             }
 
+            $password_hashed = password_hash($password_plain, PASSWORD_DEFAULT);
+
+            // Siapkan data untuk batch insert ke pegawai
             $rows[] = [
                 'nik' => $nik,
                 'nama' => $nama,
                 'jabatan' => $jabatan,
                 'unit_kerja' => $unit_kerja,
-                'password' => password_hash($password, PASSWORD_DEFAULT),
+                'password' => $password_hashed,
             ];
+
+            // 🔹 Tambahkan otomatis ke tabel users jika belum ada
+            $cek_user = $this->db->get_where('users', ['nik' => $nik])->row();
+            if (!$cek_user) {
+                $data_user = [
+                    'nik' => $nik,
+                    'password' => $password_hashed,
+                    'role' => 'pegawai',
+                    'is_active' => 1
+                ];
+                $this->db->insert('users', $data_user);
+            }
         }
 
         if (!empty($rows)) {
@@ -550,6 +560,7 @@ class SuperAdmin extends CI_Controller
 
 
 
+
     // Tambah Pegawai Manual
     public function tambahPegawai()
     {
@@ -559,24 +570,38 @@ class SuperAdmin extends CI_Controller
         $nama = $this->input->post('nama');
         $jabatan = $this->input->post('jabatan');
         $unit_kerja = $this->input->post('unit_kerja');
-        $password = password_hash($this->input->post('password'), PASSWORD_DEFAULT);
+        $password_plain = $this->input->post('password'); // password asli dari form
+        $password_hashed = password_hash($password_plain, PASSWORD_DEFAULT);
 
         // Insert ke tabel pegawai
-        $data = [
+        $data_pegawai = [
             'nik' => $nik,
             'nama' => $nama,
             'jabatan' => $jabatan,
             'unit_kerja' => $unit_kerja,
-            'password' => $password,
+            'password' => $password_hashed,
         ];
-        $this->DataPegawai_model->insertPegawai($data);
+        $this->DataPegawai_model->insertPegawai($data_pegawai);
 
         // Insert ke tabel riwayat_jabatan
         $this->DataPegawai_model->insertRiwayatAwal($nik, $jabatan, $unit_kerja);
 
+        // 🔹 Insert otomatis ke tabel users (jika belum ada)
+        $cek_user = $this->db->get_where('users', ['nik' => $nik])->row();
+        if (!$cek_user) {
+            $data_user = [
+                'nik' => $nik,
+                'password' => $password_hashed, // bisa pakai password default juga
+                'role' => 'pegawai',
+                'is_active' => 1
+            ];
+            $this->db->insert('users', $data_user);
+        }
+
         $this->session->set_flashdata('success', 'Pegawai berhasil ditambahkan.');
         redirect('SuperAdmin/kelolaDataPegawai');
     }
+
 
 
     // Hapus Pegawai
