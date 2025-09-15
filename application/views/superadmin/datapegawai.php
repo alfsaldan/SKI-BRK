@@ -39,10 +39,58 @@
                     <div class="col-12">
                         <div class="card mt-3">
                             <div class="card-body">
-                                <h5>Detail Pegawai</h5>
-                                <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
-                                <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
-                                <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
+
+                                <!-- Detail Pegawai & Informasi Penilaian -->
+                                <div class="row mb-0.25">
+                                    <div class="col-md-6">
+                                        <h5>Detail Pegawai</h5>
+                                        <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
+                                        <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
+                                        <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
+                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?></p>
+                                        <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <h5>Informasi Penilaian</h5>
+
+                                        <!-- 🔹 Pilih Periode Penilaian -->
+                                        <div class="form-inline mb-2">
+                                            <label class="mr-2"><b>Periode Penilaian:</b></label>
+                                            <input type="date" id="periode_awal" class="form-control mr-2"
+                                                value="<?= $periode_awal ?? date('Y-01-01'); ?>">
+                                            <span class="mr-2">s/d</span>
+                                            <input type="date" id="periode_akhir" class="form-control mr-2"
+                                                value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
+                                            <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary btn-sm ml-2">Sesuaikan Periode</button>
+                                        </div>
+
+
+
+
+
+                                        <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?></p>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <!-- Penilai I & Penilai II -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Penilai I</h5>
+                                        <p><b>NIK:</b></p>
+                                        <p><b>Nama:</b></p>
+                                        <p><b>Jabatan:</b></p>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <h5>Penilai II</h5>
+                                        <p><b>NIK:</b></p>
+                                        <p><b>Nama:</b></p>
+                                        <p><b>Jabatan:</b></p>
+                                    </div>
+                                </div>
                                 <a href="<?= base_url('SuperAdmin/downloadDataPegawai/' . $pegawai_detail->nik); ?>"
                                     class="btn btn-primary mt-2">
                                     <i class="mdi mdi-file-excel"></i> Download Excel

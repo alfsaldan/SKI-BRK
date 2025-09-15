@@ -10,36 +10,36 @@ class Penilaian_model extends CI_Model
 
     public function get_indikator_by_jabatan_dan_unit($jabatan, $unit_kerja, $nik = null, $periode_awal = null, $periode_akhir = null)
     {
-        // default periode
+        // Set default periode kalau kosong
         if (!$periode_awal) $periode_awal = '2025-01-01';
         if (!$periode_akhir) $periode_akhir = '2025-12-31';
 
         $this->db->select('
-            indikator.id,
-            indikator.indikator,
-            indikator.bobot,
-            sasaran_kerja.perspektif,
-            sasaran_kerja.sasaran_kerja,
-            penilaian.target,
-            penilaian.batas_waktu,
-            penilaian.realisasi,
-            penilaian.nilai,
-            penilaian.nilai_dibobot,
-            penilaian.catatan,
-            penilaian.periode_awal,
-            penilaian.periode_akhir
-        ');
+        indikator.id,
+        indikator.indikator,
+        indikator.bobot,
+        sasaran_kerja.perspektif,
+        sasaran_kerja.sasaran_kerja,
+        penilaian.target,
+        penilaian.batas_waktu,
+        penilaian.realisasi,
+        penilaian.nilai,
+        penilaian.nilai_dibobot,
+        penilaian.catatan,
+        penilaian.periode_awal,
+        penilaian.periode_akhir
+    ');
         $this->db->from('indikator');
         $this->db->join('sasaran_kerja', 'indikator.sasaran_id = sasaran_kerja.id');
 
         if ($nik) {
-            // join dengan filter periode
+            // LEFT JOIN penilaian tapi sesuai NIK dan periode persis
             $this->db->join(
                 'penilaian',
                 "penilaian.indikator_id = indikator.id 
-                 AND penilaian.nik = '$nik' 
-                 AND penilaian.periode_awal >= '$periode_awal' 
-                 AND penilaian.periode_akhir <= '$periode_akhir'",
+            AND penilaian.nik = " . $this->db->escape($nik) . " 
+            AND penilaian.periode_awal = " . $this->db->escape($periode_awal) . " 
+            AND penilaian.periode_akhir = " . $this->db->escape($periode_akhir),
                 'left'
             );
         } else {
@@ -56,32 +56,39 @@ class Penilaian_model extends CI_Model
 
     public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $periode_awal = null, $periode_akhir = null)
     {
-        // default periode
-        if (!$periode_awal) $periode_awal = '2025-01-01';
-        if (!$periode_akhir) $periode_akhir = '2025-12-31';
+        // 🔹 Set default periode jika null
+        if (!$periode_awal) $periode_awal = date('Y-01-01');
+        if (!$periode_akhir) $periode_akhir = date('Y-12-31');
 
         $data = [
-            'nik'          => $nik,
-            'indikator_id' => $indikator_id,
-            'target'       => $target,
-            'batas_waktu'  => $batas_waktu,
-            'realisasi'    => $realisasi,
-            'periode_awal' => $periode_awal,
-            'periode_akhir'=> $periode_akhir
+            'nik'           => $nik,
+            'indikator_id'  => $indikator_id,
+            'target'        => $target,
+            'batas_waktu'   => $batas_waktu,
+            'realisasi'     => $realisasi,
+            'periode_awal'  => $periode_awal,
+            'periode_akhir' => $periode_akhir
         ];
 
-        $exists = $this->db->get_where('penilaian', [
-            'nik' => $nik,
-            'indikator_id' => $indikator_id
-        ])->row();
+        // 🔹 Cari record yang exact match dengan NIK, indikator, dan periode
+        $this->db->where('nik', $nik);
+        $this->db->where('indikator_id', $indikator_id);
+        $this->db->where('periode_awal', $periode_awal);
+        $this->db->where('periode_akhir', $periode_akhir);
+        $exists = $this->db->get('penilaian')->row();
 
         if ($exists) {
+            // 🔹 Update hanya kalau ada exact match
             $this->db->where('id', $exists->id);
             return $this->db->update('penilaian', $data);
         } else {
+            // 🔹 Insert baru kalau periode berbeda
             return $this->db->insert('penilaian', $data);
         }
     }
+
+
+
 
     public function simpan_penilaian($arr_data)
     {
@@ -117,9 +124,9 @@ class Penilaian_model extends CI_Model
         if (!$akhir) $akhir = '2025-12-31';
 
         $this->db->where('nik', $nik)
-                 ->update('penilaian', [
-                     'periode_awal' => $awal,
-                     'periode_akhir'=> $akhir
-                 ]);
+            ->update('penilaian', [
+                'periode_awal' => $awal,
+                'periode_akhir' => $akhir
+            ]);
     }
 }

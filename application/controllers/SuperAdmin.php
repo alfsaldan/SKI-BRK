@@ -5,6 +5,17 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
+/**
+ * @property Indikator_model $Indikator_model
+ * @property Penilaian_model $Penilaian_model
+ * @property DataPegawai_model $DataPegawai_model
+ * @property RiwayatJabatan_model $RiwayatJabatan_model
+ * @property CI_Input $input
+ * @property CI_Session $session
+ * @property CI_DB_query_builder $db
+ */
+
+
 
 class SuperAdmin extends CI_Controller
 {
@@ -240,6 +251,11 @@ class SuperAdmin extends CI_Controller
         $data['judul'] = "Penilaian Kinerja Pegawai";
         $data['pegawai'] = $this->db->get('pegawai')->result();
         $data['indikator'] = $this->db->get('indikator')->result();
+
+        // Default periode (1 tahun penuh)
+        $data['periode_awal'] = date('Y') . "-01-01";
+        $data['periode_akhir'] = date('Y') . "-12-31";
+
         $data['penilaian'] = $this->Penilaian_model->get_all_penilaian();
         $data['pegawai_detail'] = null;
         $data['indikator_by_jabatan'] = [];
@@ -249,26 +265,37 @@ class SuperAdmin extends CI_Controller
         $this->load->view("layout/footer");
     }
 
+
     public function cariPenilaian()
     {
-        $nik = $this->input->post('nik');
+        $nik = $this->input->post('nik') ?: $this->input->get('nik');
         $pegawai = $this->db->get_where('pegawai', ['nik' => $nik])->row();
 
+        // Ambil periode dari GET atau POST
+        $periode_awal = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y-01-01');
+        $periode_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? date('Y-12-31');
+
         if ($pegawai) {
-            $this->load->model('Penilaian_model');
-            $indikator = $this->Penilaian_model->get_indikator_by_jabatan_dan_unit($pegawai->jabatan, $pegawai->unit_kerja, $nik);
+            $indikator = $this->Penilaian_model->get_indikator_by_jabatan_dan_unit(
+                $pegawai->jabatan,
+                $pegawai->unit_kerja,
+                $nik,
+                $periode_awal,
+                $periode_akhir
+            );
 
             $data['pegawai_detail'] = $pegawai;
             $data['indikator_by_jabatan'] = $indikator;
 
-            $this->session->set_flashdata('message', [
-                'type' => 'success',
-                'text' => 'Data penilaian pegawai ditemukan!'
-            ]);
+            if ($this->input->post('nik')) {
+                $this->session->set_flashdata('message', [
+                    'type' => 'success',
+                    'text' => 'Data penilaian pegawai ditemukan!'
+                ]);
+            }
         } else {
             $data['pegawai_detail'] = null;
             $data['indikator_by_jabatan'] = [];
-
             $this->session->set_flashdata('message', [
                 'type' => 'error',
                 'text' => 'Pegawai dengan NIK tersebut tidak ditemukan.'
@@ -276,6 +303,9 @@ class SuperAdmin extends CI_Controller
         }
 
         $data['judul'] = "Penilaian Kinerja Pegawai";
+        $data['periode_awal'] = $periode_awal;
+        $data['periode_akhir'] = $periode_akhir;
+
         $this->load->view("layout/header");
         $this->load->view("superadmin/penilaiankinerja", $data);
         $this->load->view("layout/footer");
@@ -288,13 +318,18 @@ class SuperAdmin extends CI_Controller
         $batas_waktu = $this->input->post('batas_waktu');
         $realisasi = $this->input->post('realisasi');
 
+        // Ambil periode dari form, kalau kosong pakai default tahun ini
+        $periode_awal = $this->input->post('periode_awal') ?? date('Y-01-01');
+        $periode_akhir = $this->input->post('periode_akhir') ?? date('Y-12-31');
+
         $success = true;
 
         if ($targets) {
             foreach ($targets as $indikator_id => $t) {
                 $btw = $batas_waktu[$indikator_id] ?? null;
                 $rls = $realisasi[$indikator_id] ?? null;
-                if (!$this->Penilaian_model->save_penilaian($nik, $indikator_id, $t, $btw, $rls)) {
+
+                if (!$this->Penilaian_model->save_penilaian($nik, $indikator_id, $t, $btw, $rls, $periode_awal, $periode_akhir)) {
                     $success = false;
                 }
             }
@@ -323,7 +358,11 @@ class SuperAdmin extends CI_Controller
         $batas_waktu = $this->input->post('batas_waktu');
         $realisasi = $this->input->post('realisasi');
 
-        $save = $this->Penilaian_model->save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi);
+        // Ambil periode dari POST
+        $periode_awal = $this->input->post('periode_awal') ?? date('Y-01-01');
+        $periode_akhir = $this->input->post('periode_akhir') ?? date('Y-12-31');
+
+        $save = $this->Penilaian_model->save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $periode_awal, $periode_akhir);
 
         if (!$save) {
             $error = $this->db->error();
@@ -339,15 +378,18 @@ class SuperAdmin extends CI_Controller
                 'data' => [
                     'target' => $target,
                     'batas_waktu' => $batas_waktu,
-                    'realisasi' => $realisasi
+                    'realisasi' => $realisasi,
+                    'periode_awal' => $periode_awal,
+                    'periode_akhir' => $periode_akhir
                 ]
             ]);
         }
     }
 
+
     // ==============================
-// Kelola Data Pegawai
-// ==============================
+    // Kelola Data Pegawai
+    // ==============================
     public function kelolaDataPegawai()
     {
         $this->load->model('DataPegawai_model');
@@ -686,5 +728,4 @@ class SuperAdmin extends CI_Controller
         $writer->save('php://output');
         exit;
     }
-
 }

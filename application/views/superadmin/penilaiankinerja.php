@@ -43,16 +43,18 @@
 
                                     <div class="col-md-6">
                                         <h5>Informasi Penilaian</h5>
-
                                         <!-- 🔹 Pilih Periode Penilaian -->
                                         <div class="form-inline mb-2">
                                             <label class="mr-2"><b>Periode Penilaian:</b></label>
-                                            <input type="date" id="periode_awal" class="form-control mr-2" value="2025-01-01">
+                                            <input type="date" id="periode_awal" class="form-control mr-2"
+                                                value="<?= $periode_awal ?? date('Y-01-01'); ?>">
                                             <span class="mr-2">s/d</span>
-                                            <input type="date" id="periode_akhir" class="form-control" value="2025-12-31">
+                                            <input type="date" id="periode_akhir" class="form-control mr-2"
+                                                value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
                                         </div>
-
-
+                                        <div class="d-flex justify-content-end mb-2">
+                                            <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary btn-sm">Sesuaikan Periode</button>
+                                        </div>
                                         <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?></p>
                                     </div>
                                 </div>
@@ -115,10 +117,10 @@
                                                 <th class="text-center" style="width: 80px;">Bobot (%)</th>
                                                 <th>Indikator</th>
                                                 <th class="text-center" style="width: 120px;">Target</th>
-                                                <th class="text-center" style="width: 120px;">Batas Waktu</th>
+                                                <th class="text-center" style="width: 80px;">Batas Waktu</th>
                                                 <th class="text-center" style="width: 120px;">Realisasi</th>
                                                 <th class="text-center" style="width: 120px;">Pencapaian (%)</th>
-                                                <th class="text-center" style="width: 80px;">Nilai</th>
+                                                <th class="text-center" style="width: 120px;">Nilai</th>
                                                 <th class="text-center" style="width: 120px;">Nilai Dibobot</th>
                                                 <th class="text-center" style="width: 100px;">Status</th>
                                                 <th class="text-center" style="width: 100px;">Aksi</th>
@@ -163,9 +165,9 @@
                                                             </td>
                                                             <td><?= $indik; ?></td>
 
-                                                            <td><input type="text" class="form-control target-input" value="<?= $i->target; ?>"></td>
-                                                            <td><input type="date" class="form-control" value="<?= $i->batas_waktu; ?>"></td>
-                                                            <td><input type="text" class="form-control realisasi-input" value="<?= $i->realisasi; ?>"></td>
+                                                            <td><input type="text" class="form-control target-input" value="<?= $i->target ?? ''; ?>"></td>
+                                                            <td><input type="date" class="form-control" value="<?= $i->batas_waktu ?? ''; ?>"></td>
+                                                            <td><input type="text" class="form-control realisasi-input" value="<?= $i->realisasi ?? ''; ?>"></td>
 
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm pencapaian-output" readonly></td>
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm nilai-output" readonly></td>
@@ -218,16 +220,22 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<?php if ($this->session->flashdata('message')): ?>
-    <script>
-        Swal.fire({
-            icon: '<?= $this->session->flashdata('message')['type']; ?>',
-            title: 'Informasi',
-            text: '<?= $this->session->flashdata('message')['text']; ?>',
-            confirmButtonColor: '#2E7D32'
-        });
-    </script>
+<?php if ($this->router->fetch_class() == 'SuperAdmin' && $this->router->fetch_method() == 'penilaiankinerja'): ?>
+    <?php
+    $message = $this->session->flashdata('message');
+    if ($message): ?>
+        <script>
+            Swal.fire({
+                icon: '<?= $message['type']; ?>',
+                title: 'Informasi',
+                text: '<?= $message['text']; ?>',
+                confirmButtonColor: '#2E7D32'
+            });
+        </script>
+    <?php endif; ?>
 <?php endif; ?>
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
@@ -242,11 +250,8 @@
 
         // 🔹 Validasi supaya periode akhir tidak lebih kecil dari awal
         periodeAwal.addEventListener('change', function() {
-            if (periodeAkhir.value < this.value) {
-                periodeAkhir.value = this.value;
-            }
+            if (periodeAkhir.value < this.value) periodeAkhir.value = this.value;
         });
-
         periodeAkhir.addEventListener('change', function() {
             if (this.value < periodeAwal.value) {
                 Swal.fire({
@@ -258,6 +263,7 @@
                 this.value = periodeAwal.value;
             }
         });
+
 
         // 🔹 format angka
         function formatAngka(nilai) {
@@ -339,6 +345,9 @@
                 const periode_awal = periodeAwal.value;
                 const periode_akhir = periodeAkhir.value;
 
+                // <-- taruh console.log di sini
+                console.log("DEBUG: nik=", nik, "indikator_id=", indikator_id, "periode_awal=", periode_awal, "periode_akhir=", periode_akhir);
+
                 fetch('<?= base_url("SuperAdmin/simpanPenilaianBaris") ?>', {
                         method: 'POST',
                         headers: {
@@ -346,6 +355,7 @@
                         },
                         body: `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
                     })
+
                     .then(res => res.json())
                     .then(res => {
                         if (res.status === 'success') {
@@ -376,6 +386,23 @@
                         });
                     });
             });
+        });
+        document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
+            const nik = document.getElementById('nik').value;
+            const awal = periodeAwal.value;
+            const akhir = periodeAkhir.value;
+
+            if (!nik) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'NIK kosong',
+                    text: 'Masukkan NIK terlebih dahulu',
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+
+            window.location.href = `<?= base_url("SuperAdmin/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
         });
     });
 </script>
