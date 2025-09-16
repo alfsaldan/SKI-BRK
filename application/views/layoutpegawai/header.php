@@ -199,7 +199,7 @@
                         <li class="menu-title">Halaman Utama</li>
 
                         <li class="<?= $this->uri->segment(2) == '' ? 'active' : '' ?>">
-                            <a href="<?= base_url('superadmin') ?>">
+                            <a href="<?= base_url('pegawai') ?>">
                                 <i class="fe-airplay"></i>
                                 <span> Dashboard </span>
                             </a>
@@ -208,7 +208,7 @@
                         <li class="menu-title mt-2">Fitur Utama</li>
 
                         <li class="<?= $this->uri->segment(2) == 'penilaiankinerja' ? 'active' : '' ?>">
-                            <a href="<?= base_url('superadmin/penilaiankinerja') ?>">
+                            <a href="<?= base_url('pegawai/nilaipegawai') ?>">
                                 <i class="mdi mdi-account-edit"></i>
                                 <span> Nilai Pegawai </span>
                             </a>

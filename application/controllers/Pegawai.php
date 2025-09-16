@@ -8,6 +8,7 @@ class Pegawai extends CI_Controller
         parent::__construct();
         // model Pegawai di subfolder models/pegawai/Pegawai_model.php
         $this->load->model('pegawai/Pegawai_model');
+        $this->load->model('pegawai/Nilai_model');
         $this->load->model('Penilaian_model');
         $this->load->model('Indikator_model');
         $this->load->library('session');
@@ -96,5 +97,51 @@ class Pegawai extends CI_Controller
                 'debug' => $error
             ]);
         }
+    }
+    /**
+     * Halaman Nilai Pegawai (untuk penilai)
+     */
+    public function nilaiPegawai()
+    {
+        $nik = $this->session->userdata('nik');
+        $this->load->model('pegawai/Nilai_model');
+
+        $pegawai_dinilai = $this->Nilai_model->getPegawaiYangDinilai($nik);
+
+        $data = [
+            'judul' => 'Nilai Pegawai',
+            'pegawai_dinilai' => $pegawai_dinilai
+        ];
+
+        $this->load->view('layoutpegawai/header', $data);
+        $this->load->view('pegawai/nilaipegawai', $data);
+        $this->load->view('layoutpegawai/footer');
+    }
+
+    public function nilaiPegawaiDetail($nik_pegawai)
+    {
+        $nik_penilai = $this->session->userdata('nik');
+
+        // Ambil data pegawai yang akan dinilai
+        $pegawai = $this->Pegawai_model->getPegawaiByNIK($nik_pegawai);
+
+        if (!$pegawai) {
+            $this->session->set_flashdata('message', ['type' => 'error', 'text' => 'Pegawai tidak ditemukan']);
+            redirect('Pegawai/nilaiPegawai');
+        }
+
+        // Ambil indikator & penilaian pegawai
+        $indikator = $this->Nilai_model->getIndikatorPegawai($nik_pegawai);
+
+        $data = [
+            'judul' => "Penilaian Pegawai",
+            'pegawai_detail' => $pegawai,
+            'indikator_by_jabatan' => $indikator,
+            'nik_penilai' => $nik_penilai
+        ];
+
+        $this->load->view('layoutpegawai/header', $data);
+        $this->load->view('pegawai/nilaipegawai_detail', $data);
+        $this->load->view('layoutpegawai/footer');
     }
 }
