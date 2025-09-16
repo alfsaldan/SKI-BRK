@@ -31,16 +31,16 @@ class RiwayatJabatan_model extends CI_Model
         $this->db->update('users', ['is_active' => 0]);
     }
 
-    public function updateStatusPegawai($nik, $status)
-    {
-        // Update riwayat_jabatan terbaru
-        $this->db->where('nik', $nik);
-        $this->db->where('tgl_selesai IS NULL');
-        $this->db->update('riwayat_jabatan', ['status' => $status]);
+public function updateStatusPegawai($nik, $status)
+{
+    // Update riwayat_jabatan terbaru (yang belum selesai)
+    $this->db->where('nik', $nik);
+    $this->db->where('tgl_selesai', NULL); // perbaikan di sini
+    $this->db->update('riwayat_jabatan', ['status' => $status]);
 
-        // Update juga tabel pegawai (kolom status harus ada di tabel pegawai)
-        $this->db->where('nik', $nik);
-        $this->db->update('pegawai', ['status' => $status]);
-    }
+    // Update juga tabel pegawai
+    $this->db->where('nik', $nik);
+    $this->db->update('pegawai', ['status' => $status]);
+}
 
 }
