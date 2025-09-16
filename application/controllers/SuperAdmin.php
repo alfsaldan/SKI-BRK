@@ -269,9 +269,7 @@ class SuperAdmin extends CI_Controller
     public function cariPenilaian()
     {
         $nik = $this->input->post('nik') ?: $this->input->get('nik');
-
-        // pakai model yg sudah ada agar langsung dapat info penilai1 & penilai2
-        $pegawai = $this->Penilaian_model->getPegawaiWithPenilai($nik);
+        $pegawai = $this->db->get_where('pegawai', ['nik' => $nik])->row();
 
         // Ambil periode dari GET atau POST
         $periode_awal = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y-01-01');
@@ -289,12 +287,12 @@ class SuperAdmin extends CI_Controller
             $data['pegawai_detail'] = $pegawai;
             $data['indikator_by_jabatan'] = $indikator;
 
-            // kirim pesan langsung (bukan flashdata)
-            $data['message'] = [
-                'type' => 'success',
-                'text' => 'Data penilaian pegawai ditemukan!'
-            ];
-
+            if ($this->input->post('nik')) {
+                $this->session->set_flashdata('message', [
+                    'type' => 'success',
+                    'text' => 'Data penilaian pegawai ditemukan!'
+                ]);
+            }
         } else {
             $data['pegawai_detail'] = null;
             $data['indikator_by_jabatan'] = [];
@@ -497,8 +495,7 @@ class SuperAdmin extends CI_Controller
         $rows = [];
         $errors = [];
         foreach ($sheetData as $i => $row) {
-            if ($i == 1)
-                continue; // skip header
+            if ($i == 1) continue; // skip header
 
             $nik = trim($row['A']);
             $nama = trim($row['B']);
@@ -690,14 +687,12 @@ class SuperAdmin extends CI_Controller
     }
 
     // Cari Data Pegawai berdasarkan NIK
-// Cari Data Pegawai berdasarkan NIK
     public function cariDataPegawai()
     {
         $nik = $this->input->post('nik');
         $this->load->model('DataPegawai_model');
 
-        // pakai getPegawaiWithPenilai biar sekalian dapat penilai1 & penilai2
-        $pegawai = $this->DataPegawai_model->getPegawaiWithPenilai($nik);
+        $pegawai = $this->DataPegawai_model->getPegawaiByNik($nik);
         $penilaian = $this->DataPegawai_model->getPenilaianByNik($nik);
 
         $data['judul'] = "Data Pegawai";
@@ -708,7 +703,6 @@ class SuperAdmin extends CI_Controller
         $this->load->view('superadmin/datapegawai', $data);
         $this->load->view("layout/footer");
     }
-
 
     // Download Data Penilaian ke Excel
     public function downloadDataPegawai($nik)

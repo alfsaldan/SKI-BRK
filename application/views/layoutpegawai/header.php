@@ -257,14 +257,15 @@
                 </a>
             </div>
 
+
             <ul class="list-unstyled topnav-menu topnav-menu-left m-0">
-                <li class="d-lg-none">
+                <li>
                     <button class="button-menu-mobile waves-effect waves-light">
                         <i class="fe-menu"></i>
                     </button>
                 </li>
-            </ul>
 
+            </ul>
         </div>
         <!-- end Topbar -->
 
