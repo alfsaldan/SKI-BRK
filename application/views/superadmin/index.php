@@ -42,7 +42,7 @@
                             <div class="wigdet-two-content">
                                 <p class="m-0 text-uppercase text-white">Total Pegawai</p>
                                 <h2 class="text-white"><span data-plugin="counterup">256</span></h2>
-                                <p class="text-white m-0"> - </p>
+                                <!-- <p class="text-white m-0"> - </p> -->
                             </div>
                         </div>
                     </div>
@@ -57,7 +57,7 @@
                             <div class="wigdet-two-content">
                                 <p class="m-0 text-white text-uppercase">Selesai Dinilai</p>
                                 <h2 class="text-white"><span data-plugin="counterup">184</span></h2>
-                                <p class="text-white m-0"> - </p>
+                                <!-- <p class="text-white m-0"> - </p> -->
                             </div>
                         </div>
                     </div>
@@ -72,7 +72,7 @@
                             <div class="wigdet-two-content">
                                 <p class="m-0 text-uppercase text-white">Masih Proses</p>
                                 <h2 class="text-white"><span data-plugin="counterup">142</span></h2>
-                                <p class="text-white m-0"> - </p>
+                                <!-- <p class="text-white m-0"> - </p> -->
                             </div>
                         </div>
                     </div>
@@ -87,7 +87,7 @@
                             <div class="wigdet-two-content">
                                 <p class="m-0 text-white text-uppercase">Belum Dinilai</p>
                                 <h2 class="text-white"><span data-plugin="counterup">42</span></h2>
-                                <p class="text-white m-0"> - </p>
+                                <!-- <p class="text-white m-0"> - </p> -->
                             </div>
                         </div>
                     </div>

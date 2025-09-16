@@ -2,13 +2,22 @@
     <div class="content">
         <div class="container-fluid">
 
+
+            <!-- Judul Halaman -->
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box">
-                        <h4 class="page-title">Penilaian Kinerja Pegawai</h4>
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="javascript:void(0);">SKI-BRKS</a></li>
+                                <li class="breadcrumb-item active">Penilaian Kinerja</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title"><i class="mdi mdi-account-edit mr-2 text-primary"></i> Penilaian Kinerja Pegawai</h4>
                     </div>
                 </div>
             </div>
+
 
             <div class="row">
                 <div class="col-6">

@@ -13,7 +13,7 @@
                                 <li class="breadcrumb-item active">Indikator Kinerja</li>
                             </ol>
                         </div>
-                        <h4 class="page-title">Indikator Kinerja Pegawai</h4>
+                        <h4 class="page-title"><i class="mdi mdi-target-account mr-2 text-primary"></i> Indikator Kinerja Pegawai</h4>
                     </div>
                 </div>
             </div>

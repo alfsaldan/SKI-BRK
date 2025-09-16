@@ -12,7 +12,7 @@
                                 <li class="breadcrumb-item active">Data Kinerja Pegawai</li>
                             </ol>
                         </div>
-                        <h4 class="page-title">Data Kinerja Pegawai</h4>
+                        <h4 class="page-title"><i class="mdi mdi-account-card-details mr-2 text-primary"></i>Data Kinerja Pegawai</h4>
                     </div>
                 </div>
             </div>
