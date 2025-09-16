@@ -151,5 +151,9 @@ class Penilaian_model extends CI_Model
         $this->db->where('p.nik', $nik);
         return $this->db->get()->row();
     }
-
+    public function updateStatus($id, $status)
+    {
+        $this->db->where('id', $id)->update('penilaian', ['status' => $status]);
+        return $this->db->affected_rows();
+    }
 }
