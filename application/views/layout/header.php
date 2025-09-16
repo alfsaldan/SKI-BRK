@@ -15,13 +15,19 @@
     <link href="<?= base_url('assets/libs/bootstrap-select/bootstrap-select.min.css') ?>" rel="stylesheet"
         type="text/css" />
     <!-- Table datatable css -->
-    <link href="<?= base_url(' assets/libs/datatables/dataTables.bootstrap4.min.css') ?>" rel="stylesheet" type="text/css" />
-    <link href="<?= base_url('assets/libs/datatables/responsive.bootstrap4.min.css') ?>" rel="stylesheet" type="text/css" />
-    <link href="<?= base_url('assets/libs/datatables/buttons.bootstrap4.min.css') ?>" rel="stylesheet" type="text/css" />
-    <link href="<?= base_url('assets/libs/datatables/fixedHeader.bootstrap4.min.css') ?>" rel="stylesheet" type="text/css" />
-    <link href="<?= base_url('assets/libs/datatables/scroller.bootstrap4.min.css') ?>" rel="stylesheet" type="text/css" />
+    <link href="<?= base_url(' assets/libs/datatables/dataTables.bootstrap4.min.css') ?>" rel="stylesheet"
+        type="text/css" />
+    <link href="<?= base_url('assets/libs/datatables/responsive.bootstrap4.min.css') ?>" rel="stylesheet"
+        type="text/css" />
+    <link href="<?= base_url('assets/libs/datatables/buttons.bootstrap4.min.css') ?>" rel="stylesheet"
+        type="text/css" />
+    <link href="<?= base_url('assets/libs/datatables/fixedHeader.bootstrap4.min.css') ?>" rel="stylesheet"
+        type="text/css" />
+    <link href="<?= base_url('assets/libs/datatables/scroller.bootstrap4.min.css') ?>" rel="stylesheet"
+        type="text/css" />
     <link href="<?= base_url('assets/libs/datatables/dataTables.colVis.css') ?>" rel="stylesheet" type="text/css" />
-    <link href="<?= base_url('assets/libs/datatables/fixedColumns.bootstrap4.min.css') ?>" rel="stylesheet" type="text/css" />
+    <link href="<?= base_url('assets/libs/datatables/fixedColumns.bootstrap4.min.css') ?>" rel="stylesheet"
+        type="text/css" />
 
     <!-- c3 plugin css -->
     <link rel="stylesheet" type="text/css" href="<?= base_url('assets/libs/c3/c3.min.css') ?>">
@@ -35,8 +41,86 @@
     <script src="<?= base_url('assets/libs/jquery-steps/jquery.steps.min.js') ?>"></script>
     <link href="<?= base_url('assets/libs/jquery-steps/jquery.steps.css') ?>" rel="stylesheet">
 
-    
 
+    <!-- Custom CSS Navbar & Sidebar -->
+    <style>
+        /* Navbar putih dengan shadow ringan */
+        .navbar-custom {
+            background-color: #ffffff !important;
+            border-bottom: 1px solid #e5e5e5;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        .topnav-menu>li>a {
+            color: #333333;
+            font-weight: 500;
+        }
+
+        .topnav-menu>li>a:hover {
+            color: #27AE60;
+        }
+
+        .noti-icon {
+            color: #333333;
+        }
+
+        .noti-icon-badge {
+            background-color: #E74C3C;
+            color: #ffffff;
+            font-size: 0.65rem;
+            top: 5px;
+            right: 5px;
+        }
+
+        /* Logo */
+        .logo-box {
+            background-color: transparent;
+            text-align: center;
+        }
+
+        .logo-box img {
+            max-height: 32px;
+        }
+
+        /* Sidebar putih minimalis */
+        .left-side-menu {
+            background-color: #ffffff;
+            border-right: 1px solid #e5e5e5;
+        }
+
+        .metismenu a {
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .metismenu a:hover,
+        .metismenu li.active>a {
+            color: #277caeff;
+            background-color: rgba(39, 174, 96, 0.05);
+            border-radius: 0.25rem;
+        }
+
+        /* Tombol hamburger mobile */
+        .button-menu-mobile {
+            background-color: transparent;
+            /* biar tidak mengganggu tampilan navbar */
+            border: none;
+            padding: 6px 10px;
+        }
+
+        /* Warna ikon hamburger selalu terlihat */
+        .button-menu-mobile i.fe-menu {
+            color: #333333;
+            /* warna gelap agar terlihat di navbar putih */
+            font-size: 18px;
+        }
+
+        /* Hover efek (opsional) */
+        .button-menu-mobile:hover i.fe-menu {
+            color: #277caeff;
+            /* hijau saat hover */
+        }
+    </style>
 
 </head>
 
@@ -175,13 +259,13 @@
 
 
             <ul class="list-unstyled topnav-menu topnav-menu-left m-0">
-                <li>
+                <li class="d-lg-none">
                     <button class="button-menu-mobile waves-effect waves-light">
                         <i class="fe-menu"></i>
                     </button>
                 </li>
-
             </ul>
+
         </div>
         <!-- end Topbar -->
 
