@@ -24,16 +24,24 @@
                         <div class="card-body p-4">
                             <div class="text-center mb-4">
                                 <a href="<?= base_url(); ?>">
-                                    <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png'); ?>" alt="" height="40">
+                                    <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png'); ?>" alt=""
+                                        height="40">
                                 </a>
                                 <h4 class="mt-3">Login Sistem SKI-BRKS</h4>
                             </div>
 
                             <?php if ($this->session->flashdata('error')): ?>
-                                <div class="alert alert-danger">
+                                <div class="alert alert-danger" id="nikError">
                                     <?= $this->session->flashdata('error'); ?>
                                 </div>
+                                <script>
+                                    setTimeout(() => {
+                                        const alertDiv = document.getElementById('nikError');
+                                        if (alertDiv) alertDiv.style.display = 'none';
+                                    }, 2000); // hilang setelah 2 detik
+                                </script>
                             <?php endif; ?>
+
 
                             <form id="loginForm" action="<?= site_url('auth/login'); ?>" method="post">
                                 <!-- Input NIK -->
@@ -52,11 +60,13 @@
                                 <div class="form-group mb-3" id="roleDiv" style="display:none;">
                                     <label><b>Login Sebagai:</b></label><br>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="role" id="role_superadmin" value="superadmin" required checked>
+                                        <input class="form-check-input" type="radio" name="role" id="role_superadmin"
+                                            value="superadmin" required checked>
                                         <label class="form-check-label" for="role_superadmin">Superadmin</label>
                                     </div>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="role" id="role_pegawai" value="pegawai" required>
+                                        <input class="form-check-input" type="radio" name="role" id="role_pegawai"
+                                            value="pegawai" required>
                                         <label class="form-check-label" for="role_pegawai">Pegawai</label>
                                     </div>
                                 </div>
@@ -64,12 +74,15 @@
                                 <!-- Password -->
                                 <div class="form-group mb-3 position-relative" id="passwordDiv" style="display:none;">
                                     <label for="password">Password</label>
-                                    <input class="form-control" type="password" id="password" name="password" required placeholder="Masukkan Password">
-                                    <span toggle="#password" class="mdi mdi-eye-outline field-icon toggle-password" style="position:absolute; top:38px; right:15px; cursor:pointer;"></span>
+                                    <input class="form-control" type="password" id="password" name="password" required
+                                        placeholder="Masukkan Password">
+                                    <span toggle="#password" class="mdi mdi-eye-outline field-icon toggle-password"
+                                        style="position:absolute; top:38px; right:15px; cursor:pointer;"></span>
                                 </div>
 
                                 <div class="form-group text-center mb-3" id="loginBtnDiv" style="display:none;">
-                                    <button class="btn btn-success btn-lg width-lg btn-rounded" type="submit">Login</button>
+                                    <button class="btn btn-success btn-lg width-lg btn-rounded"
+                                        type="submit">Login</button>
                                 </div>
                             </form>
                         </div>
@@ -96,18 +109,18 @@
         const passwordDiv = document.getElementById('passwordDiv');
         const loginBtnDiv = document.getElementById('loginBtnDiv');
 
-        checkBtn.addEventListener('click', function() {
+        checkBtn.addEventListener('click', function () {
             const nik = nikInput.value.trim();
             if (!nik) return alert("Masukkan NIK");
 
             // AJAX cek apakah NIK superadmin
             fetch("<?= site_url('auth/check_role'); ?>", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: "nik=" + nik
-                })
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "nik=" + nik
+            })
                 .then(res => res.json())
                 .then(data => {
                     nikInput.readOnly = true;
@@ -131,7 +144,7 @@
         // Toggle password
         const toggle = document.querySelector('.toggle-password');
         if (toggle) {
-            toggle.addEventListener('click', function() {
+            toggle.addEventListener('click', function () {
                 const passwordInput = document.querySelector('#password');
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordInput.setAttribute('type', type);
@@ -140,6 +153,7 @@
             });
         }
     </script>
+
 </body>
 
 </html>

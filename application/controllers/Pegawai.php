@@ -120,45 +120,28 @@ class Pegawai extends CI_Controller
 
     public function nilaiPegawaiDetail($nik_pegawai)
     {
-        // ambil data pegawai yang dipilih
-        $pegawai = $this->Pegawai_model->getPegawaiWithPenilai($nik_pegawai);
+        $nik_penilai = $this->session->userdata('nik');
 
-        // periode default
-        $periode_awal  = $this->input->get('awal') ?? date('Y') . "-01-01";
-        $periode_akhir = $this->input->get('akhir') ?? date('Y') . "-12-31";
+        // Ambil data pegawai yang akan dinilai
+        $pegawai = $this->Pegawai_model->getPegawaiByNIK($nik_pegawai);
 
-        // ambil indikator & nilai via Penilaian_model
-        $indikator = $this->Penilaian_model->get_indikator_by_jabatan_dan_unit(
-            $pegawai->jabatan,
-            $pegawai->unit_kerja,
-            $nik_pegawai,
-            $periode_awal,
-            $periode_akhir
-        );
+        if (!$pegawai) {
+            $this->session->set_flashdata('message', ['type' => 'error', 'text' => 'Pegawai tidak ditemukan']);
+            redirect('Pegawai/nilaiPegawai');
+        }
+
+        // Ambil indikator & penilaian pegawai
+        $indikator = $this->Nilai_model->getIndikatorPegawai($nik_pegawai);
 
         $data = [
-            'judul' => "Form Penilaian Pegawai",
+            'judul' => "Penilaian Pegawai",
             'pegawai_detail' => $pegawai,
             'indikator_by_jabatan' => $indikator,
-            'periode_awal' => $periode_awal,
-            'periode_akhir' => $periode_akhir
+            'nik_penilai' => $nik_penilai
         ];
 
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/nilaipegawai_detail', $data);
         $this->load->view('layoutpegawai/footer');
-    }
-
-    public function updateStatus()
-    {
-        $id = $this->input->post('id');
-        $status = $this->input->post('status');
-
-        if ($id && $status) {
-            $this->Penilaian_model->updateStatus($id, $status); // panggil model
-            echo json_encode(['status' => 'success']);
-        } else {
-            echo json_encode(['status' => 'error']);
-        }
     }
 }

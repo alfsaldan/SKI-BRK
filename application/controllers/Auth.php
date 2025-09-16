@@ -42,10 +42,9 @@ class Auth extends CI_Controller
         // Tentukan role login
         $role_options = [];
         if ($user->role == 'superadmin') {
-            // Jika superadmin, bisa pilih login sebagai apa
             $role_options = ['superadmin', 'pegawai'];
 
-            // Jika belum pilih role, tampilkan kembali form dengan pilihan
+            // Jika belum pilih role, tampilkan form kembali
             if (!$selected_role) {
                 $this->load->view('login', ['role_options' => $role_options]);
                 return;
@@ -53,7 +52,6 @@ class Auth extends CI_Controller
 
             $login_role = $selected_role;
         } else {
-            // Pegawai hanya bisa login sebagai pegawai
             $login_role = 'pegawai';
         }
 
@@ -64,20 +62,25 @@ class Auth extends CI_Controller
             'logged_in' => TRUE
         ]);
 
+        // **Tambahkan flashdata sukses login**
+        $this->session->set_flashdata('login_success', 'Selamat datang, ' . $user->nik);
+
         // Redirect sesuai role
         if ($login_role === 'superadmin') {
-            redirect('superadmin');
+            redirect('superadmin'); // bisa tampilkan SweetAlert di halaman superadmin
         } else {
-            redirect('pegawai');
+            redirect('pegawai'); // bisa tampilkan SweetAlert di halaman pegawai
         }
     }
 
     // Logout
     public function logout()
     {
+        $this->session->set_flashdata('logout_success', 'Anda berhasil logout');
         $this->session->sess_destroy();
         redirect('auth');
     }
+
     // Auth.php
     public function check_role()
     {
