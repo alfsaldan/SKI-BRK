@@ -16,7 +16,8 @@
                         <div class="card-body">
                             <h5>Masukkan NIK Pegawai</h5>
                             <form action="<?= base_url('SuperAdmin/cariPenilaian'); ?>" method="post">
-                                <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai" required>
+                                <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai"
+                                    required>
                                 <button type="submit" class="btn btn-success mt-2">Nilai</button>
                             </form>
                         </div>
@@ -53,7 +54,8 @@
                                                 value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
                                         </div>
                                         <div class="d-flex justify-content-end mb-2">
-                                            <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary btn-sm">Sesuaikan Periode</button>
+                                            <button type="button" id="btn-sesuaikan-periode"
+                                                class="btn btn-primary btn-sm">Sesuaikan Periode</button>
                                         </div>
                                         <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?></p>
                                     </div>
@@ -65,17 +67,18 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <h5>Penilai I</h5>
-                                        <p><b>NIK:</b></p>
-                                        <p><b>Nama:</b></p>
-                                        <p><b>Jabatan:</b></p>
+                                        <p><b>NIK:</b> <?= $pegawai_detail->penilai1_nik ?? '-'; ?></p>
+                                        <p><b>Nama:</b> <?= $pegawai_detail->penilai1_nama ?? '-'; ?></p>
+                                        <p><b>Jabatan:</b> <?= $pegawai_detail->penilai1_jabatan ?? '-'; ?></p>
                                     </div>
 
                                     <div class="col-md-6">
                                         <h5>Penilai II</h5>
-                                        <p><b>NIK:</b></p>
-                                        <p><b>Nama:</b></p>
-                                        <p><b>Jabatan:</b></p>
+                                        <p><b>NIK:</b> <?= $pegawai_detail->penilai2_nik ?? '-'; ?></p>
+                                        <p><b>Nama:</b> <?= $pegawai_detail->penilai2_nama ?? '-'; ?></p>
+                                        <p><b>Jabatan:</b> <?= $pegawai_detail->penilai2_jabatan ?? '-'; ?></p>
                                     </div>
+
                                 </div>
 
                             </div>
@@ -97,7 +100,8 @@
                 function count_rows($arr)
                 {
                     $sum = 0;
-                    foreach ($arr as $items) $sum += count($items);
+                    foreach ($arr as $items)
+                        $sum += count($items);
                     return $sum;
                 }
                 ?>
@@ -130,7 +134,8 @@
                                             <?php
                                             $printed_any = false;
                                             foreach ($order as $persp) {
-                                                if (empty($grouped[$persp])) continue;
+                                                if (empty($grouped[$persp]))
+                                                    continue;
                                                 $printed_any = true;
                                                 $persp_rows = count_rows($grouped[$persp]);
                                                 $first_persp_cell = true;
@@ -148,16 +153,20 @@
 
                                                         $statusClass = 'text-secondary';
                                                         $statusText = 'Belum Dinilai';
-                                            ?>
-                                                        <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>" data-perspektif="<?= $persp; ?>">
+                                                        ?>
+                                                        <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>"
+                                                            data-perspektif="<?= $persp; ?>">
                                                             <?php if ($first_persp_cell) { ?>
-                                                                <td rowspan="<?= $persp_rows; ?>" style="vertical-align:middle;font-weight:600;background:#C8E6C9;"><?= $persp; ?></td>
-                                                            <?php $first_persp_cell = false;
+                                                                <td rowspan="<?= $persp_rows; ?>"
+                                                                    style="vertical-align:middle;font-weight:600;background:#C8E6C9;">
+                                                                    <?= $persp; ?></td>
+                                                                <?php $first_persp_cell = false;
                                                             } ?>
 
                                                             <?php if ($first_sas_cell) { ?>
-                                                                <td rowspan="<?= $sasaran_rows; ?>" style="vertical-align:middle;background:#E3F2FD;"><?= $sasaran; ?></td>
-                                                            <?php $first_sas_cell = false;
+                                                                <td rowspan="<?= $sasaran_rows; ?>"
+                                                                    style="vertical-align:middle;background:#E3F2FD;"><?= $sasaran; ?></td>
+                                                                <?php $first_sas_cell = false;
                                                             } ?>
 
                                                             <td class="text-center"><?= $bobot; ?>
@@ -165,39 +174,54 @@
                                                             </td>
                                                             <td><?= $indik; ?></td>
 
-                                                            <td><input type="text" class="form-control target-input" value="<?= $i->target ?? ''; ?>"></td>
-                                                            <td><input type="date" class="form-control" value="<?= $i->batas_waktu ?? ''; ?>"></td>
-                                                            <td><input type="text" class="form-control realisasi-input" value="<?= $i->realisasi ?? ''; ?>"></td>
+                                                            <td><input type="text" class="form-control target-input"
+                                                                    value="<?= $i->target ?? ''; ?>"></td>
+                                                            <td><input type="date" class="form-control"
+                                                                    value="<?= $i->batas_waktu ?? ''; ?>"></td>
+                                                            <td><input type="text" class="form-control realisasi-input"
+                                                                    value="<?= $i->realisasi ?? ''; ?>"></td>
 
-                                                            <td class="text-center"><input type="text" class="form-control form-control-sm pencapaian-output" readonly></td>
-                                                            <td class="text-center"><input type="text" class="form-control form-control-sm nilai-output" readonly></td>
-                                                            <td class="text-center"><input type="text" class="form-control form-control-sm nilai-bobot-output" readonly></td>
+                                                            <td class="text-center"><input type="text"
+                                                                    class="form-control form-control-sm pencapaian-output" readonly>
+                                                            </td>
+                                                            <td class="text-center"><input type="text"
+                                                                    class="form-control form-control-sm nilai-output" readonly></td>
+                                                            <td class="text-center"><input type="text"
+                                                                    class="form-control form-control-sm nilai-bobot-output" readonly>
+                                                            </td>
 
                                                             <td class="text-center <?= $statusClass; ?>"><?= $statusText; ?></td>
                                                             <td class="text-center">
-                                                                <button type="button" class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
+                                                                <button type="button"
+                                                                    class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
                                                             </td>
                                                         </tr>
-                                                <?php
+                                                        <?php
                                                     }
                                                 }
                                                 ?>
-                                                <tr class="subtotal-row" data-perspektif="<?= $persp; ?>" style="font-weight:bold;background:#F1F8E9;">
+                                                <tr class="subtotal-row" data-perspektif="<?= $persp; ?>"
+                                                    style="font-weight:bold;background:#F1F8E9;">
                                                     <td colspan="2">Sub Total Bobot <?= $persp; ?></td>
-                                                    <td class="text-center"><span class="subtotal-bobot"><?= $subtotal_bobot_perspektif; ?></span></td>
-                                                    <td colspan="6" class="text-center">Sub Total Nilai <?= $persp; ?> Dibobot</td>
+                                                    <td class="text-center"><span
+                                                            class="subtotal-bobot"><?= $subtotal_bobot_perspektif; ?></span>
+                                                    </td>
+                                                    <td colspan="6" class="text-center">Sub Total Nilai <?= $persp; ?> Dibobot
+                                                    </td>
                                                     <td class="text-center"><span class="subtotal-nilai-bobot">0.00</span></td>
                                                     <td colspan="2"></td>
                                                 </tr>
-                                            <?php
+                                                <?php
                                             }
                                             if (!$printed_any) { ?>
                                                 <tr>
-                                                    <td colspan="12" class="text-center">Tidak ada indikator untuk jabatan ini</td>
+                                                    <td colspan="12" class="text-center">Tidak ada indikator untuk jabatan ini
+                                                    </td>
                                                 </tr>
                                             <?php } ?>
                                         </tbody>
-                                        <tfoot style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
+                                        <tfoot
+                                            style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
                                             <tr>
                                                 <td colspan="2">Total</td>
                                                 <td><span id="total-bobot">0</span></td>
@@ -220,26 +244,21 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<?php if ($this->router->fetch_class() == 'SuperAdmin' && $this->router->fetch_method() == 'penilaiankinerja'): ?>
-    <?php
-    $message = $this->session->flashdata('message');
-    if ($message): ?>
-        <script>
-            Swal.fire({
-                icon: '<?= $message['type']; ?>',
-                title: 'Informasi',
-                text: '<?= $message['text']; ?>',
-                confirmButtonColor: '#2E7D32'
-            });
-        </script>
-    <?php endif; ?>
+<?php if (isset($message) && !empty($message)): ?>
+<script>
+    Swal.fire({
+        icon: '<?= $message['type']; ?>',
+        title: 'Informasi',
+        text: '<?= $message['text']; ?>',
+        confirmButtonColor: '#2E7D32'
+    });
+</script>
 <?php endif; ?>
-
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const nik = document.getElementById('nik')?.value;
         const periodeAwal = document.getElementById('periode_awal');
         const periodeAkhir = document.getElementById('periode_akhir');
@@ -249,10 +268,10 @@
         if (!periodeAkhir.value) periodeAkhir.value = "2025-12-31";
 
         // 🔹 Validasi supaya periode akhir tidak lebih kecil dari awal
-        periodeAwal.addEventListener('change', function() {
+        periodeAwal.addEventListener('change', function () {
             if (periodeAkhir.value < this.value) periodeAkhir.value = this.value;
         });
-        periodeAkhir.addEventListener('change', function() {
+        periodeAkhir.addEventListener('change', function () {
             if (this.value < periodeAwal.value) {
                 Swal.fire({
                     icon: 'warning',
@@ -332,7 +351,7 @@
 
         // 🔹 Simpan penilaian
         document.querySelectorAll('.simpan-penilaian').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 const row = this.closest('tr');
                 const indikator_id = row.dataset.id;
                 const target = row.querySelector('.target-input').value;
@@ -349,12 +368,12 @@
                 console.log("DEBUG: nik=", nik, "indikator_id=", indikator_id, "periode_awal=", periode_awal, "periode_akhir=", periode_akhir);
 
                 fetch('<?= base_url("SuperAdmin/simpanPenilaianBaris") ?>', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
-                    })
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
+                })
 
                     .then(res => res.json())
                     .then(res => {
@@ -387,7 +406,7 @@
                     });
             });
         });
-        document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
+        document.getElementById('btn-sesuaikan-periode').addEventListener('click', function () {
             const nik = document.getElementById('nik').value;
             const awal = periodeAwal.value;
             const akhir = periodeAkhir.value;

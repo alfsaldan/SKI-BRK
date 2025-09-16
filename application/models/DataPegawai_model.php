@@ -4,12 +4,12 @@ defined('BASEPATH') or exit('No direct script access allowed');
 class DataPegawai_model extends CI_Model
 {
 
-public function getAllPegawai()
-{
-    $this->db->select('p.*, r.status');
-    $this->db->from('pegawai p');
-    $this->db->join(
-        '(SELECT r1.nik, r1.status 
+    public function getAllPegawai()
+    {
+        $this->db->select('p.*, r.status');
+        $this->db->from('pegawai p');
+        $this->db->join(
+            '(SELECT r1.nik, r1.status 
           FROM riwayat_jabatan r1
           INNER JOIN (
               SELECT nik, MAX(tgl_mulai) as tgl_terakhir
@@ -17,11 +17,11 @@ public function getAllPegawai()
               GROUP BY nik
           ) r2 ON r1.nik = r2.nik AND r1.tgl_mulai = r2.tgl_terakhir
         ) r',
-        'p.nik = r.nik',
-        'left'
-    );
-    return $this->db->get()->result();
-}
+            'p.nik = r.nik',
+            'left'
+        );
+        return $this->db->get()->result();
+    }
 
 
     public function insertBatch($data)
@@ -130,6 +130,19 @@ public function getAllPegawai()
         $this->db->select('DISTINCT(unit_kerja) as unit_kerja');
         $query = $this->db->get('riwayat_jabatan');
         return $query->result();
+    }
+
+    public function getPegawaiWithPenilai($nik)
+    {
+        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja,
+        pen1.nik as penilai1_nik, pen1.nama as penilai1_nama, pen1.jabatan as penilai1_jabatan,
+        pen2.nik as penilai2_nik, pen2.nama as penilai2_nama, pen2.jabatan as penilai2_jabatan');
+        $this->db->from('pegawai p');
+        $this->db->join('penilai_mapping m', 'm.jabatan = p.jabatan AND m.unit_kerja = p.unit_kerja', 'left');
+        $this->db->join('pegawai pen1', 'pen1.jabatan = m.penilai1_jabatan AND pen1.unit_kerja = m.unit_kerja', 'left');
+        $this->db->join('pegawai pen2', 'pen2.jabatan = m.penilai2_jabatan AND pen2.unit_kerja = m.unit_kerja', 'left');
+        $this->db->where('p.nik', $nik);
+        return $this->db->get()->row();
     }
 
 

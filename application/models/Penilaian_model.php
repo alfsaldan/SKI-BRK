@@ -11,8 +11,10 @@ class Penilaian_model extends CI_Model
     public function get_indikator_by_jabatan_dan_unit($jabatan, $unit_kerja, $nik = null, $periode_awal = null, $periode_akhir = null)
     {
         // Set default periode kalau kosong
-        if (!$periode_awal) $periode_awal = '2025-01-01';
-        if (!$periode_akhir) $periode_akhir = '2025-12-31';
+        if (!$periode_awal)
+            $periode_awal = '2025-01-01';
+        if (!$periode_akhir)
+            $periode_akhir = '2025-12-31';
 
         $this->db->select('
         indikator.id,
@@ -57,16 +59,18 @@ class Penilaian_model extends CI_Model
     public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $periode_awal = null, $periode_akhir = null)
     {
         // 🔹 Set default periode jika null
-        if (!$periode_awal) $periode_awal = date('Y-01-01');
-        if (!$periode_akhir) $periode_akhir = date('Y-12-31');
+        if (!$periode_awal)
+            $periode_awal = date('Y-01-01');
+        if (!$periode_akhir)
+            $periode_akhir = date('Y-12-31');
 
         $data = [
-            'nik'           => $nik,
-            'indikator_id'  => $indikator_id,
-            'target'        => $target,
-            'batas_waktu'   => $batas_waktu,
-            'realisasi'     => $realisasi,
-            'periode_awal'  => $periode_awal,
+            'nik' => $nik,
+            'indikator_id' => $indikator_id,
+            'target' => $target,
+            'batas_waktu' => $batas_waktu,
+            'realisasi' => $realisasi,
+            'periode_awal' => $periode_awal,
             'periode_akhir' => $periode_akhir
         ];
 
@@ -103,7 +107,8 @@ class Penilaian_model extends CI_Model
                 $d['periode_awal'] ?? null,
                 $d['periode_akhir'] ?? null
             );
-            if (!$s) $saved = false;
+            if (!$s)
+                $saved = false;
         }
         return $saved;
     }
@@ -111,8 +116,10 @@ class Penilaian_model extends CI_Model
     public function update_penilaian($id, $data)
     {
         // pastikan periode ada default
-        if (empty($data['periode_awal'])) $data['periode_awal'] = '2025-01-01';
-        if (empty($data['periode_akhir'])) $data['periode_akhir'] = '2025-12-31';
+        if (empty($data['periode_awal']))
+            $data['periode_awal'] = '2025-01-01';
+        if (empty($data['periode_akhir']))
+            $data['periode_akhir'] = '2025-12-31';
 
         return $this->db->where('id', $id)->update('penilaian', $data);
     }
@@ -120,8 +127,10 @@ class Penilaian_model extends CI_Model
     public function updatePeriodeByNik($nik, $awal, $akhir)
     {
         // default periode
-        if (!$awal) $awal = '2025-01-01';
-        if (!$akhir) $akhir = '2025-12-31';
+        if (!$awal)
+            $awal = '2025-01-01';
+        if (!$akhir)
+            $akhir = '2025-12-31';
 
         $this->db->where('nik', $nik)
             ->update('penilaian', [
@@ -129,4 +138,18 @@ class Penilaian_model extends CI_Model
                 'periode_akhir' => $akhir
             ]);
     }
+
+    public function getPegawaiWithPenilai($nik)
+    {
+        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja,
+        pen1.nik as penilai1_nik, pen1.nama as penilai1_nama, pen1.jabatan as penilai1_jabatan,
+        pen2.nik as penilai2_nik, pen2.nama as penilai2_nama, pen2.jabatan as penilai2_jabatan');
+        $this->db->from('pegawai p');
+        $this->db->join('penilai_mapping m', 'm.jabatan = p.jabatan AND m.unit_kerja = p.unit_kerja', 'left');
+        $this->db->join('pegawai pen1', 'pen1.jabatan = m.penilai1_jabatan AND pen1.unit_kerja = m.unit_kerja', 'left');
+        $this->db->join('pegawai pen2', 'pen2.jabatan = m.penilai2_jabatan AND pen2.unit_kerja = m.unit_kerja', 'left');
+        $this->db->where('p.nik', $nik);
+        return $this->db->get()->row();
+    }
+
 }
