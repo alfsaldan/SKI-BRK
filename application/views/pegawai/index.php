@@ -66,21 +66,23 @@
                                 <hr>
 
                                 <!-- Penilai I & Penilai II -->
+                                <!-- Penilai I & Penilai II -->
                                 <div class="row">
                                     <div class="col-md-6">
                                         <h5>Penilai I</h5>
-                                        <p><b>NIK:</b></p>
-                                        <p><b>Nama:</b></p>
-                                        <p><b>Jabatan:</b></p>
+                                        <p><b>NIK:</b> <?= $pegawai_detail->penilai1_nik ?? '-'; ?></p>
+                                        <p><b>Nama:</b> <?= $pegawai_detail->penilai1_nama ?? '-'; ?></p>
+                                        <p><b>Jabatan:</b> <?= $pegawai_detail->penilai1_jabatan_detail ?? '-'; ?></p>
                                     </div>
 
                                     <div class="col-md-6">
                                         <h5>Penilai II</h5>
-                                        <p><b>NIK:</b></p>
-                                        <p><b>Nama:</b></p>
-                                        <p><b>Jabatan:</b></p>
+                                        <p><b>NIK:</b> <?= $pegawai_detail->penilai2_nik ?? '-'; ?></p>
+                                        <p><b>Nama:</b> <?= $pegawai_detail->penilai2_nama ?? '-'; ?></p>
+                                        <p><b>Jabatan:</b> <?= $pegawai_detail->penilai2_jabatan_detail ?? '-'; ?></p>
                                     </div>
                                 </div>
+
 
                             </div>
                         </div>

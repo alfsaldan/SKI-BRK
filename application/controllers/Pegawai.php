@@ -25,7 +25,7 @@ class Pegawai extends CI_Controller
     public function index()
     {
         $nik = $this->session->userdata('nik');
-        $pegawai = $this->Pegawai_model->getPegawaiByNIK($nik);
+        $pegawai = $this->Pegawai_model->getPegawaiWithPenilai($nik);
 
         // periode: cek GET dulu (dari tombol sesuaikan periode), lalu POST (form), lalu default tahun berjalan
         $periode_awal  = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y') . "-01-01";
@@ -41,12 +41,13 @@ class Pegawai extends CI_Controller
         );
 
         $data = [
-            'judul'                 => "Dashboard Pegawai",
-            'pegawai_detail'        => $pegawai,
-            'indikator_by_jabatan'  => $indikator,
-            'periode_awal'          => $periode_awal,
-            'periode_akhir'         => $periode_akhir
+            'judul' => "Dashboard Pegawai",
+            'pegawai_detail' => $pegawai,
+            'indikator_by_jabatan' => $indikator,
+            'periode_awal' => $periode_awal,
+            'periode_akhir' => $periode_akhir
         ];
+
 
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/index', $data);
