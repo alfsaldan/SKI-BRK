@@ -283,6 +283,7 @@ class SuperAdmin extends CI_Controller
             $indikator = $this->Penilaian_model->get_indikator_by_jabatan_dan_unit(
                 $pegawai->jabatan,
                 $pegawai->unit_kerja,
+                $pegawai->unit_kantor,
                 $nik,
                 $periode_awal,
                 $periode_akhir
@@ -476,27 +477,39 @@ class SuperAdmin extends CI_Controller
             return;
         }
 
-        $header = $sheetData[1];
-        $colA = strtolower(trim($header['A']));
-        $colB = strtolower(trim($header['B']));
-        $colC = strtolower(trim($header['C']));
-        $colD = strtolower(trim($header['D']));
-        $colE = strtolower(trim($header['E']));
+        // 🔹 Normalisasi header
+        $normalize = function ($text) {
+            return strtolower(str_replace(' ', '_', trim($text)));
+        };
 
+        $header = $sheetData[1];
+        $colA = $normalize($header['A']); // NIK
+        $colB = $normalize($header['B']); // Nama
+        $colC = $normalize($header['C']); // Jabatan
+        $colD = $normalize($header['D']); // Unit Kerja
+        $colE = $normalize($header['E']); // Unit Kantor
+        $colF = $normalize($header['F']); // Password
+
+        // 🔹 Validasi header
         if (
             $colA !== 'nik' ||
             $colB !== 'nama' ||
             $colC !== 'jabatan' ||
-            !in_array($colD, ['unit_kerja', 'unit kerja', 'unit kantor', 'unitkantor']) ||
-            $colE !== 'password'
+            $colD !== 'unit_kerja' ||   // Unit Kerja dulu
+            $colE !== 'unit_kantor' ||  // Unit Kantor setelahnya
+            $colF !== 'password'
         ) {
-            $this->session->set_flashdata('error', 'Header tidak sesuai. Gunakan template resmi (Nik, Nama, Jabatan, Unit Kerja, Password).');
+            $this->session->set_flashdata(
+                'error',
+                'Header tidak sesuai. Gunakan template resmi (Nik, Nama, Jabatan, Unit Kerja, Unit Kantor, Password).'
+            );
             redirect('SuperAdmin/kelolaDataPegawai');
             return;
         }
 
         $rows = [];
         $errors = [];
+
         foreach ($sheetData as $i => $row) {
             if ($i == 1)
                 continue; // skip header
@@ -505,7 +518,8 @@ class SuperAdmin extends CI_Controller
             $nama = trim($row['B']);
             $jabatan = trim($row['C']);
             $unit_kerja = trim($row['D']);
-            $password_plain = trim($row['E']);
+            $unit_kantor = trim($row['E']);
+            $password_plain = trim($row['F']);
 
             if (empty($nik)) {
                 $errors[] = "Baris $i: NIK kosong.";
@@ -524,12 +538,13 @@ class SuperAdmin extends CI_Controller
 
             $password_hashed = password_hash($password_plain, PASSWORD_DEFAULT);
 
-            // Siapkan data untuk batch insert ke pegawai
+            // 🔹 Siapkan data untuk batch insert
             $rows[] = [
                 'nik' => $nik,
                 'nama' => $nama,
                 'jabatan' => $jabatan,
                 'unit_kerja' => $unit_kerja,
+                'unit_kantor' => $unit_kantor,
                 'password' => $password_hashed,
             ];
 
@@ -563,8 +578,6 @@ class SuperAdmin extends CI_Controller
     }
 
 
-
-
     // Tambah Pegawai Manual
     public function tambahPegawai()
     {
@@ -574,28 +587,27 @@ class SuperAdmin extends CI_Controller
         $nama = $this->input->post('nama');
         $jabatan = $this->input->post('jabatan');
         $unit_kerja = $this->input->post('unit_kerja');
-        $password_plain = $this->input->post('password'); // password asli dari form
+        $unit_kantor = $this->input->post('unit_kantor'); // 🔹 Tambahan
+        $password_plain = $this->input->post('password');
         $password_hashed = password_hash($password_plain, PASSWORD_DEFAULT);
 
-        // Insert ke tabel pegawai
         $data_pegawai = [
             'nik' => $nik,
             'nama' => $nama,
             'jabatan' => $jabatan,
             'unit_kerja' => $unit_kerja,
+            'unit_kantor' => $unit_kantor, // 🔹 Tambahan
             'password' => $password_hashed,
         ];
         $this->DataPegawai_model->insertPegawai($data_pegawai);
 
-        // Insert ke tabel riwayat_jabatan
         $this->DataPegawai_model->insertRiwayatAwal($nik, $jabatan, $unit_kerja);
 
-        // 🔹 Insert otomatis ke tabel users (jika belum ada)
         $cek_user = $this->db->get_where('users', ['nik' => $nik])->row();
         if (!$cek_user) {
             $data_user = [
                 'nik' => $nik,
-                'password' => $password_hashed, // bisa pakai password default juga
+                'password' => $password_hashed,
                 'role' => 'pegawai',
                 'is_active' => 1
             ];
@@ -605,6 +617,7 @@ class SuperAdmin extends CI_Controller
         $this->session->set_flashdata('success', 'Pegawai berhasil ditambahkan.');
         redirect('SuperAdmin/kelolaDataPegawai');
     }
+
 
 
 
@@ -637,6 +650,7 @@ class SuperAdmin extends CI_Controller
         // ambil semua jabatan & unit kerja unik dari tabel riwayat_jabatan
         $data['jabatan_list'] = $this->DataPegawai_model->getAllJabatan();
         $data['unitkerja_list'] = $this->DataPegawai_model->getAllUnitKerja();
+        // $data['unitkantor_list'] = $this->DataPegawai_model->getAllUnitKantor();
 
         $this->load->view("layout/header");
         $this->load->view("superadmin/detailpegawai", $data);
@@ -653,9 +667,10 @@ class SuperAdmin extends CI_Controller
         $nik = $this->input->post('nik');
         $jabatan = $this->input->post('jabatan');
         $unit_kerja = $this->input->post('unit_kerja');
+        $unit_kantor = $this->input->post('unit_kantor');
         $tgl_mulai = $this->input->post('tgl_mulai');
 
-        $this->DataPegawai_model->tambahRiwayatJabatan($nik, $jabatan, $unit_kerja, $tgl_mulai);
+        $this->DataPegawai_model->tambahRiwayatJabatan($nik, $jabatan, $unit_kerja, $unit_kantor, $tgl_mulai);
 
         $this->session->set_flashdata('success', 'Riwayat jabatan baru berhasil ditambahkan.');
         redirect('SuperAdmin/detailPegawai/' . $nik);
@@ -805,7 +820,7 @@ class SuperAdmin extends CI_Controller
     public function kelolatingkatanjabatan()
     {
         $data['judul'] = 'Kelola Tingkatan Jabatan';
-        $data['list']  = $this->PenilaiMapping_model->getAll();
+        $data['list'] = $this->PenilaiMapping_model->getAll();
 
         $this->load->view('layout/header', $data);
         $this->load->view('superadmin/kelolatingkatanjabatan', $data);
@@ -817,8 +832,8 @@ class SuperAdmin extends CI_Controller
     {
         if ($this->input->post()) {
             $insert = [
-                'jabatan'          => $this->input->post('jabatan'),
-                'unit_kerja'       => $this->input->post('unit_kerja'),
+                'jabatan' => $this->input->post('jabatan'),
+                'unit_kerja' => $this->input->post('unit_kerja'),
                 'penilai1_jabatan' => $this->input->post('penilai1_jabatan'),
                 'penilai2_jabatan' => $this->input->post('penilai2_jabatan'),
             ];
@@ -834,8 +849,8 @@ class SuperAdmin extends CI_Controller
     {
         if ($this->input->post()) {
             $update = [
-                'jabatan'          => $this->input->post('jabatan'),
-                'unit_kerja'       => $this->input->post('unit_kerja'),
+                'jabatan' => $this->input->post('jabatan'),
+                'unit_kerja' => $this->input->post('unit_kerja'),
                 'penilai1_jabatan' => $this->input->post('penilai1_jabatan'),
                 'penilai2_jabatan' => $this->input->post('penilai2_jabatan'),
             ];

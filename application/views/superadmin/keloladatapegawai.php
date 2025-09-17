@@ -74,7 +74,8 @@
                                             <th>NIK</th>
                                             <th>Nama</th>
                                             <th>Jabatan</th>
-                                            <th>Unit Kerja</th>
+                                            <th>Jenis Unit</th>
+                                            <th>Unit Kantor</th>
                                             <th>Status</th>
                                             <th>Aksi</th>
                                         </tr>
@@ -88,6 +89,7 @@
                                                 <td><?= $p->nama ?></td>
                                                 <td><?= $p->jabatan ?></td>
                                                 <td><?= $p->unit_kerja ?></td>
+                                                <td><?= $p->unit_kantor ?></td>
                                                 <td>
                                                     <?php if ($p->status == 'aktif'): ?>
                                                         <span class="badge badge-success">Aktif</span>
@@ -165,8 +167,12 @@
                         <input type="text" name="jabatan" class="form-control" required>
                     </div>
                     <div class="form-group col-md-6">
-                        <label>Unit Kerja</label>
+                        <label>Jenis Unit</label>
                         <input type="text" name="unit_kerja" class="form-control" required>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Unit Kantor</label>
+                        <input type="text" name="unit_kantor" class="form-control" required>
                     </div>
                     <div class="form-group col-md-6">
                         <label>Password</label>

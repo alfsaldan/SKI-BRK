@@ -26,15 +26,14 @@ class DataPegawai_model extends CI_Model
 
     public function insertBatch($data)
     {
-        // Insert ke tabel pegawai
         $this->db->insert_batch('pegawai', $data);
 
-        // Loop data untuk buat riwayat awal per pegawai
         foreach ($data as $row) {
             $riwayat = [
                 'nik' => $row['nik'],
                 'jabatan' => $row['jabatan'],
                 'unit_kerja' => $row['unit_kerja'],
+                'unit_kantor' => $row['unit_kantor'],
                 'tgl_mulai' => date('Y-m-d'),
                 'tgl_selesai' => NULL,
                 'status' => 'aktif'
@@ -44,6 +43,7 @@ class DataPegawai_model extends CI_Model
 
         return true;
     }
+
 
     public function getRiwayatJabatan($nik)
     {
@@ -56,8 +56,17 @@ class DataPegawai_model extends CI_Model
 
     public function insertPegawai($data)
     {
-        return $this->db->insert('pegawai', $data);
+        // Pastikan data sudah punya key 'unit_kantor'
+        return $this->db->insert('pegawai', [
+            'nik' => $data['nik'],
+            'nama' => $data['nama'],
+            'jabatan' => $data['jabatan'],
+            'unit_kerja' => $data['unit_kerja'],
+            'unit_kantor' => isset($data['unit_kantor']) ? $data['unit_kantor'] : 'Pekanbaru Sudirman',
+            'password' => $data['password']
+        ]);
     }
+
 
     public function getPegawaiByNik($nik)
     {
@@ -79,7 +88,7 @@ class DataPegawai_model extends CI_Model
         return $this->db->delete('pegawai', ['nik' => $nik]);
     }
     // Tambah riwayat jabatan baru & tutup jabatan lama otomatis
-    public function tambahRiwayatJabatan($nik, $jabatan_baru, $unit_baru, $tgl_mulai)
+    public function tambahRiwayatJabatan($nik, $jabatan_baru, $unit_baru, $unitkantor_baru, $tgl_mulai)
     {
         // Hitung tanggal selesai = 1 hari sebelum jabatan baru mulai
         $tgl_selesai = date('Y-m-d', strtotime($tgl_mulai . ' -1 day'));
@@ -97,6 +106,7 @@ class DataPegawai_model extends CI_Model
             'nik' => $nik,
             'jabatan' => $jabatan_baru,
             'unit_kerja' => $unit_baru,
+            'unit_kantor' => $unitkantor_baru,
             'tgl_mulai' => $tgl_mulai,
             'tgl_selesai' => NULL,
             'status' => 'aktif'
@@ -105,12 +115,13 @@ class DataPegawai_model extends CI_Model
     }
 
     // Tambah riwayat jabatan pertama saat pegawai baru dibuat
-    public function insertRiwayatAwal($nik, $jabatan, $unit_kerja)
+    public function insertRiwayatAwal($nik, $jabatan, $unit_kerja , $unit_kantor)
     {
         $data = [
             'nik' => $nik,
             'jabatan' => $jabatan,
             'unit_kerja' => $unit_kerja,
+            'unit_kantor' => $unit_kantor,
             'tgl_mulai' => date('Y-m-d'), // otomatis hari ini
             'tgl_selesai' => NULL,
             'status' => 'aktif'
@@ -132,6 +143,12 @@ class DataPegawai_model extends CI_Model
         return $query->result();
     }
 
+    //   public function getAllUnitKantor()
+    // {
+    //     $this->db->select('DISTINCT(unit_kantor) as unit_kantor');
+    //     $query = $this->db->get('penilai_mapping');
+    //     return $query->result();
+    // }
     public function getPegawaiWithPenilai($nik)
     {
         $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja,
