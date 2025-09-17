@@ -121,14 +121,14 @@ class DataPegawai_model extends CI_Model
     public function getAllJabatan()
     {
         $this->db->select('DISTINCT(jabatan) as jabatan');
-        $query = $this->db->get('riwayat_jabatan');
+        $query = $this->db->get('penilai_mapping');
         return $query->result();
     }
 
     public function getAllUnitKerja()
     {
         $this->db->select('DISTINCT(unit_kerja) as unit_kerja');
-        $query = $this->db->get('riwayat_jabatan');
+        $query = $this->db->get('penilai_mapping');
         return $query->result();
     }
 
