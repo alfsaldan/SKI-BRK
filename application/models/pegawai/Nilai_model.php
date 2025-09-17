@@ -3,32 +3,85 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Nilai_model extends CI_Model
 {
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
     /**
-     * Ambil daftar pegawai yang bisa dinilai oleh penilai berdasarkan jabatan
+     * Ambil daftar pegawai yang bisa dinilai oleh penilai tertentu
      */
     public function getPegawaiYangDinilai($nik_penilai)
     {
-        $subquery = "(SELECT jabatan FROM pegawai WHERE nik = '{$nik_penilai}')";
+        // ambil jabatan penilai terlebih dahulu
+        $row = $this->db->select('jabatan, unit_kerja')->get_where('pegawai', ['nik' => $nik_penilai])->row();
+        if (!$row || empty($row->jabatan)) {
+            return [];
+        }
+        $jabatan_penilai = $row->jabatan;
+        $unit_penilai    = $row->unit_kerja;
+
         $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja');
         $this->db->from('pegawai p');
         $this->db->join('penilai_mapping pm', 'p.jabatan = pm.jabatan AND p.unit_kerja = pm.unit_kerja');
         $this->db->group_start();
-        $this->db->where("pm.penilai1_jabatan = {$subquery}");
-        $this->db->or_where("pm.penilai2_jabatan = {$subquery}");
+        $this->db->where('pm.penilai1_jabatan', $jabatan_penilai);
+        $this->db->or_where('pm.penilai2_jabatan', $jabatan_penilai);
         $this->db->group_end();
         $this->db->group_by('p.nik');
+
         return $this->db->get()->result();
     }
 
-    public function getIndikatorPegawai($nik)
+    /**
+     * Ambil detail pegawai + penilai1 & penilai2 (mirip Pegawai_model::getPegawaiWithPenilai)
+     */
+    public function getPegawaiWithPenilai($nik)
     {
-        $this->db->select('p.*, i.jabatan, i.unit_kerja'); // pakai kolom yang ada
+        $this->db->select("
+            p.*,
+            pm.penilai1_jabatan,
+            pm.penilai2_jabatan,
+            pen1.nik AS penilai1_nik,
+            pen1.nama AS penilai1_nama,
+            pen1.jabatan AS penilai1_jabatan_detail,
+            pen2.nik AS penilai2_nik,
+            pen2.nama AS penilai2_nama,
+            pen2.jabatan AS penilai2_jabatan_detail
+        ");
+        $this->db->from('pegawai p');
+        $this->db->join('penilai_mapping pm', 'p.jabatan = pm.jabatan AND p.unit_kerja = pm.unit_kerja', 'left');
+        $this->db->join('pegawai pen1', 'pm.penilai1_jabatan = pen1.jabatan AND p.unit_kerja = pen1.unit_kerja', 'left');
+        $this->db->join('pegawai pen2', 'pm.penilai2_jabatan = pen2.jabatan AND p.unit_kerja = pen2.unit_kerja', 'left');
+        $this->db->where('p.nik', $nik);
+
+        return $this->db->get()->row();
+    }
+
+    /**
+     * Ambil indikator/penilaian untuk seorang pegawai pada rentang periode.
+     */
+    public function getIndikatorPegawai($nik, $periode_awal, $periode_akhir)
+    {
+        $this->db->select('p.*, s.perspektif, s.sasaran_kerja, i.indikator, i.bobot');
         $this->db->from('penilaian p');
         $this->db->join('indikator i', 'p.indikator_id = i.id', 'left');
+        $this->db->join('sasaran_kerja s', 'i.sasaran_id = s.id', 'left');
         $this->db->where('p.nik', $nik);
-        $this->db->order_by('i.jabatan', 'ASC'); // order by kolom yang ada
-        $query = $this->db->get();
+        $this->db->where('p.batas_waktu >=', $periode_awal);
+        $this->db->where('p.batas_waktu <=', $periode_akhir);
+        $this->db->order_by('s.perspektif', 'ASC');
+        $this->db->order_by('s.sasaran_kerja', 'ASC');
 
-        return $query->result();
+        return $this->db->get()->result();
+    }
+    
+    /**
+     * Update status sebuah baris penilaian
+     */
+    public function updateStatus($id, $status)
+    {
+        if (empty($id) || empty($status)) return false;
+        return $this->db->where('id', $id)->update('penilaian', ['status' => $status]);
     }
 }

@@ -392,7 +392,7 @@ if ($message): ?>
         document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
             const awal = periodeAwal.value;
             const akhir = periodeAkhir.value;
-            window.location.href = `<?= base_url("Pegawai") ?>?awal=${awal}&akhir=${akhir}`;
+            window.location.href = `<?= base_url("nilai") ?>?awal=${awal}&akhir=${akhir}`;
         });
     });
     // JS di bagian <script>

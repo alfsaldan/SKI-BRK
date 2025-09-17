@@ -120,24 +120,27 @@ class Pegawai extends CI_Controller
 
     public function nilaiPegawaiDetail($nik_pegawai)
     {
-        $nik_penilai = $this->session->userdata('nik');
+        $this->load->model('pegawai/Nilai_model');
+        $this->load->model('Pegawai_model');
 
-        // Ambil data pegawai yang akan dinilai
-        $pegawai = $this->Pegawai_model->getPegawaiByNIK($nik_pegawai);
+        // ambil data pegawai + penilai1 + penilai2
+        // BENAR
+        $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik_pegawai);
 
-        if (!$pegawai) {
-            $this->session->set_flashdata('message', ['type' => 'error', 'text' => 'Pegawai tidak ditemukan']);
-            redirect('Pegawai/nilaiPegawai');
-        }
 
-        // Ambil indikator & penilaian pegawai
-        $indikator = $this->Nilai_model->getIndikatorPegawai($nik_pegawai);
+        // periode default / dari GET
+        $periode_awal  = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y') . "-01-01";
+        $periode_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
+
+        // ambil indikator/penilaian
+        $indikator = $this->Nilai_model->getIndikatorPegawai($nik_pegawai, $periode_awal, $periode_akhir);
 
         $data = [
-            'judul' => "Penilaian Pegawai",
+            'judul' => "Form Penilaian Pegawai",
             'pegawai_detail' => $pegawai,
             'indikator_by_jabatan' => $indikator,
-            'nik_penilai' => $nik_penilai
+            'periode_awal' => $periode_awal,
+            'periode_akhir' => $periode_akhir
         ];
 
         $this->load->view('layoutpegawai/header', $data);
