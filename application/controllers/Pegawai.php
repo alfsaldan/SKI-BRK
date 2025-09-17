@@ -11,6 +11,7 @@ class Pegawai extends CI_Controller
         $this->load->model('pegawai/Nilai_model');
         $this->load->model('Penilaian_model');
         $this->load->model('Indikator_model');
+        $this->load->model('DataDiri_model');
         $this->load->library('session');
 
         // Pastikan hanya pegawai yang bisa akses
@@ -29,7 +30,7 @@ class Pegawai extends CI_Controller
         $pegawai = $this->Pegawai_model->getPegawaiWithPenilai($nik);
 
         // periode: cek GET dulu (dari tombol sesuaikan periode), lalu POST (form), lalu default tahun berjalan
-        $periode_awal  = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y') . "-01-01";
+        $periode_awal = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y') . "-01-01";
         $periode_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
 
         // ambil indikator & nilai (dibatasi dengan nik & periode)
@@ -65,11 +66,11 @@ class Pegawai extends CI_Controller
 
         // terima beberapa kemungkinan nama parameter (supaya aman)
         $indikator_id = $this->input->post('indikator_id') ?? $this->input->post('id');
-        $target       = $this->input->post('target') ?? $this->input->post('targets') ?? null;
-        $batas_waktu  = $this->input->post('batas_waktu') ?? null;
-        $realisasi    = $this->input->post('realisasi') ?? null;
+        $target = $this->input->post('target') ?? $this->input->post('targets') ?? null;
+        $batas_waktu = $this->input->post('batas_waktu') ?? null;
+        $realisasi = $this->input->post('realisasi') ?? null;
 
-        $periode_awal  = $this->input->post('periode_awal') ?? date('Y') . "-01-01";
+        $periode_awal = $this->input->post('periode_awal') ?? date('Y') . "-01-01";
         $periode_akhir = $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
 
         // simpan (Penilaian_model->save_penilaian menangani insert/update sesuai nik+indikator+periode)
@@ -129,7 +130,7 @@ class Pegawai extends CI_Controller
 
 
         // periode default / dari GET
-        $periode_awal  = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y') . "-01-01";
+        $periode_awal = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y') . "-01-01";
         $periode_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
 
         // ambil indikator/penilaian
@@ -147,4 +148,48 @@ class Pegawai extends CI_Controller
         $this->load->view('pegawai/nilaipegawai_detail', $data);
         $this->load->view('layoutpegawai/footer');
     }
+
+    public function datadiriPegawai()
+    {
+        $this->load->model('DataDiri_model');
+
+        $nik = $this->session->userdata('nik');
+
+        if (!$nik) {
+            $user_id = $this->session->userdata('id');
+            if ($user_id) {
+                $user = $this->db->get_where('users', ['id' => $user_id])->row_array();
+                $nik = $user ? $user['nik'] : null;
+            }
+        }
+
+        if (!$nik) {
+            redirect('auth/login');
+        }
+
+        // Ambil data pegawai
+        $data['pegawai'] = $this->DataDiri_model->getDataByNik($nik);
+
+        // Proses update password
+        if ($this->input->post('update_password')) {
+            $password = $this->input->post('password');
+            $konfirmasi = $this->input->post('konfirmasi_password');
+
+            if (!empty($password) && $password === $konfirmasi) {
+                if ($this->DataDiri_model->updatePassword($nik, $password)) {
+                    $this->session->set_flashdata('success', 'Password berhasil diperbarui!');
+                } else {
+                    $this->session->set_flashdata('error', 'Gagal memperbarui password!');
+                }
+            } else {
+                $this->session->set_flashdata('error', 'Password tidak sama atau kosong!');
+            }
+            redirect('pegawai/datadiriPegawai');
+        }
+
+        $this->load->view('layoutpegawai/header', $data);
+        $this->load->view('pegawai/datadiripegawai', $data);
+        $this->load->view('layoutpegawai/footer');
+    }
+
 }
