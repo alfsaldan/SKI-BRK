@@ -322,6 +322,12 @@
                             </a>
                         </li>
 
+                        <li class="<?= $this->uri->segment(2) == 'kelolatingkatanjabatan' ? 'active' : '' ?>">
+                            <a href="<?= base_url('superadmin/kelolatingkatanjabatan') ?>">
+                                <i class="mdi mdi-account-card-details"></i>
+                                <span>Kelola Jabatan </span>
+                            </a>
+                        </li>
                     </ul>
 
                 </div>

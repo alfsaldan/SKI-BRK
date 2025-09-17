@@ -12,6 +12,7 @@ $route['dashboard']          = 'SuperAdmin/index'; // Dashboard superadmin
 $route['login']              = 'Auth/index';       // Halaman login
 $route['logout']             = 'Auth/logout';      // Logout
 
+
 // Route tambahan untuk role lain (pegawai misalnya)
 $route['pegawai']            = 'Pegawai/index';    
 

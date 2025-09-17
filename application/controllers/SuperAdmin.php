@@ -26,6 +26,7 @@ class SuperAdmin extends CI_Controller
         $this->load->model('Penilaian_model');
         $this->load->model('RiwayatJabatan_model');
         $this->load->model('DataDiri_model');
+        $this->load->model('PenilaiMapping_model');
         $this->load->library('session');
 
         if (!$this->session->userdata('logged_in') || $this->session->userdata('role') !== 'superadmin') {
@@ -295,7 +296,6 @@ class SuperAdmin extends CI_Controller
                 'type' => 'success',
                 'text' => 'Data penilaian pegawai ditemukan!'
             ];
-
         } else {
             $data['pegawai_detail'] = null;
             $data['indikator_by_jabatan'] = [];
@@ -690,7 +690,7 @@ class SuperAdmin extends CI_Controller
     }
 
     // Cari Data Pegawai berdasarkan NIK
-// Cari Data Pegawai berdasarkan NIK
+    // Cari Data Pegawai berdasarkan NIK
     public function cariDataPegawai()
     {
         $nik = $this->input->post('nik');
@@ -801,4 +801,57 @@ class SuperAdmin extends CI_Controller
         $this->load->view('layout/footer');
     }
 
+    // ========== Halaman Kelola Tingkatan Jabatan ==========
+    public function kelolatingkatanjabatan()
+    {
+        $data['judul'] = 'Kelola Tingkatan Jabatan';
+        $data['list']  = $this->PenilaiMapping_model->getAll();
+
+        $this->load->view('layout/header', $data);
+        $this->load->view('superadmin/kelolatingkatanjabatan', $data);
+        $this->load->view('layout/footer');
+    }
+
+    // Tambah data
+    public function tambahPenilaiMapping()
+    {
+        if ($this->input->post()) {
+            $insert = [
+                'jabatan'          => $this->input->post('jabatan'),
+                'unit_kerja'       => $this->input->post('unit_kerja'),
+                'penilai1_jabatan' => $this->input->post('penilai1_jabatan'),
+                'penilai2_jabatan' => $this->input->post('penilai2_jabatan'),
+            ];
+
+            $this->PenilaiMapping_model->insert($insert);
+            $this->session->set_flashdata('success', 'Data mapping berhasil ditambahkan.');
+            redirect('Superadmin/kelolatingkatanjabatan');
+        }
+    }
+
+    // Edit data
+    public function editPenilaiMapping($id)
+    {
+        if ($this->input->post()) {
+            $update = [
+                'jabatan'          => $this->input->post('jabatan'),
+                'unit_kerja'       => $this->input->post('unit_kerja'),
+                'penilai1_jabatan' => $this->input->post('penilai1_jabatan'),
+                'penilai2_jabatan' => $this->input->post('penilai2_jabatan'),
+            ];
+
+            $this->PenilaiMapping_model->update($id, $update);
+            $this->session->set_flashdata('success', 'Data mapping berhasil diubah.');
+            redirect('Superadmin/kelolatingkatanjabatan');
+        }
+    }
+
+    // Hapus data
+    public function hapusPenilaiMapping($id)
+    {
+        if ($this->PenilaiMapping_model->delete($id)) {
+            $this->session->set_flashdata('success', 'Data berhasil dihapus');
+        }
+        redirect('superadmin/kelolatingkatanjabatan');
+    }
 }
