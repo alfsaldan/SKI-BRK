@@ -25,6 +25,7 @@ class SuperAdmin extends CI_Controller
         $this->load->model('Indikator_model');
         $this->load->model('Penilaian_model');
         $this->load->model('RiwayatJabatan_model');
+        $this->load->model('DataDiri_model');
         $this->load->library('session');
 
         if (!$this->session->userdata('logged_in') || $this->session->userdata('role') !== 'superadmin') {
@@ -758,4 +759,46 @@ class SuperAdmin extends CI_Controller
         $writer->save('php://output');
         exit;
     }
+
+    // Halaman Data Diri
+    public function datadiri()
+    {
+        $this->load->model('DataDiri_model');
+
+        $nik = $this->session->userdata('nik');
+
+        if (!$nik) {
+            $user_id = $this->session->userdata('id');
+            if ($user_id) {
+                $user = $this->db->get_where('users', ['id' => $user_id])->row_array();
+                $nik = $user ? $user['nik'] : null;
+            }
+        }
+
+        if (!$nik) {
+            redirect('auth/login');
+        }
+
+        $data['pegawai'] = $this->DataDiri_model->getDataByNik($nik);
+
+        if ($this->input->post('update_password')) {
+            $password = $this->input->post('password');
+            $konfirmasi = $this->input->post('konfirmasi_password');
+            if (!empty($password) && $password === $konfirmasi) {
+                if ($this->DataDiri_model->updatePassword($nik, $password)) {
+                    $this->session->set_flashdata('success', 'Password berhasil diperbarui!');
+                } else {
+                    $this->session->set_flashdata('error', 'Gagal memperbarui password!');
+                }
+            } else {
+                $this->session->set_flashdata('error', 'Password tidak sama atau kosong!');
+            }
+            redirect('superadmin/datadiri');
+        }
+
+        $this->load->view('layout/header');
+        $this->load->view('superadmin/datadiri', $data);
+        $this->load->view('layout/footer');
+    }
+
 }
