@@ -90,7 +90,7 @@ class DataPegawai_model extends CI_Model
     // Tambah riwayat jabatan baru & tutup jabatan lama otomatis
     public function tambahRiwayatJabatan($nik, $jabatan_baru, $unit_baru, $unitkantor_baru, $tgl_mulai)
     {
-        // Tutup jabatan lama
+        // Tutup jabatan lama (yang masih aktif)
         $tgl_selesai = date('Y-m-d', strtotime($tgl_mulai . ' -1 day'));
         $this->db->where('nik', $nik);
         $this->db->where('tgl_selesai IS NULL');
@@ -99,7 +99,7 @@ class DataPegawai_model extends CI_Model
             'status' => 'nonaktif'
         ]);
 
-        // Tambah jabatan baru
+        // Tambah riwayat jabatan baru
         $data = [
             'nik' => $nik,
             'jabatan' => $jabatan_baru,
@@ -109,8 +109,19 @@ class DataPegawai_model extends CI_Model
             'tgl_selesai' => NULL,
             'status' => 'aktif'
         ];
-        return $this->db->insert('riwayat_jabatan', $data);
+        $this->db->insert('riwayat_jabatan', $data);
+
+        // 🔹 Update tabel pegawai agar ikut berubah
+        $this->db->where('nik', $nik);
+        $this->db->update('pegawai', [
+            'jabatan' => $jabatan_baru,
+            'unit_kerja' => $unit_baru,
+            'unit_kantor' => $unitkantor_baru
+        ]);
+
+        return true;
     }
+
 
 
     // Tambah riwayat jabatan pertama saat pegawai baru dibuat
