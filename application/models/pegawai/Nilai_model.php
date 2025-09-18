@@ -87,12 +87,6 @@ class Nilai_model extends CI_Model
         return $this->db->get()->result();
     }
 
-
-
-
-
-
-
     /**
      * Update status sebuah baris penilaian
      */
@@ -100,5 +94,22 @@ class Nilai_model extends CI_Model
     {
         if (empty($id) || empty($status)) return false;
         return $this->db->where('id', $id)->update('penilaian', ['status' => $status]);
+    }
+
+    // Tambah catatan penilai
+    public function tambahCatatan($data)
+    {
+        return $this->db->insert('catatan_penilai', $data);
+    }
+
+    // Ambil catatan per pegawai
+    public function getCatatanByPegawai($nik_pegawai)
+    {
+        $this->db->select('c.*, p.nama as nama_penilai');
+        $this->db->from('catatan_penilai c');
+        $this->db->join('pegawai p', 'p.nik = c.nik_penilai', 'left');
+        $this->db->where('c.nik_pegawai', $nik_pegawai);
+        $this->db->order_by('c.tanggal', 'ASC');
+        return $this->db->get()->result();
     }
 }

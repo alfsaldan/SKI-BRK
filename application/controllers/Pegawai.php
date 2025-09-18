@@ -227,4 +227,37 @@ class Pegawai extends CI_Controller
             echo json_encode(['success' => false, 'message' => 'Gagal update status']);
         }
     }
+
+    // Simpan catatan via AJAX
+    public function simpan_catatan()
+    {
+        $nik_pegawai = $this->input->post('nik_pegawai');
+        $nik_penilai = $this->session->userdata('nik'); // penilai login
+        $catatan = $this->input->post('catatan');
+
+        if (!$catatan) {
+            echo json_encode(['success' => false, 'message' => 'Catatan kosong']);
+            return;
+        }
+
+        $data = [
+            'nik_pegawai' => $nik_pegawai,
+            'nik_penilai' => $nik_penilai,
+            'catatan' => $catatan,
+            'tanggal' => date('Y-m-d H:i:s')
+        ];
+
+        $insert = $this->Nilai_model->tambahCatatan($data);
+
+        if ($insert) {
+            $nama_penilai = $this->session->userdata('nama') ?? 'Penilai';
+            echo json_encode([
+                'success' => true,
+                'nama_penilai' => $nama_penilai,
+                'message' => 'Catatan berhasil disimpan!'
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gagal menyimpan catatan!']);
+        }
+    }
 }
