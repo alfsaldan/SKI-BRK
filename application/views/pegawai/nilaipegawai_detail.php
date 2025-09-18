@@ -409,12 +409,11 @@
             ordering: true,
             order: [
                 [3, 'desc']
-            ], // default urut terbaru di atas
-            columnDefs: [{
-                    orderable: false,
-                    targets: [2]
-                } // kolom Catatan tidak bisa diurutkan
             ],
+            columnDefs: [{
+                orderable: false,
+                targets: [2]
+            }],
             language: {
                 search: "Cari:",
                 lengthMenu: "Tampilkan _MENU_ baris",
@@ -428,8 +427,9 @@
                     previous: "Sebelumnya"
                 }
             },
+            // 🔹 Atur layout DOM
+            dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
             drawCallback: function(settings) {
-                // Gunakan this.api() untuk akses DataTable instance
                 var api = this.api();
                 api.column(0, {
                     order: 'applied'
@@ -438,6 +438,7 @@
                 });
             }
         });
+
 
         // AJAX Form Catatan
         $('#form-catatan').on('submit', function(e) {
