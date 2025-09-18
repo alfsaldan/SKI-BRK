@@ -9,11 +9,11 @@ class Penilaian_model extends CI_Model
     }
 
     public function get_indikator_by_jabatan_dan_unit($jabatan, $unit_kerja, $unit_kantor = null, $nik = null, $periode_awal = null, $periode_akhir = null)
-{
-    if (!$periode_awal) $periode_awal = '2025-01-01';
-    if (!$periode_akhir) $periode_akhir = '2025-12-31';
+    {
+        if (!$periode_awal) $periode_awal = '2025-01-01';
+        if (!$periode_akhir) $periode_akhir = '2025-12-31';
 
-    $this->db->select('
+        $this->db->select('
         indikator.id,
         indikator.indikator,
         indikator.bobot,
@@ -28,35 +28,35 @@ class Penilaian_model extends CI_Model
         penilaian.periode_awal,
         penilaian.periode_akhir
     ');
-    $this->db->from('indikator');
-    $this->db->join('sasaran_kerja', 'indikator.sasaran_id = sasaran_kerja.id');
+        $this->db->from('indikator');
+        $this->db->join('sasaran_kerja', 'indikator.sasaran_id = sasaran_kerja.id');
 
-    if ($nik) {
-        $this->db->join(
-            'penilaian',
-            "penilaian.indikator_id = indikator.id 
+        if ($nik) {
+            $this->db->join(
+                'penilaian',
+                "penilaian.indikator_id = indikator.id 
             AND penilaian.nik = " . $this->db->escape($nik) . " 
             AND penilaian.periode_awal = " . $this->db->escape($periode_awal) . " 
             AND penilaian.periode_akhir = " . $this->db->escape($periode_akhir),
-            'left'
-        );
-    } else {
-        $this->db->join('penilaian', 'penilaian.indikator_id = indikator.id', 'left');
+                'left'
+            );
+        } else {
+            $this->db->join('penilaian', 'penilaian.indikator_id = indikator.id', 'left');
+        }
+
+        $this->db->where('sasaran_kerja.jabatan', $jabatan);
+        $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+
+        // ❌ JANGAN filter unit_kantor di sini, karena tabel sasaran_kerja tidak punya field itu
+        // if ($unit_kantor) {
+        //     $this->db->where('sasaran_kerja.unit_kantor', $unit_kantor);
+        // }
+
+        $this->db->order_by('sasaran_kerja.perspektif', 'ASC');
+        $this->db->order_by('sasaran_kerja.sasaran_kerja', 'ASC');
+
+        return $this->db->get()->result();
     }
-
-    $this->db->where('sasaran_kerja.jabatan', $jabatan);
-    $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
-
-    // ❌ JANGAN filter unit_kantor di sini, karena tabel sasaran_kerja tidak punya field itu
-    // if ($unit_kantor) {
-    //     $this->db->where('sasaran_kerja.unit_kantor', $unit_kantor);
-    // }
-
-    $this->db->order_by('sasaran_kerja.perspektif', 'ASC');
-    $this->db->order_by('sasaran_kerja.sasaran_kerja', 'ASC');
-
-    return $this->db->get()->result();
-}
 
 
 
@@ -166,5 +166,14 @@ class Penilaian_model extends CI_Model
     {
         $this->db->where('id', $id)->update('penilaian', ['status' => $status]);
         return $this->db->affected_rows();
+    }
+    public function getCatatanByPegawai($nik)
+    {
+        $this->db->select('c.*, p.nama as penilai_nama');
+        $this->db->from('catatan_penilai c');
+        $this->db->join('pegawai p', 'p.nik = c.nik_penilai', 'left');
+        $this->db->where('c.nik_pegawai', $nik);
+        $this->db->order_by('c.tanggal', 'DESC');
+        return $this->db->get()->result();
     }
 }

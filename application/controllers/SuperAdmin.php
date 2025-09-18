@@ -2,12 +2,13 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 
 
-    // Load PhpSpreadsheet
-    require_once FCPATH . 'vendor/autoload.php';
-    use PhpOffice\PhpSpreadsheet\Spreadsheet; //ini error
-    use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-    use PhpOffice\PhpSpreadsheet\Style\Fill;
-    use PhpOffice\PhpSpreadsheet\Style\Border;
+// Load PhpSpreadsheet
+require_once FCPATH . 'vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet; //ini error
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 
 /**
@@ -979,5 +980,34 @@ class SuperAdmin extends CI_Controller
             $this->session->set_flashdata('success', 'Data berhasil dihapus');
         }
         redirect('superadmin/kelolatingkatanjabatan');
+    }
+
+
+    // Catatan Penilai
+    public function getCatatanPenilai()
+    {
+        $nik = $this->input->post('nik_pegawai');
+
+        $list = $this->Penilaian_model->getCatatanByPegawai($nik);
+
+        $data = [];
+        $no = $_POST['start'] ?? 0;
+
+        foreach ($list as $row) {
+            $no++;
+            $data[] = [
+                'no' => $no,
+                'nama_penilai' => $row->penilai_nama, // ambil nama penilai dari join ke tabel pegawai
+                'catatan' => $row->catatan,
+                'tanggal' => $row->tanggal
+            ];
+        }
+
+        echo json_encode([
+            "draw" => intval($_POST['draw']),
+            "recordsTotal" => count($list),
+            "recordsFiltered" => count($list),
+            "data" => $data
+        ]);
     }
 }

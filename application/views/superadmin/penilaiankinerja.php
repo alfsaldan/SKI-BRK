@@ -47,8 +47,7 @@
                                         <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
                                         <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
                                         <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
-                                        <p><b>Jenis Unit:</b> <?= $pegawai_detail->unit_kerja; ?></p>
-                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kantor; ?></p> <!-- ✅ baru -->
+                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?></p>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
                                     </div>
 
@@ -163,20 +162,20 @@
 
                                                         $statusClass = 'text-secondary';
                                                         $statusText = 'Belum Dinilai';
-                                                        ?>
+                                            ?>
                                                         <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>"
                                                             data-perspektif="<?= $persp; ?>">
                                                             <?php if ($first_persp_cell) { ?>
                                                                 <td rowspan="<?= $persp_rows; ?>"
                                                                     style="vertical-align:middle;font-weight:600;background:#C8E6C9;">
                                                                     <?= $persp; ?></td>
-                                                                <?php $first_persp_cell = false;
+                                                            <?php $first_persp_cell = false;
                                                             } ?>
 
                                                             <?php if ($first_sas_cell) { ?>
                                                                 <td rowspan="<?= $sasaran_rows; ?>"
                                                                     style="vertical-align:middle;background:#E3F2FD;"><?= $sasaran; ?></td>
-                                                                <?php $first_sas_cell = false;
+                                                            <?php $first_sas_cell = false;
                                                             } ?>
 
                                                             <td class="text-center"><?= $bobot; ?>
@@ -206,7 +205,7 @@
                                                                     class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
                                                             </td>
                                                         </tr>
-                                                        <?php
+                                                <?php
                                                     }
                                                 }
                                                 ?>
@@ -221,7 +220,7 @@
                                                     <td class="text-center"><span class="subtotal-nilai-bobot">0.00</span></td>
                                                     <td colspan="2"></td>
                                                 </tr>
-                                                <?php
+                                            <?php
                                             }
                                             if (!$printed_any) { ?>
                                                 <tr>
@@ -246,6 +245,28 @@
                         </div>
                     </div>
                 </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5>Catatan Penilai</h5>
+                                <div class="table-responsive">
+                                    <table id="tabel-catatan" class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Penilai</th>
+                                                <th>Catatan</th>
+                                                <th>Tanggal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             <?php } ?>
         </div>
@@ -255,20 +276,20 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <?php if (isset($message) && !empty($message)): ?>
-<script>
-    Swal.fire({
-        icon: '<?= $message['type']; ?>',
-        title: 'Informasi',
-        text: '<?= $message['text']; ?>',
-        confirmButtonColor: '#2E7D32'
-    });
-</script>
+    <script>
+        Swal.fire({
+            icon: '<?= $message['type']; ?>',
+            title: 'Informasi',
+            text: '<?= $message['text']; ?>',
+            confirmButtonColor: '#2E7D32'
+        });
+    </script>
 <?php endif; ?>
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         const nik = document.getElementById('nik')?.value;
         const periodeAwal = document.getElementById('periode_awal');
         const periodeAkhir = document.getElementById('periode_akhir');
@@ -278,10 +299,10 @@
         if (!periodeAkhir.value) periodeAkhir.value = "2025-12-31";
 
         // 🔹 Validasi supaya periode akhir tidak lebih kecil dari awal
-        periodeAwal.addEventListener('change', function () {
+        periodeAwal.addEventListener('change', function() {
             if (periodeAkhir.value < this.value) periodeAkhir.value = this.value;
         });
-        periodeAkhir.addEventListener('change', function () {
+        periodeAkhir.addEventListener('change', function() {
             if (this.value < periodeAwal.value) {
                 Swal.fire({
                     icon: 'warning',
@@ -361,7 +382,7 @@
 
         // 🔹 Simpan penilaian
         document.querySelectorAll('.simpan-penilaian').forEach(btn => {
-            btn.addEventListener('click', function () {
+            btn.addEventListener('click', function() {
                 const row = this.closest('tr');
                 const indikator_id = row.dataset.id;
                 const target = row.querySelector('.target-input').value;
@@ -378,12 +399,12 @@
                 console.log("DEBUG: nik=", nik, "indikator_id=", indikator_id, "periode_awal=", periode_awal, "periode_akhir=", periode_akhir);
 
                 fetch('<?= base_url("SuperAdmin/simpanPenilaianBaris") ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
-                })
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
+                    })
 
                     .then(res => res.json())
                     .then(res => {
@@ -416,7 +437,7 @@
                     });
             });
         });
-        document.getElementById('btn-sesuaikan-periode').addEventListener('click', function () {
+        document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
             const nik = document.getElementById('nik').value;
             const awal = periodeAwal.value;
             const akhir = periodeAkhir.value;
@@ -433,5 +454,79 @@
 
             window.location.href = `<?= base_url("SuperAdmin/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
         });
+        $(document).ready(function() {
+            const nikPegawai = $('#nik').val(); // NIK pegawai saat ini
+
+            var tableCatatan = $('#tabel-catatan').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                ajax: {
+                    url: '<?= base_url("SuperAdmin/getCatatanPenilai") ?>',
+                    type: 'POST',
+                    data: {
+                        nik_pegawai: nikPegawai
+                    }
+                },
+                columns: [{
+                        data: 'no',
+                        orderable: false
+                    }, // Nomor urut
+                    {
+                        data: 'nama_penilai'
+                    }, // Nama penilai
+                    {
+                        data: 'catatan',
+                        orderable: false
+                    }, // Catatan
+                    {
+                        data: 'tanggal',
+                        render: function(data, type, row) {
+                            if (!data) return '';
+                            const date = new Date(data + ' UTC'); // pastikan server kirim UTC
+                            return date.toLocaleString('id-ID', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                                timeZone: 'Asia/Jakarta'
+                            });
+                        }
+                    }
+                ],
+                order: [
+                    [3, 'desc']
+                ], // urut terbaru di atas
+                paging: true,
+                searching: true,
+                info: true,
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ baris",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
+                    infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
+                    zeroRecords: "Tidak ada catatan yang ditemukan",
+                    paginate: {
+                        first: "Pertama",
+                        last: "Terakhir",
+                        next: "Berikut",
+                        previous: "Sebelumnya"
+                    }
+                },
+                drawCallback: function(settings) {
+                    // nomor urut otomatis 1 -> n
+                    var api = this.api();
+                    api.column(0, {
+                        order: 'applied'
+                    }).nodes().each(function(cell, i) {
+                        cell.innerHTML = i + 1;
+                    });
+                }
+            });
+        });
+
+
     });
 </script>
