@@ -31,10 +31,15 @@
                                     <td><?= isset($pegawai['jabatan']) ? $pegawai['jabatan'] : '-' ?></td>
                                 </tr>
                                 <tr>
-                                    <th>Kantor Unit</th>
+                                    <th>Jenis Unit</th>
                                     <td><?= isset($pegawai['unit_kerja']) ? $pegawai['unit_kerja'] : '-' ?></td>
                                 </tr>
+                                <tr>
+                                    <th>Unit Kantor</th>
+                                    <td><?= isset($pegawai['unit_kantor']) ? $pegawai['unit_kantor'] : '-' ?></td>
+                                </tr>
                             </table>
+
                             <hr>
                             <h5 class="mb-3">Perbarui Password</h5>
                             <form id="formPassword" method="post">

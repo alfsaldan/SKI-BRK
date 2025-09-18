@@ -90,10 +90,8 @@ class DataPegawai_model extends CI_Model
     // Tambah riwayat jabatan baru & tutup jabatan lama otomatis
     public function tambahRiwayatJabatan($nik, $jabatan_baru, $unit_baru, $unitkantor_baru, $tgl_mulai)
     {
-        // Hitung tanggal selesai = 1 hari sebelum jabatan baru mulai
+        // Tutup jabatan lama
         $tgl_selesai = date('Y-m-d', strtotime($tgl_mulai . ' -1 day'));
-
-        // 1️⃣ Tutup jabatan lama (hanya yang masih aktif / belum punya tgl_selesai)
         $this->db->where('nik', $nik);
         $this->db->where('tgl_selesai IS NULL');
         $this->db->update('riwayat_jabatan', [
@@ -101,7 +99,7 @@ class DataPegawai_model extends CI_Model
             'status' => 'nonaktif'
         ]);
 
-        // 2️⃣ Tambahkan jabatan baru (status aktif, tgl_selesai NULL)
+        // Tambah jabatan baru
         $data = [
             'nik' => $nik,
             'jabatan' => $jabatan_baru,
@@ -114,8 +112,9 @@ class DataPegawai_model extends CI_Model
         return $this->db->insert('riwayat_jabatan', $data);
     }
 
+
     // Tambah riwayat jabatan pertama saat pegawai baru dibuat
-    public function insertRiwayatAwal($nik, $jabatan, $unit_kerja , $unit_kantor)
+    public function insertRiwayatAwal($nik, $jabatan, $unit_kerja, $unit_kantor)
     {
         $data = [
             'nik' => $nik,
@@ -151,9 +150,19 @@ class DataPegawai_model extends CI_Model
     // }
     public function getPegawaiWithPenilai($nik)
     {
-        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja,
-        pen1.nik as penilai1_nik, pen1.nama as penilai1_nama, pen1.jabatan as penilai1_jabatan,
-        pen2.nik as penilai2_nik, pen2.nama as penilai2_nama, pen2.jabatan as penilai2_jabatan');
+        $this->db->select('
+        p.nik, 
+        p.nama, 
+        p.jabatan, 
+        p.unit_kerja,
+        p.unit_kantor,
+        pen1.nik as penilai1_nik, 
+        pen1.nama as penilai1_nama, 
+        pen1.jabatan as penilai1_jabatan,
+        pen2.nik as penilai2_nik, 
+        pen2.nama as penilai2_nama, 
+        pen2.jabatan as penilai2_jabatan
+    ');
         $this->db->from('pegawai p');
         $this->db->join('penilai_mapping m', 'm.jabatan = p.jabatan AND m.unit_kerja = p.unit_kerja', 'left');
         $this->db->join('pegawai pen1', 'pen1.jabatan = m.penilai1_jabatan AND pen1.unit_kerja = m.unit_kerja', 'left');
@@ -161,6 +170,7 @@ class DataPegawai_model extends CI_Model
         $this->db->where('p.nik', $nik);
         return $this->db->get()->row();
     }
+
 
 
 

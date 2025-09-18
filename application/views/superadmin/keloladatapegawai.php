@@ -128,7 +128,7 @@
                                 <strong>ℹ️ Catatan Import:</strong>
                                 <ul class="mb-0">
                                     <li>Gunakan template Excel resmi untuk format sesuai.</li>
-                                    <li>Kolom wajib: <code>NIK, Nama, Jabatan, Unit Kerja, Password</code>.</li>
+                                    <li>Kolom wajib: <code>NIK, Nama, Jabatan, Jenis Unit,Unit Kantor, Password</code>.</li>
                                     <li><code>NIK</code> harus unik (tidak boleh duplikat).</li>
                                     <li>Password minimal 6 karakter.</li>
                                     <li>File hanya mendukung <code>.xls</code> atau <code>.xlsx</code>.</li>

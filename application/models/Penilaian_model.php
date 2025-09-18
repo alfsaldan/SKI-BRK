@@ -8,15 +8,12 @@ class Penilaian_model extends CI_Model
         return $this->db->get('penilaian')->result();
     }
 
-    public function get_indikator_by_jabatan_dan_unit($jabatan, $unit_kerja, $nik = null, $periode_awal = null, $periode_akhir = null)
-    {
-        // Set default periode kalau kosong
-        if (!$periode_awal)
-            $periode_awal = '2025-01-01';
-        if (!$periode_akhir)
-            $periode_akhir = '2025-12-31';
+    public function get_indikator_by_jabatan_dan_unit($jabatan, $unit_kerja, $unit_kantor = null, $nik = null, $periode_awal = null, $periode_akhir = null)
+{
+    if (!$periode_awal) $periode_awal = '2025-01-01';
+    if (!$periode_akhir) $periode_akhir = '2025-12-31';
 
-        $this->db->select('
+    $this->db->select('
         indikator.id,
         indikator.indikator,
         indikator.bobot,
@@ -31,30 +28,37 @@ class Penilaian_model extends CI_Model
         penilaian.periode_awal,
         penilaian.periode_akhir
     ');
-        $this->db->from('indikator');
-        $this->db->join('sasaran_kerja', 'indikator.sasaran_id = sasaran_kerja.id');
+    $this->db->from('indikator');
+    $this->db->join('sasaran_kerja', 'indikator.sasaran_id = sasaran_kerja.id');
 
-        if ($nik) {
-            // LEFT JOIN penilaian tapi sesuai NIK dan periode persis
-            $this->db->join(
-                'penilaian',
-                "penilaian.indikator_id = indikator.id 
+    if ($nik) {
+        $this->db->join(
+            'penilaian',
+            "penilaian.indikator_id = indikator.id 
             AND penilaian.nik = " . $this->db->escape($nik) . " 
             AND penilaian.periode_awal = " . $this->db->escape($periode_awal) . " 
             AND penilaian.periode_akhir = " . $this->db->escape($periode_akhir),
-                'left'
-            );
-        } else {
-            $this->db->join('penilaian', 'penilaian.indikator_id = indikator.id', 'left');
-        }
-
-        $this->db->where('sasaran_kerja.jabatan', $jabatan);
-        $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
-        $this->db->order_by('sasaran_kerja.perspektif', 'ASC');
-        $this->db->order_by('sasaran_kerja.sasaran_kerja', 'ASC');
-
-        return $this->db->get()->result();
+            'left'
+        );
+    } else {
+        $this->db->join('penilaian', 'penilaian.indikator_id = indikator.id', 'left');
     }
+
+    $this->db->where('sasaran_kerja.jabatan', $jabatan);
+    $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+
+    // ❌ JANGAN filter unit_kantor di sini, karena tabel sasaran_kerja tidak punya field itu
+    // if ($unit_kantor) {
+    //     $this->db->where('sasaran_kerja.unit_kantor', $unit_kantor);
+    // }
+
+    $this->db->order_by('sasaran_kerja.perspektif', 'ASC');
+    $this->db->order_by('sasaran_kerja.sasaran_kerja', 'ASC');
+
+    return $this->db->get()->result();
+}
+
+
 
     public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $periode_awal = null, $periode_akhir = null)
     {
@@ -141,9 +145,15 @@ class Penilaian_model extends CI_Model
 
     public function getPegawaiWithPenilai($nik)
     {
-        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja,
+        $this->db->select('
+        p.nik,
+        p.nama,
+        p.jabatan,
+        p.unit_kerja,
+        p.unit_kantor,
         pen1.nik as penilai1_nik, pen1.nama as penilai1_nama, pen1.jabatan as penilai1_jabatan,
-        pen2.nik as penilai2_nik, pen2.nama as penilai2_nama, pen2.jabatan as penilai2_jabatan');
+        pen2.nik as penilai2_nik, pen2.nama as penilai2_nama, pen2.jabatan as penilai2_jabatan
+    ');
         $this->db->from('pegawai p');
         $this->db->join('penilai_mapping m', 'm.jabatan = p.jabatan AND m.unit_kerja = p.unit_kerja', 'left');
         $this->db->join('pegawai pen1', 'pen1.jabatan = m.penilai1_jabatan AND pen1.unit_kerja = m.unit_kerja', 'left');
@@ -151,6 +161,7 @@ class Penilaian_model extends CI_Model
         $this->db->where('p.nik', $nik);
         return $this->db->get()->row();
     }
+
     public function updateStatus($id, $status)
     {
         $this->db->where('id', $id)->update('penilaian', ['status' => $status]);

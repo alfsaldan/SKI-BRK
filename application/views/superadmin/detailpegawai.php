@@ -36,7 +36,8 @@
                             <thead class="thead-light">
                                 <tr>
                                     <th>Jabatan</th>
-                                    <th>Unit Kerja</th>
+                                    <th>Jenis Unit</th>
+                                    <th>Unit Kantor</th>
                                     <th>Tanggal Mulai</th>
                                     <th>Tanggal Selesai</th>
                                     <th>Status</th>
@@ -48,6 +49,7 @@
                                         <tr>
                                             <td><?= $r->jabatan ?></td>
                                             <td><?= $r->unit_kerja ?></td>
+                                            <td><?= $r->unit_kantor ?></td>
                                             <td><?= date('d M Y', strtotime($r->tgl_mulai)) ?></td>
                                             <td><?= $r->tgl_selesai ? date('d M Y', strtotime($r->tgl_selesai)) : '-' ?></td>
                                             <td>
@@ -79,7 +81,7 @@
                     <form method="post" action="<?= base_url('SuperAdmin/updateJabatan') ?>">
                         <input type="hidden" name="nik" value="<?= $pegawai->nik ?>">
                         <div class="form-row">
-                            <div class="form-group col-md-6">
+                            <div class="form-group col-md-4">
                                 <label>Jabatan Baru</label>
                                 <select name="jabatan" id="jabatanSelect" class="form-control select2" required>
                                     <option value="">Pilih atau ketik Jabatan</option>
@@ -88,14 +90,19 @@
                                     <?php endforeach; ?>
                                 </select>
                             </div>
-                            <div class="form-group col-md-6">
-                                <label>Unit Kerja</label>
+                            <div class="form-group col-md-4">
+                                <label>Jenis Unit</label>
                                 <select name="unit_kerja" id="unitKerjaSelect" class="form-control select2" required>
-                                    <option value="">Pilih atau ketik Unit Kerja</option>
+                                    <option value="">Pilih atau ketik Jenis Unit</option>
                                     <?php foreach ($unitkerja_list as $u): ?>
                                         <option value="<?= $u->unit_kerja ?>"><?= $u->unit_kerja ?></option>
                                     <?php endforeach; ?>
                                 </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Unit Kantor</label>
+                                <input type="text" name="unit_kantor" class="form-control" placeholder="Isi Unit Kantor"
+                                    required>
                             </div>
                         </div>
                         <div class="form-group">
@@ -154,7 +161,7 @@
         });
 
         $('#unitKerjaSelect').select2({
-            placeholder: "Pilih atau ketik Unit Kerja",
+            placeholder: "Pilih atau ketik Jenis Unit",
             tags: true,
             allowClear: true,
             width: '100%'

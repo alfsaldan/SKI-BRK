@@ -12,7 +12,8 @@
                                 <li class="breadcrumb-item active">Data Kinerja Pegawai</li>
                             </ol>
                         </div>
-                        <h4 class="page-title"><i class="mdi mdi-account-card-details mr-2 text-primary"></i>Data Kinerja Pegawai</h4>
+                        <h4 class="page-title"><i class="mdi mdi-account-card-details mr-2 text-primary"></i>Data
+                            Kinerja Pegawai</h4>
                     </div>
                 </div>
             </div>
@@ -48,6 +49,7 @@
                                         <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
                                         <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
                                         <p><b>Jenis Unit:</b> <?= $pegawai_detail->unit_kerja; ?></p>
+                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
                                     </div>
 

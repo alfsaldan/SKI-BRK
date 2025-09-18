@@ -24,7 +24,7 @@
                                 <tr>
                                     <th width="5%">No</th>
                                     <th>Jabatan</th>
-                                    <th>Unit Kerja</th>
+                                    <th>Jenis Unit</th>
                                     <th>Penilai I</th>
                                     <th>Penilai II</th>
                                     <th width="15%">Aksi</th>
@@ -85,7 +85,7 @@
                     <input type="text" name="jabatan" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label>Unit Kerja</label>
+                    <label>Jenis Unit</label>
                     <input type="text" name="unit_kerja" class="form-control">
                 </div>
                 <div class="form-group">

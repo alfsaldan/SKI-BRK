@@ -283,7 +283,7 @@ class SuperAdmin extends CI_Controller
             $indikator = $this->Penilaian_model->get_indikator_by_jabatan_dan_unit(
                 $pegawai->jabatan,
                 $pegawai->unit_kerja,
-                $pegawai->unit_kantor,
+                $pegawai->unit_kantor,   // ✅ sudah aman sekarang
                 $nik,
                 $periode_awal,
                 $periode_akhir
@@ -314,6 +314,7 @@ class SuperAdmin extends CI_Controller
         $this->load->view("superadmin/penilaiankinerja", $data);
         $this->load->view("layout/footer");
     }
+
 
     public function simpanPenilaian()
     {
@@ -692,7 +693,7 @@ class SuperAdmin extends CI_Controller
     }
 
 
-    // Halaman Data Pegawai
+    // Halaman Cek Data Pegawai
     public function dataPegawai()
     {
         $data['judul'] = "Data Pegawai";
