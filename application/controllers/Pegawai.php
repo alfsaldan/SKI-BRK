@@ -210,15 +210,17 @@ class Pegawai extends CI_Controller
     }
     public function updateStatusAll()
     {
-        $nik = $this->input->post('nik');
+        $ids = $this->input->post('ids'); // contoh: "1,2,3"
         $status = $this->input->post('status');
-        $periode_awal = $this->input->post('periode_awal');
-        $periode_akhir = $this->input->post('periode_akhir');
 
-        $this->db->where('nik', $nik)
-            ->where('periode_awal', $periode_awal)
-            ->where('periode_akhir', $periode_akhir);
+        if (empty($ids) || empty($status)) {
+            echo json_encode(['success' => false, 'message' => 'Data tidak lengkap']);
+            return;
+        }
 
+        $ids_array = explode(',', $ids);
+
+        $this->db->where_in('id', $ids_array);
         $update = $this->db->update('penilaian', ['status' => $status]);
 
         if ($update) {
@@ -227,6 +229,7 @@ class Pegawai extends CI_Controller
             echo json_encode(['success' => false, 'message' => 'Gagal update status']);
         }
     }
+
 
     // Simpan catatan via AJAX
     public function simpan_catatan()
@@ -250,7 +253,10 @@ class Pegawai extends CI_Controller
         $insert = $this->Nilai_model->tambahCatatan($data);
 
         if ($insert) {
-            $nama_penilai = $this->session->userdata('nama') ?? 'Penilai';
+            // Ambil nama penilai dari DB supaya pasti benar
+            $penilai = $this->db->get_where('pegawai', ['nik' => $nik_penilai])->row();
+            $nama_penilai = $penilai ? $penilai->nama : 'Penilai';
+
             echo json_encode([
                 'success' => true,
                 'nama_penilai' => $nama_penilai,

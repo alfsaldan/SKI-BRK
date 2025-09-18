@@ -4,6 +4,7 @@
 <div class="content-page">
     <div class="content">
         <div class="container-fluid">
+
             <!-- start page title -->
             <div class="row">
                 <div class="col-12">
@@ -214,7 +215,7 @@
                     </div>
                 </div>
 
-                <!-- Form Catatan Penilai AJAX -->
+                <!-- Form Catatan Penilai dengan DataTables -->
                 <div class="row mt-3">
                     <div class="col-12">
                         <div class="card">
@@ -240,7 +241,6 @@
                                             <?php $catatan_list = $this->Nilai_model->getCatatanByPegawai($pegawai_detail->nik); ?>
                                             <?php $no = 1;
                                             foreach ($catatan_list as $c):
-                                                // konversi UTC ke WIB
                                                 $tgl = new DateTime($c->tanggal, new DateTimeZone('UTC'));
                                                 $tgl->setTimezone(new DateTimeZone('Asia/Jakarta'));
                                             ?>
@@ -257,20 +257,23 @@
                                                 </tr>
                                             <?php endif; ?>
                                         </tbody>
-
                                     </table>
                                 </div>
-
                             </div>
                         </div>
                     </div>
                 </div>
+
             <?php } ?>
         </div>
     </div>
 </div>
 
+<!-- Script di bawah -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const nik = document.getElementById('nik').value;
@@ -370,7 +373,7 @@
                             title: data.message,
                             timer: 1500,
                             showConfirmButton: false
-                        })
+                        });
                     });
             });
         });
@@ -388,30 +391,66 @@
                 })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.success) {
-                        document.querySelectorAll('.status-select').forEach(s => s.value = status);
-                    }
+                    if (data.success) document.querySelectorAll('.status-select').forEach(s => s.value = status);
                     Swal.fire({
                         icon: data.success ? 'success' : 'error',
                         title: data.message,
                         timer: 1500,
                         showConfirmButton: false
-                    })
+                    });
                 });
         });
 
+        // ==== DataTables Catatan ====
+        var tableCatatan = $('#tabel-catatan').DataTable({
+            responsive: true,
+            paging: true,
+            searching: true,
+            ordering: true,
+            order: [
+                [3, 'desc']
+            ], // default urut terbaru di atas
+            columnDefs: [{
+                    orderable: false,
+                    targets: [2]
+                } // kolom Catatan tidak bisa diurutkan
+            ],
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ baris",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
+                infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
+                zeroRecords: "Tidak ada catatan yang ditemukan",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "Berikut",
+                    previous: "Sebelumnya"
+                }
+            },
+            drawCallback: function(settings) {
+                // Gunakan this.api() untuk akses DataTable instance
+                var api = this.api();
+                api.column(0, {
+                    order: 'applied'
+                }).nodes().each(function(cell, i) {
+                    cell.innerHTML = i + 1;
+                });
+            }
+        });
+
         // AJAX Form Catatan
-        const formCatatan = document.getElementById('form-catatan');
-        formCatatan.addEventListener('submit', function(e) {
+        $('#form-catatan').on('submit', function(e) {
             e.preventDefault();
-            const catatan = this.querySelector('[name="catatan"]').value;
-            if (catatan.trim() === '') {
+            const catatan = $('#catatan').val().trim();
+            if (catatan === '') {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Catatan kosong'
                 });
                 return;
             }
+
             fetch("<?= base_url('pegawai/simpan_catatan'); ?>", {
                     method: "POST",
                     headers: {
@@ -428,8 +467,8 @@
                             timer: 1500,
                             showConfirmButton: false
                         });
-                        const tbody = document.querySelector('#tabel-catatan tbody');
-                        const no = tbody.querySelectorAll('tr').length + 1;
+
+                        // Ambil tanggal sekarang, format dd-mm-yyyy HH:MM
                         const tanggal = new Date().toLocaleString('id-ID', {
                             day: '2-digit',
                             month: '2-digit',
@@ -437,10 +476,17 @@
                             hour: '2-digit',
                             minute: '2-digit'
                         });
-                        const newRow = document.createElement('tr');
-                        newRow.innerHTML = `<td>${no}</td><td>${data.nama_penilai}</td><td>${catatan}</td><td>${tanggal}</td>`;
-                        tbody.appendChild(newRow);
-                        formCatatan.reset();
+
+                        // Tambahkan baris baru, pastikan nama penilai dari server
+                        tableCatatan.row.add([
+                            '', // No otomatis oleh drawCallback
+                            data.nama_penilai, // ambil dari server
+                            catatan,
+                            tanggal
+                        ]).draw(false);
+
+
+                        $('#form-catatan')[0].reset();
                     } else {
                         Swal.fire({
                             icon: 'error',
@@ -448,7 +494,8 @@
                             text: data.message
                         });
                     }
-                }).catch(err => {
+                })
+                .catch(err => {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
@@ -456,5 +503,8 @@
                     });
                 });
         });
+
+
+
     });
 </script>
