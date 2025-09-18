@@ -1,15 +1,27 @@
 <!-- ============================================================== -->
 <!-- Start Page Content here -->
 <!-- ============================================================== -->
+
 <div class="content-page">
     <div class="content">
+
+        <!-- Start Content-->
         <div class="container-fluid">
 
             <!-- start page title -->
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box">
-                        <h4 class="page-title">Nilai Pegawai</h4>
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="javascript:void(0);">SKI-BRKS</a></li>
+                                <li class="breadcrumb-item active">Detail Nilai Pegawai</li>
+                            </ol>
+                        </div>
+                        <h5 class="page-title">Detail Pegawai: <b><?= $pegawai_detail->nama; ?></b></h5>
+                        <p class="text-muted">
+                        <h5>Sistem Penilaian Kinerja Insani PT Bank Riau Kepri Syariah</h5>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -54,7 +66,6 @@
                                 <hr>
 
                                 <!-- Penilai I & Penilai II -->
-                                <!-- Penilai I & Penilai II -->
                                 <div class="row">
                                     <div class="col-md-6">
                                         <h5>Penilai I</h5>
@@ -70,7 +81,6 @@
                                         <p><b>Jabatan:</b> <?= $pegawai_detail->penilai2_jabatan_detail ?? '-'; ?></p>
                                     </div>
                                 </div>
-
 
                             </div>
                         </div>
@@ -111,12 +121,12 @@
                                                 <th class="text-center" style="width: 80px;">Bobot (%)</th>
                                                 <th>Indikator</th>
                                                 <th class="text-center" style="width: 120px;">Target</th>
-                                                <th class="text-center" style="width: 120px;">Batas Waktu</th>
+                                                <th class="text-center" style="width: 80px;">Batas Waktu</th>
                                                 <th class="text-center" style="width: 120px;">Realisasi</th>
                                                 <th class="text-center" style="width: 120px;">Pencapaian (%)</th>
                                                 <th class="text-center" style="width: 120px;">Nilai</th>
                                                 <th class="text-center" style="width: 120px;">Nilai Dibobot</th>
-                                                <th class="text-center" style="width: 100px;">Status</th>
+                                                <th class="text-center" style="width: min-150px;">Status</th>
                                                 <th class="text-center" style="width: 100px;">Aksi</th>
                                             </tr>
                                         </thead>
@@ -159,28 +169,25 @@
                                                             </td>
                                                             <td><?= $indik; ?></td>
 
-                                                            <td class="text-center"><?= $i->target ?? '-'; ?></td>
-                                                            <td class="text-center"><?= $i->batas_waktu ?? '-'; ?></td>
-                                                            <td class="text-center"><?= $i->realisasi ?? '-'; ?></td>
-
+                                                            <td><input type="text" class="form-control target-input" value="<?= $i->target ?? ''; ?>" readonly></td>
+                                                            <td><input type="date" class="form-control" value="<?= $i->batas_waktu ?? ''; ?>" readonly></td>
+                                                            <td><input type="text" class="form-control realisasi-input" value="<?= $i->realisasi ?? ''; ?>" readonly></td>
 
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm pencapaian-output" readonly></td>
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm nilai-output" readonly></td>
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm nilai-bobot-output" readonly></td>
 
-                                                            <td class="text-center status-text">
-                                                                <?= $i->status ?? 'Belum Dinilai'; ?>
+                                                            <td class="text-center" style="min-width:150px;">
+                                                                <select class="form-control form-control-sm status-select">
+                                                                    <option value="Belum Dinilai" <?= ($i->status == 'Belum Dinilai') ? 'selected' : ''; ?>>Belum Dinilai</option>
+                                                                    <option value="Ada Catatan" <?= ($i->status == 'Ada Catatan') ? 'selected' : ''; ?>>Ada Catatan</option>
+                                                                    <option value="Disetujui" <?= ($i->status == 'Disetujui') ? 'selected' : ''; ?>>Disetujui</option>
+                                                                </select>
                                                             </td>
                                                             <td class="text-center">
-                                                                <div class="d-flex justify-content-center">
-                                                                    <select class="form-control form-control-sm status-select" style="width:140px;">
-                                                                        <option value="Belum Dinilai" <?= ($i->status ?? '') == 'Belum Dinilai' ? 'selected' : '' ?>>Belum Dinilai</option>
-                                                                        <option value="Masih Ada Catatan" <?= ($i->status ?? '') == 'Masih Ada Catatan' ? 'selected' : '' ?>>Catatan</option>
-                                                                        <option value="Disetujui" <?= ($i->status ?? '') == 'Disetujui' ? 'selected' : '' ?>>Disetujui</option>
-                                                                    </select>
-                                                                    <button class="btn btn-sm btn-primary ml-1 btn-save-status" data-id="<?= $i->id; ?>">Simpan</button>
-                                                                </div>
+                                                                <button type="button" class="btn btn-sm btn-success simpan-status">Simpan</button>
                                                             </td>
+
                                                         </tr>
                                                 <?php
                                                     }
@@ -228,7 +235,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <?php
-// flash message (jika ada)
 $message = $this->session->flashdata('message');
 if ($message): ?>
     <script>
@@ -247,11 +253,10 @@ if ($message): ?>
         const periodeAwal = document.getElementById('periode_awal');
         const periodeAkhir = document.getElementById('periode_akhir');
 
-        // default dari server (jaga-jaga kalau kosong)
         if (!periodeAwal.value) periodeAwal.value = "<?= $periode_awal ?? date('Y-01-01'); ?>";
         if (!periodeAkhir.value) periodeAkhir.value = "<?= $periode_akhir ?? date('Y-12-31'); ?>";
 
-        // validasi supaya periode akhir tidak lebih kecil dari awal
+        // validasi tanggal
         periodeAwal.addEventListener('change', function() {
             if (periodeAkhir.value < this.value) periodeAkhir.value = this.value;
         });
@@ -266,13 +271,6 @@ if ($message): ?>
                 this.value = periodeAwal.value;
             }
         });
-
-        // format angka
-        function formatAngka(nilai) {
-            let num = parseFloat(nilai);
-            if (isNaN(num)) return '';
-            return Number.isInteger(num) ? num.toString() : num.toFixed(2);
-        }
 
         function hitungRow(row) {
             const target = parseFloat(row.querySelector('.target-input').value) || 0;
@@ -326,114 +324,14 @@ if ($message): ?>
             });
         }
 
-        // trigger perhitungan saat input diubah
-        document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
-            input.addEventListener('input', hitungTotal);
-        });
-        hitungTotal();
-
-        // Simpan penilaian per baris
-        document.querySelectorAll('.simpan-penilaian').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const row = this.closest('tr');
-                const indikator_id = row.dataset.id;
-                const target = row.querySelector('.target-input').value;
-                const batas_waktu = row.querySelector('input[type="date"]').value;
-                const realisasi = row.querySelector('.realisasi-input').value;
-                const pencapaian = row.querySelector('.pencapaian-output').value;
-                const nilai = row.querySelector('.nilai-output').value;
-                const nilai_dibobot = row.querySelector('.nilai-bobot-output').value;
-
-                const periode_awal = periodeAwal.value;
-                const periode_akhir = periodeAkhir.value;
-
-                console.log("DEBUG: nik=", nik, "indikator_id=", indikator_id, "periode_awal=", periode_awal, "periode_akhir=", periode_akhir);
-
-                fetch('<?= base_url("Pegawai/simpanPenilaianBaris") ?>', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
-                    })
-                    .then(res => res.json())
-                    .then(res => {
-                        if (res.status === 'success') {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: res.message,
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                            hitungTotal();
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: res.message || 'Gagal menyimpan',
-                                confirmButtonColor: '#d33'
-                            });
-                        }
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Terjadi kesalahan server',
-                            confirmButtonColor: '#d33'
-                        });
-                    });
-            });
-        });
-
-        // tombol sesuaikan periode -> reload page dengan query params (tanpa NIK karena pakai session)
+        // tombol sesuaikan periode
         document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
             const awal = periodeAwal.value;
             const akhir = periodeAkhir.value;
-            window.location.href = `<?= base_url("nilai") ?>?awal=${awal}&akhir=${akhir}`;
+            window.location.href = `<?= base_url("Pegawai/nilaiPegawaiDetail/") ?>${nik}?awal=${awal}&akhir=${akhir}`;
         });
-    });
-    // JS di bagian <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.btn-simpan-status').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const row = this.closest('tr');
-                const id = row.dataset.id;
-                const status = row.querySelector('.status-select').value;
 
-                console.log("DEBUG: id", id, "status", status); // cek di console
-
-                fetch('<?= base_url("Pegawai/updateStatus") ?>', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `id=${id}&status=${status}`
-                    })
-                    .then(res => res.json())
-                    .then(res => {
-                        if (res.status === 'success') {
-                            row.querySelector('.status-text').innerText = status;
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: 'Status berhasil diperbarui',
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: 'Status gagal diperbarui',
-                                confirmButtonColor: '#d33'
-                            });
-                        }
-                    })
-                    .catch(err => console.error(err));
-            });
-        });
+        // 🔥 panggil pertama kali biar langsung update total
+        hitungTotal();
     });
 </script>

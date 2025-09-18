@@ -119,35 +119,37 @@ class Pegawai extends CI_Controller
         $this->load->view('layoutpegawai/footer');
     }
 
-    public function nilaiPegawaiDetail($nik_pegawai)
+    public function nilaiPegawaiDetail($nik)
     {
+        $awal = $this->input->get('awal');
+        $akhir = $this->input->get('akhir');
+
+        if (!$awal || !$akhir) {
+            $awal = date('Y-01-01');
+            $akhir = date('Y-12-31');
+            redirect("Pegawai/nilaiPegawaiDetail/$nik?awal=$awal&akhir=$akhir");
+        }
+
         $this->load->model('pegawai/Nilai_model');
         $this->load->model('Pegawai_model');
 
-        // ambil data pegawai + penilai1 + penilai2
-        // BENAR
-        $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik_pegawai);
-
-
-        // periode default / dari GET
-        $periode_awal = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y') . "-01-01";
-        $periode_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
-
-        // ambil indikator/penilaian
-        $indikator = $this->Nilai_model->getIndikatorPegawai($nik_pegawai, $periode_awal, $periode_akhir);
+        $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik);
+        $indikator = $this->Nilai_model->getIndikatorPegawai($nik, $awal, $akhir);
 
         $data = [
             'judul' => "Form Penilaian Pegawai",
             'pegawai_detail' => $pegawai,
             'indikator_by_jabatan' => $indikator,
-            'periode_awal' => $periode_awal,
-            'periode_akhir' => $periode_akhir
+            'periode_awal' => $awal,
+            'periode_akhir' => $akhir
         ];
 
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/nilaipegawai_detail', $data);
         $this->load->view('layoutpegawai/footer');
     }
+
+
 
     public function datadiriPegawai()
     {
@@ -191,5 +193,4 @@ class Pegawai extends CI_Controller
         $this->load->view('pegawai/datadiripegawai', $data);
         $this->load->view('layoutpegawai/footer');
     }
-
 }
