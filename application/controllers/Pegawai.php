@@ -193,4 +193,38 @@ class Pegawai extends CI_Controller
         $this->load->view('pegawai/datadiripegawai', $data);
         $this->load->view('layoutpegawai/footer');
     }
+
+    public function updateStatus()
+    {
+        $id = $this->input->post('id');
+        $status = $this->input->post('status');
+
+        $this->db->where('id', $id);
+        $update = $this->db->update('penilaian', ['status' => $status]);
+
+        if ($update) {
+            echo json_encode(['success' => true, 'message' => 'Status berhasil diupdate']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gagal update status']);
+        }
+    }
+    public function updateStatusAll()
+    {
+        $nik = $this->input->post('nik');
+        $status = $this->input->post('status');
+        $periode_awal = $this->input->post('periode_awal');
+        $periode_akhir = $this->input->post('periode_akhir');
+
+        $this->db->where('nik', $nik)
+            ->where('periode_awal', $periode_awal)
+            ->where('periode_akhir', $periode_akhir);
+
+        $update = $this->db->update('penilaian', ['status' => $status]);
+
+        if ($update) {
+            echo json_encode(['success' => true, 'message' => 'Semua status berhasil diupdate']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gagal update status']);
+        }
+    }
 }

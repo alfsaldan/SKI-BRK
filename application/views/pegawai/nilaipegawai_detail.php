@@ -177,8 +177,8 @@
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm nilai-output" readonly></td>
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm nilai-bobot-output" readonly></td>
 
-                                                            <td class="text-center" style="min-width:150px;">
-                                                                <select class="form-control form-control-sm status-select">
+                                                            <td class="text-center" style="min-width: 150px;">
+                                                                <select class="form-select form-select-sm status-select">
                                                                     <option value="Belum Dinilai" <?= ($i->status == 'Belum Dinilai') ? 'selected' : ''; ?>>Belum Dinilai</option>
                                                                     <option value="Ada Catatan" <?= ($i->status == 'Ada Catatan') ? 'selected' : ''; ?>>Ada Catatan</option>
                                                                     <option value="Disetujui" <?= ($i->status == 'Disetujui') ? 'selected' : ''; ?>>Disetujui</option>
@@ -187,6 +187,7 @@
                                                             <td class="text-center">
                                                                 <button type="button" class="btn btn-sm btn-success simpan-status">Simpan</button>
                                                             </td>
+
 
                                                         </tr>
                                                 <?php
@@ -218,12 +219,21 @@
                                             </tr>
                                         </tfoot>
                                     </table>
+
+                                </div>
+                                <div class="d-flex justify-content-end align-items-center mt-2 gap-2">
+                                    <label for="status-semua" class="mb-0"><b>Ubah Semua Status:</b></label>
+                                    <select id="status-semua" class="form-select form-select-sm" style="width: 180px; padding: 0.25rem 0.5rem;">
+                                        <option value="Belum Dinilai">Belum Dinilai</option>
+                                        <option value="Ada Catatan">Ada Catatan</option>
+                                        <option value="Disetujui">Disetujui</option>
+                                    </select>
+                                    <button type="button" id="btn-simpan-semua" class="btn btn-success btn-sm" style="padding: 0.35rem 0.75rem;">Simpan Semua</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             <?php } ?>
         </div>
     </div>
@@ -271,6 +281,12 @@ if ($message): ?>
                 this.value = periodeAwal.value;
             }
         });
+        // --- fungsi tambahan untuk perhitungan total ---
+        function formatAngka(nilai) {
+            let num = parseFloat(nilai);
+            if (isNaN(num)) return '';
+            return Number.isInteger(num) ? num.toString() : num.toFixed(2);
+        }
 
         function hitungRow(row) {
             const target = parseFloat(row.querySelector('.target-input').value) || 0;
@@ -280,6 +296,7 @@ if ($message): ?>
             let pencapaian = 0,
                 nilai = 0,
                 nilaiBobot = 0;
+
             if (target > 0) {
                 pencapaian = (realisasi / target) * 100;
                 nilai = Math.min(pencapaian, 100);
@@ -324,6 +341,14 @@ if ($message): ?>
             });
         }
 
+        // jalankan pertama kali
+        hitungTotal();
+
+        // kalau ada perubahan realisasi (meskipun readonly bisa di-unlock oleh admin)
+        document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
+            input.addEventListener('input', hitungTotal);
+        });
+
         // tombol sesuaikan periode
         document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
             const awal = periodeAwal.value;
@@ -331,7 +356,79 @@ if ($message): ?>
             window.location.href = `<?= base_url("Pegawai/nilaiPegawaiDetail/") ?>${nik}?awal=${awal}&akhir=${akhir}`;
         });
 
-        // 🔥 panggil pertama kali biar langsung update total
-        hitungTotal();
+        document.querySelectorAll('.simpan-status').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const id = row.dataset.id;
+                const status = row.querySelector('.status-select').value;
+
+                fetch("<?= base_url('Pegawai/updateStatus'); ?>", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: "id=" + id + "&status=" + encodeURIComponent(status)
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        Swal.fire({
+                            icon: data.success ? 'success' : 'error',
+                            title: data.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    })
+                    .catch(err => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Terjadi kesalahan!',
+                            text: err
+                        });
+                    });
+            });
+        });
+        document.getElementById('btn-simpan-semua').addEventListener('click', function() {
+            const statusBaru = document.getElementById('status-semua').value;
+
+            // ambil semua row indikator
+            const rows = document.querySelectorAll('#tabel-penilaian tbody tr[data-id]');
+            const data = Array.from(rows).map(row => row.dataset.id);
+
+            fetch("<?= base_url('Pegawai/updateStatusAll'); ?>", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: "ids=" + data.join(",") + "&status=" + encodeURIComponent(statusBaru)
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        // update dropdown per baris
+                        rows.forEach(row => row.querySelector('.status-select').value = statusBaru);
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: res.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: res.message
+                        });
+                    }
+                })
+                .catch(err => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Terjadi kesalahan server'
+                    });
+                });
+        });
+
     });
 </script>
