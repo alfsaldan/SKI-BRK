@@ -292,35 +292,55 @@
 
                         <li class="menu-title mt-2">Fitur Utama</li>
 
-                        <li class="<?= $this->uri->segment(2) == 'keloladatapegawai' ? 'active' : '' ?>">
+                        <?php
+                        $activeMenu = strtolower($this->uri->segment(2));
+                        ?>
+                        <li
+                            class="<?= in_array($activeMenu, ['keloladatapegawai', 'detailpegawai']) ? 'active' : '' ?>">
                             <a href="<?= base_url('superadmin/keloladatapegawai') ?>">
                                 <i class="mdi mdi-account-card-details"></i>
-                                <span>Kelola Data Pegawai </span>
+                                <span>Kelola Data Pegawai</span>
                             </a>
                         </li>
 
-                        <li class="<?= $this->uri->segment(2) == 'indikatorkinerja' ? 'active' : '' ?>">
+
+                        <?php
+                        $activeMenu = strtolower($this->uri->segment(2));
+                        ?>
+
+                        <li class="<?= in_array($activeMenu, ['indikatorkinerja']) ? 'active' : '' ?>">
                             <a href="<?= base_url('superadmin/indikatorkinerja') ?>">
                                 <i class="mdi mdi-target-account"></i>
                                 <span> Indikator Kinerja </span>
                             </a>
                         </li>
 
-                        <li class="<?= $this->uri->segment(2) == 'penilaiankinerja' ? 'active' : '' ?>">
+
+                        <?php
+                        $activeMenu = strtolower($this->uri->segment(2));
+                        ?>
+
+                        <li class="<?= in_array($activeMenu, ['penilaiankinerja', 'caripenilaian']) ? 'active' : '' ?>">
                             <a href="<?= base_url('superadmin/penilaiankinerja') ?>">
                                 <i class="mdi mdi-account-edit"></i>
                                 <span> Penilaian Kinerja </span>
                             </a>
                         </li>
 
+
                         <li class="menu-title mt-2">Lainnya</li>
 
-                        <li class="<?= $this->uri->segment(2) == 'datapegawai' ? 'active' : '' ?>">
+                        <?php
+                        $activeMenu = strtolower($this->uri->segment(2));
+                        ?>
+
+                        <li class="<?= in_array($activeMenu, ['datapegawai', 'caridatapegawai']) ? 'active' : '' ?>">
                             <a href="<?= base_url('superadmin/datapegawai') ?>">
                                 <i class="mdi mdi-account-card-details"></i>
-                                <span>Cek Kinerja Pegawai </span>
+                                <span> Cek Kinerja Pegawai </span>
                             </a>
                         </li>
+
 
                         <li class="<?= $this->uri->segment(2) == 'kelolatingkatanjabatan' ? 'active' : '' ?>">
                             <a href="<?= base_url('superadmin/kelolatingkatanjabatan') ?>">
