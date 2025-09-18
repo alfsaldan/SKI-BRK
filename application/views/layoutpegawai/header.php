@@ -292,7 +292,12 @@
 
                         <li class="menu-title mt-2">Fitur Utama</li>
 
-                        <li class="<?= $this->uri->segment(2) == 'penilaiankinerja' ? 'active' : '' ?>">
+                        <?php
+                        $activeMenu = strtolower($this->uri->segment(2));
+                        ?>
+
+                        <li
+                            class="<?= in_array($activeMenu, ['nilaipegawai', 'nilaipegawaidetail']) ? 'active' : '' ?>">
                             <a href="<?= base_url('pegawai/nilaipegawai') ?>">
                                 <i class="mdi mdi-account-edit"></i>
                                 <span> Nilai Pegawai </span>
