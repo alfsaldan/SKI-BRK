@@ -515,6 +515,7 @@
                         previous: "Sebelumnya"
                     }
                 },
+                dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
                 drawCallback: function(settings) {
                     // nomor urut otomatis 1 -> n
                     var api = this.api();
