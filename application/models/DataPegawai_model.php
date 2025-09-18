@@ -182,7 +182,4 @@ class DataPegawai_model extends CI_Model
         return $this->db->get()->row();
     }
 
-
-
-
 }

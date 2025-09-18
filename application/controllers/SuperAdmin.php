@@ -1,9 +1,14 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xls;
-use PhpOffice\PhpSpreadsheet\IOFactory;
+
+    // Load PhpSpreadsheet
+    require_once FCPATH . 'vendor/autoload.php';
+    use PhpOffice\PhpSpreadsheet\Spreadsheet; //ini error
+    use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+    use PhpOffice\PhpSpreadsheet\Style\Fill;
+    use PhpOffice\PhpSpreadsheet\Style\Border;
+
 
 /**
  * @property Indikator_model $Indikator_model
@@ -410,7 +415,6 @@ class SuperAdmin extends CI_Controller
 
     // Download template Excel
 
-
     public function downloadTemplatePegawai()
     {
         $this->load->helper('download'); // Load helper disini
@@ -738,43 +742,149 @@ class SuperAdmin extends CI_Controller
             redirect('SuperAdmin/dataPegawai');
         }
 
-        // Load library PhpSpreadsheet
-
-        // $this->load->library('excel');
-
-        // Load template excel
-        $templatePath = FCPATH . "uploads/templatedatapenilaian.xls";
-        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($templatePath);
+        $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Isi data pegawai
-        $sheet->setCellValue('B2', $pegawai->nik);
-        $sheet->setCellValue('B3', $pegawai->nama);
-        $sheet->setCellValue('B4', $pegawai->jabatan);
+        // =======================
+        // 1. DATA PEGAWAI HEADER
+        // =======================
+        $sheet->setCellValue('A1', 'DATA PEGAWAI');
+        $sheet->mergeCells('A1:D1');
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
 
-        // Isi data penilaian mulai row ke-7
-        $row = 7;
+        $sheet->setCellValue('A2', 'NIK');
+        $sheet->setCellValue('B2', $pegawai->nik);
+        $sheet->setCellValue('A3', 'Nama');
+        $sheet->setCellValue('B3', $pegawai->nama);
+        $sheet->setCellValue('A4', 'Jabatan');
+        $sheet->setCellValue('B4', $pegawai->jabatan);
+        $sheet->setCellValue('A5', 'Unit Kerja');
+        $sheet->setCellValue('B5', $pegawai->unit_kerja);
+        $sheet->setCellValue('A6', 'Unit Kantor');
+        $sheet->setCellValue('B6', $pegawai->unit_kantor);
+
+        // =========================
+        // 2. HEADER HASIL PENILAIAN
+        // =========================
+        $startRow = 8;
+        $headers = [
+            'Perspektif',
+            'Sasaran Kerja',
+            'Indikator',
+            'Bobot (%)',
+            'Target',
+            'Batas Waktu',
+            'Realisasi',
+            'Pencapaian (%)',
+            'Nilai',
+            'Nilai Dibobot'
+        ];
+
+        $col = 'A';
+        foreach ($headers as $h) {
+            $sheet->setCellValue($col . $startRow, $h);
+            $col++;
+        }
+
+        // Style header
+        $sheet->getStyle("A{$startRow}:J{$startRow}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'color' => ['rgb' => '2E7D32'] // hijau tua
+            ],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+            'borders' => [
+                'allBorders' => ['borderStyle' => Border::BORDER_THIN]
+            ]
+        ]);
+
+        // =========================
+        // 3. ISI DATA PENILAIAN
+        // =========================
+        $row = $startRow + 1;
+        $perspektifGroup = [];
         foreach ($penilaian as $p) {
-            $sheet->setCellValue("A{$row}", $p->perspektif);
-            $sheet->setCellValue("B{$row}", $p->sasaran_kerja);
-            $sheet->setCellValue("C{$row}", $p->indikator);
-            $sheet->setCellValue("D{$row}", $p->bobot);
-            $sheet->setCellValue("E{$row}", $p->target);
-            $sheet->setCellValue("F{$row}", $p->batas_waktu);
-            $sheet->setCellValue("G{$row}", $p->realisasi);
+            $perspektifGroup[$p->perspektif][$p->sasaran_kerja][] = $p;
+        }
+
+        foreach ($perspektifGroup as $perspektif => $sasaranArr) {
+            $perspStartRow = $row;
+
+            foreach ($sasaranArr as $sasaran => $items) {
+                $sasaranStartRow = $row;
+
+                foreach ($items as $i) {
+                    $sheet->setCellValue("A{$row}", $perspektif);
+                    $sheet->setCellValue("B{$row}", $sasaran);
+                    $sheet->setCellValue("C{$row}", $i->indikator);
+                    $sheet->setCellValue("D{$row}", $i->bobot);
+                    $sheet->setCellValue("E{$row}", $i->target);
+                    $sheet->setCellValue("F{$row}", $i->batas_waktu);
+                    $sheet->setCellValue("G{$row}", $i->realisasi);
+                    $sheet->setCellValue("H{$row}", $i->pencapaian ?? '-');
+                    $sheet->setCellValue("I{$row}", $i->nilai ?? '-');
+                    $sheet->setCellValue("J{$row}", $i->nilai_dibobot ?? '-');
+                    $row++;
+                }
+
+                // merge sasaran cell
+                if ($row - $sasaranStartRow > 1) {
+                    $sheet->mergeCells("B{$sasaranStartRow}:B" . ($row - 1));
+                }
+            }
+
+            // merge perspektif cell
+            if ($row - $perspStartRow > 1) {
+                $sheet->mergeCells("A{$perspStartRow}:A" . ($row - 1));
+            }
+
+            // subtotal row
+            $sheet->setCellValue("A{$row}", "Sub Total {$perspektif}");
+            $sheet->mergeCells("A{$row}:I{$row}");
+            $sheet->setCellValue("J{$row}", "=SUM(J{$perspStartRow}:J" . ($row - 1) . ")");
+            $sheet->getStyle("A{$row}:J{$row}")->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'color' => ['rgb' => 'F1F8E9'] // hijau muda
+                ]
+            ]);
             $row++;
         }
 
-        // Download file
-        $filename = "Data_Penilaian_{$pegawai->nama}_{$pegawai->nik}.xls";
-        header('Content-Type: application/vnd.ms-excel');
+        // =========================
+        // 4. TOTAL AKHIR
+        // =========================
+        $sheet->setCellValue("A{$row}", "TOTAL");
+        $sheet->mergeCells("A{$row}:I{$row}");
+        $sheet->setCellValue("J{$row}", "=SUM(J" . ($startRow + 1) . ":J" . ($row - 2) . ")");
+        $sheet->getStyle("A{$row}:J{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'color' => ['rgb' => '2E7D32'] // hijau tua
+            ]
+        ]);
+
+        // border untuk semua tabel
+        $sheet->getStyle("A{$startRow}:J{$row}")->applyFromArray([
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]
+        ]);
+
+        // =========================
+        // 5. DOWNLOAD FILE
+        // =========================
+        $filename = "Data_Penilaian_{$pegawai->nama}_{$pegawai->nik}.xlsx";
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header("Content-Disposition: attachment;filename=\"{$filename}\"");
         header('Cache-Control: max-age=0');
 
-        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xls');
+        $writer = new Xlsx($spreadsheet);
         $writer->save('php://output');
         exit;
     }
+
 
     // Halaman Data Diri
     public function datadiri()
