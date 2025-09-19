@@ -48,8 +48,8 @@
                                 <div class="form-group mb-3" id="nikDiv">
                                     <label for="nik"><b>Masukkan NIK</b></label>
                                     <div class="input-group">
-                                        <input type="text" class="form-control" id="nik" name="nik" required
-                                            placeholder="Masukkan NIK" value="<?= isset($nik) ? $nik : ''; ?>">
+                                        <input type="text" class="form-control" id="nik" name="nik" required maxlength="16"
+                                            placeholder="Masukkan NIK (16 Digit)" value="<?= isset($nik) ? $nik : ''; ?>">
                                         <div class="input-group-append">
                                             <button class="btn btn-success" type="button" id="checkNikBtn">Next</button>
                                         </div>
