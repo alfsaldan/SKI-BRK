@@ -1,6 +1,15 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+/**
+ * @property Pegawai_model $Pegawai_model
+ * @property Nilai_model $Nilai_model
+ * @property DataDiri_model $DataDiri_model
+ * @property CI_Input $input
+ * @property CI_Session $session
+ * @property CI_DB_query_builder $db
+ */
+
 class Pegawai extends CI_Controller
 {
     public function __construct()
