@@ -17,6 +17,8 @@ use PhpOffice\PhpSpreadsheet\Cell\DataType;
  * @property Penilaian_model $Penilaian_model
  * @property DataPegawai_model $DataPegawai_model
  * @property RiwayatJabatan_model $RiwayatJabatan_model
+ * @property PenilaiMapping_model $PenilaiMapping_model
+ * @property DataDiri_model $DataDiri_model
  * @property CI_Input $input
  * @property CI_Session $session
  * @property CI_DB_query_builder $db
@@ -608,7 +610,7 @@ class SuperAdmin extends CI_Controller
         ];
         $this->DataPegawai_model->insertPegawai($data_pegawai);
 
-        $this->DataPegawai_model->insertRiwayatAwal($nik, $jabatan, $unit_kerja);
+        $this->DataPegawai_model->insertRiwayatAwal($nik, $jabatan, $unit_kerja, $unit_kantor); // 🔹 Tambahan
 
         $cek_user = $this->db->get_where('users', ['nik' => $nik])->row();
         if (!$cek_user) {
