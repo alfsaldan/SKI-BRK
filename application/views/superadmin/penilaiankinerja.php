@@ -18,7 +18,6 @@
                 </div>
             </div>
 
-
             <div class="row">
                 <div class="col-6">
                     <div class="card">
@@ -47,7 +46,7 @@
                                         <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
                                         <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
                                         <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
-                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?></p>
+                                        <p><b>Jenis Unit:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
                                     </div>
 
@@ -160,24 +159,8 @@
                                                         $indik = $i->indikator ?? '';
                                                         $subtotal_bobot_perspektif += $bobot;
 
-
-                                                        $status = strtolower(trim($i->status ?? ''));
-
-                                                        $statusClass = 'badge badge-danger';
-                                                        $statusText  = 'Belum Dinilai';
-
-                                                        switch ($status) {
-                                                            case 'ada catatan':
-                                                                $statusClass = 'badge badge-warning';
-                                                                $statusText  = 'Ada Catatan';
-                                                                break;
-                                                            case 'disetujui':
-                                                                $statusClass = 'badge badge-success';
-                                                                $statusText  = 'Disetujui';
-                                                                break;
-                                                        }
-
-
+                                                        $statusClass = 'text-secondary';
+                                                        $statusText = 'Belum Dinilai';
                                             ?>
                                                         <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>"
                                                             data-perspektif="<?= $persp; ?>">
@@ -215,10 +198,7 @@
                                                                     class="form-control form-control-sm nilai-bobot-output" readonly>
                                                             </td>
 
-                                                            <td class="text-center">
-                                                                <span class="<?= $statusClass; ?>"><?= $statusText; ?></span>
-                                                            </td>
-
+                                                            <td class="text-center <?= $statusClass; ?>"><?= $statusText; ?></td>
                                                             <td class="text-center">
                                                                 <button type="button"
                                                                     class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
