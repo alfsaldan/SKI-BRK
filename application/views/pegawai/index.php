@@ -152,8 +152,21 @@
                                                         $indik = $i->indikator ?? '';
                                                         $subtotal_bobot_perspektif += $bobot;
 
-                                                        $statusClass = 'text-secondary';
-                                                        $statusText = 'Belum Dinilai';
+                                                        $status = strtolower(trim($i->status ?? ''));
+
+                                                        $statusClass = 'badge badge-danger';
+                                                        $statusText  = 'Belum Dinilai';
+
+                                                        switch ($status) {
+                                                            case 'ada catatan':
+                                                                $statusClass = 'badge badge-warning';
+                                                                $statusText  = 'Ada Catatan';
+                                                                break;
+                                                            case 'disetujui':
+                                                                $statusClass = 'badge badge-success';
+                                                                $statusText  = 'Disetujui';
+                                                                break;
+                                                        }
                                             ?>
                                                         <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>" data-perspektif="<?= $persp; ?>">
                                                             <?php if ($first_persp_cell) { ?>
@@ -179,7 +192,9 @@
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm nilai-output" readonly></td>
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm nilai-bobot-output" readonly></td>
 
-                                                            <td class="text-center <?= $statusClass; ?>"><?= $statusText; ?></td>
+                                                            <td class="text-center">
+                                                                <span class="<?= $statusClass; ?>"><?= $statusText; ?></span>
+                                                            </td>
                                                             <td class="text-center">
                                                                 <button type="button" class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
                                                             </td>

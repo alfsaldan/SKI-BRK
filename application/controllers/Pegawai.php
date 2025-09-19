@@ -34,7 +34,7 @@ class Pegawai extends CI_Controller
         $periode_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
 
         // ambil indikator & nilai (dibatasi dengan nik & periode)
-        $indikator = $this->Penilaian_model->get_indikator_by_jabatan_dan_unit(
+        $indikator = $this->Pegawai_model->get_indikator_by_jabatan_dan_unit(
             $pegawai->jabatan,
             $pegawai->unit_kerja,
             $nik,
@@ -74,7 +74,7 @@ class Pegawai extends CI_Controller
         $periode_akhir = $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
 
         // simpan (Penilaian_model->save_penilaian menangani insert/update sesuai nik+indikator+periode)
-        $save = $this->Penilaian_model->save_penilaian(
+        $save = $this->Pegawai_model->save_penilaian(
             $nik,
             $indikator_id,
             $target,

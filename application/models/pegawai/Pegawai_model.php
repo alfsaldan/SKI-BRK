@@ -59,4 +59,78 @@ class Pegawai_model extends CI_Model
         $this->db->where('id', $id);
         return $this->db->update('penilaian', $data);
     }
+    public function get_indikator_by_jabatan_dan_unit($jabatan, $unit_kerja, $nik = null, $periode_awal = null, $periode_akhir = null)
+    {
+        if (!$periode_awal) $periode_awal = date('Y') . '-01-01';
+        if (!$periode_akhir) $periode_akhir = date('Y') . '-12-31';
+
+        $this->db->select('
+        indikator.id,
+        indikator.indikator,
+        indikator.bobot,
+        sasaran_kerja.perspektif,
+        sasaran_kerja.sasaran_kerja,
+        penilaian.id as penilaian_id,
+        penilaian.target,
+        penilaian.batas_waktu,
+        penilaian.realisasi,
+        penilaian.nilai,
+        penilaian.nilai_dibobot,
+        penilaian.catatan,
+        penilaian.status,
+        penilaian.periode_awal,
+        penilaian.periode_akhir
+    ');
+        $this->db->from('indikator');
+        $this->db->join('sasaran_kerja', 'indikator.sasaran_id = sasaran_kerja.id');
+
+        if ($nik) {
+            $this->db->join(
+                'penilaian',
+                "penilaian.indikator_id = indikator.id
+             AND penilaian.nik = " . $this->db->escape($nik) . "
+             AND penilaian.periode_awal = " . $this->db->escape($periode_awal) . "
+             AND penilaian.periode_akhir = " . $this->db->escape($periode_akhir),
+                'left'
+            );
+        } else {
+            $this->db->join('penilaian', 'penilaian.indikator_id = indikator.id', 'left');
+        }
+
+        $this->db->where('sasaran_kerja.jabatan', $jabatan);
+        $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+
+        $this->db->order_by('sasaran_kerja.perspektif', 'ASC');
+        $this->db->order_by('sasaran_kerja.sasaran_kerja', 'ASC');
+
+        return $this->db->get()->result();
+    }
+    public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $periode_awal = null, $periode_akhir = null)
+    {
+        if (!$periode_awal) $periode_awal = date('Y') . '-01-01';
+        if (!$periode_akhir) $periode_akhir = date('Y') . '-12-31';
+
+        $data = [
+            'nik' => $nik,
+            'indikator_id' => $indikator_id,
+            'target' => $target,
+            'batas_waktu' => $batas_waktu,
+            'realisasi' => $realisasi,
+            'periode_awal' => $periode_awal,
+            'periode_akhir' => $periode_akhir
+        ];
+
+        $this->db->where('nik', $nik);
+        $this->db->where('indikator_id', $indikator_id);
+        $this->db->where('periode_awal', $periode_awal);
+        $this->db->where('periode_akhir', $periode_akhir);
+        $exists = $this->db->get('penilaian')->row();
+
+        if ($exists) {
+            $this->db->where('id', $exists->id);
+            return $this->db->update('penilaian', $data);
+        } else {
+            return $this->db->insert('penilaian', $data);
+        }
+    }
 }
