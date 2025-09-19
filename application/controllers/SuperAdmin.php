@@ -9,6 +9,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet; //ini error
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 
 /**
@@ -752,8 +753,11 @@ class SuperAdmin extends CI_Controller
         $sheet->mergeCells('A1:D1');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
 
+
         $sheet->setCellValue('A2', 'NIK');
-        $sheet->setCellValue('B2', $pegawai->nik);
+        $sheet->setCellValueExplicit('B2', $pegawai->nik, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+        $sheet->getStyle('B2')->getNumberFormat()->setFormatCode('@');
+
         $sheet->setCellValue('A3', 'Nama');
         $sheet->setCellValue('B3', $pegawai->nama);
         $sheet->setCellValue('A4', 'Jabatan');
