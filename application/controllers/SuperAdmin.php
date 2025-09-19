@@ -711,7 +711,6 @@ class SuperAdmin extends CI_Controller
     }
 
     // Cari Data Pegawai berdasarkan NIK
-    // Cari Data Pegawai berdasarkan NIK
     public function cariDataPegawai()
     {
         $nik = $this->input->post('nik');
@@ -806,7 +805,9 @@ class SuperAdmin extends CI_Controller
         $row = $startRow + 1;
         $perspektifGroup = [];
         foreach ($penilaian as $p) {
-            $perspektifGroup[$p->perspektif][$p->sasaran_kerja][] = $p;
+            $perspektif = trim((string) $p->perspektif);
+            $sasaran    = trim((string) $p->sasaran_kerja);
+            $perspektifGroup[$perspektif][$sasaran][] = $p;
         }
 
         foreach ($perspektifGroup as $perspektif => $sasaranArr) {
@@ -816,8 +817,7 @@ class SuperAdmin extends CI_Controller
                 $sasaranStartRow = $row;
 
                 foreach ($items as $i) {
-                    $sheet->setCellValue("A{$row}", $perspektif);
-                    $sheet->setCellValue("B{$row}", $sasaran);
+                    // hanya indikator & nilai, perspektif & sasaran nanti di-merge
                     $sheet->setCellValue("C{$row}", $i->indikator);
                     $sheet->setCellValue("D{$row}", $i->bobot);
                     $sheet->setCellValue("E{$row}", $i->target);
@@ -829,18 +829,24 @@ class SuperAdmin extends CI_Controller
                     $row++;
                 }
 
-                // merge sasaran cell
-                if ($row - $sasaranStartRow > 1) {
+                // Merge & isi kolom Sasaran
+                if ($row - $sasaranStartRow > 1 && $sasaran !== '') {
                     $sheet->mergeCells("B{$sasaranStartRow}:B" . ($row - 1));
+                    $sheet->setCellValue("B{$sasaranStartRow}", $sasaran);
+                } else {
+                    $sheet->setCellValue("B{$sasaranStartRow}", $sasaran);
                 }
             }
 
-            // merge perspektif cell
-            if ($row - $perspStartRow > 1) {
+            // Merge & isi kolom Perspektif
+            if ($row - $perspStartRow > 1 && $perspektif !== '') {
                 $sheet->mergeCells("A{$perspStartRow}:A" . ($row - 1));
+                $sheet->setCellValue("A{$perspStartRow}", $perspektif);
+            } else {
+                $sheet->setCellValue("A{$perspStartRow}", $perspektif);
             }
 
-            // subtotal row
+            // Sub Total
             $sheet->setCellValue("A{$row}", "Sub Total {$perspektif}");
             $sheet->mergeCells("A{$row}:I{$row}");
             $sheet->setCellValue("J{$row}", "=SUM(J{$perspStartRow}:J" . ($row - 1) . ")");
@@ -848,7 +854,7 @@ class SuperAdmin extends CI_Controller
                 'font' => ['bold' => true],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
-                    'color' => ['rgb' => 'F1F8E9'] // hijau muda
+                    'color' => ['rgb' => 'F1F8E9']
                 ]
             ]);
             $row++;
