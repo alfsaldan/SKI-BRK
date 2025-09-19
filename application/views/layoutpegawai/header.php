@@ -293,7 +293,7 @@
                         <li class="menu-title mt-2">Fitur Utama</li>
 
                         <?php
-                        $activeMenu = strtolower($this->uri->segment(2));
+                        $activeMenu = strtolower($this->uri->segment(2, ''));
                         ?>
 
                         <li

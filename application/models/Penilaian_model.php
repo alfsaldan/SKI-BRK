@@ -25,9 +25,11 @@ class Penilaian_model extends CI_Model
         penilaian.nilai,
         penilaian.nilai_dibobot,
         penilaian.catatan,
+        penilaian.status,
         penilaian.periode_awal,
         penilaian.periode_akhir
     ');
+
         $this->db->from('indikator');
         $this->db->join('sasaran_kerja', 'indikator.sasaran_id = sasaran_kerja.id');
 

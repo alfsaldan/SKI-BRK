@@ -293,7 +293,8 @@
                         <li class="menu-title mt-2">Fitur Utama</li>
 
                         <?php
-                        $activeMenu = strtolower($this->uri->segment(2));
+                        $activeMenu = strtolower($this->uri->segment(2, ''));
+
                         ?>
                         <li
                             class="<?= in_array($activeMenu, ['keloladatapegawai', 'detailpegawai']) ? 'active' : '' ?>">
@@ -305,7 +306,8 @@
 
 
                         <?php
-                        $activeMenu = strtolower($this->uri->segment(2));
+                        $activeMenu = strtolower($this->uri->segment(2, ''));
+
                         ?>
 
                         <li class="<?= in_array($activeMenu, ['indikatorkinerja']) ? 'active' : '' ?>">
@@ -317,7 +319,8 @@
 
 
                         <?php
-                        $activeMenu = strtolower($this->uri->segment(2));
+                        $activeMenu = strtolower($this->uri->segment(2, ''));
+
                         ?>
 
                         <li class="<?= in_array($activeMenu, ['penilaiankinerja', 'caripenilaian']) ? 'active' : '' ?>">
@@ -331,7 +334,8 @@
                         <li class="menu-title mt-2">Lainnya</li>
 
                         <?php
-                        $activeMenu = strtolower($this->uri->segment(2));
+                        $activeMenu = strtolower($this->uri->segment(2, ''));
+
                         ?>
 
                         <li class="<?= in_array($activeMenu, ['datapegawai', 'caridatapegawai']) ? 'active' : '' ?>">
