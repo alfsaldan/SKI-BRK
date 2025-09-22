@@ -65,7 +65,7 @@
                                             <button type="button" id="btn-sesuaikan-periode"
                                                 class="btn btn-primary btn-sm">Sesuaikan Periode</button>
                                         </div>
-                                        <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?></p>
+                                        <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
                                     </div>
                                 </div>
 
