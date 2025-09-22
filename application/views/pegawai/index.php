@@ -40,26 +40,65 @@
                                         <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
                                         <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
                                         <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
-                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?></p>
+                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
 
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
                                     </div>
+
+                                    <?php
+                                    $bulan_indonesia = [
+                                        1 => 'Januari',
+                                        2 => 'Februari',
+                                        3 => 'Maret',
+                                        4 => 'April',
+                                        5 => 'Mei',
+                                        6 => 'Juni',
+                                        7 => 'Juli',
+                                        8 => 'Agustus',
+                                        9 => 'September',
+                                        10 => 'Oktober',
+                                        11 => 'November',
+                                        12 => 'Desember'
+                                    ];
+
+                                    // urutkan $periode_list berdasarkan periode_awal ascending
+                                    usort($periode_list, function ($a, $b) {
+                                        return strtotime($a->periode_awal) - strtotime($b->periode_awal);
+                                    });
+
+                                    function formatTanggalIndonesia($tanggal, $bulan_indonesia)
+                                    {
+                                        $tgl = date('d', strtotime($tanggal));
+                                        $bln = $bulan_indonesia[(int)date('m', strtotime($tanggal))];
+                                        $thn = date('Y', strtotime($tanggal));
+                                        return "$tgl $bln $thn";
+                                    }
+                                    ?>
 
                                     <div class="col-md-6">
                                         <h5>Informasi Penilaian</h5>
                                         <!-- Pilih Periode Penilaian -->
                                         <div class="form-inline mb-2">
                                             <label class="mr-2"><b>Periode Penilaian:</b></label>
-                                            <input type="date" id="periode_awal" class="form-control mr-2"
+                                            <input type="hidden" id="periode_awal" class="form-control mr-2"
                                                 value="<?= $periode_awal ?? date('Y-01-01'); ?>">
-                                            <span class="mr-2">s/d</span>
-                                            <input type="date" id="periode_akhir" class="form-control mr-2"
+                                            <span class="mr-2"></span>
+                                            <input type="hidden" id="periode_akhir" class="form-control mr-2"
                                                 value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
                                         </div>
-                                        <div class="d-flex justify-content-end mb-2">
+                                        <div class="form-inline mb-2">
+                                            <!-- 🔽 Tambahan dropdown history periode -->
+                                            <select id="periode_history" class="form-control w-auto me-2">
+                                                <option value="">Pilih Periode</option>
+                                                <?php foreach ($periode_list as $p): ?>
+                                                    <option value="<?= $p->periode_awal . '|' . $p->periode_akhir ?>">
+                                                        <?= formatTanggalIndonesia($p->periode_awal, $bulan_indonesia) ?> s/d <?= formatTanggalIndonesia($p->periode_akhir, $bulan_indonesia) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
                                             <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary btn-sm">Sesuaikan Periode</button>
                                         </div>
-                                        <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?></p>
+                                        <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
                                     </div>
                                 </div>
 
@@ -233,6 +272,59 @@
                         </div>
                     </div>
                 </div>
+                <!-- ================== FORM TAMBAH CATATAN ================== -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Tambah Catatan</h5>
+                        <form id="form-catatan-pegawai">
+                            <input type="hidden" name="nik" id="nik" value="<?= $pegawai_detail->nik;; ?>">
+
+                            <div class="mb-3">
+                                <label for="catatan-pegawai" class="form-label"><b>Catatan</b></label>
+                                <textarea class="form-control" name="catatan" id="catatan-pegawai" rows="3" required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" id="btnSimpanCatatan">Simpan</button>
+                        </form>
+
+
+                        <!-- ================== TABEL CATATAN ================== -->
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered" id="tabel-catatan-pegawai">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Catatan</th>
+                                        <th>Tanggal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $catatan_list = $this->Pegawai_model->getCatatanPegawai($pegawai_detail->nik);
+                                    $no = 1;
+                                    if (!empty($catatan_list)) :
+                                        foreach ($catatan_list as $c):
+                                            $tgl = new DateTime($c->tanggal, new DateTimeZone('UTC'));
+                                            $tgl->setTimezone(new DateTimeZone('Asia/Jakarta'));
+                                    ?>
+                                            <tr>
+                                                <td><?= $no++ ?></td>
+                                                <td><?= $c->catatan ?></td>
+                                                <td><?= $tgl->format('d-m-Y H:i') ?></td>
+                                            </tr>
+                                        <?php
+                                        endforeach;
+                                    else: ?>
+                                        <tr>
+                                            <td colspan="3" class="text-center">Belum ada catatan</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
             <?php } ?>
         </div>
@@ -243,6 +335,8 @@
 <!-- ============================================================== -->
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 
 <?php
 // flash message (jika ada)
@@ -263,6 +357,7 @@ if ($message): ?>
         const nik = document.getElementById('nik')?.value;
         const periodeAwal = document.getElementById('periode_awal');
         const periodeAkhir = document.getElementById('periode_akhir');
+        const periodeHistory = document.getElementById('periode_history');
 
         // default dari server (jaga-jaga kalau kosong)
         if (!periodeAwal.value) periodeAwal.value = "<?= $periode_awal ?? date('Y-01-01'); ?>";
@@ -282,6 +377,25 @@ if ($message): ?>
                 });
                 this.value = periodeAwal.value;
             }
+        });
+
+        // ===== Dropdown Periode History =====
+        periodeHistory.addEventListener('change', function() {
+            if (!this.value) return;
+            const [awal, akhir] = this.value.split('|');
+            periodeAwal.value = awal;
+            periodeAkhir.value = akhir;
+        });
+
+        // Reset dropdown jika user ubah tanggal manual
+        periodeAwal.addEventListener('input', () => periodeHistory.value = '');
+        periodeAkhir.addEventListener('input', () => periodeHistory.value = '');
+
+        // ===== Tombol Sesuaikan Periode =====
+        document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
+            const awal = periodeAwal.value;
+            const akhir = periodeAkhir.value;
+            window.location.href = `<?= base_url("Pegawai") ?>?awal=${awal}&akhir=${akhir}`;
         });
 
         // format angka
@@ -411,5 +525,109 @@ if ($message): ?>
             const akhir = periodeAkhir.value;
             window.location.href = `<?= base_url("Pegawai") ?>?awal=${awal}&akhir=${akhir}`;
         });
+
+        // ==== DataTables Catatan Pegawai ====
+        var tableCatatanPegawai = $('#tabel-catatan-pegawai').DataTable({
+            responsive: false,
+            paging: true,
+            searching: true,
+            ordering: true,
+            order: [
+                [2, 'desc']
+            ], // kolom tanggal
+            columnDefs: [{
+                    orderable: false,
+                    targets: [0]
+                } // kolom nomor
+            ],
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ baris",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
+                infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
+                zeroRecords: "Tidak ada catatan yang ditemukan",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "Berikut",
+                    previous: "Sebelumnya"
+                }
+            },
+            // 🔹 Atur layout DOM
+            dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+            drawCallback: function(settings) {
+                var api = this.api();
+                api.column(0, {
+                    order: 'applied'
+                }).nodes().each(function(cell, i) {
+                    cell.innerHTML = i + 1;
+                });
+            }
+        });
+
+        // ==== AJAX Form Catatan Pegawai ====
+        $('#form-catatan-pegawai').on('submit', function(e) {
+            e.preventDefault();
+            const nik = $('#nik').val();
+            const catatan = $('#catatan-pegawai').val().trim();
+
+            if (catatan === '') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Catatan kosong'
+                });
+                return;
+            }
+
+            fetch("<?= base_url('pegawai/simpan_catatan_pegawai'); ?>", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `nik=${nik}&catatan=${encodeURIComponent(catatan)}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+
+                        const tanggal = new Date().toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        tableCatatanPegawai.row.add([
+                            '', // nomor auto
+                            catatan,
+                            tanggal
+                        ]).draw(false);
+
+                        $('#form-catatan-pegawai')[0].reset();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: data.message
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Terjadi kesalahan server'
+                    });
+                });
+        });
+
+
     });
 </script>

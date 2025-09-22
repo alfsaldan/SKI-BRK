@@ -36,7 +36,7 @@
                                         <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
                                         <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
                                         <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
-                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?></p>
+                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
                                     </div>
                                     <div class="col-md-6">
@@ -50,7 +50,7 @@
                                         <div class="d-flex justify-content-end mb-2">
                                             <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary btn-sm">Sesuaikan Periode</button>
                                         </div>
-                                        <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?></p>
+                                        <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
                                     </div>
                                 </div>
 
@@ -403,7 +403,7 @@
 
         // ==== DataTables Catatan ====
         var tableCatatan = $('#tabel-catatan').DataTable({
-            responsive: true,
+            responsive: false,
             paging: true,
             searching: true,
             ordering: true,

@@ -46,7 +46,7 @@
                                         <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
                                         <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
                                         <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
-                                        <p><b>Jenis Unit:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
+                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
                                     </div>
 

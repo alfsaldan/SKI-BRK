@@ -133,4 +133,32 @@ class Pegawai_model extends CI_Model
             return $this->db->insert('penilaian', $data);
         }
     }
+
+    // Simpan catatan pegawai
+    public function tambahCatatan($data)
+    {
+        return $this->db->insert('catatan_pegawai', $data);
+    }
+
+    // Ambil catatan pegawai
+    public function getCatatanPegawai($nik)
+    {
+        return $this->db
+            ->select('id, nik, catatan, tanggal')
+            ->from('catatan_pegawai')
+            ->where('nik', $nik)
+            ->order_by('tanggal', 'DESC')
+            ->get()
+            ->result();
+    }
+
+    public function getPeriodePegawai($nik)
+    {
+        $this->db->distinct(); // pastikan hasil unik
+        $this->db->select('periode_awal, periode_akhir');
+        $this->db->from('penilaian');
+        $this->db->where('nik', $nik);
+        $this->db->order_by('periode_awal', 'DESC');
+        return $this->db->get()->result();
+    }
 }

@@ -51,12 +51,16 @@ class Pegawai extends CI_Controller
             $periode_akhir
         );
 
+        // 🔹 Tambahkan periode_list dari Penilaian_model
+        $periode_list = $this->Pegawai_model->getPeriodePegawai($nik);
+
         $data = [
             'judul' => "Dashboard Pegawai",
             'pegawai_detail' => $pegawai,
             'indikator_by_jabatan' => $indikator,
             'periode_awal' => $periode_awal,
-            'periode_akhir' => $periode_akhir
+            'periode_akhir' => $periode_akhir,
+            'periode_list' => $periode_list
         ];
 
 
@@ -274,5 +278,29 @@ class Pegawai extends CI_Controller
         } else {
             echo json_encode(['success' => false, 'message' => 'Gagal menyimpan catatan!']);
         }
+    }
+    // Simpan catatan pegawai (AJAX)
+    public function simpan_catatan_pegawai()
+    {
+        $nik = $this->input->post('nik') ?? $this->session->userdata('nik');
+        $catatan = $this->input->post('catatan');
+
+        if (empty(trim($catatan))) {
+            echo json_encode(['success' => false, 'message' => 'Catatan kosong']);
+            return;
+        }
+
+        $data = [
+            'nik'     => $nik,
+            'catatan' => $catatan,
+            'tanggal' => date('Y-m-d H:i:s')
+        ];
+
+        $insert = $this->Pegawai_model->tambahCatatan($data);
+
+        echo json_encode([
+            'success' => (bool)$insert,
+            'message' => $insert ? 'Catatan berhasil ditambahkan' : 'Gagal menyimpan catatan'
+        ]);
     }
 }
