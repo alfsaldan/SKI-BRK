@@ -25,6 +25,37 @@
             <!-- end page title -->
 
             <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>
+
+                <?php
+                // ===== Tetap gunakan format tanggal Indonesia =====
+                $bulan_indonesia = [
+                    1 => 'Januari',
+                    2 => 'Februari',
+                    3 => 'Maret',
+                    4 => 'April',
+                    5 => 'Mei',
+                    6 => 'Juni',
+                    7 => 'Juli',
+                    8 => 'Agustus',
+                    9 => 'September',
+                    10 => 'Oktober',
+                    11 => 'November',
+                    12 => 'Desember'
+                ];
+
+                // urutkan $periode_list berdasarkan periode_awal ascending
+                usort($periode_list, function ($a, $b) {
+                    return strtotime($a->periode_awal) - strtotime($b->periode_awal);
+                });
+
+                function formatTanggalIndonesia($tanggal, $bulan_indonesia)
+                {
+                    $tgl = date('d', strtotime($tanggal));
+                    $bln = $bulan_indonesia[(int)date('m', strtotime($tanggal))];
+                    $thn = date('Y', strtotime($tanggal));
+                    return "$tgl $bln $thn";
+                }
+                ?>
                 <div class="row">
                     <div class="col-12">
                         <div class="card shadow-sm border-0">
@@ -65,15 +96,31 @@
                                         </h5>
                                         <div class="form-inline mb-2">
                                             <label class="mr-2 font-weight-medium"><b>Periode Penilaian:</b></label>
-                                            <input type="date" id="periode_awal" class="form-control mr-2" value="<?= $periode_awal ?? date('Y-01-01'); ?>">
-                                            <span class="mr-2">s/d</span>
-                                            <input type="date" id="periode_akhir" class="form-control mr-2" value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
+                                            <!-- Input tanggal manual -->
+                                            <input type="hidden" id="periode_awal" class="form-control mr-2" value="<?= $periode_awal ?? date('Y-01-01'); ?>">
+                                            <span class="mr-2"></span>
+                                            <input type="hidden" id="periode_akhir" class="form-control mr-2" value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
+
+                                            <!-- Dropdown periode history -->
+
+                                            <div class="form-inline mb-2">
+                                                <select id="periode_history" class="form-control w-auto ml-2">
+                                                    <option value="">Pilih Periode</option>
+                                                    <?php foreach ($periode_list as $p): ?>
+                                                        <option value="<?= $p->periode_awal . '|' . $p->periode_akhir ?>"
+                                                            <?= (isset($periode_awal) && $periode_awal == $p->periode_awal) ? 'selected' : '' ?>>
+                                                            <?= formatTanggalIndonesia($p->periode_awal, $bulan_indonesia) ?> s/d <?= formatTanggalIndonesia($p->periode_akhir, $bulan_indonesia) ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+
+                                                <!-- Tombol sesuaikan -->
+                                                <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary btn-sm ml-2">
+                                                    Sesuaikan Periode
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div class="d-flex justify-content-end mb-2">
-                                            <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary btn-sm">
-                                                Sesuaikan Periode
-                                            </button>
-                                        </div>
+
                                         <p class="mt-2 font-weight-medium">
                                             <b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?>
                                         </p>
@@ -334,6 +381,7 @@
         const nik = document.getElementById('nik').value;
         const periodeAwal = document.getElementById('periode_awal');
         const periodeAkhir = document.getElementById('periode_akhir');
+        const periodeHistory = document.getElementById('periode_history');
 
         // Validasi periode
         periodeAwal.addEventListener('change', () => {
@@ -349,6 +397,34 @@
                 });
                 periodeAkhir.value = periodeAwal.value;
             }
+        });
+
+        // Saat pilih dropdown, update input tanggal
+        periodeHistory.addEventListener('change', function() {
+            const val = this.value;
+            if (!val) return;
+
+            const [awal, akhir] = val.split('|');
+            periodeAwal.value = awal;
+            periodeAkhir.value = akhir;
+        });
+
+        // Tombol sesuaikan periode → redirect ke URL dengan periode
+        document.getElementById('btn-sesuaikan-periode').addEventListener('click', () => {
+            const awal = periodeAwal.value;
+            const akhir = periodeAkhir.value;
+
+            if (!awal || !akhir) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Periode belum lengkap',
+                    text: 'Silakan pilih periode awal dan akhir.'
+                });
+                return;
+            }
+
+            // Redirect ke halaman nilai pegawai dengan periode terpilih
+            window.location.href = `<?= base_url('Pegawai/nilaiPegawaiDetail/') ?>${nik}?awal=${awal}&akhir=${akhir}`;
         });
 
         function formatAngka(nilai) {

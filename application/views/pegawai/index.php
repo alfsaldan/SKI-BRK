@@ -93,26 +93,39 @@
 
                                     <!-- Informasi Penilaian -->
                                     <div class="col-md-6 mb-3">
-                                        <h5 class="text-success mb-3 font-weight-bold"><i class="mdi mdi-file-document-outline mr-2"></i>Informasi Penilaian</h5>
+                                        <h5 class="text-success mb-3 font-weight-bold">
+                                            <i class="mdi mdi-file-document-outline mr-2"></i>Informasi Penilaian
+                                        </h5>
                                         <div class="form-inline mb-2">
-                                            <label class="mr-2"><b>Periode Penilaian:</b></label>
-                                            <input type="hidden" id="periode_awal" class="form-control mr-2"
-                                                value="<?= $periode_awal ?? date('Y-01-01'); ?>">
-                                            <input type="hidden" id="periode_akhir" class="form-control mr-2"
-                                                value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
+                                            <label class="mr-2 font-weight-medium"><b>Periode Penilaian:</b></label>
+                                            <!-- Input tanggal manual -->
+                                            <input type="hidden" id="periode_awal" class="form-control mr-2" value="<?= $periode_awal ?? date('Y-01-01'); ?>">
+                                            <span class="mr-2"></span>
+                                            <input type="hidden" id="periode_akhir" class="form-control mr-2" value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
+
+                                            <!-- Dropdown periode history -->
+
+                                            <div class="form-inline mb-2">
+                                                <select id="periode_history" class="form-control w-auto ml-2">
+                                                    <option value="">Pilih Periode</option>
+                                                    <?php foreach ($periode_list as $p): ?>
+                                                        <option value="<?= $p->periode_awal . '|' . $p->periode_akhir ?>"
+                                                            <?= (isset($periode_awal) && $periode_awal == $p->periode_awal) ? 'selected' : '' ?>>
+                                                            <?= formatTanggalIndonesia($p->periode_awal, $bulan_indonesia) ?> s/d <?= formatTanggalIndonesia($p->periode_akhir, $bulan_indonesia) ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+                                                </select>
+
+                                                <!-- Tombol sesuaikan -->
+                                                <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary btn-sm ml-2">
+                                                    Sesuaikan Periode
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div class="form-inline mb-2">
-                                            <select id="periode_history" class="form-control w-auto me-2">
-                                                <option value="">Pilih Periode</option>
-                                                <?php foreach ($periode_list as $p): ?>
-                                                    <option value="<?= $p->periode_awal . '|' . $p->periode_akhir ?>">
-                                                        <?= formatTanggalIndonesia($p->periode_awal, $bulan_indonesia) ?> s/d <?= formatTanggalIndonesia($p->periode_akhir, $bulan_indonesia) ?>
-                                                    </option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                            <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary btn-sm">Sesuaikan Periode</button>
-                                        </div>
-                                        <p class="mt-2"><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
+
+                                        <p class="mt-2 font-weight-medium">
+                                            <b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?>
+                                        </p>
                                     </div>
                                 </div>
 

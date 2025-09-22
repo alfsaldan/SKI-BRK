@@ -137,6 +137,7 @@ class Pegawai extends CI_Controller
         $awal = $this->input->get('awal');
         $akhir = $this->input->get('akhir');
 
+        // Jika periode belum diisi, set default ke tahun ini
         if (!$awal || !$akhir) {
             $awal = date('Y-01-01');
             $akhir = date('Y-12-31');
@@ -146,21 +147,34 @@ class Pegawai extends CI_Controller
         $this->load->model('pegawai/Nilai_model');
         $this->load->model('Pegawai_model');
 
+        // Ambil detail pegawai
         $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik);
+
+        // Ambil indikator sesuai periode
         $indikator = $this->Nilai_model->getIndikatorPegawai($nik, $awal, $akhir);
+
+        // 🔹 Ambil daftar periode penilaian pegawai ini untuk dropdown
+        $this->db->select('periode_awal, periode_akhir');
+        $this->db->from('penilaian');
+        $this->db->where('nik', $nik); // pakai NIK pegawai yang dipilih
+        $this->db->group_by(['periode_awal', 'periode_akhir']);
+        $this->db->order_by('periode_awal', 'ASC');
+        $periode_list = $this->db->get()->result();
 
         $data = [
             'judul' => "Form Penilaian Pegawai",
             'pegawai_detail' => $pegawai,
             'indikator_by_jabatan' => $indikator,
             'periode_awal' => $awal,
-            'periode_akhir' => $akhir
+            'periode_akhir' => $akhir,
+            'periode_list' => $periode_list // kirim ke view
         ];
 
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/nilaipegawai_detail', $data);
         $this->load->view('layoutpegawai/footer');
     }
+
 
 
 
