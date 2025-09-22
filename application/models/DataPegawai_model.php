@@ -73,13 +73,19 @@ class DataPegawai_model extends CI_Model
         return $this->db->get_where('pegawai', ['nik' => $nik])->row();
     }
 
-    public function getPenilaianByNik($nik)
+    public function getPenilaianByNik($nik, $awal = null, $akhir = null)
     {
         $this->db->select('p.*, i.indikator, i.bobot, s.perspektif, s.sasaran_kerja');
         $this->db->from('penilaian p');
         $this->db->join('indikator i', 'p.indikator_id = i.id', 'left');
         $this->db->join('sasaran_kerja s', 'i.sasaran_id = s.id', 'left');
         $this->db->where('p.nik', $nik);
+
+        if ($awal && $akhir) {
+            $this->db->where('p.periode_awal', $awal);
+            $this->db->where('p.periode_akhir', $akhir);
+        }
+
         return $this->db->get()->result();
     }
 
@@ -182,4 +188,12 @@ class DataPegawai_model extends CI_Model
         return $this->db->get()->row();
     }
 
+    public function getAvailablePeriode()
+    {
+        $this->db->select('periode_awal, periode_akhir');
+        $this->db->from('penilaian');
+        $this->db->group_by(['periode_awal', 'periode_akhir']);
+        $this->db->order_by('periode_awal', 'DESC');
+        return $this->db->get()->result();
+    }
 }
