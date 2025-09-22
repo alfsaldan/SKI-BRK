@@ -38,84 +38,120 @@
                 <!-- Detail Pegawai -->
                 <div class="row">
                     <div class="col-12">
-                        <div class="card mt-3">
+                        <div class="card mt-3 shadow-sm border-0">
                             <div class="card-body">
-
-                                <!-- Detail Pegawai & Informasi Penilaian -->
-                                <div class="row mb-0.25">
-                                    <div class="col-md-6">
-                                        <h5>Detail Pegawai</h5>
-                                        <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
-                                        <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
-                                        <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
-                                        <p><b>Jenis Unit:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
+                                <div class="row">
+                                    <!-- Detail Pegawai -->
+                                    <div class="col-md-6 mb-3">
+                                        <h5 class="text-primary mb-3 font-weight-bold"><i class="mdi mdi-account-circle-outline mr-2"></i>Detail Pegawai</h5>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">NIK</span>
+                                                <span class="badge badge-primary badge-pill"><?= $pegawai_detail->nik; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Nama</span>
+                                                <span class="text-dark"><?= $pegawai_detail->nama; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Jabatan</span>
+                                                <span class="text-dark"><?= $pegawai_detail->jabatan; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Jenis Unit</span>
+                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                            </li>
+                                        </ul>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <h5>Informasi Penilaian</h5>
-
-                                        <!-- 🔹 Pilih Periode Penilaian -->
-                                        <!-- 🔹 Pilih Periode Penilaian -->
-                                        <div class="form-inline mb-2">
-                                            <label class="mr-2"><b>Periode Penilaian:</b></label>
-                                            <select id="periode_select" class="form-control mr-2">
-                                                <?php if (!empty($periode_list)): ?>
-                                                    <?php foreach ($periode_list as $p): ?>
-                                                        <?php
-                                                        $label = date('d M Y', strtotime($p->periode_awal)) . " s/d " . date('d M Y', strtotime($p->periode_akhir));
-                                                        $selected = ($periode_awal == $p->periode_awal && $periode_akhir == $p->periode_akhir) ? 'selected' : '';
-                                                        ?>
-                                                        <option value="<?= $p->periode_awal ?>|<?= $p->periode_akhir ?>" <?= $selected ?>>
-                                                            <?= $label ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
-                                                <?php else: ?>
-                                                    <option disabled>Belum ada periode penilaian</option>
-                                                <?php endif; ?>
-                                            </select>
-
-                                            <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary btn-sm ml-2">
-                                                Terapkan
-                                            </button>
+                                    <!-- Informasi Penilaian -->
+                                    <div class="col-md-6 mb-3">
+                                        <h5 class="text-success mb-3 font-weight-bold"><i class="mdi mdi-file-document-outline mr-2"></i>Informasi Penilaian</h5>
+                                        <div class="form-group">
+                                            <label class="text-dark font-weight-medium"><b>Periode Penilaian:</b></label>
+                                            <div class="input-group">
+                                                <select id="periode_select" class="form-control text-dark">
+                                                    <?php if (!empty($periode_list)): ?>
+                                                        <?php foreach ($periode_list as $p): ?>
+                                                            <?php
+                                                            $label = date('d M Y', strtotime($p->periode_awal)) . " s/d " . date('d M Y', strtotime($p->periode_akhir));
+                                                            $selected = ($periode_awal == $p->periode_awal && $periode_akhir == $p->periode_akhir) ? 'selected' : '';
+                                                            ?>
+                                                            <option value="<?= $p->periode_awal ?>|<?= $p->periode_akhir ?>" <?= $selected ?>>
+                                                                <?= $label ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    <?php else: ?>
+                                                        <option disabled>Belum ada periode penilaian</option>
+                                                    <?php endif; ?>
+                                                </select>
+                                                <div class="input-group-append">
+                                                    <button type="button" id="btn-sesuaikan-periode" class="btn btn-success">
+                                                        Terapkan
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-
-
-                                        <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?></p>
+                                        <p class="mt-3 text-dark font-weight-medium"><b>Unit Kantor Penilai:</b> <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span></p>
                                     </div>
                                 </div>
 
-                                <hr>
+                                <hr class="my-3">
 
-                                <!-- Penilai I & Penilai II -->
                                 <!-- Penilai I & Penilai II -->
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <h5>Penilai I</h5>
-                                        <p><b>NIK:</b> <?= $pegawai_detail->penilai1_nik ?? '-'; ?></p>
-                                        <p><b>Nama:</b> <?= $pegawai_detail->penilai1_nama ?? '-'; ?></p>
-                                        <p><b>Jabatan:</b> <?= $pegawai_detail->penilai1_jabatan ?? '-'; ?></p>
+                                    <div class="col-md-6 mb-3">
+                                        <h5 class="text-info mb-3 font-weight-bold">
+                                            <i class="mdi mdi-account-check-outline mr-2"></i>Penilai I
+                                        </h5>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">NIK</span>
+                                                <span class="badge badge-info badge-pill"><?= $pegawai_detail->penilai1_nik ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Nama</span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai1_nama ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Jabatan</span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai1_jabatan ?? '-'; ?></span>
+                                            </li>
+                                        </ul>
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <h5>Penilai II</h5>
-                                        <p><b>NIK:</b> <?= $pegawai_detail->penilai2_nik ?? '-'; ?></p>
-                                        <p><b>Nama:</b> <?= $pegawai_detail->penilai2_nama ?? '-'; ?></p>
-                                        <p><b>Jabatan:</b> <?= $pegawai_detail->penilai2_jabatan ?? '-'; ?></p>
+                                    <div class="col-md-6 mb-3">
+                                        <h5 class="text-warning mb-3 font-weight-bold">
+                                            <i class="mdi mdi-account-check-outline mr-2"></i>Penilai II
+                                        </h5>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">NIK</span>
+                                                <span class="badge badge-warning badge-pill"><?= $pegawai_detail->penilai2_nik ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Nama</span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai2_nama ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Jabatan</span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai2_jabatan ?? '-'; ?></span>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
 
+
                                 <a href="<?= base_url('SuperAdmin/downloadDataPegawai?nik=' . ($pegawai_detail->nik ?? '') . '&awal=' . $periode_awal . '&akhir=' . $periode_akhir) ?>"
-                                    class="btn btn-primary">
+                                    class="btn btn-success mt-3 font-weight-bold" style="background-color:#217346; color:#fff;">
                                     <i class="mdi mdi-file-excel"></i> Download Excel
                                 </a>
-
-
                             </div>
-
                         </div>
                     </div>
                 </div>
+
         </div>
 
         <!-- Tabel Penilaian -->

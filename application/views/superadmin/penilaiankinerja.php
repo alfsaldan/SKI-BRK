@@ -36,25 +36,44 @@
             <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>
                 <div class="row">
                     <div class="col-12">
-                        <div class="card">
+                        <div class="card shadow-sm border-0 mt-3">
                             <div class="card-body">
 
                                 <!-- Detail Pegawai & Informasi Penilaian -->
-                                <div class="row mb-0.25">
-                                    <div class="col-md-6">
-                                        <h5>Detail Pegawai</h5>
-                                        <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
-                                        <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
-                                        <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
-                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
+                                <div class="row mb-3">
+                                    <!-- Detail Pegawai -->
+                                    <div class="col-md-6 mb-3">
+                                        <h5 class="text-primary font-weight-bold mb-3">
+                                            <i class="mdi mdi-account-circle-outline mr-2"></i>Detail Pegawai
+                                        </h5>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="font-weight-medium">NIK</span>
+                                                <span class="badge badge-primary badge-pill"><?= $pegawai_detail->nik; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="font-weight-medium">Nama</span>
+                                                <span class="text-dark"><?= $pegawai_detail->nama; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="font-weight-medium">Jabatan</span>
+                                                <span class="text-dark"><?= $pegawai_detail->jabatan; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="font-weight-medium">Unit Kantor</span>
+                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                            </li>
+                                        </ul>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <h5>Informasi Penilaian</h5>
-                                        <!-- 🔹 Pilih Periode Penilaian -->
+                                    <!-- Informasi Penilaian -->
+                                    <div class="col-md-6 mb-3">
+                                        <h5 class="text-success font-weight-bold mb-3">
+                                            <i class="mdi mdi-file-document-outline mr-2"></i>Informasi Penilaian
+                                        </h5>
                                         <div class="form-inline mb-2">
-                                            <label class="mr-2"><b>Periode Penilaian:</b></label>
+                                            <label class="mr-2 font-weight-medium">Periode Penilaian:</label>
                                             <input type="date" id="periode_awal" class="form-control mr-2"
                                                 value="<?= $periode_awal ?? date('Y-01-01'); ?>">
                                             <span class="mr-2">s/d</span>
@@ -63,9 +82,9 @@
                                         </div>
                                         <div class="d-flex justify-content-end mb-2">
                                             <button type="button" id="btn-sesuaikan-periode"
-                                                class="btn btn-primary btn-sm">Sesuaikan Periode</button>
+                                                class="btn btn-primary btn-sm font-weight-bold">Sesuaikan Periode</button>
                                         </div>
-                                        <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
+                                        <p class="font-weight-medium"><b>Unit Kantor Penilai:</b> <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span></p>
                                     </div>
                                 </div>
 
@@ -73,26 +92,52 @@
 
                                 <!-- Penilai I & Penilai II -->
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <h5>Penilai I</h5>
-                                        <p><b>NIK:</b> <?= $pegawai_detail->penilai1_nik ?? '-'; ?></p>
-                                        <p><b>Nama:</b> <?= $pegawai_detail->penilai1_nama ?? '-'; ?></p>
-                                        <p><b>Jabatan:</b> <?= $pegawai_detail->penilai1_jabatan ?? '-'; ?></p>
+                                    <div class="col-md-6 mb-3">
+                                        <h5 class="text-info font-weight-bold mb-3">
+                                            <i class="mdi mdi-account-check-outline mr-2"></i>Penilai I
+                                        </h5>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="font-weight-medium">NIK</span>
+                                                <span class="badge badge-info badge-pill"><?= $pegawai_detail->penilai1_nik ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="font-weight-medium">Nama</span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai1_nama ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="font-weight-medium">Jabatan</span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai1_jabatan ?? '-'; ?></span>
+                                            </li>
+                                        </ul>
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <h5>Penilai II</h5>
-                                        <p><b>NIK:</b> <?= $pegawai_detail->penilai2_nik ?? '-'; ?></p>
-                                        <p><b>Nama:</b> <?= $pegawai_detail->penilai2_nama ?? '-'; ?></p>
-                                        <p><b>Jabatan:</b> <?= $pegawai_detail->penilai2_jabatan ?? '-'; ?></p>
+                                    <div class="col-md-6 mb-3">
+                                        <h5 class="text-warning font-weight-bold mb-3">
+                                            <i class="mdi mdi-account-check-outline mr-2"></i>Penilai II
+                                        </h5>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="font-weight-medium">NIK</span>
+                                                <span class="badge badge-warning badge-pill"><?= $pegawai_detail->penilai2_nik ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="font-weight-medium">Nama</span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai2_nama ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="font-weight-medium">Jabatan</span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai2_jabatan ?? '-'; ?></span>
+                                            </li>
+                                        </ul>
                                     </div>
-
                                 </div>
 
                             </div>
                         </div>
                     </div>
                 </div>
+
 
                 <?php
                 $order = ['Keuangan (F)', 'Pelanggan (C)', 'Proses Internal (IP)', 'Pembelajaran & Pertumbuhan (LG)'];

@@ -11,7 +11,7 @@
             <!-- start page title -->
             <div class="row">
                 <div class="col-12">
-                    <div class="page-title-box">
+                    <div class="page-title-box mb-3">
                         <div class="page-title-right">
                             <ol class="breadcrumb m-0">
                                 <li class="breadcrumb-item"><a href="javascript:void(0);">SKI-BRKS</a></li>
@@ -19,7 +19,7 @@
                             </ol>
                         </div>
                         <h5 class="page-title">Selamat Datang, <b><?= $pegawai_detail->nama; ?></b>!</h5>
-                        <p class="text-muted">
+                        <p class="text-muted mb-0">
                         <h5>Sistem Penilaian Kinerja Insani PT Bank Riau Kepri Syariah</h5>
                         </p>
                     </div>
@@ -28,66 +28,80 @@
             <!-- end page title -->
 
             <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>
+
+                <?php
+                // ===== Tetap gunakan format tanggal Indonesia =====
+                $bulan_indonesia = [
+                    1 => 'Januari',
+                    2 => 'Februari',
+                    3 => 'Maret',
+                    4 => 'April',
+                    5 => 'Mei',
+                    6 => 'Juni',
+                    7 => 'Juli',
+                    8 => 'Agustus',
+                    9 => 'September',
+                    10 => 'Oktober',
+                    11 => 'November',
+                    12 => 'Desember'
+                ];
+
+                // urutkan $periode_list berdasarkan periode_awal ascending
+                usort($periode_list, function ($a, $b) {
+                    return strtotime($a->periode_awal) - strtotime($b->periode_awal);
+                });
+
+                function formatTanggalIndonesia($tanggal, $bulan_indonesia)
+                {
+                    $tgl = date('d', strtotime($tanggal));
+                    $bln = $bulan_indonesia[(int)date('m', strtotime($tanggal))];
+                    $thn = date('Y', strtotime($tanggal));
+                    return "$tgl $bln $thn";
+                }
+                ?>
+
                 <div class="row">
                     <div class="col-12">
-                        <div class="card">
+                        <div class="card shadow-sm border-0">
                             <div class="card-body">
 
                                 <!-- Detail Pegawai & Informasi Penilaian -->
-                                <div class="row mb-0.25">
-                                    <div class="col-md-6">
-                                        <h5>Detail Pegawai</h5>
-                                        <p><b>NIK:</b> <?= $pegawai_detail->nik; ?></p>
-                                        <p><b>Nama:</b> <?= $pegawai_detail->nama; ?></p>
-                                        <p><b>Jabatan:</b> <?= $pegawai_detail->jabatan; ?></p>
-                                        <p><b>Unit Kantor:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
-
+                                <div class="row mb-3">
+                                    <!-- Detail Pegawai -->
+                                    <div class="col-md-6 mb-3">
+                                        <h5 class="text-primary mb-3 font-weight-bold"><i class="mdi mdi-account-circle-outline mr-2"></i>Detail Pegawai</h5>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">NIK</span>
+                                                <span class="badge badge-primary badge-pill"><?= $pegawai_detail->nik; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Nama</span>
+                                                <span class="text-dark"><?= $pegawai_detail->nama; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Jabatan</span>
+                                                <span class="text-dark"><?= $pegawai_detail->jabatan; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Unit Kantor</span>
+                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                            </li>
+                                        </ul>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
                                     </div>
 
-                                    <?php
-                                    $bulan_indonesia = [
-                                        1 => 'Januari',
-                                        2 => 'Februari',
-                                        3 => 'Maret',
-                                        4 => 'April',
-                                        5 => 'Mei',
-                                        6 => 'Juni',
-                                        7 => 'Juli',
-                                        8 => 'Agustus',
-                                        9 => 'September',
-                                        10 => 'Oktober',
-                                        11 => 'November',
-                                        12 => 'Desember'
-                                    ];
-
-                                    // urutkan $periode_list berdasarkan periode_awal ascending
-                                    usort($periode_list, function ($a, $b) {
-                                        return strtotime($a->periode_awal) - strtotime($b->periode_awal);
-                                    });
-
-                                    function formatTanggalIndonesia($tanggal, $bulan_indonesia)
-                                    {
-                                        $tgl = date('d', strtotime($tanggal));
-                                        $bln = $bulan_indonesia[(int)date('m', strtotime($tanggal))];
-                                        $thn = date('Y', strtotime($tanggal));
-                                        return "$tgl $bln $thn";
-                                    }
-                                    ?>
-
-                                    <div class="col-md-6">
-                                        <h5>Informasi Penilaian</h5>
-                                        <!-- Pilih Periode Penilaian -->
+                                    <!-- Informasi Penilaian -->
+                                    <div class="col-md-6 mb-3">
+                                        <h5 class="text-success mb-3 font-weight-bold"><i class="mdi mdi-file-document-outline mr-2"></i>Informasi Penilaian</h5>
                                         <div class="form-inline mb-2">
                                             <label class="mr-2"><b>Periode Penilaian:</b></label>
                                             <input type="hidden" id="periode_awal" class="form-control mr-2"
                                                 value="<?= $periode_awal ?? date('Y-01-01'); ?>">
-                                            <span class="mr-2"></span>
                                             <input type="hidden" id="periode_akhir" class="form-control mr-2"
                                                 value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
                                         </div>
                                         <div class="form-inline mb-2">
-                                            <!-- 🔽 Tambahan dropdown history periode -->
                                             <select id="periode_history" class="form-control w-auto me-2">
                                                 <option value="">Pilih Periode</option>
                                                 <?php foreach ($periode_list as $p): ?>
@@ -98,30 +112,50 @@
                                             </select>
                                             <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary btn-sm">Sesuaikan Periode</button>
                                         </div>
-                                        <p><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
+                                        <p class="mt-2"><b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></p>
                                     </div>
                                 </div>
 
                                 <hr>
 
                                 <!-- Penilai I & Penilai II -->
-                                <!-- Penilai I & Penilai II -->
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <h5>Penilai I</h5>
-                                        <p><b>NIK:</b> <?= $pegawai_detail->penilai1_nik ?? '-'; ?></p>
-                                        <p><b>Nama:</b> <?= $pegawai_detail->penilai1_nama ?? '-'; ?></p>
-                                        <p><b>Jabatan:</b> <?= $pegawai_detail->penilai1_jabatan_detail ?? '-'; ?></p>
+                                    <div class="col-md-6 mb-3">
+                                        <h5 class="text-info mb-3 font-weight-bold"><i class="mdi mdi-account-check-outline mr-2"></i>Penilai I</h5>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">NIK</span>
+                                                <span class="badge badge-info badge-pill"><?= $pegawai_detail->penilai1_nik ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Nama</span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai1_nama ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Jabatan</span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai1_jabatan_detail ?? '-'; ?></span>
+                                            </li>
+                                        </ul>
                                     </div>
 
-                                    <div class="col-md-6">
-                                        <h5>Penilai II</h5>
-                                        <p><b>NIK:</b> <?= $pegawai_detail->penilai2_nik ?? '-'; ?></p>
-                                        <p><b>Nama:</b> <?= $pegawai_detail->penilai2_nama ?? '-'; ?></p>
-                                        <p><b>Jabatan:</b> <?= $pegawai_detail->penilai2_jabatan_detail ?? '-'; ?></p>
+                                    <div class="col-md-6 mb-3">
+                                        <h5 class="text-warning mb-3 font-weight-bold"><i class="mdi mdi-account-check-outline mr-2"></i>Penilai II</h5>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">NIK</span>
+                                                <span class="badge badge-warning badge-pill"><?= $pegawai_detail->penilai2_nik ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Nama</span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai2_nama ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Jabatan</span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai2_jabatan_detail ?? '-'; ?></span>
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
-
 
                             </div>
                         </div>
