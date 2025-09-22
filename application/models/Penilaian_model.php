@@ -178,4 +178,13 @@ class Penilaian_model extends CI_Model
         $this->db->order_by('c.tanggal', 'DESC');
         return $this->db->get()->result();
     }
+    public function getCatatanPegawai($nik)
+    {
+        $this->db->select('c.*, p.nama as penilai_nama');
+        $this->db->from('catatan_pegawai c');
+        $this->db->join('pegawai p', 'p.nik = c.nik', 'left');
+        $this->db->where('c.nik', $nik);
+        $this->db->order_by('c.tanggal', 'DESC');
+        return $this->db->get()->result();
+    }
 }

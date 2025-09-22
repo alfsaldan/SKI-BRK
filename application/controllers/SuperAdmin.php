@@ -1133,4 +1133,30 @@ class SuperAdmin extends CI_Controller
             "data" => $data
         ]);
     }
+    // Catatan Pegawai
+    public function getCatatanPegawai()
+    {
+        $nik = $this->input->post('nik_pegawai');
+
+        $list = $this->Penilaian_model->getCatatanPegawai($nik);
+
+        $data = [];
+        $no = $_POST['start'] ?? 0;
+
+        foreach ($list as $row) {
+            $no++;
+            $data[] = [
+                'no' => $no,
+                'catatan' => $row->catatan,
+                'tanggal' => $row->tanggal
+            ];
+        }
+
+        echo json_encode([
+            "draw" => intval($_POST['draw']),
+            "recordsTotal" => count($list),
+            "recordsFiltered" => count($list),
+            "data" => $data
+        ]);
+    }
 }

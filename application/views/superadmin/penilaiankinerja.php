@@ -260,7 +260,8 @@
                     </div>
                 </div>
                 <div class="row mt-3">
-                    <div class="col-12">
+                    <!-- Catatan Penilai -->
+                    <div class="col-md-6">
                         <div class="card">
                             <div class="card-body">
                                 <h5>Catatan Penilai</h5>
@@ -280,8 +281,28 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
+                    <!-- Catatan Pegawai -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5>Catatan Pegawai</h5>
+                                <div class="table-responsive">
+                                    <table id="tabel-catatan-pegawai" class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>No</th>
+                                                <th>Catatan</th>
+                                                <th>Tanggal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             <?php } ?>
         </div>
     </div>
@@ -512,6 +533,77 @@
                 ],
                 order: [
                     [3, 'desc']
+                ], // urut terbaru di atas
+                paging: true,
+                searching: true,
+                info: true,
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ baris",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
+                    infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
+                    zeroRecords: "Tidak ada catatan yang ditemukan",
+                    paginate: {
+                        first: "Pertama",
+                        last: "Terakhir",
+                        next: "Berikut",
+                        previous: "Sebelumnya"
+                    }
+                },
+                dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+                drawCallback: function(settings) {
+                    // nomor urut otomatis 1 -> n
+                    var api = this.api();
+                    api.column(0, {
+                        order: 'applied'
+                    }).nodes().each(function(cell, i) {
+                        cell.innerHTML = i + 1;
+                    });
+                }
+            });
+        });
+
+        $(document).ready(function() {
+            const nikPegawai = $('#nik').val(); // NIK pegawai saat ini
+
+            var tableCatatanPegawai = $('#tabel-catatan-pegawai').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: false,
+                ajax: {
+                    url: '<?= base_url("SuperAdmin/getCatatanPegawai") ?>',
+                    type: 'POST',
+                    data: {
+                        nik_pegawai: nikPegawai
+                    }
+                },
+                columns: [{
+                        data: 'no',
+                        orderable: false
+                    }, // Nama penilai
+                    {
+                        data: 'catatan',
+                        orderable: false
+                    }, // Catatan
+                    {
+                        data: 'tanggal',
+                        render: function(data, type, row) {
+                            if (!data) return '';
+                            const date = new Date(data + ' UTC'); // pastikan server kirim UTC
+                            return date.toLocaleString('id-ID', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                                timeZone: 'Asia/Jakarta'
+                            });
+                        }
+                    }
+                ],
+                order: [
+                    [2, 'desc']
                 ], // urut terbaru di atas
                 paging: true,
                 searching: true,
