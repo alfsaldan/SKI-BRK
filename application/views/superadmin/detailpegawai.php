@@ -116,22 +116,22 @@
                 </div>
             </div>
 
-            <!-- Aktifkan / Nonaktifkan Pegawai -->
-            <div class="card shadow-sm border-0">
-                <div class="card-body text-right">
-                    <!-- Aktifkan / Nonaktifkan Pegawai -->
-                    <a href="javascript:void(0);" class="btn btn-danger btn-toggle-status"
-                        data-url="<?= base_url('SuperAdmin/nonaktifPegawai/' . $pegawai->nik) ?>"
-                        data-action="nonaktif">
-                        <i class="fas fa-user-slash"></i> Nonaktifkan
-                    </a>
+            <div class="card-body text-right">
+                <a href="<?= base_url('SuperAdmin/toggleStatusPegawai/' . $pegawai->nik . '/nonaktif') ?>"
+                    class="btn btn-danger btn-toggle-status"
+                    data-action="nonaktif"
+                    data-nik="<?= $pegawai->nik ?>">
+                    <i class="fas fa-user-slash"></i> Nonaktifkan
+                </a>
 
-                    <a href="javascript:void(0);" class="btn btn-success btn-toggle-status"
-                        data-url="<?= base_url('SuperAdmin/aktifkanPegawai/' . $pegawai->nik) ?>" data-action="aktif">
-                        <i class="fas fa-user-check"></i> Aktifkan
-                    </a>
-                </div>
+                <a href="<?= base_url('SuperAdmin/toggleStatusPegawai/' . $pegawai->nik . '/aktif') ?>"
+                    class="btn btn-success btn-toggle-status"
+                    data-action="aktif"
+                    data-nik="<?= $pegawai->nik ?>">
+                    <i class="fas fa-user-check"></i> Aktifkan
+                </a>
             </div>
+
 
 
             <!-- Judul Halaman -->
@@ -149,10 +149,9 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <!-- jQuery & JS Select2 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
         $('#jabatanSelect').select2({
             placeholder: "Pilih atau ketik Jabatan",
             tags: true,
@@ -170,105 +169,60 @@
 </script>
 
 
-<!-- Tambahkan SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    $(document).ready(function () {
-        $('.btn-nonaktif').on('click', function (e) {
+    $(document).ready(function() {
+        $('.btn-toggle-status').click(function(e) {
             e.preventDefault();
-            let url = $(this).data('url');
 
-            Swal.fire({
-                title: 'Nonaktifkan Pegawai?',
-                text: "Pegawai ini tidak akan bisa login lagi ke sistem!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Ya, Nonaktifkan!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = url;
-                }
-            });
-        });
-    });
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    $(document).ready(function () {
-        $('.btn-toggle-status').on('click', function (e) {
-            e.preventDefault();
-            let url = $(this).data('url');
+            let nik = $(this).data('nik'); // ✅ sekarang ada data-nik
             let action = $(this).data('action');
+            let url = "<?= base_url('SuperAdmin/toggleStatusPegawai') ?>/" + nik + "/" + action;
 
-            let title = action === 'nonaktif' ? 'Nonaktifkan Pegawai?' : 'Aktifkan Pegawai Kembali?';
-            let text = action === 'nonaktif'
-                ? 'Pegawai ini tidak akan bisa login lagi ke sistem!'
-                : 'Pegawai ini akan bisa login kembali ke sistem!';
-            let icon = action === 'nonaktif' ? 'warning' : 'info';
-            let confirmText = action === 'nonaktif' ? 'Ya, Nonaktifkan!' : 'Ya, Aktifkan!';
+            let title = (action === 'nonaktif') ? 'Nonaktifkan Pegawai?' : 'Aktifkan Pegawai Kembali?';
+            let text = (action === 'nonaktif') ?
+                'Pegawai ini tidak akan bisa login lagi ke sistem!' :
+                'Pegawai ini akan bisa login kembali ke sistem!';
+            let icon = (action === 'nonaktif') ? 'warning' : 'success';
+            let confirmText = (action === 'nonaktif') ? 'Ya, Nonaktifkan!' : 'Ya, Aktifkan!';
 
             Swal.fire({
                 title: title,
                 text: text,
                 icon: icon,
                 showCancelButton: true,
-                confirmButtonColor: action === 'nonaktif' ? '#d33' : '#28a745',
+                confirmButtonColor: (action === 'nonaktif') ? '#d33' : '#28a745',
                 cancelButtonColor: '#6c757d',
                 confirmButtonText: confirmText,
                 cancelButtonText: 'Batal'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = url;
+                    // AJAX POST ke controller
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        dataType: 'json',
+                        success: function(res) {
+                            if (res.status === 'success') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil!',
+                                    text: res.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    location.reload(); // reload halaman untuk update status terbaru
+                                });
+                            } else {
+                                Swal.fire('Error', res.message, 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Error', 'Terjadi kesalahan server', 'error');
+                        }
+                    });
                 }
             });
         });
     });
-
-    $('.btn-toggle-status').on('click', function (e) {
-        e.preventDefault();
-        let url = $(this).data('url');
-        let action = $(this).data('action');
-        let currentStatus = "<?= $pegawai->status ?>"; // ambil dari PHP
-
-        // Kalau status sudah sama, kasih alert info
-        if ((action === 'aktif' && currentStatus === 'aktif') ||
-            (action === 'nonaktif' && currentStatus === 'nonaktif')) {
-            Swal.fire({
-                title: 'Info',
-                text: 'Pegawai ini statusnya sudah ' + currentStatus + '!',
-                icon: 'info',
-                confirmButtonColor: '#3085d6',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        // Kalau beda status → konfirmasi update
-        let title = action === 'nonaktif' ? 'Nonaktifkan Pegawai?' : 'Aktifkan Pegawai Kembali?';
-        let text = action === 'nonaktif'
-            ? 'Pegawai ini tidak akan bisa login lagi ke sistem!'
-            : 'Pegawai ini akan bisa login kembali ke sistem!';
-        let icon = action === 'nonaktif' ? 'warning' : 'success';
-        let confirmText = action === 'nonaktif' ? 'Ya, Nonaktifkan!' : 'Ya, Aktifkan!';
-
-        Swal.fire({
-            title: title,
-            text: text,
-            icon: icon,
-            showCancelButton: true,
-            confirmButtonColor: action === 'nonaktif' ? '#d33' : '#28a745',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: confirmText,
-            cancelButtonText: 'Batal'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = url;
-            }
-        });
-    });
-
 </script>

@@ -686,7 +686,6 @@ class SuperAdmin extends CI_Controller
         redirect('SuperAdmin/detailPegawai/' . $nik);
     }
 
-
     public function nonaktifPegawai($nik)
     {
         $this->db->where('nik', $nik)->update('pegawai', ['status' => 'nonaktif']);
@@ -700,6 +699,24 @@ class SuperAdmin extends CI_Controller
         $this->session->set_flashdata('message', 'Pegawai berhasil diaktifkan.');
         redirect('SuperAdmin/detailPegawai/' . $nik);
     }
+
+    public function toggleStatusPegawai($nik, $action)
+    {
+        if (!in_array($action, ['aktif', 'nonaktif'])) {
+            echo json_encode(['status' => 'error', 'message' => 'Aksi tidak valid']);
+            return;
+        }
+
+        $status = $action;
+
+        // Load model
+        $this->load->model('RiwayatJabatan_model');
+        $this->RiwayatJabatan_model->updateStatusPegawai($nik, $status);
+
+        // Kirim respons JSON
+        echo json_encode(['status' => 'success', 'message' => 'Pegawai berhasil ' . $status]);
+    }
+
 
 
     // Halaman Cek Data Pegawai
