@@ -282,18 +282,23 @@ class SuperAdmin extends CI_Controller
     {
         $nik = $this->input->post('nik') ?: $this->input->get('nik');
 
+        $this->load->model('Penilaian_model');
+
+        // 🔹 ambil daftar periode unik dari penilaian
+        $data['periode_list'] = $this->Penilaian_model->getPeriodeList();
+
+        // Ambil periode dari GET/POST, default tahun berjalan
+        $periode_awal  = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y-01-01');
+        $periode_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? date('Y-12-31');
+
         // pakai model yg sudah ada agar langsung dapat info penilai1 & penilai2
         $pegawai = $this->Penilaian_model->getPegawaiWithPenilai($nik);
-
-        // Ambil periode dari GET atau POST
-        $periode_awal = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y-01-01');
-        $periode_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? date('Y-12-31');
 
         if ($pegawai) {
             $indikator = $this->Penilaian_model->get_indikator_by_jabatan_dan_unit(
                 $pegawai->jabatan,
                 $pegawai->unit_kerja,
-                $pegawai->unit_kantor,   // ✅ sudah aman sekarang
+                $pegawai->unit_kantor,
                 $nik,
                 $periode_awal,
                 $periode_akhir
@@ -301,8 +306,6 @@ class SuperAdmin extends CI_Controller
 
             $data['pegawai_detail'] = $pegawai;
             $data['indikator_by_jabatan'] = $indikator;
-
-            // kirim pesan langsung (bukan flashdata)
             $data['message'] = [
                 'type' => 'success',
                 'text' => 'Data penilaian pegawai ditemukan!'
@@ -310,10 +313,10 @@ class SuperAdmin extends CI_Controller
         } else {
             $data['pegawai_detail'] = null;
             $data['indikator_by_jabatan'] = [];
-            $this->session->set_flashdata('message', [
+            $data['message'] = [
                 'type' => 'error',
                 'text' => 'Pegawai dengan NIK tersebut tidak ditemukan.'
-            ]);
+            ];
         }
 
         $data['judul'] = "Penilaian Kinerja Pegawai";

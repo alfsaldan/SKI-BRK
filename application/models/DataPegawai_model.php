@@ -6,7 +6,7 @@ class DataPegawai_model extends CI_Model
 
     public function getAllPegawai()
     {
-        $this->db->select('p.*, r.status');
+        $this->db->select('p.*, r.status as riwayat_status');
         $this->db->from('pegawai p');
         $this->db->join(
             '(SELECT r1.nik, r1.status 
@@ -22,6 +22,7 @@ class DataPegawai_model extends CI_Model
         );
         return $this->db->get()->result();
     }
+
 
 
     public function insertBatch($data)

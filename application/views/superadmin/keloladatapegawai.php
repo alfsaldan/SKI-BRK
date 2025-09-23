@@ -91,12 +91,13 @@
                                                 <td><?= $p->unit_kerja ?></td>
                                                 <td><?= $p->unit_kantor ?></td>
                                                 <td>
-                                                    <?php if ($p->status == 'aktif'): ?>
+                                                    <?php if (isset($p->status) && $p->status === 'aktif'): ?>
                                                         <span class="badge badge-success">Aktif</span>
                                                     <?php else: ?>
                                                         <span class="badge badge-danger">Nonaktif</span>
                                                     <?php endif; ?>
                                                 </td>
+
                                                 <td>
                                                     <div class="dropdown">
                                                         <a href="#" class="dropdown-toggle text-secondary"

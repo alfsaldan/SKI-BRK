@@ -38,8 +38,8 @@ class RiwayatJabatan_model extends CI_Model
 
         // 2. Update riwayat_jabatan yang masih aktif (belum ada tgl_selesai)
         $this->db->where('nik', $nik)
-            ->where('tgl_selesai', NULL)
-            ->update('riwayat_jabatan', ['status' => $status]);
+         ->where('tgl_selesai IS NULL', null, false)
+         ->update('riwayat_jabatan', ['status' => $status]);
 
         // 3. Update tabel users
         $is_active = ($status === 'aktif') ? 1 : 0;

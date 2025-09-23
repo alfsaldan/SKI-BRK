@@ -72,17 +72,36 @@
                                         <h5 class="text-success font-weight-bold mb-3">
                                             <i class="mdi mdi-file-document-outline mr-2"></i>Informasi Penilaian
                                         </h5>
-                                        <div class="form-inline mb-2">
-                                            <label class="mr-2 font-weight-medium">Periode Penilaian:</label>
-                                            <input type="date" id="periode_awal" class="form-control mr-2"
-                                                value="<?= $periode_awal ?? date('Y-01-01'); ?>">
-                                            <span class="mr-2">s/d</span>
-                                            <input type="date" id="periode_akhir" class="form-control mr-2"
-                                                value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
+
+                                        <div class="form-group">
+                                            <label class="font-weight-medium">Pilih Periode Penilaian:</label>
+                                            <select id="periode_select" class="form-control mb-2">
+                                                <option value="">-- Pilih Periode --</option>
+                                                <?php if (!empty($periode_list)): ?>
+                                                    <?php foreach ($periode_list as $p):
+                                                        $val = $p->periode_awal . "|" . $p->periode_akhir;
+                                                        $text = date('d M Y', strtotime($p->periode_awal)) . " s/d " . date('d M Y', strtotime($p->periode_akhir));
+                                                        $selected = ($periode_awal == $p->periode_awal && $periode_akhir == $p->periode_akhir) ? 'selected' : '';
+                                                    ?>
+                                                        <option value="<?= $val ?>" <?= $selected ?>><?= $text ?></option>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                                <option value="baru">+ Tambah Periode Baru</option>
+                                            </select>
                                         </div>
-                                        <div class="d-flex justify-content-end mb-2">
-                                            <button type="button" id="btn-sesuaikan-periode"
-                                                class="btn btn-primary btn-sm font-weight-bold">Sesuaikan Periode</button>
+
+                                        <div id="periode_manual" style="display: none;">
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2 font-weight-medium">Periode Penilaian Baru:</label>
+                                                <input type="date" id="periode_awal" class="form-control mr-2"
+                                                    value="<?= $periode_awal ?? date('Y-01-01'); ?>">
+                                                <span class="mr-2">s/d</span>
+                                                <input type="date" id="periode_akhir" class="form-control mr-2"
+                                                    value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
+                                                <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary ml-2">
+                                                    Terapkan
+                                                </button>
+                                            </div>
                                         </div>
                                         <p class="font-weight-medium"><b>Unit Kantor Penilai:</b> <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span></p>
                                     </div>
@@ -680,5 +699,43 @@
         });
 
 
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const periodeSelect = document.getElementById('periode_select');
+        const periodeManual = document.getElementById('periode_manual');
+        const periodeAwal = document.getElementById('periode_awal');
+        const periodeAkhir = document.getElementById('periode_akhir');
+        const nik = document.getElementById('nik')?.value;
+
+        // toggle form manual + auto refresh jika pilih periode lama
+        periodeSelect.addEventListener('change', function() {
+            if (this.value === "baru") {
+                // tampilkan input manual
+                periodeManual.style.display = "block";
+            } else {
+                periodeManual.style.display = "none";
+                if (this.value && nik) {
+                    const [awal, akhir] = this.value.split('|');
+                    window.location.href = `<?= base_url("SuperAdmin/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
+                }
+            }
+        });
+
+        // tombol manual tetap untuk periode baru
+        document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
+            if (!nik) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'NIK kosong',
+                    text: 'Masukkan NIK terlebih dahulu',
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+            const awal = periodeAwal.value;
+            const akhir = periodeAkhir.value;
+            window.location.href = `<?= base_url("SuperAdmin/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
+        });
     });
 </script>
