@@ -56,7 +56,7 @@
                         <div class="card">
                             <div class="card-body">
                                 <h4 class="header-title mb-3">
-                                    Tambah Sasaran & Indikator untuk <?= $jabatan_terpilih; ?> di
+                                    Tambah Sasaran untuk <?= $jabatan_terpilih; ?> di
                                     <?= $unit_kerja_terpilih; ?>
                                 </h4>
 
@@ -79,6 +79,22 @@
                                     <button type="button" class="btn btn-success mt-2" id="submitSasaranBtn"
                                         style="display:none;">Simpan Sasaran Kerja</button>
                                 </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="header-title mb-3">
+                                    Tambah Indikator untuk <?= $jabatan_terpilih; ?> di
+                                    <?= $unit_kerja_terpilih; ?>
+                                </h4>
 
                                 <!-- Form Tambah Indikator -->
                                 <form id="formIndikator" class="mb-4">
@@ -591,17 +607,17 @@
             }
         });
     });
-    document.addEventListener("input", function(e) {
+    document.addEventListener("blur", function(e) {
         if (e.target.classList.contains("bobotInput")) {
             let val = parseInt(e.target.value, 10);
 
-            // Kalau kosong biarin dulu (biar user bisa hapus angka untuk ganti)
+            // Kalau kosong biarin aja (user hapus angka)
             if (!e.target.value) return;
 
-            // Kalau < 5 langsung reset ke 5
+            // Kalau < 5 baru dikoreksi saat blur
             if (val < 5) {
                 e.target.value = 5;
             }
         }
-    });
+    }, true); // pakai true biar event blur bisa ditangkap
 </script>
