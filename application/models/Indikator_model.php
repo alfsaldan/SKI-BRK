@@ -14,7 +14,7 @@ class Indikator_model extends CI_Model
     {
         $this->db->select('unit_kerja');
         $this->db->distinct();
-        return $this->db->get('pegawai')->result();
+        return $this->db->get('penilai_mapping')->result();
     }
 
     public function insertSasaranKerja($jabatan, $unit_kerja, $perspektif, $sasaran_kerja)

@@ -88,7 +88,7 @@ class SuperAdmin extends CI_Controller
         $this->db->select('jabatan');
         $this->db->distinct();
         $this->db->where('unit_kerja', $unit_kerja);
-        $jabatan = $this->db->get('pegawai')->result();
+        $jabatan = $this->db->get('penilai_mapping')->result();
         echo json_encode($jabatan);
     }
 
