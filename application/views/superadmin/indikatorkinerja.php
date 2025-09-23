@@ -99,7 +99,7 @@
                                                     placeholder="Indikator" required>
                                             </div>
                                             <div class="col-md-2">
-                                                <input type="number" name="bobot[]" class="form-control"
+                                                <input type="number" min=5 name="bobot[]" class="form-control bobotInput"
                                                     placeholder="Bobot (%)" required>
                                             </div>
                                             <div class="col-md-2">
@@ -291,7 +291,7 @@
                         <input type="text" name="indikator[]" class="form-control" placeholder="Indikator" required>
                     </div>
                     <div class="col-md-2">
-                        <input type="number" name="bobot[]" class="form-control" placeholder="Bobot (%)" required>
+                        <input type="number" name="bobot[]" class="form-control bobotInput" min=5 placeholder="Bobot (%)" required>
                     </div>
                     <div class="col-md-2">
                         <button type="button" class="btn btn-danger remove-row">-</button>
@@ -319,7 +319,7 @@
                 <td></td>
                 <td></td>
                 <td class="indikator-edit-cell"><input type="text" class="form-control indikatorInput" value="${indikatorText}"></td>
-                <td class="bobot-edit-cell"><input type="number" class="form-control bobotInput" value="${bobotText}"></td>
+                <td class="bobot-edit-cell"><input type="number" class="form-control bobotInput" min=5 value="${bobotText}"></td>
                 <td class="text-center">
                     <button class="btn btn-success btn-sm saveBtn"><i class="mdi mdi-content-save"></i></button>
                     <button class="btn btn-secondary btn-sm cancelBtn mt-0.5"><i class="mdi mdi-close"></i></button>
@@ -590,5 +590,18 @@
                 });
             }
         });
+    });
+    document.addEventListener("input", function(e) {
+        if (e.target.classList.contains("bobotInput")) {
+            let val = parseInt(e.target.value, 10);
+
+            // Kalau kosong biarin dulu (biar user bisa hapus angka untuk ganti)
+            if (!e.target.value) return;
+
+            // Kalau < 5 langsung reset ke 5
+            if (val < 5) {
+                e.target.value = 5;
+            }
+        }
     });
 </script>
