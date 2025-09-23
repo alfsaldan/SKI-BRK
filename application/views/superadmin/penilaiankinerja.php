@@ -48,19 +48,19 @@
                                         </h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="font-weight-medium">NIK</span>
+                                                <span class="text-dark font-weight-medium">NIK</span>
                                                 <span class="badge badge-primary badge-pill"><?= $pegawai_detail->nik; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="font-weight-medium">Nama</span>
+                                                <span class="text-dark font-weight-medium">Nama</span>
                                                 <span class="text-dark"><?= $pegawai_detail->nama; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="font-weight-medium">Jabatan</span>
+                                                <span class="text-dark font-weight-medium">Jabatan</span>
                                                 <span class="text-dark"><?= $pegawai_detail->jabatan; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="font-weight-medium">Unit Kantor</span>
+                                                <span class="text-dark font-weight-medium">Unit Kantor</span>
                                                 <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
                                             </li>
                                         </ul>
@@ -74,7 +74,7 @@
                                         </h5>
 
                                         <div class="form-group">
-                                            <label class="font-weight-medium">Pilih Periode Penilaian:</label>
+                                            <label class="text-dark font-weight-medium">Pilih Periode Penilaian:</label>
                                             <select id="periode_select" class="form-control mb-2">
                                                 <option value="">-- Pilih Periode --</option>
                                                 <?php if (!empty($periode_list)): ?>
@@ -92,7 +92,7 @@
 
                                         <div id="periode_manual" style="display: none;">
                                             <div class="form-inline mb-2">
-                                                <label class="mr-2 font-weight-medium">Periode Penilaian Baru:</label>
+                                                <label class="mr-2 text-dark font-weight-medium">Periode Penilaian Baru:</label>
                                                 <input type="date" id="periode_awal" class="form-control mr-2"
                                                     value="<?= $periode_awal ?? date('Y-01-01'); ?>">
                                                 <span class="mr-2">s/d</span>
@@ -103,7 +103,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <p class="font-weight-medium"><b>Unit Kantor Penilai:</b> <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span></p>
+                                        <p class="text-dark font-weight-medium"><b>Unit Kantor Penilai:</b> <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span></p>
                                     </div>
                                 </div>
 
@@ -117,15 +117,15 @@
                                         </h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="font-weight-medium">NIK</span>
+                                                <span class="text-dark font-weight-medium">NIK</span>
                                                 <span class="badge badge-info badge-pill"><?= $pegawai_detail->penilai1_nik ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="font-weight-medium">Nama</span>
+                                                <span class="text-dark font-weight-medium">Nama</span>
                                                 <span class="text-dark"><?= $pegawai_detail->penilai1_nama ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="font-weight-medium">Jabatan</span>
+                                                <span class="text-dark font-weight-medium">Jabatan</span>
                                                 <span class="text-dark"><?= $pegawai_detail->penilai1_jabatan ?? '-'; ?></span>
                                             </li>
                                         </ul>
@@ -137,15 +137,15 @@
                                         </h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="font-weight-medium">NIK</span>
+                                                <span class="text-dark font-weight-medium">NIK</span>
                                                 <span class="badge badge-warning badge-pill"><?= $pegawai_detail->penilai2_nik ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="font-weight-medium">Nama</span>
+                                                <span class="text-dark font-weight-medium">Nama</span>
                                                 <span class="text-dark"><?= $pegawai_detail->penilai2_nama ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="font-weight-medium">Jabatan</span>
+                                                <span class="text-dark font-weight-medium">Jabatan</span>
                                                 <span class="text-dark"><?= $pegawai_detail->penilai2_jabatan ?? '-'; ?></span>
                                             </li>
                                         </ul>

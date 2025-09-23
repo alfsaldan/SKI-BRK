@@ -97,7 +97,7 @@
                                             <i class="mdi mdi-file-document-outline mr-2"></i>Informasi Penilaian
                                         </h5>
                                         <div class="form-inline mb-2">
-                                            <label class="mr-2 font-weight-medium"><b>Periode Penilaian:</b></label>
+                                            <label class="mr-2 text-dark font-weight-medium"><b>Periode Penilaian:</b></label>
                                             <!-- Input tanggal manual -->
                                             <input type="hidden" id="periode_awal" class="form-control mr-2" value="<?= $periode_awal ?? date('Y-01-01'); ?>">
                                             <span class="mr-2"></span>
@@ -123,7 +123,7 @@
                                             </div>
                                         </div>
 
-                                        <p class="mt-2 font-weight-medium">
+                                        <p class="mt-2 text-dark font-weight-medium">
                                             <b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?>
                                         </p>
                                     </div>
