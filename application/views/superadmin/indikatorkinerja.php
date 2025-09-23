@@ -147,6 +147,28 @@
                             </thead>
                             <tbody>
                                 <?php
+                                // Patokan urutan perspektif
+                                $perspektif_order = [
+                                    "Keuangan (F)",
+                                    "Pelanggan (C)",
+                                    "Proses Internal (IP)",
+                                    "Pembelajaran & Pertumbuhan (LG)"
+                                ];
+
+                                // Urutkan $indikator sesuai $perspektif_order
+                                uksort($indikator, function ($a, $b) use ($perspektif_order) {
+                                    $posA = array_search($a, $perspektif_order);
+                                    $posB = array_search($b, $perspektif_order);
+
+                                    // Jika perspektif tidak ditemukan, taruh di belakang
+                                    $posA = $posA === false ? PHP_INT_MAX : $posA;
+                                    $posB = $posB === false ? PHP_INT_MAX : $posB;
+
+                                    return $posA <=> $posB;
+                                });
+                                ?>
+
+                                <?php
                                 $grandTotal = 0;
                                 foreach ($indikator as $perspektif => $sasaranList): ?>
                                     <tr class="perspektif-row" style="background-color:#C8E6C9; font-weight:bold;">
