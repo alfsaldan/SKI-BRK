@@ -37,7 +37,7 @@
                                 </tr>
                                 <tr>
                                     <th>Kantor Unit</th>
-                                    <td><?= isset($pegawai['unit_kerja']) ? $pegawai['unit_kerja'] : '-' ?></td>
+                                    <td><?= isset($pegawai['unit_kerja']) ? $pegawai['unit_kerja'] : '-' ?> <?= isset($pegawai['unit_kantor']) ? $pegawai['unit_kantor'] : '-' ?></td>
                                 </tr>
                             </table>
                             <hr>

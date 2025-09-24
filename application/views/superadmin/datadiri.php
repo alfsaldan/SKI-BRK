@@ -31,12 +31,8 @@
                                     <td><?= isset($pegawai['jabatan']) ? $pegawai['jabatan'] : '-' ?></td>
                                 </tr>
                                 <tr>
-                                    <th>Jenis Unit</th>
-                                    <td><?= isset($pegawai['unit_kerja']) ? $pegawai['unit_kerja'] : '-' ?></td>
-                                </tr>
-                                <tr>
                                     <th>Unit Kantor</th>
-                                    <td><?= isset($pegawai['unit_kantor']) ? $pegawai['unit_kantor'] : '-' ?></td>
+                                    <td><?= isset($pegawai['unit_kerja']) ? $pegawai['unit_kerja'] : '-' ?> <?= isset($pegawai['unit_kantor']) ? $pegawai['unit_kantor'] : '-' ?></td>
                                 </tr>
                             </table>
 
