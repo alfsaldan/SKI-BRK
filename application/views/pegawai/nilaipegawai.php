@@ -1,19 +1,24 @@
 <!-- ============================================================== -->
-<!-- Start Page Content here -->
+<!-- Start Page Content -->
 <!-- ============================================================== -->
 <div class="content-page">
     <div class="content">
         <div class="container-fluid">
 
-            <!-- start page title -->
+            <!-- Judul Halaman -->
             <div class="row">
                 <div class="col-12">
-                    <div class="page-title-box">
-                        <h4 class="page-title">Nilai Pegawai</h4>
+                    <div class="page-title-box d-flex justify-content-between align-items-center">
+                        <h3 class="page-title">
+                            <i class="mdi mdi-account-edit mr-2 text-primary"></i> Nilai Pegawai
+                        </h3>
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="#">SKI-BRKS</a></li>
+                            <li class="breadcrumb-item active">Nilai Pegawai</li>
+                        </ol>
                     </div>
                 </div>
             </div>
-            <!-- end page title -->
 
             <?php if (empty($pegawai_dinilai)) { ?>
                 <div class="alert alert-info">
