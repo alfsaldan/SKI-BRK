@@ -215,7 +215,7 @@
             height: 350
         },
         series: [40, 35, 25], // contoh data jumlah pegawai
-        labels: ['Selesai', 'Belum', 'Proses'],
+        labels: ['Selesai', 'Proses', 'Belum'],
         colors: ['#039be5', '#f9a825','#d32f2f', ], 
         legend: {
             position: 'bottom'
