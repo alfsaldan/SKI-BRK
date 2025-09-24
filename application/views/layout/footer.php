@@ -214,9 +214,9 @@
             type: 'donut',
             height: 350
         },
-        series: [10, 20, 30, 25, 15], // contoh data jumlah pegawai
-        labels: ['Minus', 'Fair', 'Good', 'Very Good', 'Excellent'],
-        colors: ['#d32f2f', '#f9a825', '#039be5', '#7cb342', '#039046'], // merah - kuning - biru - hijau muda - hijau BRKS
+        series: [40, 35, 25], // contoh data jumlah pegawai
+        labels: ['Selesai', 'Belum', 'Proses'],
+        colors: ['#039be5', '#f9a825','#d32f2f', ], 
         legend: {
             position: 'bottom'
         },
