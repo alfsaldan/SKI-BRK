@@ -79,8 +79,6 @@ class Pegawai extends CI_Controller
 
         // terima beberapa kemungkinan nama parameter (supaya aman)
         $indikator_id = $this->input->post('indikator_id') ?? $this->input->post('id');
-        $target = $this->input->post('target') ?? $this->input->post('targets') ?? null;
-        $batas_waktu = $this->input->post('batas_waktu') ?? null;
         $realisasi = $this->input->post('realisasi') ?? null;
 
         $periode_awal = $this->input->post('periode_awal') ?? date('Y') . "-01-01";
@@ -90,8 +88,6 @@ class Pegawai extends CI_Controller
         $save = $this->Pegawai_model->save_penilaian(
             $nik,
             $indikator_id,
-            $target,
-            $batas_waktu,
             $realisasi,
             $periode_awal,
             $periode_akhir
@@ -101,7 +97,7 @@ class Pegawai extends CI_Controller
             echo json_encode([
                 'status' => 'success',
                 'message' => 'Penilaian berhasil disimpan!',
-                'data' => compact('indikator_id', 'target', 'batas_waktu', 'realisasi', 'periode_awal', 'periode_akhir')
+                'data' => compact('indikator_id', 'realisasi', 'periode_awal', 'periode_akhir')
             ]);
         } else {
             $error = $this->db->error();
@@ -223,18 +219,38 @@ class Pegawai extends CI_Controller
 
     public function updateStatus()
     {
-        $id = $this->input->post('id');
-        $status = $this->input->post('status');
+        $id            = $this->input->post('id');
+        $status        = $this->input->post('status');
+        $realisasi     = $this->input->post('realisasi');
+        $pencapaian    = $this->input->post('pencapaian');
+        $nilai         = $this->input->post('nilai');
+        $nilai_dibobot = $this->input->post('nilai_dibobot');
 
-        $this->db->where('id', $id);
-        $update = $this->db->update('penilaian', ['status' => $status]);
+        $data = [
+            'realisasi'     => $realisasi,
+            'pencapaian'    => $pencapaian,
+            'nilai'         => $nilai,
+            'nilai_dibobot' => $nilai_dibobot
+        ];
+
+        $update = $this->Nilai_model->updateStatusAndRealisasi($id, $status, $data);
 
         if ($update) {
-            echo json_encode(['success' => true, 'message' => 'Status berhasil diupdate']);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Status & Realisasi berhasil disimpan!'
+            ]);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Gagal update status']);
+            $error = $this->db->error();
+            echo json_encode([
+                'success' => false,
+                'message' => 'Gagal menyimpan data',
+                'debug'   => $error
+            ]);
         }
     }
+
+
     public function updateStatusAll()
     {
         $ids = $this->input->post('ids'); // contoh: "1,2,3"
@@ -316,5 +332,27 @@ class Pegawai extends CI_Controller
             'success' => (bool)$insert,
             'message' => $insert ? 'Catatan berhasil ditambahkan' : 'Gagal menyimpan catatan'
         ]);
+    }
+
+    /**
+     * Ambil daftar pegawai satu unit kerja & unit kantor
+     */
+    public function getPegawaiSatuUnit($nik)
+    {
+        // Ambil detail pegawai
+        $pegawai = $this->Pegawai_model->getPegawaiByNIK($nik);
+
+        if (!$pegawai) {
+            show_404();
+        }
+
+        // Ambil list pegawai lain dengan unit sama
+        $list = $this->Pegawai_model->getPegawaiByUnit(
+            $pegawai->unit_kerja,
+            $pegawai->unit_kantor,
+            $pegawai->nik
+        );
+
+        echo json_encode($list);
     }
 }

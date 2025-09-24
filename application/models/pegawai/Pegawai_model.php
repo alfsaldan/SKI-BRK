@@ -105,7 +105,7 @@ class Pegawai_model extends CI_Model
 
         return $this->db->get()->result();
     }
-    public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $periode_awal = null, $periode_akhir = null)
+    public function save_penilaian($nik, $indikator_id, $realisasi, $periode_awal = null, $periode_akhir = null)
     {
         if (!$periode_awal) $periode_awal = date('Y') . '-01-01';
         if (!$periode_akhir) $periode_akhir = date('Y') . '-12-31';
@@ -113,8 +113,6 @@ class Pegawai_model extends CI_Model
         $data = [
             'nik' => $nik,
             'indikator_id' => $indikator_id,
-            'target' => $target,
-            'batas_waktu' => $batas_waktu,
             'realisasi' => $realisasi,
             'periode_awal' => $periode_awal,
             'periode_akhir' => $periode_akhir
@@ -159,6 +157,21 @@ class Pegawai_model extends CI_Model
         $this->db->from('penilaian');
         $this->db->where('nik', $nik);
         $this->db->order_by('periode_awal', 'DESC');
+        return $this->db->get()->result();
+    }
+
+    public function getPegawaiByUnit($unit_kerja, $unit_kantor, $exclude_nik = null)
+    {
+        $this->db->select('nik, nama, jabatan, unit_kerja, unit_kantor');
+        $this->db->from('pegawai');
+        $this->db->where('unit_kerja', $unit_kerja);
+        $this->db->where('unit_kantor', $unit_kantor);
+
+        if ($exclude_nik) {
+            $this->db->where('nik !=', $exclude_nik); // biar gak muncul dirinya sendiri
+        }
+
+        $this->db->order_by('nama', 'ASC');
         return $this->db->get()->result();
     }
 }

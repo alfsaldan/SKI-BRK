@@ -256,12 +256,40 @@
                                                                 <input type="hidden" class="bobot" value="<?= $bobot ?>">
                                                             </td>
                                                             <td><?= $indik; ?></td>
-                                                            <td><input type="text" class="form-control target-input" value="<?= $i->target ?? ''; ?>" readonly></td>
+                                                            <!-- <td><input type="text" class="form-control target-input" value="<?= $i->target ?? ''; ?>" readonly></td>
                                                             <td><input type="date" class="form-control" value="<?= $i->batas_waktu ?? ''; ?>" readonly></td>
                                                             <td><input type="text" class="form-control realisasi-input" value="<?= $i->realisasi ?? ''; ?>" readonly></td>
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm pencapaian-output" readonly></td>
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm nilai-output" readonly></td>
-                                                            <td class="text-center"><input type="text" class="form-control form-control-sm nilai-bobot-output" readonly></td>
+                                                            <td class="text-center"><input type="text" class="form-control form-control-sm nilai-bobot-output" readonly></td> -->
+
+                                                            <td>
+                                                                <input type="text" class="form-control text-center target-input"
+                                                                    value="<?= $i->target ?? ''; ?>" readonly
+                                                                    style="min-width:100px;">
+                                                            </td>
+                                                            <td class="text-center" style="min-width:100px;">
+                                                                <?= $i->batas_waktu ? date('d-m-Y', strtotime($i->batas_waktu)) : '-'; ?>
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control text-center realisasi-input"
+                                                                    value="<?= $i->realisasi ?? ''; ?>"
+                                                                    style="min-width:100px;">
+                                                            </td>
+
+                                                            <td>
+                                                                <input type="text" class="form-control form-control-sm text-center pencapaian-output"
+                                                                    readonly style="min-width:50px;">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control form-control-sm text-center nilai-output"
+                                                                    readonly style="min-width:60px;">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control form-control-sm text-center nilai-bobot-output"
+                                                                    readonly style="min-width:50px;">
+                                                            </td>
+
                                                             <td class="text-center" style="min-width: 150px;">
                                                                 <select class="form-select form-select-sm status-select">
                                                                     <option value="Belum Dinilai" <?= ($i->status == 'Belum Dinilai') ? 'selected' : ''; ?>>Belum Dinilai</option>
@@ -484,28 +512,57 @@
             window.location.href = `<?= base_url("Pegawai/nilaiPegawaiDetail/") ?>${nik}?awal=${periodeAwal.value}&akhir=${periodeAkhir.value}`;
         });
 
-        // Update status AJAX per baris
+        // Gabungkan simpan status + realisasi
         document.querySelectorAll('.simpan-status').forEach(btn => {
             btn.addEventListener('click', function() {
                 const row = this.closest('tr');
                 const id = row.dataset.id;
+
+                // ambil data status
                 const status = row.querySelector('.status-select').value;
+
+                // ambil data penilaian
+                const indikator_id = row.dataset.id;
+                const realisasi = row.querySelector('.realisasi-input')?.value || '';
+                const pencapaian = row.querySelector('.pencapaian-output')?.value || '';
+                const nilai = row.querySelector('.nilai-output')?.value || '';
+                const nilai_dibobot = row.querySelector('.nilai-bobot-output')?.value || '';
+
+                const periode_awal = periodeAwal.value;
+                const periode_akhir = periodeAkhir.value;
+
+                // 1️⃣ Simpan status dulu
                 fetch("<?= base_url('Pegawai/updateStatus'); ?>", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/x-www-form-urlencoded"
                         },
-                        body: `id=${id}&status=${encodeURIComponent(status)}`
+                        body: `id=${id}&status=${encodeURIComponent(status)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}`
                     })
                     .then(res => res.json())
                     .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.message || "Gagal update status & realisasi");
+                        }
                         Swal.fire({
-                            icon: data.success ? 'success' : 'error',
-                            title: data.message,
-                            timer: 1500,
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: 'Status & Realisasi berhasil disimpan!',
+                            timer: 2000,
                             showConfirmButton: false
                         });
+                        hitungTotal();
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: err.message || 'Terjadi kesalahan server',
+                            confirmButtonColor: '#d33'
+                        });
                     });
+
             });
         });
 

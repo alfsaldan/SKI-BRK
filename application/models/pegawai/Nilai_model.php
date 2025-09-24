@@ -96,6 +96,30 @@ class Nilai_model extends CI_Model
         return $this->db->where('id', $id)->update('penilaian', ['status' => $status]);
     }
 
+    // Update status + realisasi sekaligus
+    public function updateStatusAndRealisasi($id, $status, $data)
+    {
+        if (empty($id)) return false;
+
+        $updateData = ['status' => $status];
+
+        // kalau ada data tambahan (realisasi, pencapaian, nilai, nilai_dibobot) ikut update
+        if (!empty($data['realisasi'])) {
+            $updateData['realisasi'] = $data['realisasi'];
+        }
+        if (!empty($data['pencapaian'])) {
+            $updateData['pencapaian'] = $data['pencapaian'];
+        }
+        if (!empty($data['nilai'])) {
+            $updateData['nilai'] = $data['nilai'];
+        }
+        if (!empty($data['nilai_dibobot'])) {
+            $updateData['nilai_dibobot'] = $data['nilai_dibobot'];
+        }
+
+        return $this->db->where('id', $id)->update('penilaian', $updateData);
+    }
+
     // Tambah catatan penilai
     public function tambahCatatan($data)
     {

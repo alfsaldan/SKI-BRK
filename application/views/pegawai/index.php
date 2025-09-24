@@ -131,10 +131,12 @@
 
                                 <hr>
 
-                                <!-- Penilai I & Penilai II -->
                                 <div class="row">
+                                    <!-- Penilai I -->
                                     <div class="col-md-6 mb-3">
-                                        <h5 class="text-info mb-3 font-weight-bold"><i class="mdi mdi-account-check-outline mr-2"></i>Penilai I</h5>
+                                        <h5 class="text-info mb-3 font-weight-bold">
+                                            <i class="mdi mdi-account-check-outline mr-2"></i>Penilai I
+                                        </h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">NIK</span>
@@ -148,11 +150,28 @@
                                                 <span class="text-dark font-weight-medium">Jabatan</span>
                                                 <span class="text-dark"><?= $pegawai_detail->penilai1_jabatan_detail ?? '-'; ?></span>
                                             </li>
+                                            <!-- Tombol kanan -->
+                                            <li class="list-group-item d-flex justify-content-end">
+                                                <button class="btn btn-sm btn-info" type="button" data-toggle="collapse" data-target="#ubahPenilai1">
+                                                    Ubah Penilai I
+                                                </button>
+                                            </li>
+                                            <!-- Dropdown ubah penilai (default hidden) -->
+                                            <li class="list-group-item collapse" id="ubahPenilai1">
+                                                <label for="penilai1" class="text-dark font-weight-medium mb-1">Pilih Penilai I</label>
+                                                <select name="penilai1_nik" id="penilai1" class="form-control select2">
+                                                    <option value="">-- Pilih Penilai I --</option>
+                                                </select>
+                                            </li>
+
                                         </ul>
                                     </div>
 
+                                    <!-- Penilai II -->
                                     <div class="col-md-6 mb-3">
-                                        <h5 class="text-warning mb-3 font-weight-bold"><i class="mdi mdi-account-check-outline mr-2"></i>Penilai II</h5>
+                                        <h5 class="text-warning mb-3 font-weight-bold">
+                                            <i class="mdi mdi-account-check-outline mr-2"></i>Penilai II
+                                        </h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">NIK</span>
@@ -166,9 +185,32 @@
                                                 <span class="text-dark font-weight-medium">Jabatan</span>
                                                 <span class="text-dark"><?= $pegawai_detail->penilai2_jabatan_detail ?? '-'; ?></span>
                                             </li>
+                                            <!-- Tombol kanan -->
+                                            <li class="list-group-item d-flex justify-content-end">
+                                                <button class="btn btn-sm btn-warning" type="button" data-toggle="collapse" data-target="#ubahPenilai2">
+                                                    Ubah Penilai II
+                                                </button>
+                                            </li>
+                                            <!-- Dropdown ubah penilai (default hidden) -->
+                                            <li class="list-group-item collapse" id="ubahPenilai2">
+                                                <label for="penilai2" class="text-dark font-weight-medium mb-1">Pilih Penilai II</label>
+                                                <select name="penilai2_nik" id="penilai2" class="form-control select2">
+                                                    <option value="">-- Pilih Penilai II --</option>
+                                                    <?php foreach ($list_pegawai as $p): ?>
+                                                        <?php if ($p->unit_kerja == $pegawai_detail->unit_kerja && $p->unit_kantor == $pegawai_detail->unit_kantor): ?>
+                                                            <option value="<?= $p->nik; ?>"
+                                                                <?= isset($pegawai_detail->penilai2_nik) && $pegawai_detail->penilai2_nik == $p->nik ? 'selected' : ''; ?>>
+                                                                <?= $p->nama . " (" . $p->jabatan_detail . ")"; ?>
+                                                            </option>
+                                                        <?php endif; ?>
+                                                    <?php endforeach; ?>
+                                                </select>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>
+
+
 
                             </div>
                         </div>
@@ -270,13 +312,33 @@
                                                             </td>
                                                             <td><?= $indik; ?></td>
 
-                                                            <td><input type="text" class="form-control target-input" value="<?= $i->target ?? ''; ?>"></td>
-                                                            <td><input type="date" class="form-control" value="<?= $i->batas_waktu ?? ''; ?>"></td>
-                                                            <td><input type="text" class="form-control realisasi-input" value="<?= $i->realisasi ?? ''; ?>"></td>
+                                                            <td>
+                                                                <input type="text" class="form-control text-center target-input"
+                                                                    value="<?= $i->target ?? ''; ?>" readonly
+                                                                    style="min-width:100px;">
+                                                            </td>
+                                                            <td class="text-center" style="min-width:120px;">
+                                                                <?= $i->batas_waktu ? date('d-m-Y', strtotime($i->batas_waktu)) : '-'; ?>
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control text-center realisasi-input"
+                                                                    value="<?= $i->realisasi ?? ''; ?>"
+                                                                    style="min-width:100px;">
+                                                            </td>
 
-                                                            <td class="text-center"><input type="text" class="form-control form-control-sm pencapaian-output" readonly></td>
-                                                            <td class="text-center"><input type="text" class="form-control form-control-sm nilai-output" readonly></td>
-                                                            <td class="text-center"><input type="text" class="form-control form-control-sm nilai-bobot-output" readonly></td>
+                                                            <td>
+                                                                <input type="text" class="form-control form-control-sm text-center pencapaian-output"
+                                                                    readonly style="min-width:50px;">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control form-control-sm text-center nilai-output"
+                                                                    readonly style="min-width:60px;">
+                                                            </td>
+                                                            <td>
+                                                                <input type="text" class="form-control form-control-sm text-center nilai-bobot-output"
+                                                                    readonly style="min-width:50px;">
+                                                            </td>
+
 
                                                             <td class="text-center">
                                                                 <span class="<?= $statusClass; ?>"><?= $statusText; ?></span>
@@ -322,12 +384,12 @@
                 <!-- ================== FORM TAMBAH CATATAN ================== -->
                 <div class="card mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">Tambah Catatan</h5>
+                        <h5 class="card-title">Formulir feedback</h5>
                         <form id="form-catatan-pegawai">
                             <input type="hidden" name="nik" id="nik" value="<?= $pegawai_detail->nik;; ?>">
 
                             <div class="mb-3">
-                                <label for="catatan-pegawai" class="form-label"><b>Catatan</b></label>
+                                <label for="catatan-pegawai" class="form-label"><b>Pegawai</b></label>
                                 <textarea class="form-control" name="catatan" id="catatan-pegawai" rows="3" required></textarea>
                             </div>
 
@@ -515,8 +577,6 @@ if ($message): ?>
             btn.addEventListener('click', function() {
                 const row = this.closest('tr');
                 const indikator_id = row.dataset.id;
-                const target = row.querySelector('.target-input').value;
-                const batas_waktu = row.querySelector('input[type="date"]').value;
                 const realisasi = row.querySelector('.realisasi-input').value;
                 const pencapaian = row.querySelector('.pencapaian-output').value;
                 const nilai = row.querySelector('.nilai-output').value;
@@ -532,7 +592,7 @@ if ($message): ?>
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
-                        body: `indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
+                        body: `indikator_id=${indikator_id}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
                     })
                     .then(res => res.json())
                     .then(res => {
@@ -674,7 +734,35 @@ if ($message): ?>
                     });
                 });
         });
+        $(document).ready(function() {
+            const nikPegawai = "<?= $pegawai_detail->nik; ?>"; // pegawai yang sedang dilihat
+            const penilai1_selected = "<?= $pegawai_detail->penilai1_nik ?? ''; ?>";
+            const penilai2_selected = "<?= $pegawai_detail->penilai2_nik ?? ''; ?>";
 
+            $.ajax({
+                url: "<?= base_url('Pegawai/getPegawaiSatuUnit/'); ?>" + nikPegawai,
+                method: "GET",
+                dataType: "json",
+                success: function(data) {
+                    if (data.length > 0) {
+                        // isi dropdown penilai 1
+                        let opt1 = '<option value="">-- Pilih Penilai I --</option>';
+                        data.forEach(function(p) {
+                            let selected = (p.nik === penilai1_selected) ? "selected" : "";
+                            opt1 += `<option value="${p.nik}" ${selected}>${p.nama} (${p.jabatan})</option>`;
+                        });
+                        $('#penilai1').html(opt1);
 
+                        // isi dropdown penilai 2
+                        let opt2 = '<option value="">-- Pilih Penilai II --</option>';
+                        data.forEach(function(p) {
+                            let selected = (p.nik === penilai2_selected) ? "selected" : "";
+                            opt2 += `<option value="${p.nik}" ${selected}>${p.nama} (${p.jabatan})</option>`;
+                        });
+                        $('#penilai2').html(opt2);
+                    }
+                }
+            });
+        });
     });
 </script>
