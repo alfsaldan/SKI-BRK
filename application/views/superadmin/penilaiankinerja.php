@@ -240,7 +240,7 @@
                                                         }
                                             ?>
                                                         <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>"
-                                                            data-perspektif="<?= $persp; ?>">
+                                                            data-perspektif="<?= $persp; ?>" data-indikator="<?= htmlspecialchars($indik, ENT_QUOTES, 'UTF-8'); ?>">
                                                             <?php if ($first_persp_cell) { ?>
                                                                 <td rowspan="<?= $persp_rows; ?>"
                                                                     style="vertical-align:middle;font-weight:600;background:#C8E6C9;">
@@ -259,26 +259,36 @@
                                                             </td>
                                                             <td><?= $indik; ?></td>
 
-                                                            <td><input type="text" class="form-control target-input"
-                                                                    value="<?= $i->target ?? ''; ?>"></td>
-                                                            <td><input type="date" class="form-control"
-                                                                    value="<?= $i->batas_waktu ?? ''; ?>"></td>
-                                                            <td><input type="text" class="form-control realisasi-input"
-                                                                    value="<?= $i->realisasi ?? ''; ?>"></td>
+                                                            <!-- Target -->
+                                                            <td class="text-center align-middle">
+                                                                <input type="text"
+                                                                    class="form-control target-input text-center"
+                                                                    style="min-width:100px;"
+                                                                    value="<?= $i->target ?? ''; ?>">
+                                                            </td>
 
-                                                            <td class="text-center"><input type="text"
+                                                            <td class="text-center align-middle"><input type="date" class="form-control" style="min-width:120px;"
+                                                                    value="<?= $i->batas_waktu ?? ''; ?>"></td>
+                                                            <td class="text-center align-middle">
+                                                                <input type="text"
+                                                                    class="form-control realisasi-input text-center"
+                                                                    style="min-width:100px;"
+                                                                    value="<?= $i->realisasi ?? ''; ?>">
+                                                            </td>
+
+                                                            <td class="text-center align-middle"><input type="text" style="min-width:60px;"
                                                                     class="form-control form-control-sm pencapaian-output" readonly>
                                                             </td>
-                                                            <td class="text-center"><input type="text"
+                                                            <td class="text-center align-middle"><input type="text" style="min-width:50px;"
                                                                     class="form-control form-control-sm nilai-output" readonly></td>
-                                                            <td class="text-center"><input type="text"
+                                                            <td class="text-center align-middle"><input type="text"
                                                                     class="form-control form-control-sm nilai-bobot-output" readonly>
                                                             </td>
 
-                                                            <td class="text-center">
+                                                            <td class="text-center align-middle">
                                                                 <span class="<?= $statusClass; ?>"><?= $statusText; ?></span>
                                                             </td>
-                                                            <td class="text-center">
+                                                            <td class="text-center align-middle">
                                                                 <button type="button"
                                                                     class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
                                                             </td>
@@ -323,6 +333,107 @@
                         </div>
                     </div>
                 </div>
+
+
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5 class="text-success font-weight-bold mb-3">
+                            <i class="mdi mdi-star-circle mr-2"></i> Nilai Akhir (q)
+                        </h5>
+
+                        <!-- Bagian Atas: Perhitungan -->
+                        <table class="table table-bordered mb-4">
+                            <tr>
+                                <th>Total Nilai Sasaran Kerja</th>
+                                <td class="text-center">0</td>
+                                <td>X Bobot % Sasaran Kerja</td>
+                                <td><input type="text" class="form-control form-control-sm text-center" value="95%" readonly></td>
+                                <td class="text-center">0</td>
+                            </tr>
+                            <tr>
+                                <th>Rata-rata Nilai Internalisasi Budaya</th>
+                                <td class="text-center">0</td>
+                                <td>X Bobot % Budaya Perusahaan</td>
+                                <td><input type="text" class="form-control form-control-sm text-center" value="5%" readonly></td>
+                                <td class="text-center">0</td>
+                            </tr>
+                            <tr>
+                                <th colspan="4" class="text-right">Total Nilai</th>
+                                <td class="text-center">0</td>
+                            </tr>
+                            <tr>
+                                <th colspan="4" class="text-right">Fraud</th>
+                                <td><input type="number" min="0" max="1" class="form-control form-control-sm text-center" id="fraud-input" value="0"></td>
+                            </tr>
+                        </table>
+
+                        <!-- Bagian Bawah: Kiri-Kanan -->
+                        <div class="row">
+                            <!-- Kiri: Tabel Predikat -->
+                            <div class="col-md-6">
+                                <table class="table table-bordered text-center">
+                                    <thead class="bg-success text-white">
+                                        <tr>
+                                            <th>Nilai Akhir</th>
+                                            <th>Yudisium / Predikat</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>&ge; 4.50 - 5</td>
+                                            <td><b>Excellent (E)</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>3.50 - &lt; 4.50</td>
+                                            <td><b>Very Good (VG)</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>3.00 - &lt; 3.50</td>
+                                            <td><b>Good (G)</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>2.00 - &lt; 3.00</td>
+                                            <td><b>Fair (F)</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>&lt; 2.00</td>
+                                            <td><b>Minus (M)</b></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Kanan: Ringkasan -->
+                            <div class="col-md-6">
+                                <div class="card text-center mb-3">
+                                    <div class="card-header bg-success text-white">Nilai Akhir</div>
+                                    <div class="card-body">
+                                        <h3>0</h3>
+                                    </div>
+                                </div>
+
+                                <div class="card text-center mb-3">
+                                    <div class="card-header bg-success text-white">Yudisium / Predikat</div>
+                                    <div class="card-body">
+                                        <h3>-</h3>
+                                    </div>
+                                </div>
+
+                                <div class="card text-center">
+                                    <div class="card-header bg-success text-white">Pencapaian Akhir</div>
+                                    <div class="card-body">
+                                        <h3>0</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+
+
                 <div class="row mt-3">
                     <!-- Catatan Penilai -->
                     <div class="col-md-6">
@@ -421,27 +532,94 @@
             return Number.isInteger(num) ? num.toString() : num.toFixed(2);
         }
 
-        function hitungRow(row) {
-            const target = parseFloat(row.querySelector('.target-input').value) || 0;
-            const realisasi = parseFloat(row.querySelector('.realisasi-input').value) || 0;
-            const bobot = parseFloat(row.querySelector('.bobot').value) || 0;
+        function hitungPencapaianOtomatis(target, realisasi, indikatorText = "") {
+            let pencapaian = 0;
 
-            let pencapaian = 0,
-                nilai = 0,
-                nilaiBobot = 0;
-            if (target > 0) {
+            // Normalisasi teks (biar pencarian keyword gampang)
+            indikatorText = indikatorText.toLowerCase();
+
+            // 🔹 Daftar keyword
+            const keywords = {
+                rumus1: ["biaya", "beban"], // indikator biaya / beban
+                rumus3: ["outstanding", "pertumbuhan"] // indikator efisiensi / pertumbuhan
+            };
+
+            if (target <= 999) {
+                // 🔹 Rumus 2 (default untuk target ≤ 3 digit)
                 pencapaian = (realisasi / target) * 100;
-                nilai = Math.min(pencapaian, 100);
-                nilaiBobot = (nilai * bobot) / 100;
+            } else {
+                // 🔹 Target > 3 digit → pilih rumus 1 atau 3 berdasarkan kata kunci indikator
+                if (keywords.rumus1.some(k => indikatorText.includes(k))) {
+                    // Rumus 1 → biasanya indikator biaya/beban
+                    pencapaian = ((target + (target - realisasi)) / target) * 100;
+                } else if (keywords.rumus3.some(k => indikatorText.includes(k))) {
+                    // Rumus 3 → biasanya indikator efisiensi/pertumbuhan
+                    pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
+                } else {
+                    // fallback default (anggap rumus 2)
+                    pencapaian = (realisasi / target) * 100;
+                }
             }
 
-            row.querySelector('.pencapaian-output').value = formatAngka(pencapaian);
-            row.querySelector('.nilai-output').value = formatAngka(nilai);
-            row.querySelector('.nilai-bobot-output').value = formatAngka(nilaiBobot);
+            // 🔹 Batas maksimal 130%
+            return Math.min(pencapaian, 130);
+        }
+
+
+        function hitungNilai(pencapaian) {
+            let nilai = 0;
+
+            if (pencapaian < 0) {
+                nilai = 0;
+            } else if (pencapaian < 80) {
+                nilai = (pencapaian / 80) * 2;
+            } else if (pencapaian < 90) {
+                nilai = 2 + ((pencapaian - 80) / 10);
+            } else if (pencapaian < 110) {
+                nilai = 3 + ((pencapaian - 90) / 20 * 0.5);
+            } else if (pencapaian < 120) {
+                nilai = 3.5 + ((pencapaian - 110) / 10 * 1);
+            } else if (pencapaian < 130) {
+                nilai = 4.5 + ((pencapaian - 120) / 10 * 0.5);
+            } else {
+                nilai = 5;
+            }
+
+            return nilai;
+        }
+
+
+        function hitungRow(row, totalBobot) {
+            const targetVal = row.querySelector('.target-input').value;
+            const realisasiVal = row.querySelector('.realisasi-input').value;
+            const bobot = parseFloat(row.querySelector('.bobot').value) || 0;
+
+            // 🔹 Ambil teks indikator dari atribut data-indikator
+            const indikatorText = row.dataset.indikator || "";
+
+            let pencapaian = "";
+            let nilai = "";
+            let nilaiBobot = "";
+
+            if (targetVal !== "" && realisasiVal !== "") {
+                const target = parseFloat(targetVal) || 0;
+                const realisasi = parseFloat(realisasiVal) || 0;
+
+                pencapaian = hitungPencapaianOtomatis(target, realisasi, indikatorText);
+                nilai = hitungNilai(pencapaian);
+
+                if (totalBobot > 0) {
+                    nilaiBobot = (nilai * bobot) / totalBobot;
+                }
+            }
+
+            row.querySelector('.pencapaian-output').value = pencapaian === "" ? "" : formatAngka(pencapaian);
+            row.querySelector('.nilai-output').value = nilai === "" ? "" : formatAngka(nilai);
+            row.querySelector('.nilai-bobot-output').value = nilaiBobot === "" ? "" : formatAngka(nilaiBobot);
 
             return {
                 bobot,
-                nilaiBobot,
+                nilaiBobot: nilaiBobot === "" ? 0 : nilaiBobot,
                 perspektif: row.dataset.perspektif
             };
         }
@@ -451,13 +629,18 @@
                 totalNilai = 0;
             const subtotalMap = {};
 
+            // 🔹 hitung total bobot dulu
+            document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
+                totalBobot += parseFloat(row.querySelector('.bobot').value) || 0;
+            });
+
+            // 🔹 lalu panggil hitungRow dengan totalBobot
             document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
                 const {
                     bobot,
                     nilaiBobot,
                     perspektif
-                } = hitungRow(row);
-                totalBobot += bobot;
+                } = hitungRow(row, totalBobot);
                 totalNilai += nilaiBobot;
 
                 if (!subtotalMap[perspektif]) subtotalMap[perspektif] = 0;
@@ -472,6 +655,7 @@
                 row.querySelector('.subtotal-nilai-bobot').innerText = formatAngka(subtotalMap[perspektif] || 0);
             });
         }
+
 
         // 🔹 trigger perhitungan saat input diubah
         document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
