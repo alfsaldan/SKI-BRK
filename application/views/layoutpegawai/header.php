@@ -153,56 +153,26 @@
                     <a class="nav-link dropdown-toggle  waves-effect waves-light" data-toggle="dropdown" href="#"
                         role="button" aria-haspopup="false" aria-expanded="false">
                         <i class="fe-bell noti-icon"></i>
-                        <span class="badge badge-danger rounded-circle noti-icon-badge">9</span>
+                        <span class="badge badge-danger rounded-circle noti-icon-badge" id="chat-unread-count">0</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right dropdown-lg">
-
-                        <!-- item-->
                         <div class="dropdown-item noti-title">
                             <h5 class="m-0">
                                 <span class="float-right">
-                                    <a href="" class="text-dark">
+                                    <a href="javascript:void(0);" class="text-dark" id="clear-chat-notif">
                                         <small>Clear All</small>
                                     </a>
                                 </span>Notification
                             </h5>
                         </div>
-
-                        <div class="slimscroll noti-scroll">
-
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item notify-item active">
-                                <div class="notify-icon">
-                                    <img src="<?= base_url('assets/images/users/avatar-1.png') ?>"
-                                        class="img-fluid rounded-circle" alt="" />
-                                </div>
-                                <p class="notify-details">Kepala Bagian</p>
-                                <p class="text-muted mb-0 user-msg">
-                                    <small>Ada penilaian yang belum kamu nilai</small>
-                                </p>
-                            </a>
-
-
-                            <!-- item-->
-                            <a href="javascript:void(0);" class="dropdown-item notify-item">
-                                <div class="notify-icon bg-warning">
-                                    <i class="mdi mdi-bell-outline"></i>
-                                </div>
-                                <p class="notify-details">Updates
-                                    <small class="text-muted">There are 2 new updates available</small>
-                                </p>
-                            </a>
-
-
+                        <div class="slimscroll noti-scroll" id="chat-unread-list">
+                            <!-- Pesan baru room chat akan di-load via AJAX -->
                         </div>
-
-                        <!-- All-->
                         <a href="javascript:void(0);"
                             class="dropdown-item text-center text-primary notify-item notify-all">
                             View all
                             <i class="fi-arrow-right"></i>
                         </a>
-
                     </div>
                 </li>
 
@@ -316,3 +286,4 @@
 
         </div>
         <!-- Left Sidebar End -->
+

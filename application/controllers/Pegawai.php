@@ -1,3 +1,4 @@
+
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
@@ -15,6 +16,41 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Pegawai extends CI_Controller
 {
+    // Endpoint untuk notifikasi jumlah pesan baru room chat
+    public function getUnreadCoachingCount()
+    {
+        header('Content-Type: application/json');
+        $this->load->model('pegawai/Coaching_model');
+        $nik = $this->session->userdata('nik');
+        if (empty($nik)) {
+            echo json_encode(['count' => 0, 'list' => []]);
+            return;
+        }
+        // Ambil pesan yang belum dibaca oleh user (asumsi: ada field is_read dan penerima_nik di tabel aktivitas_coaching)
+        $this->db->where('penerima_nik', $nik);
+        $this->db->where('is_read', 0);
+        $query = $this->db->get('aktivitas_coaching');
+        $list = [];
+        foreach ($query->result() as $row) {
+            // Ambil nama pengirim dari tabel pegawai
+            $nama_pengirim = $row->pengirim_nik;
+            $pegawai = $this->db->where('nik', $row->pengirim_nik)->get('pegawai')->row();
+            if ($pegawai && !empty($pegawai->nama)) {
+                $nama_pengirim = $pegawai->nama;
+            }
+            // Konversi waktu ke Asia/Jakarta, tampilkan detik
+            $dt = new DateTime($row->created_at, new DateTimeZone('UTC'));
+            $dt->setTimezone(new DateTimeZone('Asia/Jakarta'));
+            $created_at_jkt = $dt->format('d-m-Y H:i:s');
+            $list[] = [
+                'nama_pengirim' => $nama_pengirim,
+                'pesan' => $row->pesan,
+                'created_at' => $created_at_jkt
+            ];
+        }
+        echo json_encode(['count' => count($list), 'list' => $list]);
+    }
+
     public function __construct()
     {
         parent::__construct();
@@ -34,19 +70,16 @@ class Pegawai extends CI_Controller
     }
 
     /**
-     * Dashboard pegawai — gabungan welcome + penilaian kinerja milik pegawai yg login
-     * Mendukung penerapan periode lewat POST (form) atau GET (?awal=...&akhir=...)
+     * Dashboard pegawai
      */
     public function index()
     {
         $nik = $this->session->userdata('nik');
         $pegawai = $this->Pegawai_model->getPegawaiWithPenilai($nik);
 
-        // periode: cek GET dulu (dari tombol sesuaikan periode), lalu POST (form), lalu default tahun berjalan
         $periode_awal = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y') . "-01-01";
         $periode_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
 
-        // ambil indikator & nilai (dibatasi dengan nik & periode)
         $indikator = $this->Pegawai_model->get_indikator_by_jabatan_dan_unit(
             $pegawai->jabatan,
             $pegawai->unit_kerja,
@@ -55,7 +88,6 @@ class Pegawai extends CI_Controller
             $periode_akhir
         );
 
-        // 🔹 Tambahkan periode_list dari Penilaian_model
         $periode_list = $this->Pegawai_model->getPeriodePegawai($nik);
 
         $data = [
@@ -67,28 +99,21 @@ class Pegawai extends CI_Controller
             'periode_list' => $periode_list
         ];
 
-
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/index', $data);
         $this->load->view('layoutpegawai/footer');
     }
 
-    /**
-     * Simpan 1 baris penilaian via AJAX (dipanggil dari JS di view)
-     * Menerima sama payload seperti superadmin, tapi nik diambil dari session
-     */
     public function simpanPenilaianBaris()
     {
         $nik = $this->session->userdata('nik');
 
-        // terima beberapa kemungkinan nama parameter (supaya aman)
         $indikator_id = $this->input->post('indikator_id') ?? $this->input->post('id');
         $realisasi = $this->input->post('realisasi') ?? null;
 
         $periode_awal = $this->input->post('periode_awal') ?? date('Y') . "-01-01";
         $periode_akhir = $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
 
-        // simpan (Penilaian_model->save_penilaian menangani insert/update sesuai nik+indikator+periode)
         $save = $this->Pegawai_model->save_penilaian(
             $nik,
             $indikator_id,
@@ -112,9 +137,7 @@ class Pegawai extends CI_Controller
             ]);
         }
     }
-    /**
-     * Halaman Nilai Pegawai (untuk penilai)
-     */
+
     public function nilaiPegawai()
     {
         $nik = $this->session->userdata('nik');
@@ -137,7 +160,6 @@ class Pegawai extends CI_Controller
         $awal = $this->input->get('awal');
         $akhir = $this->input->get('akhir');
 
-        // Jika periode belum diisi, set default ke tahun ini
         if (!$awal || !$akhir) {
             $awal = date('Y-01-01');
             $akhir = date('Y-12-31');
@@ -147,16 +169,12 @@ class Pegawai extends CI_Controller
         $this->load->model('pegawai/Nilai_model');
         $this->load->model('Pegawai_model');
 
-        // Ambil detail pegawai
         $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik);
-
-        // Ambil indikator sesuai periode
         $indikator = $this->Nilai_model->getIndikatorPegawai($nik, $awal, $akhir);
 
-        // 🔹 Ambil daftar periode penilaian pegawai ini untuk dropdown
         $this->db->select('periode_awal, periode_akhir');
         $this->db->from('penilaian');
-        $this->db->where('nik', $nik); // pakai NIK pegawai yang dipilih
+        $this->db->where('nik', $nik);
         $this->db->group_by(['periode_awal', 'periode_akhir']);
         $this->db->order_by('periode_awal', 'ASC');
         $periode_list = $this->db->get()->result();
@@ -167,7 +185,7 @@ class Pegawai extends CI_Controller
             'indikator_by_jabatan' => $indikator,
             'periode_awal' => $awal,
             'periode_akhir' => $akhir,
-            'periode_list' => $periode_list // kirim ke view
+            'periode_list' => $periode_list
         ];
 
         $this->load->view('layoutpegawai/header', $data);
@@ -175,13 +193,9 @@ class Pegawai extends CI_Controller
         $this->load->view('layoutpegawai/footer');
     }
 
-
-
-
     public function datadiriPegawai()
     {
         $this->load->model('DataDiri_model');
-
         $nik = $this->session->userdata('nik');
 
         if (!$nik) {
@@ -196,10 +210,8 @@ class Pegawai extends CI_Controller
             redirect('auth/login');
         }
 
-        // Ambil data pegawai
         $data['pegawai'] = $this->DataDiri_model->getDataByNik($nik);
 
-        // Proses update password
         if ($this->input->post('update_password')) {
             $password = $this->input->post('password');
             $konfirmasi = $this->input->post('konfirmasi_password');
@@ -254,10 +266,9 @@ class Pegawai extends CI_Controller
         }
     }
 
-
     public function updateStatusAll()
     {
-        $ids = $this->input->post('ids'); // contoh: "1,2,3"
+        $ids = $this->input->post('ids');
         $status = $this->input->post('status');
 
         if (empty($ids) || empty($status)) {
@@ -277,12 +288,10 @@ class Pegawai extends CI_Controller
         }
     }
 
-
-    // Simpan catatan via AJAX
     public function simpan_catatan()
     {
         $nik_pegawai = $this->input->post('nik_pegawai');
-        $nik_penilai = $this->session->userdata('nik'); // penilai login
+        $nik_penilai = $this->session->userdata('nik');
         $catatan = $this->input->post('catatan');
 
         if (!$catatan) {
@@ -300,7 +309,6 @@ class Pegawai extends CI_Controller
         $insert = $this->Nilai_model->tambahCatatan($data);
 
         if ($insert) {
-            // Ambil nama penilai dari DB supaya pasti benar
             $penilai = $this->db->get_where('pegawai', ['nik' => $nik_penilai])->row();
             $nama_penilai = $penilai ? $penilai->nama : 'Penilai';
 
@@ -313,7 +321,7 @@ class Pegawai extends CI_Controller
             echo json_encode(['success' => false, 'message' => 'Gagal menyimpan catatan!']);
         }
     }
-    // Simpan catatan pegawai (AJAX)
+
     public function simpan_catatan_pegawai()
     {
         $nik = $this->input->post('nik') ?? $this->session->userdata('nik');
@@ -338,19 +346,14 @@ class Pegawai extends CI_Controller
         ]);
     }
 
-    /**
-     * Ambil daftar pegawai satu unit kerja & unit kantor
-     */
     public function getPegawaiSatuUnit($nik)
     {
-        // Ambil detail pegawai
         $pegawai = $this->Pegawai_model->getPegawaiByNIK($nik);
 
         if (!$pegawai) {
             show_404();
         }
 
-        // Ambil list pegawai lain dengan unit sama
         $list = $this->Pegawai_model->getPegawaiByUnit(
             $pegawai->unit_kerja,
             $pegawai->unit_kantor,
@@ -367,39 +370,55 @@ class Pegawai extends CI_Controller
         echo json_encode($data);
     }
 
-public function kirimCoachingPesan()
-{
-    header('Content-Type: application/json');
-    $this->load->model('pegawai/Coaching_model');
-    $nik_pegawai = $this->input->post('nik_pegawai');
-    $nik_penilai = $this->input->post('nik_penilai');
-    $pesan = $this->input->post('pesan');
-    $pengirim_nik = $this->session->userdata('nik');
+    public function kirimCoachingPesan()
+    {
+        header('Content-Type: application/json');
+        $this->load->model('pegawai/Coaching_model');
+        $nik_pegawai = $this->input->post('nik_pegawai');
+        $nik_penilai = $this->input->post('nik_penilai');
+        $pesan = $this->input->post('pesan');
+        $pengirim_nik = $this->session->userdata('nik');
 
-    // Validasi data
-    if (empty($nik_pegawai) || empty($nik_penilai) || empty($pesan) || empty($pengirim_nik)) {
-        echo json_encode(['success' => false, 'message' => 'Data tidak lengkap']);
-        return;
-    }
-
-    $data = [
-        'nik_pegawai' => $nik_pegawai,
-        'nik_penilai' => $nik_penilai,
-        'pengirim_nik' => $pengirim_nik,
-        'pesan' => $pesan,
-        'created_at' => date('Y-m-d H:i:s')
-    ];
-
-    $result = $this->Coaching_model->simpanPesan($data);
-    if (is_array($result) && isset($result['success']) && $result['success'] === true) {
-        echo json_encode(['success' => true]);
-    } else {
-        $errorMsg = 'Database error';
-        if (is_array($result) && isset($result['error']['message'])) {
-            $errorMsg = $result['error']['message'];
+        if (empty($nik_pegawai) || empty($nik_penilai) || empty($pesan) || empty($pengirim_nik)) {
+            echo json_encode(['success' => false, 'message' => 'Data tidak lengkap']);
+            return;
         }
-        echo json_encode(['success' => false, 'message' => $errorMsg]);
-    }
-}
 
-}
+        $penerima_nik = ($pengirim_nik == $nik_pegawai) ? $nik_penilai : $nik_pegawai;
+        $data = [
+            'nik_pegawai' => $nik_pegawai,
+            'nik_penilai' => $nik_penilai,
+            'pengirim_nik' => $pengirim_nik,
+            'pesan' => $pesan,
+            'created_at' => date('Y-m-d H:i:s'),
+            'is_read' => 0,
+            'penerima_nik' => $penerima_nik
+        ];
+
+        $result = $this->Coaching_model->simpanPesan($data);
+        if (is_array($result) && isset($result['success']) && $result['success'] === true) {
+            echo json_encode(['success' => true]);
+        } else {
+            $errorMsg = 'Database error';
+            if (is_array($result) && isset($result['error']['message'])) {
+                $errorMsg = $result['error']['message'];
+            }
+            echo json_encode(['success' => false, 'message' => $errorMsg]);
+        }
+    }
+
+        public function clearUnreadCoaching()
+    {
+        header('Content-Type: application/json');
+        $nik = $this->session->userdata('nik');
+        if (empty($nik)) {
+            echo json_encode(['success' => false]);
+            return;
+        }
+        // Update semua pesan yang belum dibaca menjadi sudah dibaca
+        $this->db->where('penerima_nik', $nik);
+        $this->db->where('is_read', 0);
+        $this->db->update('aktivitas_coaching', ['is_read' => 1]);
+        echo json_encode(['success' => true]);
+    }
+} 

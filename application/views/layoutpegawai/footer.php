@@ -104,16 +104,22 @@
 </script>
 <!-- Script JS -->
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
 
         // Load Sasaran Kerja sesuai Perspektif
-        $(" #perspektif").change(function () {
-            let perspektif = $(this).val(); if (perspektif != "") {
+        $(" #perspektif").change(function() {
+            let perspektif = $(this).val();
+            if (perspektif != "") {
                 $.ajax({
-                    url: "<?= base_url('SuperAdmin/get_sasaran_by_perspektif') ?>", type: "POST", data: { perspektif: perspektif },
-                    dataType: "json", success: function (res) {
+                    url: "<?= base_url('SuperAdmin/get_sasaran_by_perspektif') ?>",
+                    type: "POST",
+                    data: {
+                        perspektif: perspektif
+                    },
+                    dataType: "json",
+                    success: function(res) {
                         $("#sasaran").empty().append('<option value="">--Pilih Sasaran Kerja--</option > ');
-                        $.each(res, function (i, item) {
+                        $.each(res, function(i, item) {
                             $("#sasaran").append('<option value="' + item.sasaran + '">' + item.sasaran + '</option>');
                         });
                     }
@@ -122,12 +128,12 @@
         });
 
         // Tambah Sasaran Baru
-        $("#add-sasaran").click(function () {
+        $("#add-sasaran").click(function() {
             $("#new-sasaran-wrapper").toggle();
         });
 
         // Tambah Indikator Row
-        $("#add-row").click(function () {
+        $("#add-row").click(function() {
             let row = `<div class="form-row indikator-row mt-2">
             <div class="col-md-6">
                 <input type="text" name="indikator[]" class="form-control" placeholder="Indikator" required>
@@ -143,7 +149,7 @@
         });
 
         // Hapus Indikator Row
-        $(document).on("click", ".remove-row", function () {
+        $(document).on("click", ".remove-row", function() {
             $(this).closest(".indikator-row").remove();
         });
 
@@ -187,7 +193,6 @@
 
     var chartTargetRealisasi = new ApexCharts(document.querySelector("#chart-target-vs-realisasi"), optionsTargetRealisasi);
     chartTargetRealisasi.render();
-
 </script>
 
 <script>
@@ -204,7 +209,7 @@
         },
         dataLabels: {
             enabled: true,
-            formatter: function (val) {
+            formatter: function(val) {
                 return val.toFixed(1) + "%";
             }
         }
@@ -212,7 +217,6 @@
 
     var chartDonut = new ApexCharts(document.querySelector("#donut-charts"), optionsDonut);
     chartDonut.render();
-
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -231,7 +235,7 @@
 </script>
 
 <script>
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', function(e) {
         if (e.target.closest('.deleteIndikatorBtn')) {
             const btn = e.target.closest('.deleteIndikatorBtn');
             const id = btn.dataset.id;
@@ -281,15 +285,18 @@
     }
 </style>
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
         $('#datatable-pegawai').DataTable({
             responsive: true,
             pageLength: 5,
-            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Semua"]],
+            lengthMenu: [
+                [5, 10, 25, 50, -1],
+                [5, 10, 25, 50, "Semua"]
+            ],
             order: [], // biar gak auto urut NIK
             dom: '<"row mb-1"<"col-md-6 d-flex align-items-center"l><"col-md-6 text-right"f>>' +
-                 'rt' +
-                 '<"row mt-3"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+                'rt' +
+                '<"row mt-3"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
             language: {
                 search: "Pencarian:",
                 searchPlaceholder: "Masukan keyword",
@@ -310,7 +317,7 @@
 
 <script>
     // Update label saat file dipilih
-    $(document).on('change', '.custom-file-input', function (event) {
+    $(document).on('change', '.custom-file-input', function(event) {
         let fileName = event.target.files[0].name;
         $(this).next('.custom-file-label').html(fileName);
     });
@@ -345,7 +352,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
         <?php if ($this->session->flashdata('success')): ?>
             Swal.fire({
                 icon: 'success',
@@ -378,7 +385,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    $(document).on('click', '.btn-delete', function (e) {
+    $(document).on('click', '.btn-delete', function(e) {
         e.preventDefault();
         let url = $(this).data('url');
 
@@ -399,6 +406,42 @@
     });
 </script>
 
+<script>
+    $(document).ready(function() {
+        // Fungsi load notifikasi chat (maksimal 2 pesan terbaru)
+        function loadUnreadChatNotif() {
+            $.getJSON('<?= base_url('Pegawai/getUnreadCoachingCount') ?>', function(res) {
+                var count = res.count || 0;
+                $('#chat-unread-count').text(count);
+                var html = '';
+                if (res.list && res.list.length > 0) {
+                    res.list.slice(-2).reverse().forEach(function(row) {
+                        html += '<a href="javascript:void(0);" class="dropdown-item notify-item active">' +
+                            '<div class="notify-icon"><i class="mdi mdi-message-text"></i></div>' +
+                            '<p class="notify-details">' + (row.nama_pengirim || row.pengirim_nik) + '</p>' +
+                            '<p class="text-muted mb-0 user-msg"><small>' + row.pesan + '</small></p>' +
+                            '<small class="text-muted">' + row.created_at + '</small>' +
+                            '</a>';
+                    });
+                } else {
+                    html = '<div class="dropdown-item text-muted">Tidak ada pesan baru</div>';
+                }
+                $('#chat-unread-list').html(html);
+            });
+        }
+        loadUnreadChatNotif();
+        // Tidak auto refresh, hanya refresh manual saat klik Clear All
+
+        // Clear All: tandai semua pesan sebagai sudah dibaca
+        $('#clear-chat-notif').on('click', function(e) {
+            e.preventDefault();
+            $.post('<?= base_url('Pegawai/clearUnreadCoaching') ?>', function(res) {
+                $('#chat-unread-count').text('0');
+                $('#chat-unread-list').html('<div class="dropdown-item text-muted">Tidak ada pesan baru</div>');
+            });
+        });
+    });
+</script>
 
 </body>
 

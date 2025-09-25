@@ -1,6 +1,48 @@
 <!-- ============================================================== -->
 <!-- Start Page Content here -->
 <!-- ============================================================== -->
+<style>
+    .chat-message {
+        max-width: 70%;
+        padding: 10px 15px;
+        border-radius: 20px;
+        margin-bottom: 10px;
+        word-wrap: break-word;
+        position: relative;
+        font-size: 14px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Bubble pengirim (user login) */
+    .chat-message.me {
+        background: #6c6c6cff;
+        color: #fff;
+        margin-left: auto;
+        border-bottom-right-radius: 5px;
+        text-align: right;
+    }
+
+    /* Bubble penerima (orang lain) */
+    .chat-message.other {
+        background: #e9ecef;
+        color: #333;
+        margin-right: auto;
+        border-bottom-left-radius: 5px;
+        text-align: left;
+    }
+
+    .chat-meta {
+        font-size: 11px;
+        color: #aaa;
+        margin-top: 5px;
+    }
+
+    .chat-name {
+        font-weight: bold;
+        margin-bottom: 3px;
+        font-size: 13px;
+    }
+</style>
 <div class="content-page">
     <div class="content">
         <div class="container-fluid">
@@ -400,19 +442,20 @@
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="card-title">Room Chat Coaching</h5>
-                                <div id="chat-box-nilai" style="height:250px; overflow-y:auto; border:1px solid #ddd; padding:10px; background:#f9f9f9;">
+                                <div id="chat-box-nilai" style="height:300px; overflow-y:auto; background:#f8f9fa; padding:15px; border-radius:10px;">
                                     <!-- pesan akan di-load via AJAX -->
                                 </div>
                                 <form id="form-chat-nilai" class="mt-2 d-flex">
                                     <input type="hidden" name="nik_pegawai" value="<?= $pegawai_detail->nik ?>">
                                     <input type="hidden" name="nik_penilai" value="<?= $pegawai_detail->penilai1_nik ?? $pegawai_detail->penilai2_nik ?>">
-                                    <input type="text" name="pesan" id="input-pesan-nilai" class="form-control mr-2" placeholder="Tulis pesan...">
-                                    <button type="submit" class="btn btn-primary">Kirim</button>
+                                    <input type="text" name="pesan" id="input-pesan-nilai" class="form-control mr-2 rounded-pill" placeholder="Tulis pesan...">
+                                    <button type="submit" class="btn btn-primary rounded-pill px-4">Kirim</button>
                                 </form>
                             </div>
                         </div>
                     </div>
                 </div>
+
 
             <?php } ?>
         </div>
@@ -717,29 +760,63 @@
 
         // ================== CHAT COACHING ==================
         $(document).ready(function() {
-            // Fungsi load chat
+            // Format ke waktu Jakarta (WIB) dengan detik
+            function formatToJakartaTime(dateStr) {
+                // Asumsi dateStr format 'YYYY-MM-DD HH:mm:ss'
+                if (!dateStr) return '';
+                const [date, time] = dateStr.split(' ');
+                if (!date || !time) return dateStr;
+                const [year, month, day] = date.split('-');
+                const [hour, minute, second] = time.split(':');
+                const utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+                return utcDate.toLocaleString('id-ID', {
+                    timeZone: 'Asia/Jakarta',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            }
+
             function loadChatNilai() {
                 var nikPegawai = $('input[name="nik_pegawai"]').val();
                 var nikPenilai = $('input[name="nik_penilai"]').val();
+
                 $.getJSON("<?= base_url('Pegawai/getCoachingChat/') ?>" + nikPegawai + "/" + nikPenilai, function(data) {
                     var html = '';
                     if (data.length === 0) {
                         html = '<div class="text-center text-muted">Belum ada pesan</div>';
                     } else {
                         data.forEach(function(row) {
-                            html += '<div class="mb-2"><b>' + (row.nama_pengirim || row.pengirim_nik) + ':</b> ' + row.pesan + '<br><small class="text-muted">' + row.created_at + '</small></div>';
+                            let isMe = row.pengirim_nik === "<?= $this->session->userdata('nik'); ?>";
+                            let jamWIB = formatToJakartaTime(row.created_at);
+                            html += `
+                        <div class="chat-message ${isMe ? 'me' : 'other'}">
+                            <div class="chat-name">${row.nama_pengirim} (${row.jabatan})</div>
+                            <div>${row.pesan}</div>
+                            <div class="chat-meta">${jamWIB}</div>
+                        </div>
+                    `;
                         });
                     }
                     $('#chat-box-nilai').html(html);
                     $('#chat-box-nilai').scrollTop($('#chat-box-nilai')[0].scrollHeight);
                 });
             }
+
+            // Load awal
             loadChatNilai();
+
+            // Reload tiap 10 detik
+            setInterval(loadChatNilai, 10000);
 
             // Kirim pesan
             $('#form-chat-nilai').on('submit', function(e) {
                 e.preventDefault();
                 var formData = $(this).serialize();
+
                 $.ajax({
                     url: "<?= base_url('Pegawai/kirimCoachingPesan') ?>",
                     method: "POST",
@@ -747,13 +824,6 @@
                     dataType: "json",
                     success: function(res) {
                         if (res.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Terkirim!',
-                                text: 'Pesan coaching berhasil dikirim',
-                                timer: 1200,
-                                showConfirmButton: false
-                            });
                             $('#input-pesan-nilai').val('');
                             loadChatNilai();
                         } else {
@@ -773,9 +843,7 @@
                     }
                 });
             });
-
-            // Optional: reload chat tiap 10 detik
-            setInterval(loadChatNilai, 10000);
         });
+
     });
 </script>
