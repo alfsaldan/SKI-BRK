@@ -263,7 +263,7 @@
                                                             <td class="text-center align-middle">
                                                                 <input type="text"
                                                                     class="form-control target-input text-center"
-                                                                    style="min-width:100px;"
+                                                                    style="min-width:120px;"
                                                                     value="<?= $i->target ?? ''; ?>">
                                                             </td>
 
@@ -272,7 +272,7 @@
                                                             <td class="text-center align-middle">
                                                                 <input type="text"
                                                                     class="form-control realisasi-input text-center"
-                                                                    style="min-width:100px;"
+                                                                    style="min-width:120px;"
                                                                     value="<?= $i->realisasi ?? ''; ?>">
                                                             </td>
 
