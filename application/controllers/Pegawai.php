@@ -5,6 +5,9 @@ defined('BASEPATH') or exit('No direct script access allowed');
  * @property Pegawai_model $Pegawai_model
  * @property Nilai_model $Nilai_model
  * @property DataDiri_model $DataDiri_model
+ * @property Penilaian_model $Penilaian_model
+ * @property Indikator_model $Indikator_model
+ * @property Coaching_model $Coaching_model
  * @property CI_Input $input
  * @property CI_Session $session
  * @property CI_DB_query_builder $db
@@ -18,6 +21,7 @@ class Pegawai extends CI_Controller
         // model Pegawai di subfolder models/pegawai/Pegawai_model.php
         $this->load->model('pegawai/Pegawai_model');
         $this->load->model('pegawai/Nilai_model');
+        $this->load->model('pegawai/Coaching_model');
         $this->load->model('Penilaian_model');
         $this->load->model('Indikator_model');
         $this->load->model('DataDiri_model');
@@ -355,4 +359,47 @@ class Pegawai extends CI_Controller
 
         echo json_encode($list);
     }
+
+    public function getCoachingChat($nikPegawai, $nikPenilai)
+    {
+        $this->load->model('pegawai/Coaching_model');
+        $data = $this->Coaching_model->getChat($nikPegawai, $nikPenilai);
+        echo json_encode($data);
+    }
+
+public function kirimCoachingPesan()
+{
+    header('Content-Type: application/json');
+    $this->load->model('pegawai/Coaching_model');
+    $nik_pegawai = $this->input->post('nik_pegawai');
+    $nik_penilai = $this->input->post('nik_penilai');
+    $pesan = $this->input->post('pesan');
+    $pengirim_nik = $this->session->userdata('nik');
+
+    // Validasi data
+    if (empty($nik_pegawai) || empty($nik_penilai) || empty($pesan) || empty($pengirim_nik)) {
+        echo json_encode(['success' => false, 'message' => 'Data tidak lengkap']);
+        return;
+    }
+
+    $data = [
+        'nik_pegawai' => $nik_pegawai,
+        'nik_penilai' => $nik_penilai,
+        'pengirim_nik' => $pengirim_nik,
+        'pesan' => $pesan,
+        'created_at' => date('Y-m-d H:i:s')
+    ];
+
+    $result = $this->Coaching_model->simpanPesan($data);
+    if (is_array($result) && isset($result['success']) && $result['success'] === true) {
+        echo json_encode(['success' => true]);
+    } else {
+        $errorMsg = 'Database error';
+        if (is_array($result) && isset($result['error']['message'])) {
+            $errorMsg = $result['error']['message'];
+        }
+        echo json_encode(['success' => false, 'message' => $errorMsg]);
+    }
+}
+
 }

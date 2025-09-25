@@ -381,6 +381,23 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ================== FORM CHATF ================== -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Aktivitas Coaching</h5>
+                        <div id="chat-box" style="height:250px; overflow-y:auto; border:1px solid #ddd; padding:10px;">
+                            <!-- pesan akan di-load via AJAX -->
+                        </div>
+                        <form id="form-chat" class="mt-2 d-flex">
+                            <input type="hidden" name="nik_pegawai" value="<?= $pegawai_detail->nik ?>">
+                            <input type="hidden" name="nik_penilai" value="<?= $pegawai_detail->penilai1_nik ?? $pegawai_detail->penilai2_nik ?>">
+                            <input type="text" name="pesan" id="input-pesan" class="form-control mr-2" placeholder="Tulis pesan...">
+                            <button type="submit" class="btn btn-primary">Kirim</button>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- ================== FORM TAMBAH CATATAN ================== -->
                 <div class="card mb-3">
                     <div class="card-body">
@@ -446,6 +463,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <?php
 // flash message (jika ada)
@@ -763,6 +781,72 @@ if ($message): ?>
                     }
                 }
             });
+        });
+    });
+</script>
+
+<script>
+    // Load chat setiap 5 detik (auto refresh ringan)
+    function loadChat() {
+        const nikPegawai = $('input[name="nik_pegawai"]').val();
+        const nikPenilai = $('input[name="nik_penilai"]').val();
+
+        $.getJSON("<?= base_url('Pegawai/getCoachingChat/') ?>" + nikPegawai + "/" + nikPenilai, function(data) {
+            let html = '';
+            data.forEach(function(row) {
+                html += `
+                    <div class="mb-2 p-2 border rounded ${row.pengirim_nik === "<?= $this->session->userdata('nik'); ?>" ? 'bg-primary text-white' : 'bg-light'}">
+                        <div class="fw-bold">${row.nama_pengirim} (${row.jabatan})</div>
+                        <div>${row.pesan}</div>
+                        <div class="text-muted" style="font-size:12px;">${row.created_at}</div>
+                    </div>`;
+            });
+            $('#chat-box').html(html);
+            $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+        });
+    }
+
+    // Load awal
+    loadChat();
+    // Refresh tiap 5 detik
+    setInterval(loadChat, 5000);
+
+    // Kirim pesan
+    $('#form-chat').on('submit', function(e) {
+        e.preventDefault(); // cegah reload
+        const formData = $(this).serialize();
+
+        $.ajax({
+            url: "<?= base_url('Pegawai/kirimCoachingPesan') ?>",
+            method: "POST",
+            data: formData,
+            dataType: "json",
+            success: function(res) {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Terkirim!',
+                        text: 'Pesan coaching berhasil dikirim',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    $('#input-pesan').val('');
+                    loadChat();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: res.message || 'Pesan gagal disimpan!'
+                    });
+                }
+            },
+            error: function(xhr, status, error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan server: ' + error
+                });
+            }
         });
     });
 </script>

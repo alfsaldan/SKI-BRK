@@ -394,6 +394,26 @@
                     </div>
                 </div>
 
+                <!-- ================== ROOM CHAT ================== -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Room Chat Coaching</h5>
+                                <div id="chat-box-nilai" style="height:250px; overflow-y:auto; border:1px solid #ddd; padding:10px; background:#f9f9f9;">
+                                    <!-- pesan akan di-load via AJAX -->
+                                </div>
+                                <form id="form-chat-nilai" class="mt-2 d-flex">
+                                    <input type="hidden" name="nik_pegawai" value="<?= $pegawai_detail->nik ?>">
+                                    <input type="hidden" name="nik_penilai" value="<?= $pegawai_detail->penilai1_nik ?? $pegawai_detail->penilai2_nik ?>">
+                                    <input type="text" name="pesan" id="input-pesan-nilai" class="form-control mr-2" placeholder="Tulis pesan...">
+                                    <button type="submit" class="btn btn-primary">Kirim</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             <?php } ?>
         </div>
     </div>
@@ -695,5 +715,67 @@
 
 
 
+        // ================== CHAT COACHING ==================
+        $(document).ready(function() {
+            // Fungsi load chat
+            function loadChatNilai() {
+                var nikPegawai = $('input[name="nik_pegawai"]').val();
+                var nikPenilai = $('input[name="nik_penilai"]').val();
+                $.getJSON("<?= base_url('Pegawai/getCoachingChat/') ?>" + nikPegawai + "/" + nikPenilai, function(data) {
+                    var html = '';
+                    if (data.length === 0) {
+                        html = '<div class="text-center text-muted">Belum ada pesan</div>';
+                    } else {
+                        data.forEach(function(row) {
+                            html += '<div class="mb-2"><b>' + (row.nama_pengirim || row.pengirim_nik) + ':</b> ' + row.pesan + '<br><small class="text-muted">' + row.created_at + '</small></div>';
+                        });
+                    }
+                    $('#chat-box-nilai').html(html);
+                    $('#chat-box-nilai').scrollTop($('#chat-box-nilai')[0].scrollHeight);
+                });
+            }
+            loadChatNilai();
+
+            // Kirim pesan
+            $('#form-chat-nilai').on('submit', function(e) {
+                e.preventDefault();
+                var formData = $(this).serialize();
+                $.ajax({
+                    url: "<?= base_url('Pegawai/kirimCoachingPesan') ?>",
+                    method: "POST",
+                    data: formData,
+                    dataType: "json",
+                    success: function(res) {
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Terkirim!',
+                                text: 'Pesan coaching berhasil dikirim',
+                                timer: 1200,
+                                showConfirmButton: false
+                            });
+                            $('#input-pesan-nilai').val('');
+                            loadChatNilai();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: res.message || 'Pesan gagal disimpan!'
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Terjadi kesalahan server: ' + error
+                        });
+                    }
+                });
+            });
+
+            // Optional: reload chat tiap 10 detik
+            setInterval(loadChatNilai, 10000);
+        });
     });
 </script>
