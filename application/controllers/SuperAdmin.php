@@ -335,6 +335,9 @@ class SuperAdmin extends CI_Controller
         $targets = $this->input->post('target');
         $batas_waktu = $this->input->post('batas_waktu');
         $realisasi = $this->input->post('realisasi');
+        $pencapaian = $this->input->post('pencapaian');
+        $nilai = $this->input->post('nilai');
+        $nilaidibobot = $this->input->post('nilai_dibobot');
 
         // Ambil periode dari form, kalau kosong pakai default tahun ini
         $periode_awal = $this->input->post('periode_awal') ?? date('Y-01-01');
@@ -346,8 +349,11 @@ class SuperAdmin extends CI_Controller
             foreach ($targets as $indikator_id => $t) {
                 $btw = $batas_waktu[$indikator_id] ?? null;
                 $rls = $realisasi[$indikator_id] ?? null;
+                $pnc = $pencapaian[$indikator_id] ?? null;
+                $nli = $nilai[$indikator_id] ?? null;
+                $nld = $nilaidibobot[$indikator_id] ?? null;
 
-                if (!$this->Penilaian_model->save_penilaian($nik, $indikator_id, $t, $btw, $rls, $periode_awal, $periode_akhir)) {
+                if (!$this->Penilaian_model->save_penilaian($nik, $indikator_id, $t, $btw, $rls, $pnc, $nli, $nld, $periode_awal, $periode_akhir)) {
                     $success = false;
                 }
             }
@@ -375,12 +381,15 @@ class SuperAdmin extends CI_Controller
         $target = $this->input->post('target');
         $batas_waktu = $this->input->post('batas_waktu');
         $realisasi = $this->input->post('realisasi');
+        $pencapaian = $this->input->post('pencapaian');
+        $nilai = $this->input->post('nilai');
+        $nilaidibobot = $this->input->post('nilai_dibobot');
 
         // Ambil periode dari POST
         $periode_awal = $this->input->post('periode_awal') ?? date('Y-01-01');
         $periode_akhir = $this->input->post('periode_akhir') ?? date('Y-12-31');
 
-        $save = $this->Penilaian_model->save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $periode_awal, $periode_akhir);
+        $save = $this->Penilaian_model->save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $pencapaian, $nilai, $nilaidibobot, $periode_awal, $periode_akhir);
 
         if (!$save) {
             $error = $this->db->error();
@@ -397,6 +406,9 @@ class SuperAdmin extends CI_Controller
                     'target' => $target,
                     'batas_waktu' => $batas_waktu,
                     'realisasi' => $realisasi,
+                    'pencapaian' => $pencapaian,
+                    'nilai' => $nilai,
+                    'nilai_dibobot' => $nilaidibobot,
                     'periode_awal' => $periode_awal,
                     'periode_akhir' => $periode_akhir
                 ]
@@ -977,7 +989,7 @@ class SuperAdmin extends CI_Controller
                     $sheet->setCellValue("G{$row}", $i->realisasi);
                     $sheet->setCellValue("H{$row}", $i->pencapaian ?? '-');
                     $sheet->setCellValue("I{$row}", $i->nilai ?? '-');
-                    $sheet->setCellValue("J{$row}", $i->nilai_dibobot ?? '-');
+                    $sheet->setCellValue("J{$row}", $i->nilaidibobot ?? '-');
                     $row++;
                 }
                 if ($row - $sasaranStartRow > 1) {

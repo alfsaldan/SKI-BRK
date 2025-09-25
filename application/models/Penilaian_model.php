@@ -62,7 +62,7 @@ class Penilaian_model extends CI_Model
 
 
 
-    public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $periode_awal = null, $periode_akhir = null)
+    public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $pencapaian, $nilai, $nilaidibobot, $periode_awal = null, $periode_akhir = null)
     {
         // 🔹 Set default periode jika null
         if (!$periode_awal)
@@ -76,6 +76,9 @@ class Penilaian_model extends CI_Model
             'target' => $target,
             'batas_waktu' => $batas_waktu,
             'realisasi' => $realisasi,
+            'pencapaian' => $pencapaian,
+            'nilai' => $nilai,
+            'nilai_dibobot' => $nilaidibobot,
             'periode_awal' => $periode_awal,
             'periode_akhir' => $periode_akhir
         ];
@@ -110,6 +113,9 @@ class Penilaian_model extends CI_Model
                 $d['target'] ?? null,
                 $d['batas_waktu'] ?? null,
                 $d['realisasi'] ?? null,
+                $d['pencapaian'] ?? null,
+                $d['nilai'] ?? null,
+                $d['nilai_dibobot'] ?? null,
                 $d['periode_awal'] ?? null,
                 $d['periode_akhir'] ?? null
             );

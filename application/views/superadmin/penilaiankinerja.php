@@ -183,7 +183,7 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h5>Form Penilaian</h5>
+                                <h5>Form Penilaian Sasaran Kerja</h5>
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="tabel-penilaian">
                                         <thead style="background-color:#2E7D32;color:#fff;text-align:center;">
@@ -334,7 +334,7 @@
                     </div>
                 </div>
 
-
+                <!-- Nilai Akhir & Catatan -->
                 <div class="card mt-4">
                     <div class="card-body">
                         <h5 class="text-success font-weight-bold mb-3">
@@ -345,25 +345,34 @@
                         <table class="table table-bordered mb-4">
                             <tr>
                                 <th>Total Nilai Sasaran Kerja</th>
-                                <td class="text-center">0</td>
-                                <td>X Bobot % Sasaran Kerja</td>
-                                <td><input type="text" class="form-control form-control-sm text-center" value="95%" readonly></td>
-                                <td class="text-center">0</td>
+                                <td class="text-center" id="total-sasaran">0</td>
+                                <td>x Bobot % Sasaran Kerja</td>
+                                <td>
+                                    <input type="text" id="bobot-sasaran" class="form-control form-control-sm text-center" value="95%" readonly>
+                                </td>
+                                <td class="text-center" id="nilai-sasaran">0</td>
                             </tr>
                             <tr>
                                 <th>Rata-rata Nilai Internalisasi Budaya</th>
-                                <td class="text-center">0</td>
-                                <td>X Bobot % Budaya Perusahaan</td>
-                                <td><input type="text" class="form-control form-control-sm text-center" value="5%" readonly></td>
-                                <td class="text-center">0</td>
+                                <td class="text-center" id="rata-budaya">-</td>
+                                <td>x Bobot % Budaya Perusahaan</td>
+                                <td>
+                                    <input type="text" id="bobot-budaya" class="form-control form-control-sm text-center" value="5%" readonly>
+                                </td>
+                                <td class="text-center" id="nilai-budaya">-</td>
                             </tr>
                             <tr>
                                 <th colspan="4" class="text-right">Total Nilai</th>
-                                <td class="text-center">0</td>
+                                <td class="text-center" id="total-nilai">0</td>
                             </tr>
                             <tr>
-                                <th colspan="4" class="text-right">Fraud</th>
-                                <td><input type="number" min="0" max="1" class="form-control form-control-sm text-center" id="fraud-input" value="0"></td>
+                                <th colspan="4" class="text-right">
+                                    Fraud<br>
+                                    <small>(diisi 1 jika melakukan fraud, 0 jika tidak melakukan fraud)</small>
+                                </th>
+                                <td>
+                                    <input type="number" min="0" max="1" class="form-control form-control-sm text-center" id="fraud-input" value="0">
+                                </td>
                             </tr>
                         </table>
 
@@ -408,28 +417,28 @@
                                 <div class="card text-center mb-3">
                                     <div class="card-header bg-success text-white">Nilai Akhir</div>
                                     <div class="card-body">
-                                        <h3>0</h3>
+                                        <h3 id="nilai-akhir">0</h3>
                                     </div>
                                 </div>
 
                                 <div class="card text-center mb-3">
                                     <div class="card-header bg-success text-white">Yudisium / Predikat</div>
                                     <div class="card-body">
-                                        <h3>-</h3>
+                                        <h3 id="predikat">-</h3>
                                     </div>
                                 </div>
 
                                 <div class="card text-center">
                                     <div class="card-header bg-success text-white">Pencapaian Akhir</div>
                                     <div class="card-body">
-                                        <h3>0</h3>
+                                        <h3 id="pencapaian-akhir">0</h3>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
+
 
 
 
@@ -654,8 +663,83 @@
                 const perspektif = row.dataset.perspektif;
                 row.querySelector('.subtotal-nilai-bobot').innerText = formatAngka(subtotalMap[perspektif] || 0);
             });
+
+            // Tambahkan baris ini agar total-sasaran sama dengan total-nilai-bobot
+            document.getElementById('total-sasaran').textContent = formatAngka(totalNilai);
+
+            hitungNilaiAkhir();
         }
 
+        function hitungNilaiAkhir() {
+            const bobotSasaran = 0.95;
+            const bobotBudaya = 0.05;
+
+            const fraud = parseFloat(document.getElementById("fraud-input").value) || 0;
+
+            // Ambil nilai sasaran dari total-nilai-bobot
+            const totalSasaran = parseFloat(document.getElementById("total-nilai-bobot").textContent) || 0;
+            const rataBudaya = parseFloat(document.getElementById("rata-budaya").textContent) || 0;
+
+            // Total nilai sasaran kerja 
+            const nilaiSasaran = totalSasaran * bobotSasaran;
+
+            // Nilai budaya
+            const nilaiBudaya = rataBudaya * bobotBudaya;
+
+            // Total nilai
+            const totalNilai = nilaiSasaran + nilaiBudaya;
+
+            // Nilai akhir sesuai rumus Excel
+            let nilaiAkhir;
+            if (fraud === 0) {
+                nilaiAkhir = totalNilai - fraud;
+            } else {
+                nilaiAkhir = "Tidak ada nilai";
+            }
+
+            // Predikat
+            let predikat;
+            if (nilaiAkhir === "Tidak ada nilai") {
+                predikat = "Tidak ada yudisium/predikat";
+            } else if (nilaiAkhir === 0) {
+                predikat = "Belum Ada Nilai";
+            } else if (nilaiAkhir < 2) {
+                predikat = "Minus";
+            } else if (nilaiAkhir < 3) {
+                predikat = "Fair";
+            } else if (nilaiAkhir < 3.5) {
+                predikat = "Good";
+            } else if (nilaiAkhir < 4.5) {
+                predikat = "Very Good";
+            } else {
+                predikat = "Excellent";
+            }
+
+            // Pencapaian Akhir
+            let pencapaian = "";
+            if (nilaiAkhir !== "Tidak ada nilai") {
+                const v = parseFloat(nilaiAkhir) || 0;
+                if (v < 0) pencapaian = 0;
+                else if (v < 2) pencapaian = (v / 2) * 0.8 * 100;
+                else if (v < 3) pencapaian = 80 + ((v - 2) / 1) * 10;
+                else if (v < 3.5) pencapaian = 90 + ((v - 3) / 0.5) * 20;
+                else if (v < 4.5) pencapaian = 110 + ((v - 3.5) / 1) * 10;
+                else if (v < 5) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
+                else pencapaian = 130;
+            }
+
+            // Update ke tampilan
+            document.getElementById("nilai-sasaran").textContent = nilaiSasaran.toFixed(2);
+            document.getElementById("nilai-budaya").textContent = nilaiBudaya.toFixed(2);
+            document.getElementById("total-nilai").textContent = totalNilai.toFixed(2);
+            document.getElementById("nilai-akhir").textContent =
+                nilaiAkhir === "Tidak ada nilai" ? nilaiAkhir : nilaiAkhir.toFixed(2);
+            document.getElementById("predikat").textContent = predikat;
+            document.getElementById("pencapaian-akhir").textContent =
+                pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
+        }
+
+        document.getElementById('fraud-input').addEventListener('input', hitungNilaiAkhir);
 
         // 🔹 trigger perhitungan saat input diubah
         document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
