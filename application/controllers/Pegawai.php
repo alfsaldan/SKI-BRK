@@ -16,40 +16,6 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Pegawai extends CI_Controller
 {
-    // Endpoint untuk notifikasi jumlah pesan baru room chat
-    public function getUnreadCoachingCount()
-    {
-        header('Content-Type: application/json');
-        $this->load->model('pegawai/Coaching_model');
-        $nik = $this->session->userdata('nik');
-        if (empty($nik)) {
-            echo json_encode(['count' => 0, 'list' => []]);
-            return;
-        }
-        // Ambil pesan yang belum dibaca oleh user (asumsi: ada field is_read dan penerima_nik di tabel aktivitas_coaching)
-        $this->db->where('penerima_nik', $nik);
-        $this->db->where('is_read', 0);
-        $query = $this->db->get('aktivitas_coaching');
-        $list = [];
-        foreach ($query->result() as $row) {
-            // Ambil nama pengirim dari tabel pegawai
-            $nama_pengirim = $row->pengirim_nik;
-            $pegawai = $this->db->where('nik', $row->pengirim_nik)->get('pegawai')->row();
-            if ($pegawai && !empty($pegawai->nama)) {
-                $nama_pengirim = $pegawai->nama;
-            }
-            // Konversi waktu ke Asia/Jakarta, tampilkan detik
-            $dt = new DateTime($row->created_at, new DateTimeZone('UTC'));
-            $dt->setTimezone(new DateTimeZone('Asia/Jakarta'));
-            $created_at_jkt = $dt->format('d-m-Y H:i:s');
-            $list[] = [
-                'nama_pengirim' => $nama_pengirim,
-                'pesan' => $row->pesan,
-                'created_at' => $created_at_jkt
-            ];
-        }
-        echo json_encode(['count' => count($list), 'list' => $list]);
-    }
 
     public function __construct()
     {
@@ -420,5 +386,39 @@ class Pegawai extends CI_Controller
         $this->db->where('is_read', 0);
         $this->db->update('aktivitas_coaching', ['is_read' => 1]);
         echo json_encode(['success' => true]);
+    }
+        // Endpoint untuk notifikasi jumlah pesan baru room chat
+    public function getUnreadCoachingCount()
+    {
+        header('Content-Type: application/json');
+        $this->load->model('pegawai/Coaching_model');
+        $nik = $this->session->userdata('nik');
+        if (empty($nik)) {
+            echo json_encode(['count' => 0, 'list' => []]);
+            return;
+        }
+        // Ambil pesan yang belum dibaca oleh user (asumsi: ada field is_read dan penerima_nik di tabel aktivitas_coaching)
+        $this->db->where('penerima_nik', $nik);
+        $this->db->where('is_read', 0);
+        $query = $this->db->get('aktivitas_coaching');
+        $list = [];
+        foreach ($query->result() as $row) {
+            // Ambil nama pengirim dari tabel pegawai
+            $nama_pengirim = $row->pengirim_nik;
+            $pegawai = $this->db->where('nik', $row->pengirim_nik)->get('pegawai')->row();
+            if ($pegawai && !empty($pegawai->nama)) {
+                $nama_pengirim = $pegawai->nama;
+            }
+            // Konversi waktu ke Asia/Jakarta, tampilkan detik
+            $dt = new DateTime($row->created_at, new DateTimeZone('UTC'));
+            $dt->setTimezone(new DateTimeZone('Asia/Jakarta'));
+            $created_at_jkt = $dt->format('d-m-Y H:i:s');
+            $list[] = [
+                'nama_pengirim' => $nama_pengirim,
+                'pesan' => $row->pesan,
+                'created_at' => $created_at_jkt
+            ];
+        }
+        echo json_encode(['count' => count($list), 'list' => $list]);
     }
 } 
