@@ -412,12 +412,25 @@
                                 </table>
                             </div>
 
-                            <!-- Kanan: Ringkasan -->
                             <div class="col-md-6">
-                                <div class="card text-center mb-3">
-                                    <div class="card-header bg-success text-white">Nilai Akhir</div>
-                                    <div class="card-body">
-                                        <h3 id="nilai-akhir">0</h3>
+                                <!-- Kanan: Ringkasan -->
+                                <div class="row">
+                                    <!-- Kiri: Tabel Predikat -->
+                                    <div class="col-md-6">
+                                        <div class="card text-center mb-3">
+                                            <div class="card-header bg-success text-white">Nilai Akhir</div>
+                                            <div class="card-body">
+                                                <h3 id="nilai-akhir">0</h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card text-center">
+                                            <div class="card-header bg-success text-white">Pencapaian Akhir</div>
+                                            <div class="card-body">
+                                                <h3 id="pencapaian-akhir">0</h3>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -425,13 +438,6 @@
                                     <div class="card-header bg-success text-white">Yudisium / Predikat</div>
                                     <div class="card-body">
                                         <h3 id="predikat">-</h3>
-                                    </div>
-                                </div>
-
-                                <div class="card text-center">
-                                    <div class="card-header bg-success text-white">Pencapaian Akhir</div>
-                                    <div class="card-body">
-                                        <h3 id="pencapaian-akhir">0</h3>
                                     </div>
                                 </div>
                             </div>
@@ -726,6 +732,8 @@
                 else if (v < 4.5) pencapaian = 110 + ((v - 3.5) / 1) * 10;
                 else if (v < 5) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
                 else pencapaian = 130;
+            } else {
+                pencapaian = 0;
             }
 
             // Update ke tampilan

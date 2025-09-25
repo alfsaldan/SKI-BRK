@@ -76,7 +76,6 @@ class Pegawai_model extends CI_Model
         penilaian.realisasi,
         penilaian.nilai,
         penilaian.nilai_dibobot,
-        penilaian.catatan,
         penilaian.status,
         penilaian.periode_awal,
         penilaian.periode_akhir
