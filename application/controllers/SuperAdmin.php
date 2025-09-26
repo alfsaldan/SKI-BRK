@@ -795,6 +795,7 @@ class SuperAdmin extends CI_Controller
     }
 
     // Cari Data Pegawai berdasarkan NIK
+    // Cari Data Pegawai berdasarkan NIK
     public function cariDataPegawai()
     {
         $nik   = $this->input->get('nik') ?? $this->input->post('nik');
@@ -810,25 +811,33 @@ class SuperAdmin extends CI_Controller
 
         $this->load->model('DataPegawai_model');
 
-        $pegawai   = $this->DataPegawai_model->getPegawaiWithPenilai($nik);
-        $penilaian = $this->DataPegawai_model->getPenilaianByNik($nik, $awal, $akhir);
+        $pegawai    = $this->DataPegawai_model->getPegawaiWithPenilai($nik);
+        $penilaian  = $this->DataPegawai_model->getPenilaianByNik($nik, $awal, $akhir);
         $nilaiAkhir = $this->DataPegawai_model->getNilaiAkhirByNikPeriode($nik, $awal, $akhir);
 
         // 🔹 ambil semua periode unik dari tabel penilaian
         $periode_list = $this->DataPegawai_model->getAvailablePeriode();
 
+        // 🔹 ambil chat coaching (tidak ada duplikat)
+        $chat = [];
+        if ($pegawai) {
+            $chat = $this->DataPegawai_model->getCoachingChat($nik);
+        }
+
         $data['judul'] = "Data Pegawai";
         $data['pegawai_detail']    = $pegawai;
         $data['penilaian_pegawai'] = $penilaian;
         $data['nilai']             = $nilaiAkhir;
-        $data['periode_awal'] = $awal;
-        $data['periode_akhir'] = $akhir;
-        $data['periode_list']  = $periode_list;
+        $data['periode_awal']      = $awal;
+        $data['periode_akhir']     = $akhir;
+        $data['periode_list']      = $periode_list;
+        $data['chat']              = $chat;
 
         $this->load->view("layout/header");
         $this->load->view('superadmin/datapegawai', $data);
         $this->load->view("layout/footer");
     }
+
 
     public function downloadDataPegawai()
     {
@@ -1239,5 +1248,15 @@ class SuperAdmin extends CI_Controller
             "recordsFiltered" => count($list),
             "data" => $data
         ]);
+    }
+    public function lihatCoachingChat($nik, $penilai_nik)
+    {
+        $this->load->model('DataPegawai_model');
+
+        $data['chat'] = $this->DataPegawai_model->getCoachingChat($nik, $penilai_nik);
+        $data['nik_pegawai'] = $nik;
+        $data['nik_penilai'] = $penilai_nik;
+
+        $this->load->view('superadmin/chat_coaching', $data);
     }
 }

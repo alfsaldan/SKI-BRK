@@ -391,6 +391,61 @@
             </div>
         </div>
 
+        <!-- Aktivitas Coaching / Chat -->
+        <!-- Aktivitas Coaching / Chat -->
+        <div class="card mt-4 border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="card-header text-white fw-bold"
+                style="background: linear-gradient(135deg, #05b01cff, #027400ff); font-size:1.1rem;">
+                <i class="bi bi-chat-text-fill me-2"></i> Aktivitas Coaching
+            </div>
+            <div class="card-body p-4" id="chat-box"
+                style="max-height:450px; overflow-y:auto; background: linear-gradient(180deg,#f8f9fa,#e9ecef);">
+
+                <?php if (!empty($chat)): ?>
+                    <?php foreach ($chat as $c): ?>
+                        <?php
+                        $isPegawai = ($c->pengirim_nik == $pegawai_detail->nik);
+
+                        // Konversi timezone ke Asia/Jakarta
+                        $dt = new DateTime($c->created_at, new DateTimeZone("UTC"));
+                        $dt->setTimezone(new DateTimeZone("Asia/Jakarta"));
+                        $tanggal = $dt->format("d M Y • H:i");
+                        ?>
+
+                        <div class="d-flex mb-4 <?= $isPegawai ? 'justify-content-end' : 'justify-content-start'; ?>">
+                            <div class="chat-bubble p-3 rounded-4 shadow-sm"
+                                style="
+                            max-width:65%;
+                            background: <?= $isPegawai ? 'rgba(13,110,253,0.1)' : 'rgba(255,255,255,0.6)'; ?>;
+                            backdrop-filter: blur(10px);
+                            border:1px solid rgba(255,255,255,0.4);
+                         ">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="fw-semibold me-2" style="font-size:0.9rem;">
+                                        <?= $c->nama_pengirim ?? $c->pengirim_nik; ?> 
+                                    </span>
+                                    <span class="badge rounded-pill <?= $isPegawai ? 'bg-success' : 'bg-primary'; ?> ms-auto" style="font-size:0.65rem;">
+                                        <?= $isPegawai ? 'Pegawai' : 'Penilai'; ?> 
+                                    </span>
+                                </div>
+                                <div style="font-size:0.95rem; line-height:1.5;">
+                                    <?= nl2br(htmlspecialchars($c->pesan)); ?>
+                                </div>
+                                <div class="text-end text-muted mt-2" style="font-size:0.75rem;">
+                                    <?= $tanggal; ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="text-center text-muted fst-italic p-5">
+                        <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                        Belum ada percakapan coaching.
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
     <?php endif; ?>
     </div>
 </div>
@@ -448,5 +503,15 @@
         let nik = "<?= $pegawai_detail->nik ?? '' ?>";
 
         window.location.href = "<?= base_url('SuperAdmin/cariDataPegawai') ?>?nik=" + nik + "&awal=" + awal + "&akhir=" + akhir;
+    });
+</script>
+
+<script>
+    // Auto scroll ke bawah saat halaman dibuka
+    document.addEventListener("DOMContentLoaded", function() {
+        var chatBox = document.getElementById("chat-box");
+        if (chatBox) {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
     });
 </script>

@@ -206,4 +206,31 @@ class DataPegawai_model extends CI_Model
             ->get('nilai_akhir')
             ->row_array();
     }
+
+    // ✅ Ambil chat coaching antara pegawai dan semua penilainya (tidak duplikat)
+    public function getCoachingChat($nikPegawai)
+    {
+        $this->db->select("ac.*, p.nama AS nama_pengirim, p.jabatan");
+        $this->db->from("aktivitas_coaching ac");
+        $this->db->join("pegawai p", "p.nik = ac.pengirim_nik", "left");
+        $this->db->where("ac.nik_pegawai", $nikPegawai);
+        $this->db->order_by("ac.id", "ASC");
+        return $this->db->get()->result();
+    }
+    // Ambil chat antara pegawai & penilai
+    public function getChat($nikPegawai, $lastId = 0)
+    {
+        $this->db->distinct();
+        $this->db->select("ac.*, p.nama AS nama_pengirim, p.jabatan");
+        $this->db->from("aktivitas_coaching ac");
+        $this->db->join("pegawai p", "p.nik = ac.pengirim_nik", "left");
+        $this->db->where("ac.nik_pegawai", $nikPegawai);
+
+        if ($lastId > 0) {
+            $this->db->where("ac.id >", $lastId);
+        }
+
+        $this->db->order_by("ac.id", "ASC");
+        return $this->db->get()->result();
+    }
 }
