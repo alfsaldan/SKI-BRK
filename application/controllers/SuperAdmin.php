@@ -5,7 +5,7 @@ defined('BASEPATH') or exit('No direct script access allowed');
 // Load PhpSpreadsheet
 require_once FCPATH . 'vendor/autoload.php';
 
-use PhpOffice\PhpSpreadsheet\Spreadsheet; //ini error
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -1030,8 +1030,8 @@ class SuperAdmin extends CI_Controller
         // =======================
         $perspektifGroup = [];
         foreach ($penilaian as $p) {
-            $perspektif = trim($p->perspektif);
-            $sasaran = trim($p->sasaran_kerja);
+            $perspektif = trim($p->perspektif ?? '');
+            $sasaran = trim($p->sasaran_kerja ?? '');
             $perspektifGroup[$perspektif][$sasaran][] = $p;
         }
 
@@ -1047,7 +1047,7 @@ class SuperAdmin extends CI_Controller
                     $sheet->setCellValue("G{$row}", $i->realisasi);
                     $sheet->setCellValue("H{$row}", $i->pencapaian ?? '-');
                     $sheet->setCellValue("I{$row}", $i->nilai ?? '-');
-                    $sheet->setCellValue("J{$row}", $i->nilaidibobot ?? '-');
+                    $sheet->setCellValue("J{$row}", $i->nilai_dibobot ?? '-');
                     $row++;
                 }
                 if ($row - $sasaranStartRow > 1) {

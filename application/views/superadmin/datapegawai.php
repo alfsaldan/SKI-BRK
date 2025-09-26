@@ -419,28 +419,17 @@
                             backdrop-filter: blur(10px);
                             border:1px solid rgba(255,255,255,0.4);
                          ">
-                                <!-- Nama + Jabatan + Role -->
-                                <div class="d-flex align-items-start mb-2">
-                                    <div>
-                                        <div class="fw-bold" style="font-size:0.95rem; color:#212529;">
-                                            <?= $c->nama_pengirim ?? $c->pengirim_nik; ?>
-                                        </div>
-                                        <div class="text-muted" style="font-size:0.75rem;">
-                                            <?= $c->jabatan ?? '-'; ?>
-                                        </div>
-                                    </div>
-                                    <span class="badge rounded-pill <?= $isPegawai ? 'bg-success' : 'bg-primary'; ?> ms-auto align-self-start"
-                                        style="font-size:0.65rem;">
-                                        <?= $isPegawai ? 'Pegawai' : 'Penilai'; ?>
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="fw-semibold me-2" style="font-size:0.9rem;">
+                                        <?= $c->nama_pengirim ?? $c->pengirim_nik; ?> 
+                                    </span>
+                                    <span class="badge rounded-pill <?= $isPegawai ? 'bg-success' : 'bg-primary'; ?> ms-auto" style="font-size:0.65rem;">
+                                        <?= $isPegawai ? 'Pegawai' : 'Penilai'; ?> 
                                     </span>
                                 </div>
-
-                                <!-- Pesan -->
                                 <div style="font-size:0.95rem; line-height:1.5;">
                                     <?= nl2br(htmlspecialchars($c->pesan)); ?>
                                 </div>
-
-                                <!-- Tanggal -->
                                 <div class="text-end text-muted mt-2" style="font-size:0.75rem;">
                                     <?= $tanggal; ?>
                                 </div>
@@ -455,7 +444,6 @@
                 <?php endif; ?>
             </div>
         </div>
-
 
     <?php endif; ?>
     </div>
