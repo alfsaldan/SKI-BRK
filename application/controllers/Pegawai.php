@@ -65,6 +65,11 @@ class Pegawai extends CI_Controller
             'periode_list' => $periode_list
         ];
 
+        // 🔹 ambil nilai_akhir dari tabel nilai_akhir
+        $nilai_akhir = $this->Pegawai_model->getNilaiAkhir($nik, $periode_awal, $periode_akhir);
+
+        $data['nilai_akhir']         = $nilai_akhir;
+
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/index', $data);
         $this->load->view('layoutpegawai/footer');
@@ -100,6 +105,47 @@ class Pegawai extends CI_Controller
                 'status' => 'error',
                 'message' => 'Gagal menyimpan data.',
                 'debug' => $error
+            ]);
+        }
+    }
+
+    public function simpanNilaiAkhir()
+    {
+        $nik           = $this->input->post('nik');
+        $nilai_sasaran = $this->input->post('nilai_sasaran');
+        $nilai_budaya  = $this->input->post('nilai_budaya');
+        $total_nilai   = $this->input->post('total_nilai');
+        $fraud         = $this->input->post('fraud');
+        $nilai_akhir   = $this->input->post('nilai_akhir');
+        $pencapaian    = $this->input->post('pencapaian');
+        $predikat      = $this->input->post('predikat');
+        $periode_awal  = $this->input->post('periode_awal');
+        $periode_akhir = $this->input->post('periode_akhir');
+
+        $save = $this->Pegawai_model->save_nilai_akhir(
+            $nik,
+            $nilai_sasaran,
+            $nilai_budaya,
+            $total_nilai,
+            $fraud,
+            $nilai_akhir,
+            $pencapaian,
+            $predikat,
+            $periode_awal,
+            $periode_akhir
+        );
+
+        if ($save) {
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Nilai Akhir berhasil disimpan!'
+            ]);
+        } else {
+            $error = $this->db->error();
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Gagal menyimpan Nilai Akhir',
+                'debug'   => $error
             ]);
         }
     }

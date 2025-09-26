@@ -173,4 +173,42 @@ class Pegawai_model extends CI_Model
         $this->db->order_by('nama', 'ASC');
         return $this->db->get()->result();
     }
+    public function getNilaiAkhir($nik, $periode_awal, $periode_akhir)
+    {
+        return $this->db->where('nik', $nik)
+            ->where('periode_awal', $periode_awal)
+            ->where('periode_akhir', $periode_akhir)
+            ->get('nilai_akhir')
+            ->row_array();
+    }
+    public function save_nilai_akhir($nik, $nilai_sasaran, $nilai_budaya, $total_nilai, $fraud, $nilai_akhir, $pencapaian, $predikat, $periode_awal, $periode_akhir)
+    {
+        $data = [
+            'nik'           => $nik,
+            'nilai_sasaran' => $nilai_sasaran,
+            'nilai_budaya'  => $nilai_budaya,
+            'total_nilai'   => $total_nilai,
+            'fraud'         => $fraud,
+            'nilai_akhir'   => $nilai_akhir,
+            'pencapaian'    => $pencapaian,
+            'predikat'      => $predikat,
+            'periode_awal'  => $periode_awal,
+            'periode_akhir' => $periode_akhir,
+            'updated_at'    => date('Y-m-d H:i:s')
+        ];
+
+        // cek data existing
+        $this->db->where('nik', $nik);
+        $this->db->where('periode_awal', $periode_awal);
+        $this->db->where('periode_akhir', $periode_akhir);
+        $exists = $this->db->get('nilai_akhir')->row();
+
+        if ($exists) {
+            $this->db->where('id', $exists->id);
+            return $this->db->update('nilai_akhir', $data);
+        } else {
+            $data['created_at'] = date('Y-m-d H:i:s');
+            return $this->db->insert('nilai_akhir', $data);
+        }
+    }
 }
