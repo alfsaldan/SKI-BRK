@@ -197,4 +197,13 @@ class DataPegawai_model extends CI_Model
         $this->db->order_by('periode_awal', 'DESC');
         return $this->db->get()->result();
     }
+
+    public function getNilaiAkhirByNikPeriode($nik, $periode_awal, $periode_akhir)
+    {
+        return $this->db->where('nik', $nik)
+            ->where('periode_awal', $periode_awal)
+            ->where('periode_akhir', $periode_akhir)
+            ->get('nilai_akhir')
+            ->row_array();
+    }
 }

@@ -36,6 +36,7 @@ class SuperAdmin extends CI_Controller
         $this->load->model('Penilaian_model');
         $this->load->model('RiwayatJabatan_model');
         $this->load->model('DataDiri_model');
+        $this->load->model('DataPegawai_model');
         $this->load->model('PenilaiMapping_model');
         $this->load->library('session');
 
@@ -298,14 +299,17 @@ class SuperAdmin extends CI_Controller
             $indikator = $this->Penilaian_model->get_indikator_by_jabatan_dan_unit(
                 $pegawai->jabatan,
                 $pegawai->unit_kerja,
-                $pegawai->unit_kantor,
                 $nik,
                 $periode_awal,
                 $periode_akhir
             );
 
-            $data['pegawai_detail'] = $pegawai;
+            // 🔹 ambil nilai_akhir dari tabel nilai_akhir
+            $nilai_akhir = $this->Penilaian_model->getNilaiAkhir($nik, $periode_awal, $periode_akhir);
+
+            $data['pegawai_detail']      = $pegawai;
             $data['indikator_by_jabatan'] = $indikator;
+            $data['nilai_akhir']         = $nilai_akhir;
             $data['message'] = [
                 'type' => 'success',
                 'text' => 'Data penilaian pegawai ditemukan!'
@@ -313,6 +317,7 @@ class SuperAdmin extends CI_Controller
         } else {
             $data['pegawai_detail'] = null;
             $data['indikator_by_jabatan'] = [];
+            $data['nilai_akhir'] = null;
             $data['message'] = [
                 'type' => 'error',
                 'text' => 'Pegawai dengan NIK tersebut tidak ditemukan.'
@@ -329,50 +334,51 @@ class SuperAdmin extends CI_Controller
     }
 
 
-    public function simpanPenilaian()
-    {
-        $nik = $this->input->post('nik');
-        $targets = $this->input->post('target');
-        $batas_waktu = $this->input->post('batas_waktu');
-        $realisasi = $this->input->post('realisasi');
-        $pencapaian = $this->input->post('pencapaian');
-        $nilai = $this->input->post('nilai');
-        $nilaidibobot = $this->input->post('nilai_dibobot');
 
-        // Ambil periode dari form, kalau kosong pakai default tahun ini
-        $periode_awal = $this->input->post('periode_awal') ?? date('Y-01-01');
-        $periode_akhir = $this->input->post('periode_akhir') ?? date('Y-12-31');
+    // public function simpanPenilaian()
+    // {
+    //     $nik = $this->input->post('nik');
+    //     $targets = $this->input->post('target');
+    //     $batas_waktu = $this->input->post('batas_waktu');
+    //     $realisasi = $this->input->post('realisasi');
+    //     $pencapaian = $this->input->post('pencapaian');
+    //     $nilai = $this->input->post('nilai');
+    //     $nilaidibobot = $this->input->post('nilai_dibobot');
 
-        $success = true;
+    //     // Ambil periode dari form, kalau kosong pakai default tahun ini
+    //     $periode_awal = $this->input->post('periode_awal') ?? date('Y-01-01');
+    //     $periode_akhir = $this->input->post('periode_akhir') ?? date('Y-12-31');
 
-        if ($targets) {
-            foreach ($targets as $indikator_id => $t) {
-                $btw = $batas_waktu[$indikator_id] ?? null;
-                $rls = $realisasi[$indikator_id] ?? null;
-                $pnc = $pencapaian[$indikator_id] ?? null;
-                $nli = $nilai[$indikator_id] ?? null;
-                $nld = $nilaidibobot[$indikator_id] ?? null;
+    //     $success = true;
 
-                if (!$this->Penilaian_model->save_penilaian($nik, $indikator_id, $t, $btw, $rls, $pnc, $nli, $nld, $periode_awal, $periode_akhir)) {
-                    $success = false;
-                }
-            }
-        }
+    //     if ($targets) {
+    //         foreach ($targets as $indikator_id => $t) {
+    //             $btw = $batas_waktu[$indikator_id] ?? null;
+    //             $rls = $realisasi[$indikator_id] ?? null;
+    //             $pnc = $pencapaian[$indikator_id] ?? null;
+    //             $nli = $nilai[$indikator_id] ?? null;
+    //             $nld = $nilaidibobot[$indikator_id] ?? null;
 
-        if ($success) {
-            $this->session->set_flashdata('message', [
-                'type' => 'success',
-                'text' => 'Seluruh penilaian berhasil disimpan!'
-            ]);
-        } else {
-            $this->session->set_flashdata('message', [
-                'type' => 'error',
-                'text' => 'Gagal menyimpan sebagian data penilaian.'
-            ]);
-        }
+    //             if (!$this->Penilaian_model->save_penilaian($nik, $indikator_id, $t, $btw, $rls, $pnc, $nli, $nld, $periode_awal, $periode_akhir)) {
+    //                 $success = false;
+    //             }
+    //         }
+    //     }
 
-        redirect('SuperAdmin/penilaiankinerja');
-    }
+    //     if ($success) {
+    //         $this->session->set_flashdata('message', [
+    //             'type' => 'success',
+    //             'text' => 'Seluruh penilaian berhasil disimpan!'
+    //         ]);
+    //     } else {
+    //         $this->session->set_flashdata('message', [
+    //             'type' => 'error',
+    //             'text' => 'Gagal menyimpan sebagian data penilaian.'
+    //         ]);
+    //     }
+
+    //     redirect('SuperAdmin/penilaiankinerja');
+    // }
 
     public function simpanPenilaianBaris()
     {
@@ -415,6 +421,48 @@ class SuperAdmin extends CI_Controller
             ]);
         }
     }
+
+    public function simpanNilaiAkhir()
+    {
+        $nik           = $this->input->post('nik');
+        $nilai_sasaran = $this->input->post('nilai_sasaran');
+        $nilai_budaya  = $this->input->post('nilai_budaya');
+        $total_nilai   = $this->input->post('total_nilai');
+        $fraud         = $this->input->post('fraud');
+        $nilai_akhir   = $this->input->post('nilai_akhir');
+        $pencapaian    = $this->input->post('pencapaian');
+        $predikat      = $this->input->post('predikat');
+        $periode_awal  = $this->input->post('periode_awal');
+        $periode_akhir = $this->input->post('periode_akhir');
+
+        $save = $this->Penilaian_model->save_nilai_akhir(
+            $nik,
+            $nilai_sasaran,
+            $nilai_budaya,
+            $total_nilai,
+            $fraud,
+            $nilai_akhir,
+            $pencapaian,
+            $predikat,
+            $periode_awal,
+            $periode_akhir
+        );
+
+        if ($save) {
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Nilai Akhir berhasil disimpan!'
+            ]);
+        } else {
+            $error = $this->db->error();
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Gagal menyimpan Nilai Akhir',
+                'debug'   => $error
+            ]);
+        }
+    }
+
 
 
     // ==============================
@@ -764,6 +812,7 @@ class SuperAdmin extends CI_Controller
 
         $pegawai   = $this->DataPegawai_model->getPegawaiWithPenilai($nik);
         $penilaian = $this->DataPegawai_model->getPenilaianByNik($nik, $awal, $akhir);
+        $nilaiAkhir = $this->DataPegawai_model->getNilaiAkhirByNikPeriode($nik, $awal, $akhir);
 
         // 🔹 ambil semua periode unik dari tabel penilaian
         $periode_list = $this->DataPegawai_model->getAvailablePeriode();
@@ -771,6 +820,7 @@ class SuperAdmin extends CI_Controller
         $data['judul'] = "Data Pegawai";
         $data['pegawai_detail']    = $pegawai;
         $data['penilaian_pegawai'] = $penilaian;
+        $data['nilai']             = $nilaiAkhir;
         $data['periode_awal'] = $awal;
         $data['periode_akhir'] = $akhir;
         $data['periode_list']  = $periode_list;
@@ -779,7 +829,6 @@ class SuperAdmin extends CI_Controller
         $this->load->view('superadmin/datapegawai', $data);
         $this->load->view("layout/footer");
     }
-
 
     public function downloadDataPegawai()
     {

@@ -8,7 +8,7 @@ class Penilaian_model extends CI_Model
         return $this->db->get('penilaian')->result();
     }
 
-    public function get_indikator_by_jabatan_dan_unit($jabatan, $unit_kerja, $unit_kantor = null, $nik = null, $periode_awal = null, $periode_akhir = null)
+    public function get_indikator_by_jabatan_dan_unit($jabatan, $unit_kerja, $nik = null, $periode_awal = null, $periode_akhir = null)
     {
         if (!$periode_awal) $periode_awal = '2025-01-01';
         if (!$periode_akhir) $periode_akhir = '2025-12-31';
@@ -99,8 +99,36 @@ class Penilaian_model extends CI_Model
         }
     }
 
+    public function save_nilai_akhir($nik, $nilai_sasaran, $nilai_budaya, $total_nilai, $fraud, $nilai_akhir, $pencapaian, $predikat, $periode_awal, $periode_akhir)
+    {
+        $data = [
+            'nik'           => $nik,
+            'nilai_sasaran' => $nilai_sasaran,
+            'nilai_budaya'  => $nilai_budaya,
+            'total_nilai'   => $total_nilai,
+            'fraud'         => $fraud,
+            'nilai_akhir'   => $nilai_akhir,
+            'pencapaian'    => $pencapaian,
+            'predikat'      => $predikat,
+            'periode_awal'  => $periode_awal,
+            'periode_akhir' => $periode_akhir,
+            'updated_at'    => date('Y-m-d H:i:s')
+        ];
 
+        // cek data existing
+        $this->db->where('nik', $nik);
+        $this->db->where('periode_awal', $periode_awal);
+        $this->db->where('periode_akhir', $periode_akhir);
+        $exists = $this->db->get('nilai_akhir')->row();
 
+        if ($exists) {
+            $this->db->where('id', $exists->id);
+            return $this->db->update('nilai_akhir', $data);
+        } else {
+            $data['created_at'] = date('Y-m-d H:i:s');
+            return $this->db->insert('nilai_akhir', $data);
+        }
+    }
 
     public function simpan_penilaian($arr_data)
     {
@@ -201,5 +229,14 @@ class Penilaian_model extends CI_Model
             ->order_by('periode_awal', 'DESC')
             ->get()
             ->result();
+    }
+
+    public function getNilaiAkhir($nik, $periode_awal, $periode_akhir)
+    {
+        return $this->db->where('nik', $nik)
+            ->where('periode_awal', $periode_awal)
+            ->where('periode_akhir', $periode_akhir)
+            ->get('nilai_akhir')
+            ->row_array();
     }
 }

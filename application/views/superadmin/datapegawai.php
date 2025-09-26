@@ -276,6 +276,121 @@
                 </div>
             </div>
         </div>
+
+        <!-- Nilai Akhir & Catatan -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="text-success font-weight-bold mb-3">
+                    <i class="mdi mdi-star-circle mr-2"></i> Nilai Akhir (q)
+                </h5>
+
+                <!-- Bagian Atas: Perhitungan -->
+                <table class="table table-bordered mb-4">
+                    <tr>
+                        <th>Total Nilai Sasaran Kerja</th>
+                        <td class="text-center"><?= $nilai['nilai_sasaran'] ?? 0 ?></td>
+                        <td>x Bobot % Sasaran Kerja</td>
+                        <td class="text-center">
+                            95%<!-- <input type="text" class="form-control form-control-sm text-center"
+                                value="95%" readonly> -->
+                        </td>
+                        <td class="text-center"><?= $nilai['total_nilai'] ?? 0 ?></td>
+                    </tr>
+                    <tr>
+                        <th>Rata-rata Nilai Internalisasi Budaya</th>
+                        <td class="text-center"><?= $nilai['nilai_budaya'] ?? 0 ?></td>
+                        <td>x Bobot % Budaya Perusahaan</td>
+                        <td class="text-center">
+                            5%<!-- <input type="text" class="form-control form-control-sm text-center"
+                                value="5%" readonly> -->
+                        </td>
+                        <td class="text-center"><?= $nilai['nilai_budaya'] ?? 0 ?></td>
+                    </tr>
+                    <tr>
+                        <th colspan="4" class="text-right">Total Nilai</th>
+                        <td class="text-center"><?= $nilai['total_nilai'] ?? 0 ?></td>
+                    </tr>
+                    <tr>
+                        <th colspan="4" class="text-right">
+                            Fraud<br>
+                            <small>(1 jika melakukan fraud, 0 jika tidak melakukan fraud)</small>
+                        </th>
+                        <td class="text-center"><?= $nilai['fraud'] ?? 0 ?></td>
+                    </tr>
+                </table>
+
+                <!-- Bagian Bawah: Kiri-Kanan -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-bordered text-center">
+                            <thead class="bg-success text-white">
+                                <tr>
+                                    <th>Nilai Akhir</th>
+                                    <th>Yudisium / Predikat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>&ge; 4.50 - 5</td>
+                                    <td><b>Excellent (E)</b></td>
+                                </tr>
+                                <tr>
+                                    <td>3.50 - &lt; 4.50</td>
+                                    <td><b>Very Good (VG)</b></td>
+                                </tr>
+                                <tr>
+                                    <td>3.00 - &lt; 3.50</td>
+                                    <td><b>Good (G)</b></td>
+                                </tr>
+                                <tr>
+                                    <td>2.00 - &lt; 3.00</td>
+                                    <td><b>Fair (F)</b></td>
+                                </tr>
+                                <tr>
+                                    <td>&lt; 2.00</td>
+                                    <td><b>Minus (M)</b></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="col-md-6">
+                        <!-- Kanan: Nilai Akhir & Predikat -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card text-center mb-3">
+                                    <div class="card-header bg-success text-white">Nilai Akhir</div>
+                                    <div class="card-body">
+                                        <h3>
+                                            <?= (isset($nilai['nilai_akhir']) && $nilai['nilai_akhir'] > 0)
+                                                ? $nilai['nilai_akhir']
+                                                : 'Tidak ada nilai'; ?>
+                                        </h3>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card text-center">
+                                    <div class="card-header bg-success text-white">Pencapaian Akhir</div>
+                                    <div class="card-body">
+                                        <h3><?= $nilai['pencapaian'] ?? '0%' ?></h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Predikat -->
+                        <div class="card text-center mb-3">
+                            <div class="card-header bg-success text-white">Yudisium / Predikat</div>
+                            <div class="card-body">
+                                <h3><?= $nilai['predikat'] ?? '-' ?></h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     <?php endif; ?>
     </div>
 </div>

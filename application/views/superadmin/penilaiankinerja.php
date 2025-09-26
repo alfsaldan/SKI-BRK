@@ -345,41 +345,58 @@
                         <table class="table table-bordered mb-4">
                             <tr>
                                 <th>Total Nilai Sasaran Kerja</th>
-                                <td class="text-center" id="total-sasaran">0</td>
+                                <td class="text-center" id="total-sasaran">
+                                    <?= $nilai_akhir['total_sasaran'] ?? 0 ?>
+                                </td>
                                 <td>x Bobot % Sasaran Kerja</td>
                                 <td>
-                                    <input type="text" id="bobot-sasaran" class="form-control form-control-sm text-center" value="95%" readonly>
+                                    <input type="text" id="bobot-sasaran"
+                                        class="form-control form-control-sm text-center"
+                                        value="95%" readonly>
                                 </td>
-                                <td class="text-center" id="nilai-sasaran">0</td>
+                                <td class="text-center" id="nilai-sasaran">
+                                    <?= $nilai_akhir['nilai_sasaran'] ?? 0 ?>
+                                </td>
                             </tr>
                             <tr>
                                 <th>Rata-rata Nilai Internalisasi Budaya</th>
-                                <td class="text-center" id="rata-budaya">-</td>
+                                <td class="text-center" id="rata-budaya">
+                                    <?= $nilai_akhir['rata_budaya'] ?? '-' ?>
+                                </td>
                                 <td>x Bobot % Budaya Perusahaan</td>
                                 <td>
-                                    <input type="text" id="bobot-budaya" class="form-control form-control-sm text-center" value="5%" readonly>
+                                    <input type="text" id="bobot-budaya"
+                                        class="form-control form-control-sm text-center"
+                                        value="5%" readonly>
                                 </td>
-                                <td class="text-center" id="nilai-budaya">-</td>
+                                <td class="text-center" id="nilai-budaya">
+                                    <?= $nilai_akhir['nilai_budaya'] ?? '-' ?>
+                                </td>
                             </tr>
                             <tr>
                                 <th colspan="4" class="text-right">Total Nilai</th>
-                                <td class="text-center" id="total-nilai">0</td>
+                                <td class="text-center" id="total-nilai">
+                                    <?= $nilai_akhir['total_nilai'] ?? 0 ?>
+                                </td>
                             </tr>
                             <tr>
                                 <th colspan="4" class="text-right">
                                     Fraud<br>
-                                    <small>(diisi 1 jika melakukan fraud, 0 jika tidak melakukan fraud)</small>
+                                    <small>(diisi 1 jika melakukan fraud, 0 jika tidak)</small>
                                 </th>
                                 <td>
-                                    <input type="number" min="0" max="1" class="form-control form-control-sm text-center" id="fraud-input" value="0">
+                                    <input type="number" min="0" max="1"
+                                        class="form-control form-control-sm text-center"
+                                        id="fraud-input"
+                                        value="<?= $nilai_akhir['fraud'] ?? 0 ?>">
                                 </td>
                             </tr>
                         </table>
 
                         <!-- Bagian Bawah: Kiri-Kanan -->
                         <div class="row">
-                            <!-- Kiri: Tabel Predikat -->
                             <div class="col-md-6">
+                                <!-- Tabel Predikat -->
                                 <table class="table table-bordered text-center">
                                     <thead class="bg-success text-white">
                                         <tr>
@@ -413,14 +430,15 @@
                             </div>
 
                             <div class="col-md-6">
-                                <!-- Kanan: Ringkasan -->
+                                <!-- Nilai Akhir & Pencapaian -->
                                 <div class="row">
-                                    <!-- Kiri: Tabel Predikat -->
                                     <div class="col-md-6">
                                         <div class="card text-center mb-3">
                                             <div class="card-header bg-success text-white">Nilai Akhir</div>
                                             <div class="card-body">
-                                                <h3 id="nilai-akhir">0</h3>
+                                                <h3 id="nilai-akhir">
+                                                    <?= $nilai_akhir['nilai_akhir'] ?? 0 ?>
+                                                </h3>
                                             </div>
                                         </div>
                                     </div>
@@ -428,22 +446,34 @@
                                         <div class="card text-center">
                                             <div class="card-header bg-success text-white">Pencapaian Akhir</div>
                                             <div class="card-body">
-                                                <h3 id="pencapaian-akhir">0</h3>
+                                                <h3 id="pencapaian-akhir">
+                                                    <?= $nilai_akhir['pencapaian'] ?? '-' ?>
+                                                </h3>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
+                                <!-- Predikat -->
                                 <div class="card text-center mb-3">
                                     <div class="card-header bg-success text-white">Yudisium / Predikat</div>
                                     <div class="card-body">
-                                        <h3 id="predikat">-</h3>
+                                        <h3 id="predikat">
+                                            <?= $nilai_akhir['predikat'] ?? '-' ?>
+                                        </h3>
                                     </div>
+                                </div>
+
+                                <div class="text-right mt-3">
+                                    <button id="btn-simpan-nilai-akhir" class="btn btn-primary">
+                                        <i class="mdi mdi-content-save"></i> Simpan Nilai Akhir
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
 
 
 
@@ -1012,6 +1042,56 @@
             const awal = periodeAwal.value;
             const akhir = periodeAkhir.value;
             window.location.href = `<?= base_url("SuperAdmin/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
+        });
+
+        document.getElementById('btn-simpan-nilai-akhir').addEventListener('click', function() {
+            const nik = document.getElementById('nik').value;
+            const periode_awal = document.getElementById('periode_awal').value;
+            const periode_akhir = document.getElementById('periode_akhir').value;
+
+            const nilai_sasaran = document.getElementById('total-sasaran').textContent;
+            const nilai_budaya = document.getElementById('nilai-budaya').textContent;
+            const total_nilai = document.getElementById('total-nilai').textContent;
+            const fraud = document.getElementById('fraud-input').value;
+            const nilai_akhir = document.getElementById('nilai-akhir').textContent;
+            const predikat = document.getElementById('predikat').textContent;
+            const pencapaian = document.getElementById('pencapaian-akhir').textContent;
+
+            fetch('<?= base_url("SuperAdmin/simpanNilaiAkhir") ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: res.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: res.message || 'Gagal menyimpan',
+                            confirmButtonColor: '#d33'
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Terjadi kesalahan server',
+                        confirmButtonColor: '#d33'
+                    });
+                });
         });
     });
 </script>
