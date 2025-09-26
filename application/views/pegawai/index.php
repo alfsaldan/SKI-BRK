@@ -796,7 +796,7 @@ if ($message): ?>
             // 🔹 Daftar keyword
             const keywords = {
                 rumus1: ["biaya", "beban"], // indikator biaya / beban
-                rumus3: ["outstanding", "pertumbuhan"] // indikator efisiensi / pertumbuhan
+                rumus3: ["outstanding", "pertumbuhan"] // indikator outstanding / pertumbuhan
             };
 
             if (target <= 999) {
@@ -808,7 +808,7 @@ if ($message): ?>
                     // Rumus 1 → biasanya indikator biaya/beban
                     pencapaian = ((target + (target - realisasi)) / target) * 100;
                 } else if (keywords.rumus3.some(k => indikatorText.includes(k))) {
-                    // Rumus 3 → biasanya indikator efisiensi/pertumbuhan
+                    // Rumus 3 → biasanya indikator outstanding /pertumbuhan
                     pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
                 } else {
                     // fallback default (anggap rumus 2)
@@ -945,20 +945,29 @@ if ($message): ?>
 
             // Predikat
             let predikat;
+            let predikatClass = "";
+
             if (nilaiAkhir === "Tidak ada nilai") {
                 predikat = "Tidak ada yudisium/predikat";
+                predikatClass = "text-dark";
             } else if (nilaiAkhir === 0) {
                 predikat = "Belum Ada Nilai";
+                predikatClass = "text-dark";
             } else if (nilaiAkhir < 2) {
                 predikat = "Minus";
+                predikatClass = "text-danger"; // merah
             } else if (nilaiAkhir < 3) {
                 predikat = "Fair";
+                predikatClass = "text-warning"; // jingga
             } else if (nilaiAkhir < 3.5) {
                 predikat = "Good";
+                predikatClass = "text-primary"; // biru
             } else if (nilaiAkhir < 4.5) {
                 predikat = "Very Good";
+                predikatClass = "text-success"; // hijau muda
             } else {
                 predikat = "Excellent";
+                predikatClass = "text-success font-weight-bold"; // hijau tua (lebih tebal)
             }
 
             // Pencapaian Akhir
@@ -983,6 +992,7 @@ if ($message): ?>
             document.getElementById("nilai-akhir").textContent =
                 nilaiAkhir === "Tidak ada nilai" ? nilaiAkhir : nilaiAkhir.toFixed(2);
             document.getElementById("predikat").textContent = predikat;
+             document.getElementById("predikat").className = predikatClass;
             document.getElementById("pencapaian-akhir").textContent =
                 pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
         }

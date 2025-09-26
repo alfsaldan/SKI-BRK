@@ -352,7 +352,8 @@
                                                         $statusClass = 'text-secondary';
                                                         $statusText = 'Belum Dinilai';
                                             ?>
-                                                        <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>" data-perspektif="<?= $persp; ?>">
+                                                        <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>" data-perspektif="<?= $persp; ?>"
+                                                            data-indikator="<?= htmlspecialchars($indik, ENT_QUOTES, 'UTF-8'); ?>">
                                                             <?php if ($first_persp_cell) { ?>
                                                                 <td rowspan="<?= $persp_rows; ?>" style="vertical-align:middle;font-weight:600;background:#C8E6C9;"><?= $persp; ?></td>
                                                             <?php $first_persp_cell = false;
@@ -448,6 +449,147 @@
                                         <option value="Disetujui">Disetujui</option>
                                     </select>
                                     <button type="button" id="btn-simpan-semua" class="btn btn-success btn-sm" style="padding: 0.35rem 0.75rem;">Simpan Semua</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================== FORM NILAI AKHIR ================== -->
+                <!-- Nilai Akhir & Catatan -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h5 class="text-success font-weight-bold mb-3">
+                            <i class="mdi mdi-star-circle mr-2"></i> Nilai Akhir (q)
+                        </h5>
+
+                        <!-- Bagian Atas: Perhitungan -->
+                        <table class="table table-bordered mb-4">
+                            <tr>
+                                <th>Total Nilai Sasaran Kerja</th>
+                                <td class="text-center" id="total-sasaran">
+                                    <?= $nilai_akhir['total_sasaran'] ?? 0 ?>
+                                </td>
+                                <td>x Bobot % Sasaran Kerja</td>
+                                <td>
+                                    <input type="text" id="bobot-sasaran"
+                                        class="form-control form-control-sm text-center"
+                                        value="95%" readonly>
+                                </td>
+                                <td class="text-center" id="nilai-sasaran">
+                                    <?= $nilai_akhir['nilai_sasaran'] ?? 0 ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Rata-rata Nilai Internalisasi Budaya</th>
+                                <td class="text-center" id="rata-budaya">
+                                    <?= $nilai_akhir['rata_budaya'] ?? '-' ?>
+                                </td>
+                                <td>x Bobot % Budaya Perusahaan</td>
+                                <td>
+                                    <input type="text" id="bobot-budaya"
+                                        class="form-control form-control-sm text-center"
+                                        value="5%" readonly>
+                                </td>
+                                <td class="text-center" id="nilai-budaya">
+                                    <?= $nilai_akhir['nilai_budaya'] ?? '-' ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th colspan="4" class="text-right">Total Nilai</th>
+                                <td class="text-center" id="total-nilai">
+                                    <?= $nilai_akhir['total_nilai'] ?? 0 ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th colspan="4" class="text-right">
+                                    Fraud<br>
+                                    <small>(diisi 1 jika melakukan fraud, 0 jika tidak)</small>
+                                </th>
+                                <td>
+                                    <input type="number" min="0" max="1"
+                                        class="form-control form-control-sm text-center"
+                                        id="fraud-input"
+                                        value="<?= $nilai_akhir['fraud'] ?? 0 ?>">
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Bagian Bawah: Kiri-Kanan -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- Tabel Predikat -->
+                                <table class="table table-bordered text-center">
+                                    <thead class="bg-success text-white">
+                                        <tr>
+                                            <th>Nilai Akhir</th>
+                                            <th>Yudisium / Predikat</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>&ge; 4.50 - 5</td>
+                                            <td><b>Excellent (E)</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>3.50 - &lt; 4.50</td>
+                                            <td><b>Very Good (VG)</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>3.00 - &lt; 3.50</td>
+                                            <td><b>Good (G)</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>2.00 - &lt; 3.00</td>
+                                            <td><b>Fair (F)</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>&lt; 2.00</td>
+                                            <td><b>Minus (M)</b></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="col-md-6">
+                                <!-- Nilai Akhir & Pencapaian -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card text-center mb-3">
+                                            <div class="card-header bg-success text-white">Nilai Akhir</div>
+                                            <div class="card-body">
+                                                <h3 id="nilai-akhir">
+                                                    <?= $nilai_akhir['nilai_akhir'] ?? 0 ?>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card text-center">
+                                            <div class="card-header bg-success text-white">Pencapaian Akhir</div>
+                                            <div class="card-body">
+                                                <h3 id="pencapaian-akhir">
+                                                    <?= $nilai_akhir['pencapaian'] ?? '-' ?>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Predikat -->
+                                <div class="card text-center mb-3">
+                                    <div class="card-header bg-success text-white">Yudisium / Predikat</div>
+                                    <div class="card-body">
+                                        <h3 id="predikat">
+                                            <?= $nilai_akhir['predikat'] ?? '-' ?>
+                                        </h3>
+                                    </div>
+                                </div>
+
+                                <div class="text-right mt-3">
+                                    <button id="btn-simpan-nilai-akhir" class="btn btn-primary">
+                                        <i class="mdi mdi-content-save"></i> Simpan Nilai Akhir
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -596,53 +738,223 @@
             return isNaN(n) ? '' : Number.isInteger(n) ? n.toString() : n.toFixed(2);
         }
 
-        function hitungRow(row) {
-            const target = parseFloat(row.querySelector('.target-input').value) || 0;
-            const realisasi = parseFloat(row.querySelector('.realisasi-input').value) || 0;
-            const bobot = parseFloat(row.querySelector('.bobot').value) || 0;
-            let pencapaian = 0,
-                nilai = 0,
-                nilaiBobot = 0;
-            if (target > 0) {
+        function hitungPencapaianOtomatis(target, realisasi, indikatorText = "") {
+            let pencapaian = 0;
+
+            // Normalisasi teks (biar pencarian keyword gampang)
+            indikatorText = indikatorText.toLowerCase();
+
+            // 🔹 Daftar keyword
+            const keywords = {
+                rumus1: ["biaya", "beban"], // indikator biaya / beban
+                rumus3: ["outstanding", "pertumbuhan"] // indikator outstanding / pertumbuhan
+            };
+
+            if (target <= 999) {
+                // 🔹 Rumus 2 (default untuk target ≤ 3 digit)
                 pencapaian = (realisasi / target) * 100;
-                nilai = Math.min(pencapaian, 100);
-                nilaiBobot = (nilai * bobot) / 100;
+            } else {
+                // 🔹 Target > 3 digit → pilih rumus 1 atau 3 berdasarkan kata kunci indikator
+                if (keywords.rumus1.some(k => indikatorText.includes(k))) {
+                    // Rumus 1 → biasanya indikator biaya/beban
+                    pencapaian = ((target + (target - realisasi)) / target) * 100;
+                } else if (keywords.rumus3.some(k => indikatorText.includes(k))) {
+                    // Rumus 3 → biasanya indikator outstanding/pertumbuhan
+                    pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
+                } else {
+                    // fallback default (anggap rumus 2)
+                    pencapaian = (realisasi / target) * 100;
+                }
             }
-            row.querySelector('.pencapaian-output').value = formatAngka(pencapaian);
-            row.querySelector('.nilai-output').value = formatAngka(nilai);
-            row.querySelector('.nilai-bobot-output').value = formatAngka(nilaiBobot);
+
+            // 🔹 Batas maksimal 130%
+            return Math.min(pencapaian, 130);
+        }
+
+
+        function hitungNilai(pencapaian) {
+            let nilai = 0;
+
+            if (pencapaian < 0) {
+                nilai = 0;
+            } else if (pencapaian < 80) {
+                nilai = (pencapaian / 80) * 2;
+            } else if (pencapaian < 90) {
+                nilai = 2 + ((pencapaian - 80) / 10);
+            } else if (pencapaian < 110) {
+                nilai = 3 + ((pencapaian - 90) / 20 * 0.5);
+            } else if (pencapaian < 120) {
+                nilai = 3.5 + ((pencapaian - 110) / 10 * 1);
+            } else if (pencapaian < 130) {
+                nilai = 4.5 + ((pencapaian - 120) / 10 * 0.5);
+            } else {
+                nilai = 5;
+            }
+
+            return nilai;
+        }
+
+
+        function hitungRow(row, totalBobot) {
+            const targetVal = row.querySelector('.target-input').value;
+            const realisasiVal = row.querySelector('.realisasi-input').value;
+            const bobot = parseFloat(row.querySelector('.bobot').value) || 0;
+
+            // 🔹 Ambil teks indikator dari atribut data-indikator
+            const indikatorText = row.dataset.indikator || "";
+
+            let pencapaian = "";
+            let nilai = "";
+            let nilaiBobot = "";
+
+            if (targetVal !== "" && realisasiVal !== "") {
+                const target = parseFloat(targetVal) || 0;
+                const realisasi = parseFloat(realisasiVal) || 0;
+
+                pencapaian = hitungPencapaianOtomatis(target, realisasi, indikatorText);
+                nilai = hitungNilai(pencapaian);
+
+                if (totalBobot > 0) {
+                    nilaiBobot = (nilai * bobot) / totalBobot;
+                }
+            }
+
+            row.querySelector('.pencapaian-output').value = pencapaian === "" ? "" : formatAngka(pencapaian);
+            row.querySelector('.nilai-output').value = nilai === "" ? "" : formatAngka(nilai);
+            row.querySelector('.nilai-bobot-output').value = nilaiBobot === "" ? "" : formatAngka(nilaiBobot);
+
             return {
                 bobot,
-                nilaiBobot,
+                nilaiBobot: nilaiBobot === "" ? 0 : nilaiBobot,
                 perspektif: row.dataset.perspektif
             };
         }
 
         function hitungTotal() {
             let totalBobot = 0,
-                totalNilai = 0,
-                subtotalMap = {};
+                totalNilai = 0;
+            const subtotalMap = {};
+
+            // 🔹 hitung total bobot dulu
+            document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
+                totalBobot += parseFloat(row.querySelector('.bobot').value) || 0;
+            });
+
+            // 🔹 lalu panggil hitungRow dengan totalBobot
             document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
                 const {
                     bobot,
                     nilaiBobot,
                     perspektif
-                } = hitungRow(row);
-                totalBobot += bobot;
+                } = hitungRow(row, totalBobot);
                 totalNilai += nilaiBobot;
+
                 if (!subtotalMap[perspektif]) subtotalMap[perspektif] = 0;
                 subtotalMap[perspektif] += nilaiBobot;
             });
+
             document.getElementById('total-bobot').innerText = formatAngka(totalBobot);
             document.getElementById('total-nilai-bobot').innerText = formatAngka(totalNilai);
+
             document.querySelectorAll('.subtotal-row').forEach(row => {
                 const perspektif = row.dataset.perspektif;
                 row.querySelector('.subtotal-nilai-bobot').innerText = formatAngka(subtotalMap[perspektif] || 0);
             });
+
+            // Tambahkan baris ini agar total-sasaran sama dengan total-nilai-bobot
+            document.getElementById('total-sasaran').textContent = formatAngka(totalNilai);
+
+            hitungNilaiAkhir();
         }
 
+        function hitungNilaiAkhir() {
+            const bobotSasaran = 0.95;
+            const bobotBudaya = 0.05;
+
+            const fraud = parseFloat(document.getElementById("fraud-input").value) || 0;
+
+            // Ambil nilai sasaran dari total-nilai-bobot
+            const totalSasaran = parseFloat(document.getElementById("total-nilai-bobot").textContent) || 0;
+            const rataBudaya = parseFloat(document.getElementById("rata-budaya").textContent) || 0;
+
+            // Total nilai sasaran kerja 
+            const nilaiSasaran = totalSasaran * bobotSasaran;
+
+            // Nilai budaya
+            const nilaiBudaya = rataBudaya * bobotBudaya;
+
+            // Total nilai
+            const totalNilai = nilaiSasaran + nilaiBudaya;
+
+            // Nilai akhir sesuai rumus Excel
+            let nilaiAkhir;
+            if (fraud === 0) {
+                nilaiAkhir = totalNilai - fraud;
+            } else {
+                nilaiAkhir = "Tidak ada nilai";
+            }
+
+            // Predikat
+            let predikat;
+            let predikatClass = "";
+
+            if (nilaiAkhir === "Tidak ada nilai") {
+                predikat = "Tidak ada yudisium/predikat";
+                predikatClass = "text-dark";
+            } else if (nilaiAkhir === 0) {
+                predikat = "Belum Ada Nilai";
+                predikatClass = "text-dark";
+            } else if (nilaiAkhir < 2) {
+                predikat = "Minus";
+                predikatClass = "text-danger"; // merah
+            } else if (nilaiAkhir < 3) {
+                predikat = "Fair";
+                predikatClass = "text-warning"; // jingga
+            } else if (nilaiAkhir < 3.5) {
+                predikat = "Good";
+                predikatClass = "text-primary"; // biru
+            } else if (nilaiAkhir < 4.5) {
+                predikat = "Very Good";
+                predikatClass = "text-success"; // hijau muda
+            } else {
+                predikat = "Excellent";
+                predikatClass = "text-success font-weight-bold"; // hijau tua (lebih tebal)
+            }
+
+            // Pencapaian Akhir
+            let pencapaian = "";
+            if (nilaiAkhir !== "Tidak ada nilai") {
+                const v = parseFloat(nilaiAkhir) || 0;
+                if (v < 0) pencapaian = 0;
+                else if (v < 2) pencapaian = (v / 2) * 0.8 * 100;
+                else if (v < 3) pencapaian = 80 + ((v - 2) / 1) * 10;
+                else if (v < 3.5) pencapaian = 90 + ((v - 3) / 0.5) * 20;
+                else if (v < 4.5) pencapaian = 110 + ((v - 3.5) / 1) * 10;
+                else if (v < 5) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
+                else pencapaian = 130;
+            } else {
+                pencapaian = 0;
+            }
+
+            // Update ke tampilan
+            document.getElementById("nilai-sasaran").textContent = nilaiSasaran.toFixed(2);
+            document.getElementById("nilai-budaya").textContent = nilaiBudaya.toFixed(2);
+            document.getElementById("total-nilai").textContent = totalNilai.toFixed(2);
+            document.getElementById("nilai-akhir").textContent =
+                nilaiAkhir === "Tidak ada nilai" ? nilaiAkhir : nilaiAkhir.toFixed(2);
+            document.getElementById("predikat").textContent = predikat;
+            document.getElementById("predikat").className = predikatClass;
+            document.getElementById("pencapaian-akhir").textContent =
+                pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
+        }
+
+        document.getElementById('fraud-input').addEventListener('input', hitungNilaiAkhir);
+
+        // 🔹 trigger perhitungan saat input diubah
+        document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
+            input.addEventListener('input', hitungTotal);
+        });
         hitungTotal();
-        document.querySelectorAll('.target-input, .realisasi-input').forEach(input => input.addEventListener('input', hitungTotal));
 
         document.getElementById('btn-sesuaikan-periode').addEventListener('click', () => {
             window.location.href = `<?= base_url("Pegawai/nilaiPegawaiDetail/") ?>${nik}?awal=${periodeAwal.value}&akhir=${periodeAkhir.value}`;
@@ -922,6 +1234,56 @@
                     }
                 });
             });
+        });
+
+        document.getElementById('btn-simpan-nilai-akhir').addEventListener('click', function() {
+            const nik = document.getElementById('nik').value;
+            const periode_awal = document.getElementById('periode_awal').value;
+            const periode_akhir = document.getElementById('periode_akhir').value;
+
+            const nilai_sasaran = document.getElementById('total-sasaran').textContent;
+            const nilai_budaya = document.getElementById('nilai-budaya').textContent;
+            const total_nilai = document.getElementById('total-nilai').textContent;
+            const fraud = document.getElementById('fraud-input').value;
+            const nilai_akhir = document.getElementById('nilai-akhir').textContent;
+            const predikat = document.getElementById('predikat').textContent;
+            const pencapaian = document.getElementById('pencapaian-akhir').textContent;
+
+            fetch('<?= base_url("Pegawai/simpanNilaiAkhir") ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: res.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: res.message || 'Gagal menyimpan',
+                            confirmButtonColor: '#d33'
+                        });
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Terjadi kesalahan server',
+                        confirmButtonColor: '#d33'
+                    });
+                });
         });
     });
 </script>
