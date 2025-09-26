@@ -2,45 +2,111 @@
 <!-- Start Page Content here -->
 <!-- ============================================================== -->
 <style>
+    /* Area chat */
+    #chat-box {
+        height: 350px;
+        overflow-y: auto;
+        background: linear-gradient(135deg, #fdfdfd, #f4f6f9);
+        padding: 20px;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* Bubble umum */
     .chat-message {
         max-width: 70%;
-        padding: 10px 15px;
-        border-radius: 20px;
-        margin-bottom: 10px;
-        word-wrap: break-word;
-        position: relative;
+        padding: 12px 16px;
+        border-radius: 18px;
         font-size: 14px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        position: relative;
+        word-wrap: break-word;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        animation: fadeIn 0.3s ease-in-out;
     }
 
-    /* Bubble pengirim (user login) */
+    /* Bubble pengirim (saya) */
     .chat-message.me {
-        background: #6c6c6cff;
+        background: linear-gradient(135deg, #626262ff, #797777ff);
         color: #fff;
         margin-left: auto;
-        border-bottom-right-radius: 5px;
-        text-align: right;
+        border-bottom-right-radius: 6px;
+        text-align: left;
     }
 
-    /* Bubble penerima (orang lain) */
+    /* Bubble penerima (lain) */
     .chat-message.other {
-        background: #e9ecef;
-        color: #333;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        color: #111827;
         margin-right: auto;
-        border-bottom-left-radius: 5px;
+        border-bottom-left-radius: 6px;
         text-align: left;
+    }
+
+    .chat-name {
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 4px;
+        color: #374151;
+    }
+
+    .chat-message.me .chat-name {
+        color: #e0e7ff;
     }
 
     .chat-meta {
         font-size: 11px;
-        color: #aaa;
-        margin-top: 5px;
+        color: #9ca3af;
+        margin-top: 6px;
+        text-align: right;
     }
 
-    .chat-name {
-        font-weight: bold;
-        margin-bottom: 3px;
-        font-size: 13px;
+    /* Animasi muncul */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Input chat modern */
+    #form-chat {
+        margin-top: 12px;
+        background: #fff;
+        border-radius: 9999px;
+        padding: 6px 10px;
+        display: flex;
+        align-items: center;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    #input-pesan {
+        border: none;
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 9999px;
+        outline: none;
+        font-size: 14px;
+    }
+
+    #form-chat button {
+        border-radius: 9999px;
+        padding: 8px 18px;
+        font-weight: 500;
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+        border: none;
+    }
+
+    #form-chat button:hover {
+        background: linear-gradient(135deg, #1d4ed8, #2563eb);
     }
 </style>
 
@@ -478,19 +544,22 @@
                 </div>
 
                 <!-- ================== FORM CHAT ================== -->
-                <div class="card mb-3">
+                <div class="card mb-3 shadow-sm border-0">
                     <div class="card-body">
-                        <h5 class="card-title">Aktivitas Coaching</h5>
-                        <div id="chat-box" style="height:300px; overflow-y:auto; background:#f8f9fa; padding:15px; border-radius:10px;">
-                            <!-- pesan akan di-load via AJAX -->
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-comments text-primary mr-2"></i> Aktivitas Coaching Kinerja
+                        </h5>
+
+                        <!-- Box Chat -->
+                        <div id="chat-box" style="max-height:400px; overflow-y:auto; border:1px solid #ddd; padding:10px;">
+                            <!-- Pesan via AJAX -->
                         </div>
 
-                        <!-- Form kirim -->
+                        <!-- Form Kirim -->
                         <form id="form-chat" class="mt-2 d-flex">
                             <input type="hidden" name="nik_pegawai" value="<?= $pegawai_detail->nik ?>">
-                            <input type="hidden" name="nik_penilai" value="<?= $pegawai_detail->penilai1_nik ?? $pegawai_detail->penilai2_nik ?>">
-                            <input type="text" name="pesan" id="input-pesan" class="form-control mr-2 rounded-pill" placeholder="Tulis pesan...">
-                            <button type="submit" class="btn btn-primary rounded-pill px-4">Kirim</button>
+                            <input type="text" name="pesan" id="input-pesan" class="form-control mr-2" placeholder="Tulis pesan..." autocomplete="off">
+                            <button type="submit" class="btn btn-primary">Kirim</button>
                         </form>
                     </div>
                 </div>
@@ -830,17 +899,15 @@ if ($message): ?>
 </script>
 
 <script>
-    // Format ke waktu Jakarta (WIB)
+    let lastId = 0; // simpan id pesan terakhir
+
+    // Format tanggal ke WIB
     function formatToJakartaTime(dateStr) {
-        // Asumsi dateStr format 'YYYY-MM-DD HH:mm:ss'
         if (!dateStr) return '';
         const [date, time] = dateStr.split(' ');
-        if (!date || !time) return dateStr;
         const [year, month, day] = date.split('-');
         const [hour, minute, second] = time.split(':');
-        // Buat Date di UTC, lalu offset ke WIB (UTC+7)
         const utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
-        // Konversi ke WIB, tampilkan jam:menit:detik
         return utcDate.toLocaleString('id-ID', {
             timeZone: 'Asia/Jakarta',
             hour: '2-digit',
@@ -852,30 +919,36 @@ if ($message): ?>
         });
     }
 
+    // Ambil pesan baru
     function loadChat() {
         const nikPegawai = $('input[name="nik_pegawai"]').val();
-        const nikPenilai = $('input[name="nik_penilai"]').val();
 
-        $.getJSON("<?= base_url('Pegawai/getCoachingChat/') ?>" + nikPegawai + "/" + nikPenilai, function(data) {
-            let html = '';
-            data.forEach(function(row) {
-                let isMe = row.pengirim_nik === "<?= $this->session->userdata('nik'); ?>";
-                let jamWIB = formatToJakartaTime(row.created_at);
-                html += `
-                    <div class="chat-message ${isMe ? 'me' : 'other'}">
-                        <div class="chat-name">${row.nama_pengirim} (${row.jabatan})</div>
-                        <div>${row.pesan}</div>
-                        <div class="chat-meta">${jamWIB}</div>
-                    </div>
-                `;
-            });
-            $('#chat-box').html(html);
-            $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+        $.getJSON("<?= base_url('Pegawai/getCoachingChat/') ?>" + nikPegawai + "?lastId=" + lastId, function(data) {
+            if (data.length > 0) {
+                data.forEach(function(row) {
+                    let isMe = row.pengirim_nik === "<?= $this->session->userdata('nik'); ?>";
+                    let jamWIB = formatToJakartaTime(row.created_at);
+
+                    $('#chat-box').append(`
+                        <div class="chat-message ${isMe ? 'me text-right' : 'other text-left'} mb-2">
+                            <div class="chat-name font-weight-bold">${row.nama_pengirim} (${row.jabatan})</div>
+                            <div class="chat-text">${row.pesan}</div>
+                            <div class="chat-meta text-muted small">${jamWIB}</div>
+                        </div>
+                    `);
+
+                    lastId = row.id; // update id terakhir
+                });
+
+                $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+            }
         });
     }
 
     // Load awal
     loadChat();
+
+    // Polling tiap 5 detik
     setInterval(loadChat, 5000);
 
     // Kirim pesan
@@ -891,7 +964,7 @@ if ($message): ?>
             success: function(res) {
                 if (res.success) {
                     $('#input-pesan').val('');
-                    loadChat();
+                    loadChat(); // langsung cek ada pesan baru
                 } else {
                     Swal.fire({
                         icon: 'error',

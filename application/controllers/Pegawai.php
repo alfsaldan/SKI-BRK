@@ -329,10 +329,12 @@ class Pegawai extends CI_Controller
         echo json_encode($list);
     }
 
-    public function getCoachingChat($nikPegawai, $nikPenilai)
+    public function getCoachingChat($nikPegawai)
     {
+        $lastId = $this->input->get('lastId') ?? 0;
         $this->load->model('pegawai/Coaching_model');
-        $data = $this->Coaching_model->getChat($nikPegawai, $nikPenilai);
+
+        $data = $this->Coaching_model->getChat($nikPegawai, (int)$lastId);
         echo json_encode($data);
     }
 
@@ -340,54 +342,38 @@ class Pegawai extends CI_Controller
     {
         header('Content-Type: application/json');
         $this->load->model('pegawai/Coaching_model');
+
         $nik_pegawai = $this->input->post('nik_pegawai');
-        $nik_penilai = $this->input->post('nik_penilai');
         $pesan = $this->input->post('pesan');
         $pengirim_nik = $this->session->userdata('nik');
 
-        if (empty($nik_pegawai) || empty($nik_penilai) || empty($pesan) || empty($pengirim_nik)) {
+        if (empty($nik_pegawai) || empty($pesan) || empty($pengirim_nik)) {
             echo json_encode(['success' => false, 'message' => 'Data tidak lengkap']);
             return;
         }
 
-        $penerima_nik = ($pengirim_nik == $nik_pegawai) ? $nik_penilai : $nik_pegawai;
+        // ambil mapping penilai
+        $this->load->model('pegawai/Pegawai_model');
+        $pegawaiDetail = $this->Pegawai_model->getPegawaiWithPenilai($nik_pegawai);
+
         $data = [
-            'nik_pegawai' => $nik_pegawai,
-            'nik_penilai' => $nik_penilai,
+            'nik_pegawai'  => $nik_pegawai,
+            'nik_penilai1' => $pegawaiDetail->penilai1_nik ?? null,
+            'nik_penilai2' => $pegawaiDetail->penilai2_nik ?? null,
             'pengirim_nik' => $pengirim_nik,
-            'pesan' => $pesan,
-            'created_at' => date('Y-m-d H:i:s'),
-            'is_read' => 0,
-            'penerima_nik' => $penerima_nik
+            'pesan'        => $pesan,
+            'created_at'   => date('Y-m-d H:i:s'),
+            'is_read'      => 0
         ];
 
         $result = $this->Coaching_model->simpanPesan($data);
-        if (is_array($result) && isset($result['success']) && $result['success'] === true) {
+        if ($result['success']) {
             echo json_encode(['success' => true]);
         } else {
-            $errorMsg = 'Database error';
-            if (is_array($result) && isset($result['error']['message'])) {
-                $errorMsg = $result['error']['message'];
-            }
-            echo json_encode(['success' => false, 'message' => $errorMsg]);
+            echo json_encode(['success' => false, 'message' => $result['error']['message'] ?? 'Database error']);
         }
     }
 
-        public function clearUnreadCoaching()
-    {
-        header('Content-Type: application/json');
-        $nik = $this->session->userdata('nik');
-        if (empty($nik)) {
-            echo json_encode(['success' => false]);
-            return;
-        }
-        // Update semua pesan yang belum dibaca menjadi sudah dibaca
-        $this->db->where('penerima_nik', $nik);
-        $this->db->where('is_read', 0);
-        $this->db->update('aktivitas_coaching', ['is_read' => 1]);
-        echo json_encode(['success' => true]);
-    }
-        // Endpoint untuk notifikasi jumlah pesan baru room chat
     public function getUnreadCoachingCount()
     {
         header('Content-Type: application/json');
@@ -397,28 +383,23 @@ class Pegawai extends CI_Controller
             echo json_encode(['count' => 0, 'list' => []]);
             return;
         }
-        // Ambil pesan yang belum dibaca oleh user (asumsi: ada field is_read dan penerima_nik di tabel aktivitas_coaching)
-        $this->db->where('penerima_nik', $nik);
-        $this->db->where('is_read', 0);
-        $query = $this->db->get('aktivitas_coaching');
-        $list = [];
-        foreach ($query->result() as $row) {
-            // Ambil nama pengirim dari tabel pegawai
-            $nama_pengirim = $row->pengirim_nik;
-            $pegawai = $this->db->where('nik', $row->pengirim_nik)->get('pegawai')->row();
-            if ($pegawai && !empty($pegawai->nama)) {
-                $nama_pengirim = $pegawai->nama;
-            }
-            // Konversi waktu ke Asia/Jakarta, tampilkan detik
-            $dt = new DateTime($row->created_at, new DateTimeZone('UTC'));
-            $dt->setTimezone(new DateTimeZone('Asia/Jakarta'));
-            $created_at_jkt = $dt->format('d-m-Y H:i:s');
-            $list[] = [
-                'nama_pengirim' => $nama_pengirim,
-                'pesan' => $row->pesan,
-                'created_at' => $created_at_jkt
-            ];
-        }
+
+        $list = $this->Coaching_model->getUnreadList($nik);
         echo json_encode(['count' => count($list), 'list' => $list]);
     }
-} 
+
+    public function clearUnreadCoaching()
+    {
+        header('Content-Type: application/json');
+        $nik = $this->session->userdata('nik');
+        if (empty($nik)) {
+            echo json_encode(['success' => false]);
+            return;
+        }
+
+        $this->load->model('pegawai/Coaching_model');
+        $this->Coaching_model->clearUnread($nik);
+
+        echo json_encode(['success' => true]);
+    }
+}

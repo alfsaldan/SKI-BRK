@@ -408,7 +408,6 @@
 
 <script>
     $(document).ready(function() {
-        // Fungsi load notifikasi chat (maksimal 2 pesan terbaru)
         function loadUnreadChatNotif() {
             $.getJSON('<?= base_url('Pegawai/getUnreadCoachingCount') ?>', function(res) {
                 var count = res.count || 0;
@@ -430,9 +429,8 @@
             });
         }
         loadUnreadChatNotif();
-        // Tidak auto refresh, hanya refresh manual saat klik Clear All
 
-        // Clear All: tandai semua pesan sebagai sudah dibaca
+        // Clear All
         $('#clear-chat-notif').on('click', function(e) {
             e.preventDefault();
             $.post('<?= base_url('Pegawai/clearUnreadCoaching') ?>', function(res) {
