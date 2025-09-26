@@ -727,10 +727,10 @@
 
             // Nilai akhir sesuai rumus Excel
             let nilaiAkhir;
-            if (fraud === 0) {
+            if (fraud === 1) {
                 nilaiAkhir = totalNilai - fraud;
             } else {
-                nilaiAkhir = "Tidak ada nilai";
+                nilaiAkhir = totalNilai;
             }
 
             // Predikat

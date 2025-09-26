@@ -862,7 +862,7 @@ class SuperAdmin extends CI_Controller
         // =======================
         // LOGO
         // =======================
-        $drawing = new Drawing();
+        $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
         $drawing->setName('Logo BRK Syariah');
         $drawing->setDescription('Logo BRK Syariah');
         $drawing->setPath(FCPATH . 'assets/images/Logo_BRK_Syariah.png');
@@ -889,7 +889,7 @@ class SuperAdmin extends CI_Controller
         $sheet->setCellValue("A{$row}", "DATA PEGAWAI");
         $sheet->mergeCells("A{$row}:D{$row}");
         $sheet->getStyle("A{$row}")->getFont()->setBold(true);
-        $sheet->getStyle("A{$row}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
+        $sheet->getStyle("A{$row}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
         $sheet->getStyle("A{$row}")->getFont()->getColor()->setRGB('FFFFFF');
 
         $row++;
@@ -949,7 +949,7 @@ class SuperAdmin extends CI_Controller
         $sheet->setCellValue("A{$row}", "Skala Nilai Sasaran Kerja");
         $sheet->mergeCells("A{$row}:F{$row}");
         $sheet->getStyle("A{$row}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle("A{$row}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
+        $sheet->getStyle("A{$row}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
         $row++;
 
         $headers = ["Realisasi (%)", "< 80%", "80% sd < 90%", "90% sd < 110%", "110% sd < 120%", "120% sd 130%"];
@@ -961,17 +961,15 @@ class SuperAdmin extends CI_Controller
         $sheet->getStyle("A{$row}:F{$row}")->applyFromArray([
             'font' => ['bold' => true],
             'alignment' => ['horizontal' => 'center'],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '2E7D32']]
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '2E7D32']]
         ]);
 
-        // Skala nilai detail
         $skalaDetail = [
             ["Kondisi", "Tidak memperlihatkan kinerja yang sesuai / diharapkan", "Perlu perbaikan untuk membantu meningkatkan kinerja", "Menunjukkan kinerja yang baik", "Menunjukkan kinerja yang sangat baik", "Menunjukkan kinerja yang luar biasa / istimewa"],
             ["Yudisium/Predikat", "Minus", "Fair", "Good", "Very Good", "Excellent"],
             ["Nilai", "<2.00", "2.00 - <3.00", "3.00 - <3.50", "3.50 - <4.50", "4.50 - 5.00"]
         ];
-
         foreach ($skalaDetail as $det) {
             $row++;
             $col = 'A';
@@ -997,50 +995,37 @@ class SuperAdmin extends CI_Controller
         $sheet->setCellValue("I{$row}", "Nilai");
         $sheet->setCellValue("J{$row}", "Nilai Dibobot");
 
-        // Header selain E & G
-        $ranges = ["A{$row}:D{$row}", "F{$row}", "H{$row}:J{$row}"];
-        foreach ($ranges as $range) {
-            $sheet->getStyle($range)->applyFromArray([
-                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-                'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
-                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => '2E7D32']],
-                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
-            ]);
-        }
-
-        // Header Target & Realisasi
-        $sheet->getStyle("E{$row}")->applyFromArray([
+        $sheet->getStyle("A{$row}:J{$row}")->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FFA500']],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
-        ]);
-        $sheet->getStyle("G{$row}")->applyFromArray([
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'FFA500']],
-            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '2E7D32']],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
         ]);
 
         $row++;
-
 
         // =======================
         // ISI DATA PENILAIAN
         // =======================
         $perspektifGroup = [];
         foreach ($penilaian as $p) {
-            $perspektif = trim($p->perspektif ?? '');
-            $sasaran = trim($p->sasaran_kerja ?? '');
+            $perspektif = trim($p->perspektif);
+            $sasaran = trim($p->sasaran_kerja);
             $perspektifGroup[$perspektif][$sasaran][] = $p;
         }
 
+        $subtotalRows = [];
+
         foreach ($perspektifGroup as $perspektif => $sasaranArr) {
             $perspStartRow = $row;
+            $noSasaran = 1;
+
             foreach ($sasaranArr as $sasaran => $items) {
                 $sasaranStartRow = $row;
+                $noIndikator = 1;
+
                 foreach ($items as $i) {
-                    $sheet->setCellValue("C{$row}", $i->indikator);
+                    $sheet->setCellValue("C{$row}", $noIndikator . ". " . $i->indikator);
                     $sheet->setCellValue("D{$row}", $i->bobot);
                     $sheet->setCellValue("E{$row}", $i->target);
                     $sheet->setCellValue("F{$row}", $i->batas_waktu);
@@ -1049,14 +1034,19 @@ class SuperAdmin extends CI_Controller
                     $sheet->setCellValue("I{$row}", $i->nilai ?? '-');
                     $sheet->setCellValue("J{$row}", $i->nilai_dibobot ?? '-');
                     $row++;
+                    $noIndikator++;
                 }
+
                 if ($row - $sasaranStartRow > 1) {
                     $sheet->mergeCells("B{$sasaranStartRow}:B" . ($row - 1));
-                    $sheet->setCellValue("B{$sasaranStartRow}", $sasaran);
+                    $sheet->setCellValue("B{$sasaranStartRow}", $noSasaran . ". " . $sasaran);
                 } else {
-                    $sheet->setCellValue("B{$sasaranStartRow}", $sasaran);
+                    $sheet->setCellValue("B{$sasaranStartRow}", $noSasaran . ". " . $sasaran);
                 }
+
+                $noSasaran++;
             }
+
             if ($row - $perspStartRow > 1) {
                 $sheet->mergeCells("A{$perspStartRow}:A" . ($row - 1));
                 $sheet->setCellValue("A{$perspStartRow}", $perspektif);
@@ -1064,27 +1054,52 @@ class SuperAdmin extends CI_Controller
                 $sheet->setCellValue("A{$perspStartRow}", $perspektif);
             }
 
-            // Subtotal
+            // subtotal
             $sheet->setCellValue("A{$row}", "Sub Total {$perspektif}");
             $sheet->mergeCells("A{$row}:I{$row}");
             $sheet->setCellValue("J{$row}", "=SUM(J{$perspStartRow}:J" . ($row - 1) . ")");
             $sheet->getStyle("A{$row}:J{$row}")->applyFromArray([
                 'font' => ['bold' => true],
-                'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => 'F1F8E9']]
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F1F8E9']]
             ]);
+            $subtotalRows[] = $row;
             $row++;
         }
 
-        // =======================
-        // TOTAL AKHIR
-        // =======================
+        // total akhir
+        //$formula = "=SUM(" . implode(",", array_map(fn($r) => "J{$r}", $subtotalRows)) . ")";
+         $formula = "=SUM(" . implode(",", array_map(function($r) { return "J{$r}"; }, $subtotalRows)) . ")";
         $sheet->setCellValue("A{$row}", "TOTAL");
         $sheet->mergeCells("A{$row}:I{$row}");
-        $sheet->setCellValue("J{$row}", "=SUM(J" . ($row - 1) . ")");
+        $sheet->setCellValue("J{$row}", $formula);
         $sheet->getStyle("A{$row}:J{$row}")->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'color' => ['rgb' => '2E7D32']]
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '2E7D32']]
         ]);
+
+        // =======================
+        // WRAP TEXT & LAYOUT
+        // =======================
+        $sheet->getStyle('A1:J' . $row)->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A1:J' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A1:J' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        // set lebar kolom
+        $sheet->getColumnDimension('A')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(35);
+        $sheet->getColumnDimension('C')->setWidth(40);
+        $sheet->getColumnDimension('D')->setWidth(10);
+        $sheet->getColumnDimension('E')->setWidth(20);
+        $sheet->getColumnDimension('F')->setWidth(20);
+        $sheet->getColumnDimension('G')->setWidth(20);
+        $sheet->getColumnDimension('H')->setWidth(15);
+        $sheet->getColumnDimension('I')->setWidth(10);
+        $sheet->getColumnDimension('J')->setWidth(15);
+
+        // tinggi baris auto
+        for ($r = 1; $r <= $row; $r++) {
+            $sheet->getRowDimension($r)->setRowHeight(-1);
+        }
 
         // =======================
         // DOWNLOAD FILE
@@ -1094,10 +1109,11 @@ class SuperAdmin extends CI_Controller
         header("Content-Disposition: attachment;filename=\"{$filename}\"");
         header('Cache-Control: max-age=0');
 
-        $writer = new Xlsx($spreadsheet);
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $writer->save('php://output');
         exit;
     }
+
 
 
     // Halaman Data Diri
