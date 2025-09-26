@@ -941,6 +941,10 @@ if ($message): ?>
                 });
 
                 $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+            } else {
+                if (lastId === 0) {
+                    $('#chat-box').html('<div class="text-center text-muted">Belum ada pesan. Mulai percakapan dengan mengirim pesan.</div>');
+                }
             }
         });
     }
