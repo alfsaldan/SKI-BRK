@@ -866,99 +866,112 @@ class SuperAdmin extends CI_Controller
         $drawing->setName('Logo BRK Syariah');
         $drawing->setDescription('Logo BRK Syariah');
         $drawing->setPath(FCPATH . 'assets/images/Logo_BRK_Syariah.png');
-        $drawing->setCoordinates('C1');
-        $drawing->setHeight(60);
+        $drawing->setCoordinates('F1');
+        $drawing->setHeight(40);
         $drawing->setWorksheet($sheet);
 
         // =======================
         // HEADER UTAMA
         // =======================
-        $sheet->setCellValue('A1', 'Sasaran Kinerja Individu (SKI)');
-        $sheet->mergeCells('A1:B1');
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
-        $sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
+        $sheet->setCellValue('B1', 'Sasaran Kinerja Individu (SKI)');
+        $sheet->mergeCells('B1:C1');
+        $sheet->getStyle('B1')->getFont()->setBold(true)->setSize(16);
+        $sheet->getStyle('B1')->getAlignment()->setHorizontal('left');
 
-        $sheet->setCellValue('A2', 'Periode: ' . date('d M Y', strtotime($periode_awal)) . ' s/d ' . date('d M Y', strtotime($periode_akhir)));
-        $sheet->mergeCells('A2:B2');
-        $sheet->getStyle('A2')->getAlignment()->setHorizontal('center');
+        $sheet->setCellValue('B2', 'Periode: ' . date('d M Y', strtotime($periode_awal)) . ' s/d ' . date('d M Y', strtotime($periode_akhir)));
+        $sheet->mergeCells('B2:C2');
+        $sheet->getStyle('B2')->getAlignment()->setHorizontal('left');
 
         // =======================
         // DATA PEGAWAI
         // =======================
         $row = 4;
-        $sheet->setCellValue("A{$row}", "DATA PEGAWAI");
-        $sheet->mergeCells("A{$row}:D{$row}");
-        $sheet->getStyle("A{$row}")->getFont()->setBold(true);
-        $sheet->getStyle("A{$row}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
-        $sheet->getStyle("A{$row}")->getFont()->getColor()->setRGB('FFFFFF');
+        $sheet->setCellValue("B{$row}", "DATA PEGAWAI");
+        $sheet->mergeCells("B{$row}:G{$row}");
+        $sheet->getStyle("B{$row}")->getFont()->setBold(true);
+        $sheet->getStyle("B{$row}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
+        $sheet->getStyle("B{$row}")->getFont()->getColor()->setRGB('FFFFFF');
+        $sheet->getStyle("B{$row}:G{$row}")->getAlignment()->setHorizontal('left');
+
+        // Set header DATA PEGAWAI center, isi blok rata kiri
 
         $row++;
-        $sheet->setCellValue("A{$row}", "NIK");
-        $sheet->setCellValue("B{$row}", $pegawai->nik);
-        $sheet->setCellValue("C{$row}", "Periode Penilaian : ");
-        $sheet->setCellValue("D{$row}", date('d M Y', strtotime($periode_awal)) . " s/d " . date('d M Y', strtotime($periode_akhir)));
+        $sheet->setCellValue("B{$row}", "NIK : ");
+        $sheet->setCellValue("C{$row}", $pegawai->nik);
+        $sheet->setCellValue("F{$row}", "Periode Penilaian : ");
+        $sheet->setCellValue("G{$row}", date('d M Y', strtotime($periode_awal)) . " s/d " . date('d M Y', strtotime($periode_akhir)));
+        $sheet->getStyle("B{$row}:G{$row}")->getAlignment()->setHorizontal('left');
         $row++;
-        $sheet->setCellValue("A{$row}", "Nama Pegawai");
-        $sheet->setCellValue("B{$row}", $pegawai->nama);
-        $sheet->setCellValue("C{$row}", "Unit Kantor Penilai : ");
-        $sheet->setCellValue("D{$row}", $pegawai->unit_kerja);
+        $sheet->setCellValue("B{$row}", "Nama Pegawai : ");
+        $sheet->setCellValue("C{$row}", $pegawai->nama);
+        $sheet->setCellValue("F{$row}", "Unit Kantor Penilai : ");
+        $sheet->setCellValue("G{$row}", $pegawai->unit_kerja);
+        $sheet->getStyle("B{$row}:G{$row}")->getAlignment()->setHorizontal('left');
         $row++;
-        $sheet->setCellValue("A{$row}", "Jabatan");
-        $sheet->setCellValue("B{$row}", $pegawai->jabatan);
+        $sheet->setCellValue("B{$row}", "Jabatan : ");
+        $sheet->setCellValue("C{$row}", $pegawai->jabatan);
+        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
         $row++;
-        $sheet->setCellValue("A{$row}", "Unit Kantor");
-        $sheet->setCellValue("B{$row}", ($pegawai->unit_kerja ?? '-') . ' ' . ($pegawai->unit_kantor ?? '-'));
+        $sheet->setCellValue("B{$row}", "Unit Kantor : ");
+        $sheet->setCellValue("C{$row}", ($pegawai->unit_kerja ?? '-') . ' ' . ($pegawai->unit_kantor ?? '-'));
+        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
 
         $row += 2;
 
         // =======================
         // PENILAI I & II
         // =======================
-        $sheet->setCellValue("A{$row}", "Penilai I");
-        $sheet->mergeCells("A{$row}:B{$row}");
-        $sheet->getStyle("A{$row}")->getFont()->setBold(true);
+        $sheet->setCellValue("B{$row}", "Penilai I");
+        $sheet->mergeCells("B{$row}:C{$row}");
+        $sheet->getStyle("B{$row}")->getFont()->setBold(true);
         $row++;
-        $sheet->setCellValue("A{$row}", "NIK");
-        $sheet->setCellValue("B{$row}", $pegawai->penilai1_nik ?? '-');
+        $sheet->setCellValue("B{$row}", "NIK : ");
+        $sheet->setCellValue("C{$row}", $pegawai->penilai1_nik ?? '-');
+        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
         $row++;
-        $sheet->setCellValue("A{$row}", "Nama");
-        $sheet->setCellValue("B{$row}", $pegawai->penilai1_nama ?? '-');
+        $sheet->setCellValue("B{$row}", "Nama : ");
+        $sheet->setCellValue("C{$row}", $pegawai->penilai1_nama ?? '-');
+        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
         $row++;
-        $sheet->setCellValue("A{$row}", "Jabatan");
-        $sheet->setCellValue("B{$row}", $pegawai->penilai1_jabatan ?? '-');
+        $sheet->setCellValue("B{$row}", "Jabatan : ");
+        $sheet->setCellValue("C{$row}", $pegawai->penilai1_jabatan ?? '-');
+        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
 
         $row += 2;
-        $sheet->setCellValue("A{$row}", "Penilai II");
-        $sheet->mergeCells("A{$row}:B{$row}");
-        $sheet->getStyle("A{$row}")->getFont()->setBold(true);
+        $sheet->setCellValue("B{$row}", "Penilai II");
+        $sheet->mergeCells("B{$row}:C{$row}");
+        $sheet->getStyle("B{$row}")->getFont()->setBold(true);
         $row++;
-        $sheet->setCellValue("A{$row}", "NIK");
-        $sheet->setCellValue("B{$row}", $pegawai->penilai2_nik ?? '-');
+        $sheet->setCellValue("B{$row}", "NIK : ");
+        $sheet->setCellValue("C{$row}", $pegawai->penilai2_nik ?? '-');
+        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
         $row++;
-        $sheet->setCellValue("A{$row}", "Nama");
-        $sheet->setCellValue("B{$row}", $pegawai->penilai2_nama ?? '-');
+        $sheet->setCellValue("B{$row}", "Nama : ");
+        $sheet->setCellValue("C{$row}", $pegawai->penilai2_nama ?? '-');
+        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
         $row++;
-        $sheet->setCellValue("A{$row}", "Jabatan");
-        $sheet->setCellValue("B{$row}", $pegawai->penilai2_jabatan ?? '-');
+        $sheet->setCellValue("B{$row}", "Jabatan : ");
+        $sheet->setCellValue("C{$row}", $pegawai->penilai2_jabatan ?? '-');
+        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
 
         $row += 2;
 
         // =======================
         // SKALA NILAI
         // =======================
-        $sheet->setCellValue("A{$row}", "Skala Nilai Sasaran Kerja");
-        $sheet->mergeCells("A{$row}:F{$row}");
-        $sheet->getStyle("A{$row}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle("A{$row}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
+        $sheet->setCellValue("B{$row}", "Skala Nilai Sasaran Kerja");
+        $sheet->mergeCells("B{$row}:G{$row}");
+        $sheet->getStyle("B{$row}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
+        $sheet->getStyle("B{$row}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
         $row++;
 
         $headers = ["Realisasi (%)", "< 80%", "80% sd < 90%", "90% sd < 110%", "110% sd < 120%", "120% sd 130%"];
-        $col = 'A';
+        $col = 'B';
         foreach ($headers as $h) {
             $sheet->setCellValue("{$col}{$row}", $h);
             $col++;
         }
-        $sheet->getStyle("A{$row}:F{$row}")->applyFromArray([
+        $sheet->getStyle("B{$row}:G{$row}")->applyFromArray([
             'font' => ['bold' => true],
             'alignment' => ['horizontal' => 'center'],
             'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
@@ -970,32 +983,64 @@ class SuperAdmin extends CI_Controller
             ["Yudisium/Predikat", "Minus", "Fair", "Good", "Very Good", "Excellent"],
             ["Nilai", "<2.00", "2.00 - <3.00", "3.00 - <3.50", "3.50 - <4.50", "4.50 - 5.00"]
         ];
+
         foreach ($skalaDetail as $det) {
             $row++;
-            $col = 'A';
-            foreach ($det as $cell) {
+            $col = 'B';
+            foreach ($det as $i => $cell) {
                 $sheet->setCellValue("{$col}{$row}", $cell);
+
+                // Style border untuk semua cell
+                $sheet->getStyle("{$col}{$row}")->applyFromArray([
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ],
+                    'alignment' => [
+                        'horizontal' => 'center',
+                        'vertical' => 'center',
+                        'wrapText' => true
+                    ]
+                ]);
+
+                // Kalau kolom pertama (Kondisi / Yudisium / Nilai) → hijau tua + font putih
+                if ($i == 0) {
+                    $sheet->getStyle("{$col}{$row}")->getFill()
+                        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                        ->getStartColor()->setRGB('2E7D32');
+                    $sheet->getStyle("{$col}{$row}")->getFont()->getColor()->setRGB('FFFFFF');
+                    $sheet->getStyle("{$col}{$row}")->getFont()->setBold(true);
+                }
+
+                // Kalau baris "Nilai" (row terakhir skala) → semua kolom isi nilai juga hijau
+                if ($det[0] == "Nilai" && $i > 0) {
+                    $sheet->getStyle("{$col}{$row}")->getFill()
+                        ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                        ->getStartColor()->setRGB('2E7D32');
+                    $sheet->getStyle("{$col}{$row}")->getFont()->getColor()->setRGB('FFFFFF');
+                }
+
                 $col++;
             }
         }
+
 
         $row += 2;
 
         // =======================
         // HEADER HASIL PENILAIAN
         // =======================
-        $sheet->setCellValue("A{$row}", "Perspektif");
-        $sheet->setCellValue("B{$row}", "Sasaran Kerja");
-        $sheet->setCellValue("C{$row}", "Indikator");
-        $sheet->setCellValue("D{$row}", "Bobot (%)");
-        $sheet->setCellValue("E{$row}", "Target");
-        $sheet->setCellValue("F{$row}", "Batas Waktu");
-        $sheet->setCellValue("G{$row}", "Realisasi");
-        $sheet->setCellValue("H{$row}", "Pencapaian (%)");
-        $sheet->setCellValue("I{$row}", "Nilai");
-        $sheet->setCellValue("J{$row}", "Nilai Dibobot");
+        $sheet->setCellValue("B{$row}", "Perspektif");
+        $sheet->setCellValue("C{$row}", "Sasaran Kerja");
+        $sheet->setCellValue("D{$row}", "Indikator");
+        $sheet->setCellValue("E{$row}", "Bobot (%)");
+        $sheet->setCellValue("F{$row}", "Target");
+        $sheet->setCellValue("G{$row}", "Batas Waktu");
+        $sheet->setCellValue("H{$row}", "Realisasi");
+        $sheet->setCellValue("I{$row}", "Pencapaian (%)");
+        $sheet->setCellValue("J{$row}", "Nilai");
+        $sheet->setCellValue("K{$row}", "Nilai Dibobot");
 
-        $sheet->getStyle("A{$row}:J{$row}")->applyFromArray([
+        $sheet->getStyle("B{$row}:K{$row}")->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
             'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '2E7D32']],
@@ -1019,6 +1064,8 @@ class SuperAdmin extends CI_Controller
         foreach ($perspektifGroup as $perspektif => $sasaranArr) {
             $perspStartRow = $row;
             $noSasaran = 1;
+            $bobotStartCol = 'E';
+            $nilaiDibobotCol = 'K';
             $bobotStartRow = $row;
             $bobotEndRow = $row - 1;
 
@@ -1027,43 +1074,43 @@ class SuperAdmin extends CI_Controller
                 $noIndikator = 1;
 
                 foreach ($items as $i) {
-                    $sheet->setCellValue("C{$row}", $noIndikator . ". " . $i->indikator);
-                    $sheet->setCellValue("D{$row}", $i->bobot);
-                    $sheet->setCellValue("E{$row}", $i->target);
-                    $sheet->setCellValue("F{$row}", $i->batas_waktu);
-                    $sheet->setCellValue("G{$row}", $i->realisasi);
-                    $sheet->setCellValue("H{$row}", $i->pencapaian ?? '-');
-                    $sheet->setCellValue("I{$row}", $i->nilai ?? '-');
-                    $sheet->setCellValue("J{$row}", $i->nilai_dibobot ?? '-');
+                    $sheet->setCellValue("D{$row}", $noIndikator . ". " . $i->indikator);
+                    $sheet->setCellValue("E{$row}", $i->bobot);
+                    $sheet->setCellValue("F{$row}", $i->target);
+                    $sheet->setCellValue("G{$row}", $i->batas_waktu);
+                    $sheet->setCellValue("H{$row}", $i->realisasi);
+                    $sheet->setCellValue("I{$row}", $i->pencapaian ?? '-');
+                    $sheet->setCellValue("J{$row}", $i->nilai ?? '-');
+                    $sheet->setCellValue("K{$row}", $i->nilai_dibobot ?? '-');
                     $bobotEndRow = $row;
                     $row++;
                     $noIndikator++;
                 }
 
                 if ($row - $sasaranStartRow > 1) {
-                    $sheet->mergeCells("B{$sasaranStartRow}:B" . ($row - 1));
-                    $sheet->setCellValue("B{$sasaranStartRow}", $noSasaran . ". " . $sasaran);
+                    $sheet->mergeCells("C{$sasaranStartRow}:C" . ($row - 1));
+                    $sheet->setCellValue("C{$sasaranStartRow}", $noSasaran . ". " . $sasaran);
                 } else {
-                    $sheet->setCellValue("B{$sasaranStartRow}", $noSasaran . ". " . $sasaran);
+                    $sheet->setCellValue("C{$sasaranStartRow}", $noSasaran . ". " . $sasaran);
                 }
 
                 $noSasaran++;
             }
 
             if ($row - $perspStartRow > 1) {
-                $sheet->mergeCells("A{$perspStartRow}:A" . ($row - 1));
-                $sheet->setCellValue("A{$perspStartRow}", $perspektif);
+                $sheet->mergeCells("B{$perspStartRow}:B" . ($row - 1));
+                $sheet->setCellValue("B{$perspStartRow}", $perspektif);
             } else {
-                $sheet->setCellValue("A{$perspStartRow}", $perspektif);
+                $sheet->setCellValue("B{$perspStartRow}", $perspektif);
             }
 
             // subtotal: tampilkan subtotal bobot dan subtotal nilai dibobot
-            $sheet->setCellValue("A{$row}", "Sub Total {$perspektif}");
-            $sheet->mergeCells("A{$row}:C{$row}");
-            $sheet->setCellValue("D{$row}", "=SUM(D{$bobotStartRow}:D{$bobotEndRow})");
-            $sheet->mergeCells("E{$row}:I{$row}");
-            $sheet->setCellValue("J{$row}", "=SUM(J{$perspStartRow}:J" . ($row - 1) . ")");
-            $sheet->getStyle("A{$row}:J{$row}")->applyFromArray([
+            $sheet->setCellValue("B{$row}", "Sub Total {$perspektif}");
+            $sheet->mergeCells("B{$row}:D{$row}");
+            $sheet->setCellValue("E{$row}", "=SUM(E{$bobotStartRow}:E{$bobotEndRow})");
+            $sheet->mergeCells("F{$row}:J{$row}");
+            $sheet->setCellValue("K{$row}", "=SUM(K{$perspStartRow}:K" . ($row - 1) . ")");
+            $sheet->getStyle("B{$row}:K{$row}")->applyFromArray([
                 'font' => ['bold' => true],
                 'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F1F8E9']]
             ]);
@@ -1072,14 +1119,13 @@ class SuperAdmin extends CI_Controller
         }
 
         // total akhir
-        //$formula = "=SUM(" . implode(",", array_map(fn($r) => "J{$r}", $subtotalRows)) . ")";
         $formula = "=SUM(" . implode(",", array_map(function ($r) {
-            return "J{$r}";
+            return "K{$r}";
         }, $subtotalRows)) . ")";
-        $sheet->setCellValue("A{$row}", "TOTAL");
-        $sheet->mergeCells("A{$row}:I{$row}");
-        $sheet->setCellValue("J{$row}", $formula);
-        $sheet->getStyle("A{$row}:J{$row}")->applyFromArray([
+        $sheet->setCellValue("B{$row}", "TOTAL");
+        $sheet->mergeCells("B{$row}:J{$row}");
+        $sheet->setCellValue("K{$row}", $formula);
+        $sheet->getStyle("B{$row}:K{$row}")->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '2E7D32']]
         ]);
@@ -1104,39 +1150,39 @@ class SuperAdmin extends CI_Controller
         }
 
         // Judul
-        $sheet->setCellValue("A{$row}", "Nilai Akhir (q)");
-        $sheet->mergeCells("A{$row}:E{$row}");
-        $sheet->getStyle("A{$row}")->getFont()->setBold(true)->setSize(13)->getColor()->setRGB('217346');
+        $sheet->setCellValue("B{$row}", "Nilai Akhir (q)");
+        $sheet->mergeCells("B{$row}:F{$row}");
+        $sheet->getStyle("B{$row}")->getFont()->setBold(true)->setSize(13)->getColor()->setRGB('217346');
         $row++;
 
         // Tabel perhitungan atas
-        $sheet->setCellValue("A{$row}", "Total Nilai Sasaran Kerja");
-        $sheet->setCellValue("B{$row}", $nilai['nilai_sasaran'] ?? 0);
-        $sheet->setCellValue("C{$row}", "x Bobot % Sasaran Kerja");
-        $sheet->setCellValue("D{$row}", "95%");
-        $sheet->setCellValue("E{$row}", $nilai['total_nilai'] ?? 0);
+        $sheet->setCellValue("B{$row}", "Total Nilai Sasaran Kerja");
+        $sheet->setCellValue("C{$row}", $nilai['nilai_sasaran'] ?? 0);
+        $sheet->setCellValue("D{$row}", "x Bobot % Sasaran Kerja");
+        $sheet->setCellValue("E{$row}", "95%");
+        $sheet->setCellValue("F{$row}", $nilai['total_nilai'] ?? 0);
         $row++;
-        $sheet->setCellValue("A{$row}", "Rata-rata Nilai Internalisasi Budaya");
-        $sheet->setCellValue("B{$row}", $nilai['nilai_budaya'] ?? 0);
-        $sheet->setCellValue("C{$row}", "x Bobot % Budaya Perusahaan");
-        $sheet->setCellValue("D{$row}", "5%");
-        $sheet->setCellValue("E{$row}", $nilai['nilai_budaya'] ?? 0);
+        $sheet->setCellValue("B{$row}", "Rata-rata Nilai Internalisasi Budaya");
+        $sheet->setCellValue("C{$row}", $nilai['nilai_budaya'] ?? 0);
+        $sheet->setCellValue("D{$row}", "x Bobot % Budaya Perusahaan");
+        $sheet->setCellValue("E{$row}", "5%");
+        $sheet->setCellValue("F{$row}", $nilai['nilai_budaya'] ?? 0);
         $row++;
-        $sheet->setCellValue("A{$row}", "Total Nilai");
-        $sheet->mergeCells("A{$row}:D{$row}");
-        $sheet->setCellValue("E{$row}", $nilai['total_nilai'] ?? 0);
+        $sheet->setCellValue("B{$row}", "Total Nilai");
+        $sheet->mergeCells("B{$row}:E{$row}");
+        $sheet->setCellValue("F{$row}", $nilai['total_nilai'] ?? 0);
         $row++;
-        $sheet->setCellValue("A{$row}", "Fraud (1 jika fraud, 0 jika tidak)");
-        $sheet->mergeCells("A{$row}:D{$row}");
-        $sheet->setCellValue("E{$row}", $nilai['fraud'] ?? 0);
+        $sheet->setCellValue("B{$row}", "Fraud (1 jika fraud, 0 jika tidak)");
+        $sheet->mergeCells("B{$row}:E{$row}");
+        $sheet->setCellValue("F{$row}", $nilai['fraud'] ?? 0);
         $row++;
 
         // Tabel skala nilai dan summary kanan
         // Skala nilai kiri
-        $sheet->setCellValue("A{$row}", "Nilai Akhir");
-        $sheet->setCellValue("B{$row}", "Yudisium / Predikat");
-        $sheet->getStyle("A{$row}:B{$row}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle("A{$row}:B{$row}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
+        $sheet->setCellValue("B{$row}", "Nilai Akhir");
+        $sheet->setCellValue("C{$row}", "Yudisium / Predikat");
+        $sheet->getStyle("B{$row}:C{$row}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
+        $sheet->getStyle("B{$row}:C{$row}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
         $row++;
         $skala = [
             ['≥ 4.50 - 5', 'Excellent (E)'],
@@ -1146,35 +1192,35 @@ class SuperAdmin extends CI_Controller
             ['< 2.00', 'Minus (M)'],
         ];
         foreach ($skala as $s) {
-            $sheet->setCellValue("A{$row}", $s[0]);
-            $sheet->setCellValue("B{$row}", $s[1]);
+            $sheet->setCellValue("B{$row}", $s[0]);
+            $sheet->setCellValue("C{$row}", $s[1]);
             $row++;
         }
 
         // Summary kanan: Nilai Akhir, Pencapaian, Predikat
         $summaryStart = $row - 5; // baris awal skala
-        $summaryCol = 'D';
+        $summaryCol = 'E';
         $sheet->setCellValue("{$summaryCol}{$summaryStart}", "Nilai Akhir");
         $sheet->getStyle("{$summaryCol}{$summaryStart}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
         $sheet->getStyle("{$summaryCol}{$summaryStart}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
         $sheet->mergeCells("{$summaryCol}{$summaryStart}:{$summaryCol}" . ($summaryStart + 1));
-        $sheet->setCellValue("E{$summaryStart}", $nilai['nilai_akhir'] ?? 'Tidak ada nilai');
-        $sheet->mergeCells("E{$summaryStart}:E" . ($summaryStart + 1));
+        $sheet->setCellValue("F{$summaryStart}", $nilai['nilai_akhir'] ?? 'Tidak ada nilai');
+        $sheet->mergeCells("F{$summaryStart}:F" . ($summaryStart + 1));
 
         $sheet->setCellValue("{$summaryCol}" . ($summaryStart + 2), "Pencapaian Akhir");
         $sheet->getStyle("{$summaryCol}" . ($summaryStart + 2))->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
         $sheet->getStyle("{$summaryCol}" . ($summaryStart + 2))->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
         $sheet->mergeCells("{$summaryCol}" . ($summaryStart + 2) . ":{$summaryCol}" . ($summaryStart + 3));
-        $sheet->setCellValue("E" . ($summaryStart + 2), $nilai['pencapaian'] ?? '0%');
-        $sheet->mergeCells("E" . ($summaryStart + 2) . ":E" . ($summaryStart + 3));
+        $sheet->setCellValue("F" . ($summaryStart + 2), $nilai['pencapaian'] ?? '0%');
+        $sheet->mergeCells("F" . ($summaryStart + 2) . ":F" . ($summaryStart + 3));
 
         $sheet->setCellValue("{$summaryCol}" . ($summaryStart + 4), "Yudisium / Predikat");
         $sheet->getStyle("{$summaryCol}" . ($summaryStart + 4))->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
         $sheet->getStyle("{$summaryCol}" . ($summaryStart + 4))->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
-        $sheet->setCellValue("E" . ($summaryStart + 4), $nilai['predikat'] ?? '-');
+        $sheet->setCellValue("F" . ($summaryStart + 4), $nilai['predikat'] ?? '-');
 
         // Border dan rata tengah summary
-        $sheet->getStyle("A" . ($row - 6) . ":E" . ($row - 1))->applyFromArray([
+        $sheet->getStyle("B" . ($row - 6) . ":F" . ($row - 1))->applyFromArray([
             'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
             'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
         ]);
@@ -1185,6 +1231,28 @@ class SuperAdmin extends CI_Controller
         $sheet->getStyle('A1:J' . ($row - 1))->getAlignment()->setWrapText(true);
         $sheet->getStyle('A1:J' . ($row - 1))->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
         $sheet->getStyle('A1:J' . ($row - 1))->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        // Override agar header utama benar-benar align left
+        $sheet->getStyle('B1')->getAlignment()->setHorizontal('left');
+        $sheet->getStyle('B2')->getAlignment()->setHorizontal('left');
+        // Override agar hanya ISI data kolom Sasaran Kerja (C) dan Indikator (D) align left, header tetap center
+        $headerPenilaianRow = 0;
+        // Cari baris header penilaian (dengan value "Sasaran Kerja" di C)
+        for ($i = 1; $i <= $row; $i++) {
+            if ($sheet->getCell('C' . $i)->getValue() === 'Sasaran Kerja') {
+                $headerPenilaianRow = $i;
+                break;
+            }
+        }
+        if ($headerPenilaianRow > 0) {
+            $sheet->getStyle('C' . ($headerPenilaianRow + 1) . ':C' . ($row - 1))->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('D' . ($headerPenilaianRow + 1) . ':D' . ($row - 1))->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        }
+        // Override agar DATA PEGAWAI tetap align left
+        $sheet->getStyle('B4:G4')->getAlignment()->setHorizontal('left');
+
+        // Override khusus blok data pegawai dan penilai agar kolom B dan C rata kiri
+        $sheet->getStyle('B5:C20')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('B5:C20')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
 
         // set lebar kolom
         $sheet->getColumnDimension('A')->setWidth(20);
