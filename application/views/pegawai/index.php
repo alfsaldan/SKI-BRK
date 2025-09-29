@@ -416,43 +416,43 @@
                                                             <?php $first_sas_cell = false;
                                                             } ?>
 
-                                                            <td class="text-center"><?= $bobot; ?>
+                                                            <td class="text-center align-middle"><?= $bobot; ?>
                                                                 <input type="hidden" class="bobot" value="<?= $bobot ?>">
                                                             </td>
                                                             <td><?= $indik; ?></td>
 
-                                                            <td>
-                                                                <input type="text" class="form-control text-center target-input"
+                                                            <td class="text-center align-middle" style="min-width:120px;">
+                                                                <input type="text" class="form-control text-center align-middle target-input"
                                                                     value="<?= $i->target ?? ''; ?>" readonly
                                                                     style="min-width:100px;">
                                                             </td>
-                                                            <td class="text-center" style="min-width:120px;">
+                                                            <td class="text-center align-middle" style="min-width:120px;">
                                                                 <?= $i->batas_waktu ? date('d-m-Y', strtotime($i->batas_waktu)) : '-'; ?>
                                                             </td>
-                                                            <td>
+                                                            <td class="text-center align-middle">
                                                                 <input type="text" class="form-control text-center realisasi-input"
                                                                     value="<?= $i->realisasi ?? ''; ?>"
                                                                     style="min-width:100px;">
                                                             </td>
 
-                                                            <td>
+                                                            <td class="text-center align-middle">
                                                                 <input type="text" class="form-control form-control-sm text-center pencapaian-output"
                                                                     readonly style="min-width:50px;">
                                                             </td>
-                                                            <td>
+                                                            <td class="text-center align-middle">
                                                                 <input type="text" class="form-control form-control-sm text-center nilai-output"
                                                                     readonly style="min-width:60px;">
                                                             </td>
-                                                            <td>
+                                                            <td class="text-center align-middle">
                                                                 <input type="text" class="form-control form-control-sm text-center nilai-bobot-output"
                                                                     readonly style="min-width:50px;">
                                                             </td>
 
 
-                                                            <td class="text-center">
+                                                            <td class="text-center align-middle">
                                                                 <span class="<?= $statusClass; ?>"><?= $statusText; ?></span>
                                                             </td>
-                                                            <td class="text-center">
+                                                            <td class="text-center align-middle">
                                                                 <button type="button" class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
                                                             </td>
                                                         </tr>

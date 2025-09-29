@@ -200,6 +200,11 @@ class Pegawai extends CI_Controller
             'periode_list' => $periode_list
         ];
 
+        // 🔹 ambil nilai_akhir dari tabel nilai_akhir
+        $nilai_akhir = $this->Pegawai_model->getNilaiAkhir($nik, $awal, $akhir);
+
+        $data['nilai_akhir']         = $nilai_akhir;
+
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/nilaipegawai_detail', $data);
         $this->load->view('layoutpegawai/footer');
