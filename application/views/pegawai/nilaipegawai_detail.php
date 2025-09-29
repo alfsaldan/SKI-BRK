@@ -362,7 +362,7 @@
                                                                 <td rowspan="<?= $sasaran_rows; ?>" style="vertical-align:middle;background:#E3F2FD;"><?= $sasaran; ?></td>
                                                             <?php $first_sas_cell = false;
                                                             } ?>
-                                                            <td class="text-center"><?= $bobot; ?>
+                                                            <td class="text-center align-middle"><?= $bobot; ?>
                                                                 <input type="hidden" class="bobot" value="<?= $bobot ?>">
                                                             </td>
                                                             <td><?= $indik; ?></td>
@@ -373,41 +373,41 @@
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm nilai-output" readonly></td>
                                                             <td class="text-center"><input type="text" class="form-control form-control-sm nilai-bobot-output" readonly></td> -->
 
-                                                            <td>
+                                                            <td class="text-center align-middle">
                                                                 <input type="text" class="form-control text-center target-input"
                                                                     value="<?= $i->target ?? ''; ?>" readonly
                                                                     style="min-width:100px;">
                                                             </td>
-                                                            <td class="text-center" style="min-width:100px;">
+                                                            <td class="text-center align-middle" style="min-width:120px;">
                                                                 <?= $i->batas_waktu ? date('d-m-Y', strtotime($i->batas_waktu)) : '-'; ?>
                                                             </td>
-                                                            <td>
+                                                            <td class="text-center align-middle">
                                                                 <input type="text" class="form-control text-center realisasi-input"
                                                                     value="<?= $i->realisasi ?? ''; ?>"
                                                                     style="min-width:100px;">
                                                             </td>
 
-                                                            <td>
+                                                            <td class="text-center align-middle">
                                                                 <input type="text" class="form-control form-control-sm text-center pencapaian-output"
                                                                     readonly style="min-width:50px;">
                                                             </td>
-                                                            <td>
+                                                            <td class="text-center align-middle">
                                                                 <input type="text" class="form-control form-control-sm text-center nilai-output"
                                                                     readonly style="min-width:60px;">
                                                             </td>
-                                                            <td>
+                                                            <td class="text-center align-middle">
                                                                 <input type="text" class="form-control form-control-sm text-center nilai-bobot-output"
                                                                     readonly style="min-width:50px;">
                                                             </td>
 
-                                                            <td class="text-center" style="min-width: 150px;">
+                                                            <td class="text-center align-middle" style="min-width: 150px;">
                                                                 <select class="form-select form-select-sm status-select">
                                                                     <option value="Belum Dinilai" <?= ($i->status == 'Belum Dinilai') ? 'selected' : ''; ?>>Belum Dinilai</option>
                                                                     <option value="Ada Catatan" <?= ($i->status == 'Ada Catatan') ? 'selected' : ''; ?>>Ada Catatan</option>
                                                                     <option value="Disetujui" <?= ($i->status == 'Disetujui') ? 'selected' : ''; ?>>Disetujui</option>
                                                                 </select>
                                                             </td>
-                                                            <td class="text-center">
+                                                            <td class="text-center align-middle">
                                                                 <button type="button" class="btn btn-sm btn-success simpan-status">Simpan</button>
                                                             </td>
                                                         </tr>
@@ -893,7 +893,7 @@
             // } else {
             //     nilaiAkhir = "Tidak ada nilai";
             // }
-            
+
             let nilaiAkhir;
             if (fraud === 1) {
                 nilaiAkhir = totalNilai - fraud;

@@ -254,7 +254,7 @@
                                                             <?php $first_sas_cell = false;
                                                             } ?>
 
-                                                            <td class="text-center"><?= $bobot; ?>
+                                                            <td class="text-center align-middle"><?= $bobot; ?>
                                                                 <input type="hidden" class="bobot" value="<?= $bobot ?>">
                                                             </td>
                                                             <td><?= $indik; ?></td>
@@ -269,6 +269,7 @@
 
                                                             <td class="text-center align-middle"><input type="date" class="form-control" style="min-width:120px;"
                                                                     value="<?= $i->batas_waktu ?? ''; ?>"></td>
+
                                                             <td class="text-center align-middle">
                                                                 <input type="text"
                                                                     class="form-control realisasi-input text-center"
@@ -277,12 +278,12 @@
                                                             </td>
 
                                                             <td class="text-center align-middle"><input type="text" style="min-width:60px;"
-                                                                    class="form-control form-control-sm pencapaian-output" readonly>
+                                                                    class="form-control form-control-sm text-center pencapaian-output" readonly>
                                                             </td>
                                                             <td class="text-center align-middle"><input type="text" style="min-width:50px;"
-                                                                    class="form-control form-control-sm nilai-output" readonly></td>
+                                                                    class="form-control form-control-sm text-center nilai-output" readonly></td>
                                                             <td class="text-center align-middle"><input type="text"
-                                                                    class="form-control form-control-sm nilai-bobot-output" readonly>
+                                                                    class="form-control form-control-sm text-center nilai-bobot-output" readonly>
                                                             </td>
 
                                                             <td class="text-center align-middle">
