@@ -361,7 +361,7 @@
                                 <div class="card text-center mb-3">
                                     <div class="card-header bg-success text-white">Nilai Akhir</div>
                                     <div class="card-body">
-                                        <h3>
+                                        <h3 id="nilai-akhir">
                                             <?= (isset($nilai['nilai_akhir']) && $nilai['nilai_akhir'] > 0)
                                                 ? $nilai['nilai_akhir']
                                                 : 'Tidak ada nilai'; ?>
@@ -374,7 +374,7 @@
                                 <div class="card text-center">
                                     <div class="card-header bg-success text-white">Pencapaian Akhir</div>
                                     <div class="card-body">
-                                        <h3><?= $nilai['pencapaian'] ?? '0%' ?></h3>
+                                        <h3 id="pencapaian-akhir"><?= $nilai['pencapaian'] ?? '0%' ?></h3>
                                     </div>
                                 </div>
                             </div>
@@ -383,7 +383,7 @@
                         <div class="card text-center mb-3">
                             <div class="card-header bg-success text-white">Yudisium / Predikat</div>
                             <div class="card-body">
-                                <h3><?= $nilai['predikat'] ?? '-' ?></h3>
+                                <h3 id="predikat"><?= $nilai['predikat'] ?? '-' ?></h3>
                             </div>
                         </div>
                     </div>
@@ -421,10 +421,10 @@
                          ">
                                 <div class="d-flex align-items-center mb-2">
                                     <span class="fw-semibold me-2" style="font-size:0.9rem;">
-                                        <?= $c->nama_pengirim ?? $c->pengirim_nik; ?> 
+                                        <?= $c->nama_pengirim ?? $c->pengirim_nik; ?>
                                     </span>
                                     <span class="badge rounded-pill <?= $isPegawai ? 'bg-success' : 'bg-primary'; ?> ms-auto" style="font-size:0.65rem;">
-                                        <?= $isPegawai ? 'Pegawai' : 'Penilai'; ?> 
+                                        <?= $isPegawai ? 'Pegawai' : 'Penilai'; ?>
                                     </span>
                                 </div>
                                 <div style="font-size:0.95rem; line-height:1.5;">
@@ -512,5 +512,46 @@
         if (chatBox) {
             chatBox.scrollTop = chatBox.scrollHeight;
         }
+
+        // Ambil nilai dari PHP
+        let nilaiAkhir = <?= isset($nilai['nilai_akhir']) ? (is_numeric($nilai['nilai_akhir']) ? $nilai['nilai_akhir'] : '"'.$nilai['nilai_akhir'].'"') : 0 ?>;
+        let pencapaian = <?= isset($nilai['pencapaian']) ? (is_numeric($nilai['pencapaian']) ? $nilai['pencapaian'] : '"'.$nilai['pencapaian'].'"') : 0 ?>;
+        
+        function HitungNilaiAkhir() {
+            // Predikat
+            let predikat;
+            let predikatClass = "";
+
+            if (nilaiAkhir === "Tidak ada nilai") {
+                predikat = "Tidak ada yudisium/predikat";
+                predikatClass = "text-dark";
+            } else if (nilaiAkhir === 0) {
+                predikat = "Belum Ada Nilai";
+                predikatClass = "text-dark";
+            } else if (nilaiAkhir < 2) {
+                predikat = "Minus";
+                predikatClass = "text-danger"; // merah
+            } else if (nilaiAkhir < 3) {
+                predikat = "Fair";
+                predikatClass = "text-warning"; // jingga
+            } else if (nilaiAkhir < 3.5) {
+                predikat = "Good";
+                predikatClass = "text-primary"; // biru
+            } else if (nilaiAkhir < 4.5) {
+                predikat = "Very Good";
+                predikatClass = "text-success"; // hijau muda
+            } else {
+                predikat = "Excellent";
+                predikatClass = "text-success font-weight-bold"; // hijau tua (lebih tebal)
+            }
+
+            document.getElementById("nilai-akhir").textContent =
+                nilaiAkhir === "Tidak ada nilai" ? nilaiAkhir : nilaiAkhir.toFixed(2);
+            document.getElementById("predikat").textContent = predikat;
+            document.getElementById("predikat").className = predikatClass;
+            document.getElementById("pencapaian-akhir").textContent =
+                pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
+        }
+        HitungNilaiAkhir();
     });
 </script>

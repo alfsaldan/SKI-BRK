@@ -581,13 +581,18 @@
         function hitungPencapaianOtomatis(target, realisasi, indikatorText = "") {
             let pencapaian = 0;
 
-            // Normalisasi teks (biar pencarian keyword gampang)
+            // Normalisasi teks
             indikatorText = indikatorText.toLowerCase();
 
             // 🔹 Daftar keyword
             const keywords = {
-                rumus1: ["biaya", "beban"], // indikator biaya / beban
-                rumus3: ["outstanding", "pertumbuhan"] // indikator efisiensi / pertumbuhan
+                rumus1: ["biaya", "beban", "efisiensi", "npf pembiayaan", "npf nominal"], // indikator biaya / beban
+                rumus3: ["outstanding", "pertumbuhan"] // indikator outstanding / pertumbuhan
+            };
+
+            // Fungsi cek keyword pakai regex \b...\b
+            const containsKeyword = (list, text) => {
+                return list.some(k => new RegExp(`\\b${k}\\b`, "i").test(text));
             };
 
             if (target <= 999) {
@@ -595,21 +600,21 @@
                 pencapaian = (realisasi / target) * 100;
             } else {
                 // 🔹 Target > 3 digit → pilih rumus 1 atau 3 berdasarkan kata kunci indikator
-                if (keywords.rumus1.some(k => indikatorText.includes(k))) {
+                if (containsKeyword(keywords.rumus1, indikatorText)) {
                     // Rumus 1 → biasanya indikator biaya/beban
                     pencapaian = ((target + (target - realisasi)) / target) * 100;
-                } else if (keywords.rumus3.some(k => indikatorText.includes(k))) {
-                    // Rumus 3 → biasanya indikator efisiensi/pertumbuhan
+                } else if (containsKeyword(keywords.rumus3, indikatorText)) {
+                    // Rumus 3 → biasanya indikator outstanding/pertumbuhan
                     pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
                 } else {
                     // fallback default (anggap rumus 2)
                     pencapaian = (realisasi / target) * 100;
                 }
             }
-
             // 🔹 Batas maksimal 130%
             return Math.min(pencapaian, 130);
         }
+
 
 
         function hitungNilai(pencapaian) {
@@ -783,7 +788,7 @@
             document.getElementById("nilai-akhir").textContent =
                 nilaiAkhir === "Tidak ada nilai" ? nilaiAkhir : nilaiAkhir.toFixed(2);
             document.getElementById("predikat").textContent = predikat;
-             document.getElementById("predikat").className = predikatClass;
+            document.getElementById("predikat").className = predikatClass;
             document.getElementById("pencapaian-akhir").textContent =
                 pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
         }
