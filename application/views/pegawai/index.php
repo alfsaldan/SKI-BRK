@@ -937,10 +937,10 @@ if ($message): ?>
 
             // Nilai akhir sesuai rumus Excel
             let nilaiAkhir;
-            if (fraud === 0) {
+            if (fraud === 1) {
                 nilaiAkhir = totalNilai - fraud;
             } else {
-                nilaiAkhir = "Tidak ada nilai";
+                nilaiAkhir = totalNilai;
             }
 
             // Predikat
@@ -992,7 +992,7 @@ if ($message): ?>
             document.getElementById("nilai-akhir").textContent =
                 nilaiAkhir === "Tidak ada nilai" ? nilaiAkhir : nilaiAkhir.toFixed(2);
             document.getElementById("predikat").textContent = predikat;
-             document.getElementById("predikat").className = predikatClass;
+            document.getElementById("predikat").className = predikatClass;
             document.getElementById("pencapaian-akhir").textContent =
                 pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
         }

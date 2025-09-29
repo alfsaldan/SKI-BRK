@@ -735,20 +735,29 @@
 
             // Predikat
             let predikat;
+            let predikatClass = "";
+
             if (nilaiAkhir === "Tidak ada nilai") {
                 predikat = "Tidak ada yudisium/predikat";
+                predikatClass = "text-dark";
             } else if (nilaiAkhir === 0) {
                 predikat = "Belum Ada Nilai";
+                predikatClass = "text-dark";
             } else if (nilaiAkhir < 2) {
                 predikat = "Minus";
+                predikatClass = "text-danger"; // merah
             } else if (nilaiAkhir < 3) {
                 predikat = "Fair";
+                predikatClass = "text-warning"; // jingga
             } else if (nilaiAkhir < 3.5) {
                 predikat = "Good";
+                predikatClass = "text-primary"; // biru
             } else if (nilaiAkhir < 4.5) {
                 predikat = "Very Good";
+                predikatClass = "text-success"; // hijau muda
             } else {
                 predikat = "Excellent";
+                predikatClass = "text-success font-weight-bold"; // hijau tua (lebih tebal)
             }
 
             // Pencapaian Akhir
@@ -773,6 +782,7 @@
             document.getElementById("nilai-akhir").textContent =
                 nilaiAkhir === "Tidak ada nilai" ? nilaiAkhir : nilaiAkhir.toFixed(2);
             document.getElementById("predikat").textContent = predikat;
+             document.getElementById("predikat").className = predikatClass;
             document.getElementById("pencapaian-akhir").textContent =
                 pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
         }
