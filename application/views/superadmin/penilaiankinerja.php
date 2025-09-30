@@ -1148,49 +1148,91 @@
             const periode_awal = document.getElementById('periode_awal').value;
             const periode_akhir = document.getElementById('periode_akhir').value;
 
-            const nilai_sasaran = document.getElementById('total-sasaran').textContent;
-            const nilai_budaya = document.getElementById('nilai-budaya').textContent;
-            const total_nilai = document.getElementById('total-nilai').textContent;
-            const fraud = document.getElementById('fraud-input').value;
-            const nilai_akhir = document.getElementById('nilai-akhir').textContent;
-            const predikat = document.getElementById('predikat').textContent;
-            const pencapaian = document.getElementById('pencapaian-akhir').textContent;
+            // 1️⃣ Simpan semua baris dulu
+            const rows = document.querySelectorAll('#tabel-penilaian tbody tr[data-id]');
+            let promises = [];
 
-            fetch('<?= base_url("SuperAdmin/simpanNilaiAkhir") ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
-                })
-                .then(res => res.json())
-                .then(res => {
-                    if (res.status === 'success') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil',
-                            text: res.message,
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal',
-                            text: res.message || 'Gagal menyimpan',
-                            confirmButtonColor: '#d33'
-                        });
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
+            rows.forEach(row => {
+                const indikator_id = row.dataset.id;
+                const target = row.querySelector('.target-input').value;
+                const batas_waktu = row.querySelector('input[type="date"]').value;
+                const realisasi = row.querySelector('.realisasi-input').value;
+                const pencapaian = row.querySelector('.pencapaian-output').value;
+                const nilai = row.querySelector('.nilai-output').value;
+                const nilai_dibobot = row.querySelector('.nilai-bobot-output').value;
+
+                let formData = `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`;
+
+                promises.push(
+                    fetch('<?= base_url("SuperAdmin/simpanPenilaianBaris") ?>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: formData
+                    }).then(res => res.json())
+                );
+            });
+
+            // 2️⃣ Setelah semua baris berhasil disimpan, simpan nilai akhir
+            Promise.all(promises).then(results => {
+                // kalau ada yang gagal, stop
+                if (results.some(r => r.status !== 'success')) {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error',
-                        text: 'Terjadi kesalahan server',
+                        title: 'Gagal',
+                        text: 'Ada baris yang gagal disimpan. Cek kembali inputnya.',
                         confirmButtonColor: '#d33'
                     });
-                });
+                    return;
+                }
+
+                // ambil nilai akhir
+                const nilai_sasaran = document.getElementById('total-sasaran').textContent;
+                const nilai_budaya = document.getElementById('nilai-budaya').textContent;
+                const total_nilai = document.getElementById('total-nilai').textContent;
+                const fraud = document.getElementById('fraud-input').value;
+                const nilai_akhir = document.getElementById('nilai-akhir').textContent;
+                const predikat = document.getElementById('predikat').textContent;
+                const pencapaian = document.getElementById('pencapaian-akhir').textContent;
+
+                fetch('<?= base_url("SuperAdmin/simpanNilaiAkhir") ?>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: 'Semua nilai berhasil disimpan',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: res.message || 'Gagal menyimpan nilai akhir',
+                                confirmButtonColor: '#d33'
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Terjadi kesalahan server',
+                            confirmButtonColor: '#d33'
+                        });
+                    });
+            });
         });
+
     });
 </script>
