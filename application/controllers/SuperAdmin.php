@@ -879,80 +879,125 @@ class SuperAdmin extends CI_Controller
         $sheet->setCellValue('B2', 'Periode: ' . date('d M Y', strtotime($periode_awal)) . ' s/d ' . date('d M Y', strtotime($periode_akhir)));
         $sheet->mergeCells('B2:C2');
         $sheet->getStyle('B2')->getAlignment()->setHorizontal('left');
-
         // =======================
         // DATA PEGAWAI
         // =======================
         $row = 4;
-        $sheet->setCellValue("B{$row}", "DATA PEGAWAI");
+        $sheet->setCellValue("B{$row}", "👤 DATA PEGAWAI");
         $sheet->mergeCells("B{$row}:G{$row}");
-        $sheet->getStyle("B{$row}")->getFont()->setBold(true);
-        $sheet->getStyle("B{$row}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
-        $sheet->getStyle("B{$row}")->getFont()->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle("B{$row}:G{$row}")->getAlignment()->setHorizontal('left');
+        $sheet->getStyle("B{$row}")->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF']
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
+                'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'color' => ['rgb' => '2E7D32'] // hijau elegan
+            ]
+        ]);
 
-        // Set header DATA PEGAWAI center, isi blok rata kiri
+        // Isi data pegawai
+        $row++;
+        $sheet->setCellValue("B{$row}", "NIK");
+        $sheet->setCellValue("C{$row}", ": " . ($pegawai->nik ?? '-'));
+        $sheet->setCellValue("F{$row}", "Periode Penilaian");
+        $sheet->setCellValue("G{$row}", ": " . date('d M Y', strtotime($periode_awal)) . " s/d " . date('d M Y', strtotime($periode_akhir)));
 
         $row++;
-        $sheet->setCellValue("B{$row}", "NIK : ");
-        $sheet->setCellValue("C{$row}", $pegawai->nik);
-        $sheet->setCellValue("F{$row}", "Periode Penilaian : ");
-        $sheet->setCellValue("G{$row}", date('d M Y', strtotime($periode_awal)) . " s/d " . date('d M Y', strtotime($periode_akhir)));
-        $sheet->getStyle("B{$row}:G{$row}")->getAlignment()->setHorizontal('left');
+        $sheet->setCellValue("B{$row}", "Nama Pegawai");
+        $sheet->setCellValue("C{$row}", ": " . ($pegawai->nama ?? '-'));
+        $sheet->setCellValue("F{$row}", "Unit Kantor Penilai");
+        $sheet->setCellValue("G{$row}", ": " . ($pegawai->unit_kerja ?? '-'));
+
         $row++;
-        $sheet->setCellValue("B{$row}", "Nama Pegawai : ");
-        $sheet->setCellValue("C{$row}", $pegawai->nama);
-        $sheet->setCellValue("F{$row}", "Unit Kantor Penilai : ");
-        $sheet->setCellValue("G{$row}", $pegawai->unit_kerja);
-        $sheet->getStyle("B{$row}:G{$row}")->getAlignment()->setHorizontal('left');
+        $sheet->setCellValue("B{$row}", "Jabatan");
+        $sheet->setCellValue("C{$row}", ": " . ($pegawai->jabatan ?? '-'));
+
         $row++;
-        $sheet->setCellValue("B{$row}", "Jabatan : ");
-        $sheet->setCellValue("C{$row}", $pegawai->jabatan);
-        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
-        $row++;
-        $sheet->setCellValue("B{$row}", "Unit Kantor : ");
-        $sheet->setCellValue("C{$row}", ($pegawai->unit_kerja ?? '-') . ' ' . ($pegawai->unit_kantor ?? '-'));
-        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
+        $sheet->setCellValue("B{$row}", "Unit Kantor");
+        $sheet->setCellValue("C{$row}", ": " . (($pegawai->unit_kerja ?? '-') . ' ' . ($pegawai->unit_kantor ?? '-')));
+
+        // Alignment rata kiri isi data pegawai
+        $sheet->getStyle("B5:G{$row}")
+            ->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
 
         $row += 2;
 
         // =======================
-        // PENILAI I & II
+        // PENILAI I & II (2 Kolom)
         // =======================
-        $sheet->setCellValue("B{$row}", "Penilai I");
-        $sheet->mergeCells("B{$row}:C{$row}");
-        $sheet->getStyle("B{$row}")->getFont()->setBold(true);
-        $row++;
-        $sheet->setCellValue("B{$row}", "NIK : ");
-        $sheet->setCellValue("C{$row}", $pegawai->penilai1_nik ?? '-');
-        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
-        $row++;
-        $sheet->setCellValue("B{$row}", "Nama : ");
-        $sheet->setCellValue("C{$row}", $pegawai->penilai1_nama ?? '-');
-        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
-        $row++;
-        $sheet->setCellValue("B{$row}", "Jabatan : ");
-        $sheet->setCellValue("C{$row}", $pegawai->penilai1_jabatan ?? '-');
-        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
 
-        $row += 2;
-        $sheet->setCellValue("B{$row}", "Penilai II");
+        // Header Penilai I
+        $sheet->setCellValue("B{$row}", "🧑‍💼 PENILAI I");
         $sheet->mergeCells("B{$row}:C{$row}");
-        $sheet->getStyle("B{$row}")->getFont()->setBold(true);
-        $row++;
-        $sheet->setCellValue("B{$row}", "NIK : ");
-        $sheet->setCellValue("C{$row}", $pegawai->penilai2_nik ?? '-');
-        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
-        $row++;
-        $sheet->setCellValue("B{$row}", "Nama : ");
-        $sheet->setCellValue("C{$row}", $pegawai->penilai2_nama ?? '-');
-        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
-        $row++;
-        $sheet->setCellValue("B{$row}", "Jabatan : ");
-        $sheet->setCellValue("C{$row}", $pegawai->penilai2_jabatan ?? '-');
-        $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
+        $sheet->getStyle("B{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'color' => ['rgb' => '0288D1'] // biru toska
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+            ]
+        ]);
 
-        // Tambahkan border tebal outline pada blok data pegawai sampai penilai II
+        // Header Penilai II
+        $sheet->setCellValue("E{$row}", "👨‍💼 PENILAI II");
+        $sheet->mergeCells("E{$row}:G{$row}");
+        $sheet->getStyle("E{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'color' => ['rgb' => 'F57C00'] // oranye
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical'   => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+            ]
+        ]);
+
+        $penilaiHeaderRow = $row;
+
+        // Isi baris sejajar Penilai I & II
+        $row++;
+        $sheet->setCellValue("B{$row}", "NIK");
+        $sheet->setCellValue("C{$row}", ": " . ($pegawai->penilai1_nik ?? '-'));
+        $sheet->setCellValue("E{$row}", "NIK");
+        $sheet->setCellValue("F{$row}", ": " . ($pegawai->penilai2_nik ?? '-'));
+
+        $row++;
+        $sheet->setCellValue("B{$row}", "Nama");
+        $sheet->setCellValue("C{$row}", ": " . ($pegawai->penilai1_nama ?? '-'));
+        $sheet->setCellValue("E{$row}", "Nama");
+        $sheet->setCellValue("F{$row}", ": " . ($pegawai->penilai2_nama ?? '-'));
+
+        $row++;
+        $sheet->setCellValue("B{$row}", "Jabatan");
+        $sheet->setCellValue("C{$row}", ": " . ($pegawai->penilai1_jabatan ?? '-'));
+        $sheet->setCellValue("E{$row}", "Jabatan");
+        $sheet->setCellValue("F{$row}", ": " . ($pegawai->penilai2_jabatan ?? '-'));
+
+        // Pastikan alignment isi Penilai I & II benar-benar rata kiri
+        $penilaiIsiStart = $penilaiHeaderRow + 1;
+        $sheet->getStyle("B{$penilaiIsiStart}:C{$row}")
+            ->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        $sheet->getStyle("E{$penilaiIsiStart}:G{$row}")
+            ->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+
+        // =======================
+        // BORDER BLOK DATA
+        // =======================
         $blokAwal = 4;
         $blokAkhir = $row;
         $sheet->getStyle("B{$blokAwal}:G{$blokAkhir}")->applyFromArray([
@@ -965,6 +1010,7 @@ class SuperAdmin extends CI_Controller
         ]);
 
         $row += 2;
+
 
         // =======================
         // SKALA NILAI
@@ -1522,6 +1568,15 @@ class SuperAdmin extends CI_Controller
         // Override khusus blok data pegawai dan penilai agar kolom B dan C rata kiri
         $sheet->getStyle('B5:C20')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
         $sheet->getStyle('B5:C20')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+
+        // ✅ Tambahkan override blok Penilai II
+        $sheet->getStyle('E10:G13')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('E10:G13')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+
+        $sheet->getStyle('F5:G6')->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+
 
         // set lebar kolom
         $sheet->getColumnDimension('A')->setWidth(20);
