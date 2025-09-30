@@ -954,6 +954,18 @@ class SuperAdmin extends CI_Controller
         $sheet->setCellValue("C{$row}", $pegawai->penilai2_jabatan ?? '-');
         $sheet->getStyle("B{$row}:C{$row}")->getAlignment()->setHorizontal('left');
 
+        // Tambahkan border tebal outline pada blok data pegawai sampai penilai II
+        $blokAwal = 4;
+        $blokAkhir = $row;
+        $sheet->getStyle("B{$blokAwal}:G{$blokAkhir}")->applyFromArray([
+            'borders' => [
+                'outline' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ]);
+
         $row += 2;
 
         // =======================
@@ -965,6 +977,9 @@ class SuperAdmin extends CI_Controller
         $sheet->getStyle("B{$row}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
         $row++;
 
+        // Simpan baris awal tabel
+        $skalaAwal = $row; // nanti akan dipakai untuk border
+
         $headers = ["Realisasi (%)", "< 80%", "80% sd < 90%", "90% sd < 110%", "110% sd < 120%", "120% sd 130%"];
         $col = 'B';
         foreach ($headers as $h) {
@@ -973,9 +988,9 @@ class SuperAdmin extends CI_Controller
         }
         $sheet->getStyle("B{$row}:G{$row}")->applyFromArray([
             'font' => ['bold' => true],
-            'alignment' => ['horizontal' => 'center'],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
             'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '2E7D32']]
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => 'baff95']]
         ]);
 
         $skalaDetail = [
@@ -1002,7 +1017,7 @@ class SuperAdmin extends CI_Controller
                     ]
                 ]);
 
-                // Kalau kolom pertama (Kondisi / Yudisium / Nilai) → hijau tua + font putih
+                // Kalau kolom pertama (judul baris)
                 if ($i == 0) {
                     $sheet->getStyle("{$col}{$row}")->getFill()
                         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
@@ -1011,22 +1026,34 @@ class SuperAdmin extends CI_Controller
                     $sheet->getStyle("{$col}{$row}")->getFont()->setBold(true);
                 }
 
-                // Kalau baris "Nilai" (row terakhir skala) → semua kolom isi nilai juga hijau
+                // Baris nilai → semua kolom hijau
                 if ($det[0] == "Nilai" && $i > 0) {
                     $sheet->getStyle("{$col}{$row}")->getFill()
                         ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                        ->getStartColor()->setRGB('2E7D32');
-                    $sheet->getStyle("{$col}{$row}")->getFont()->getColor()->setRGB('FFFFFF');
+                        ->getStartColor()->setRGB('baff95');
+                    $sheet->getStyle("{$col}{$row}")->getFont()->getColor()->setRGB('000000');
                 }
 
                 $col++;
             }
         }
 
+        // Simpan baris akhir tabel
+        $skalaAkhir = $row;
+
+        // Tambahkan border tebal outline di luar blok tabel
+        $sheet->getStyle("B" . ($skalaAwal - 1) . ":G{$skalaAkhir}")->applyFromArray([
+            'borders' => [
+                'outline' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ]);
 
         $row += 2;
 
-        // =======================
+        // ======================= 
         // HEADER HASIL PENILAIAN
         // =======================
         $sheet->setCellValue("B{$row}", "Perspektif");
@@ -1040,13 +1067,23 @@ class SuperAdmin extends CI_Controller
         $sheet->setCellValue("J{$row}", "Nilai");
         $sheet->setCellValue("K{$row}", "Nilai Dibobot");
 
+        // Gaya header utama
         $sheet->getStyle("B{$row}:K{$row}")->applyFromArray([
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 11],
             'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '2E7D32']],
-            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '2E7D32'] // hijau tua elegan
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
         ]);
 
+        $tabelStartRow = $row;
         $row++;
 
         // =======================
@@ -1061,11 +1098,14 @@ class SuperAdmin extends CI_Controller
 
         $subtotalRows = [];
 
+        $warnaIsi1 = 'e5ffd7'; // perspektif 
+        $warnaIsi2 = 'eeffe5'; // krem lembut
+        $warnaPerspektif = 'a6de87'; // hijau pastel
+        $warnaSasaran = 'baff95'; // hijau sangat muda
+
         foreach ($perspektifGroup as $perspektif => $sasaranArr) {
             $perspStartRow = $row;
             $noSasaran = 1;
-            $bobotStartCol = 'E';
-            $nilaiDibobotCol = 'K';
             $bobotStartRow = $row;
             $bobotEndRow = $row - 1;
 
@@ -1074,6 +1114,9 @@ class SuperAdmin extends CI_Controller
                 $noIndikator = 1;
 
                 foreach ($items as $i) {
+                    // Warna isi selang-seling
+                    $fillColor = ($row % 2 == 0) ? $warnaIsi1 : $warnaIsi2;
+
                     $sheet->setCellValue("D{$row}", $noIndikator . ". " . $i->indikator);
                     $sheet->setCellValue("E{$row}", $i->bobot);
                     $sheet->setCellValue("F{$row}", $i->target);
@@ -1082,29 +1125,63 @@ class SuperAdmin extends CI_Controller
                     $sheet->setCellValue("I{$row}", $i->pencapaian ?? '-');
                     $sheet->setCellValue("J{$row}", $i->nilai ?? '-');
                     $sheet->setCellValue("K{$row}", $i->nilai_dibobot ?? '-');
+
+                    // Terapkan gaya isi baris
+                    $sheet->getStyle("B{$row}:K{$row}")->applyFromArray([
+                        'fill' => [
+                            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                            'startColor' => ['rgb' => $fillColor]
+                        ],
+                        'alignment' => [
+                            'vertical' => 'center',
+                            'horizontal' => 'center',
+                            'wrapText' => true
+                        ],
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                                'color' => ['rgb' => '000000']
+                            ]
+                        ]
+                    ]);
+
+                    $noIndikator++;
                     $bobotEndRow = $row;
                     $row++;
-                    $noIndikator++;
                 }
 
+                // Merge Sasaran
                 if ($row - $sasaranStartRow > 1) {
                     $sheet->mergeCells("C{$sasaranStartRow}:C" . ($row - 1));
-                    $sheet->setCellValue("C{$sasaranStartRow}", $noSasaran . ". " . $sasaran);
-                } else {
-                    $sheet->setCellValue("C{$sasaranStartRow}", $noSasaran . ". " . $sasaran);
                 }
+                $sheet->setCellValue("C{$sasaranStartRow}", $noSasaran . ". " . $sasaran);
+                $sheet->getStyle("C{$sasaranStartRow}")->applyFromArray([
+                    'fill' => [
+                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => $warnaSasaran]
+                    ],
+                    'alignment' => ['horizontal' => 'left', 'vertical' => 'center'],
+                    'font' => ['bold' => true]
+                ]);
 
                 $noSasaran++;
             }
 
+            // Merge Perspektif
             if ($row - $perspStartRow > 1) {
                 $sheet->mergeCells("B{$perspStartRow}:B" . ($row - 1));
-                $sheet->setCellValue("B{$perspStartRow}", $perspektif);
-            } else {
-                $sheet->setCellValue("B{$perspStartRow}", $perspektif);
             }
+            $sheet->setCellValue("B{$perspStartRow}", $perspektif);
+            $sheet->getStyle("B{$perspStartRow}")->applyFromArray([
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => $warnaPerspektif]
+                ],
+                'alignment' => ['horizontal' => 'left', 'vertical' => 'center'],
+                'font' => ['bold' => true]
+            ]);
 
-            // subtotal: tampilkan subtotal bobot dan subtotal nilai dibobot
+            // Subtotal
             $sheet->setCellValue("B{$row}", "Sub Total {$perspektif}");
             $sheet->mergeCells("B{$row}:D{$row}");
             $sheet->setCellValue("E{$row}", "=SUM(E{$bobotStartRow}:E{$bobotEndRow})");
@@ -1112,28 +1189,65 @@ class SuperAdmin extends CI_Controller
             $sheet->setCellValue("K{$row}", "=SUM(K{$perspStartRow}:K" . ($row - 1) . ")");
             $sheet->getStyle("B{$row}:K{$row}")->applyFromArray([
                 'font' => ['bold' => true],
-                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => 'F1F8E9']]
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '58a35c']
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => '000000']
+                    ]
+                ]
             ]);
             $subtotalRows[] = $row;
             $row++;
         }
 
-        // total akhir
+        // Total Akhir
         $formula = "=SUM(" . implode(",", array_map(function ($r) {
             return "K{$r}";
         }, $subtotalRows)) . ")";
+
         $sheet->setCellValue("B{$row}", "TOTAL");
         $sheet->mergeCells("B{$row}:J{$row}");
         $sheet->setCellValue("K{$row}", $formula);
         $sheet->getStyle("B{$row}:K{$row}")->applyFromArray([
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['rgb' => '2E7D32']]
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '2E7D32']
+            ],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
         ]);
 
+        $tabelEndRow = $row;
+
         // =======================
+        // BORDER & LAYOUT
+        // =======================
+        $sheet->getStyle("B{$tabelStartRow}:K{$tabelEndRow}")->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ]);
+        $sheet->getStyle("B{$tabelStartRow}:K{$tabelEndRow}")
+            ->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM)
+            ->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('000000'));
+
+        // ======================= 
         // SUMMARY NILAI AKHIR (q)
         // =======================
-        $row += 2; // 2 baris di bawah TOTAL
+        $row += 2;
 
         // Ambil nilai akhir dari model
         $nilai = $this->DataPegawai_model->getNilaiAkhirByNikPeriode($nik, $periode_awal, $periode_akhir);
@@ -1148,81 +1262,238 @@ class SuperAdmin extends CI_Controller
                 'predikat' => '-',
             ];
         }
+        // ======================= 
+        // SUMMARY NILAI AKHIR (Q)
+        // =======================
+        $row += 2; // spasi 2 baris
+        $startRow = $row;
 
-        // Judul
-        $sheet->setCellValue("B{$row}", "Nilai Akhir (q)");
+        // 🎯 Judul Besar
+        $sheet->setCellValue("B{$row}", "🎯 NILAI AKHIR (Q)");
         $sheet->mergeCells("B{$row}:F{$row}");
-        $sheet->getStyle("B{$row}")->getFont()->setBold(true)->setSize(13)->getColor()->setRGB('217346');
+        $sheet->getStyle("B{$row}:F{$row}")->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'size' => 18,
+                'color' => ['rgb' => 'FFFFFF']
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
+                'rotation' => 90,
+                'startColor' => ['rgb' => '215d01'], // Navy klasik
+                'endColor' => ['rgb' => '2E7D32'],   // Abu kebiruan elegan
+            ],
+            'borders' => [
+                'outline' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM]
+            ]
+        ]);
+        $sheet->getRowDimension($row)->setRowHeight(36);
         $row++;
 
-        // Tabel perhitungan atas
-        $sheet->setCellValue("B{$row}", "Total Nilai Sasaran Kerja");
-        $sheet->setCellValue("C{$row}", $nilai['nilai_sasaran'] ?? 0);
-        $sheet->setCellValue("D{$row}", "x Bobot % Sasaran Kerja");
-        $sheet->setCellValue("E{$row}", "95%");
-        $sheet->setCellValue("F{$row}", $nilai['total_nilai'] ?? 0);
-        $row++;
-        $sheet->setCellValue("B{$row}", "Rata-rata Nilai Internalisasi Budaya");
-        $sheet->setCellValue("C{$row}", $nilai['nilai_budaya'] ?? 0);
-        $sheet->setCellValue("D{$row}", "x Bobot % Budaya Perusahaan");
-        $sheet->setCellValue("E{$row}", "5%");
-        $sheet->setCellValue("F{$row}", $nilai['nilai_budaya'] ?? 0);
-        $row++;
-        $sheet->setCellValue("B{$row}", "Total Nilai");
-        $sheet->mergeCells("B{$row}:E{$row}");
-        $sheet->setCellValue("F{$row}", $nilai['total_nilai'] ?? 0);
-        $row++;
-        $sheet->setCellValue("B{$row}", "Fraud (1 jika fraud, 0 jika tidak)");
-        $sheet->mergeCells("B{$row}:E{$row}");
-        $sheet->setCellValue("F{$row}", $nilai['fraud'] ?? 0);
-        $row++;
-
-        // Tabel skala nilai dan summary kanan
-        // Skala nilai kiri
-        $sheet->setCellValue("B{$row}", "Nilai Akhir");
-        $sheet->setCellValue("C{$row}", "Yudisium / Predikat");
-        $sheet->getStyle("B{$row}:C{$row}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle("B{$row}:C{$row}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
-        $row++;
-        $skala = [
-            ['≥ 4.50 - 5', 'Excellent (E)'],
-            ['3.50 - < 4.50', 'Very Good (VG)'],
-            ['3.00 - < 3.50', 'Good (G)'],
-            ['2.00 - < 3.00', 'Fair (F)'],
-            ['< 2.00', 'Minus (M)'],
+        // 📋 Data tabel nilai
+        $dataRows = [
+            ["Total Nilai Sasaran Kerja", $nilai['nilai_sasaran'], "x Bobot % Sasaran Kerja", "95%", $nilai['total_nilai']],
+            ["Rata-rata Nilai Internalisasi Budaya", $nilai['nilai_budaya'], "x Bobot % Budaya Perusahaan", "5%", $nilai['nilai_budaya']],
+            ["Total Nilai", "", "", "", $nilai['total_nilai']],
+            ["Fraud (1 jika fraud, 0 jika tidak)", "", "", "", $nilai['fraud']],
         ];
-        foreach ($skala as $s) {
-            $sheet->setCellValue("B{$row}", $s[0]);
-            $sheet->setCellValue("C{$row}", $s[1]);
+
+        $warnaZebra1 = 'F9FAFB'; // abu muda
+        $warnaZebra2 = 'FFFFFF'; // putih
+        foreach ($dataRows as $r) {
+            $sheet->setCellValue("B{$row}", $r[0]);
+            $sheet->setCellValue("C{$row}", $r[1]);
+            $sheet->setCellValue("D{$row}", $r[2]);
+            $sheet->setCellValue("E{$row}", $r[3]);
+            $sheet->setCellValue("F{$row}", $r[4]);
+
+            $warnaBg = ($row % 2 == 0) ? $warnaZebra1 : $warnaZebra2;
+
+            $sheet->getStyle("B{$row}:F{$row}")->applyFromArray([
+                'alignment' => [
+                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                        'color' => ['rgb' => 'D0D0D0']
+                    ]
+                ],
+                'font' => [
+                    'size' => 11,
+                    'color' => ['rgb' => '333333']
+                ],
+                'fill' => [
+                    'fillType' => 'solid',
+                    'startColor' => ['rgb' => $warnaBg]
+                ]
+            ]);
+            $sheet->getRowDimension($row)->setRowHeight(22);
             $row++;
         }
 
-        // Summary kanan: Nilai Akhir, Pencapaian, Predikat
-        $summaryStart = $row - 5; // baris awal skala
-        $summaryCol = 'E';
-        $sheet->setCellValue("{$summaryCol}{$summaryStart}", "Nilai Akhir");
-        $sheet->getStyle("{$summaryCol}{$summaryStart}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle("{$summaryCol}{$summaryStart}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
-        $sheet->mergeCells("{$summaryCol}{$summaryStart}:{$summaryCol}" . ($summaryStart + 1));
-        $sheet->setCellValue("F{$summaryStart}", $nilai['nilai_akhir'] ?? 'Tidak ada nilai');
-        $sheet->mergeCells("F{$summaryStart}:F" . ($summaryStart + 1));
+        // Spasi sebelum total akhir
+        $row++;
 
-        $sheet->setCellValue("{$summaryCol}" . ($summaryStart + 2), "Pencapaian Akhir");
-        $sheet->getStyle("{$summaryCol}" . ($summaryStart + 2))->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle("{$summaryCol}" . ($summaryStart + 2))->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
-        $sheet->mergeCells("{$summaryCol}" . ($summaryStart + 2) . ":{$summaryCol}" . ($summaryStart + 3));
-        $sheet->setCellValue("F" . ($summaryStart + 2), $nilai['pencapaian'] ?? '0%');
-        $sheet->mergeCells("F" . ($summaryStart + 2) . ":F" . ($summaryStart + 3));
+        // 🏆 Tentukan warna predikat
+        $predikat = strtoupper($nilai['predikat'] ?? '-');
+        $warnaPredikat = 'B0B0B0';
+        $emojiPredikat = '❔';
 
-        $sheet->setCellValue("{$summaryCol}" . ($summaryStart + 4), "Yudisium / Predikat");
-        $sheet->getStyle("{$summaryCol}" . ($summaryStart + 4))->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-        $sheet->getStyle("{$summaryCol}" . ($summaryStart + 4))->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setRGB('2E7D32');
-        $sheet->setCellValue("F" . ($summaryStart + 4), $nilai['predikat'] ?? '-');
+        switch (true) {
+            case str_contains($predikat, 'EXCELLENT'):
+                $warnaPredikat = '348cd4'; // hijau klasik elegan
+                $emojiPredikat = '🏅';
+                break;
+            case str_contains($predikat, 'VERY'):
+                $warnaPredikat = '62bce7'; // hijau olive lembut
+                $emojiPredikat = '🎖️';
+                break;
+            case str_contains($predikat, 'GOOD'):
+                $warnaPredikat = '78c350'; // biru formal
+                $emojiPredikat = '🥇';
+                break;
+            case str_contains($predikat, 'FAIR'):
+                $warnaPredikat = 'f9982c'; // gold klasik
+                $emojiPredikat = '🥈';
+                break;
+            case str_contains($predikat, 'MINUS'):
+                $warnaPredikat = 'f92c2c'; // merah tua elegan
+                $emojiPredikat = '🥉';
+                break;
+        }
 
-        // Border dan rata tengah summary
-        $sheet->getStyle("B" . ($row - 6) . ":F" . ($row - 1))->applyFromArray([
-            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+        // ⭐ TOTAL NILAI AKHIR
+        $sheet->setCellValue("B{$row}", "⭐ TOTAL NILAI AKHIR");
+        $sheet->mergeCells("B{$row}:E{$row}");
+        $sheet->setCellValue("F{$row}", $nilai['total_nilai']);
+        $sheet->getStyle("B{$row}:F{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => 'FFFFFF']],
             'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+            'fill' => [
+                'fillType' => 'solid',
+                'startColor' => ['rgb' => $warnaPredikat]
+            ],
+            'borders' => [
+                'outline' => ['borderStyle' => 'medium']
+            ]
+        ]);
+        $sheet->getRowDimension($row)->setRowHeight(32);
+        $row++;
+
+        // 🏅 PREDIKAT
+        $sheet->setCellValue("B{$row}", "🏆 PREDIKAT");
+        $sheet->mergeCells("B{$row}:E{$row}");
+        $sheet->setCellValue("F{$row}", "{$emojiPredikat} {$predikat}");
+        $sheet->getStyle("B{$row}:F{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => 'FFFFFF']],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $warnaPredikat]],
+            'borders' => ['outline' => ['borderStyle' => 'medium']]
+        ]);
+        $sheet->getRowDimension($row)->setRowHeight(32);
+        $row += 3;
+
+        // =======================
+        // 📊 TABEL SKALA NILAI
+        // =======================
+        $sheet->setCellValue("B{$row}", "Skala Nilai Akhir");
+        $sheet->setCellValue("C{$row}", "Yudisium / Predikat");
+        $sheet->mergeCells("B{$row}:C{$row}");
+        $sheet->getStyle("B{$row}:C{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2E7D32']],
+        ]);
+        $sheet->getRowDimension($row)->setRowHeight(26);
+        $row++;
+
+        // 🌈 Skala nilai formal klasik
+        $skala = [
+            ['≥ 4.50 - 5.00', '🏅 Excellent (E)', '348cd4'],
+            ['3.50 - < 4.50', '🎖️ Very Good (VG)', '62bce7'],
+            ['3.00 - < 3.50', '🥇 Good (G)', '78c350'],
+            ['2.00 - < 3.00', '🥈 Fair (F)', 'f9982c'],
+            ['< 2.00', '🥉 Minus (M)', 'f92c2c'],
+        ];
+
+        foreach ($skala as $s) {
+            $sheet->setCellValue("B{$row}", $s[0]);
+            $sheet->setCellValue("C{$row}", $s[1]);
+            $sheet->mergeCells("B{$row}:C{$row}");
+            $sheet->getStyle("B{$row}:C{$row}")->applyFromArray([
+                'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => $s[2]]],
+                'borders' => ['allBorders' => ['borderStyle' => 'thin', 'color' => ['rgb' => 'FFFFFF']]],
+            ]);
+            $sheet->getRowDimension($row)->setRowHeight(24);
+            $row++;
+        }
+
+        // 🎯 Summary Kanan
+        $summaryStart = $row - count($skala);
+        $summaryCol = 'E';
+
+        $labels = [
+            ['Nilai Akhir', $nilai['nilai_akhir'] ?? '0'],
+            ['Pencapaian Akhir', $nilai['pencapaian'] ?? '0%'],
+            ['Yudisium / Predikat', "{$emojiPredikat} {$predikat}"],
+        ];
+
+        $current = $summaryStart;
+        foreach ($labels as $index => [$label, $val]) {
+            $mergeEnd = $current + 1;
+
+            // Label
+            $sheet->mergeCells("{$summaryCol}{$current}:{$summaryCol}{$mergeEnd}");
+            $sheet->setCellValue("{$summaryCol}{$current}", $label);
+            $sheet->getStyle("{$summaryCol}{$current}:{$summaryCol}{$mergeEnd}")->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
+                'alignment' => ['horizontal' => 'center', 'vertical' => 'center', 'wrapText' => true],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2E7D32']],
+                'borders' => ['allBorders' => ['borderStyle' => 'thin', 'color' => ['rgb' => 'FFFFFF']]],
+            ]);
+
+            // Nilai
+            $sheet->mergeCells("F{$current}:F{$mergeEnd}");
+            $sheet->setCellValue("F{$current}", $val);
+            $sheet->getStyle("F{$current}:F{$mergeEnd}")->applyFromArray([
+                'font' => [
+                    'bold' => true,
+                    'size' => ($index == 0 ? 16 : 14),
+                    'color' => ['rgb' => 'FFFFFF'],
+                ],
+                'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+                'fill' => [
+                    'fillType' => 'solid',
+                    'startColor' => ['rgb' => ($index == 2 ? $warnaPredikat : '78c350')]
+                ],
+                'borders' => ['allBorders' => ['borderStyle' => 'thin', 'color' => ['rgb' => 'FFFFFF']]],
+            ]);
+
+            $current = $mergeEnd + 1;
+        }
+
+        // 🔧 Set lebar kolom & tinggi baris
+        $sheet->getColumnDimension('B')->setWidth(35);
+        $sheet->getColumnDimension('C')->setWidth(30);
+        $sheet->getColumnDimension('D')->setWidth(25);
+        $sheet->getColumnDimension('E')->setWidth(22);
+        $sheet->getColumnDimension('F')->setWidth(20);
+
+        // Tambahkan footer
+        $row = $current + 3;
+        $sheet->setCellValue("B{$row}", "📄 Laporan ini dihasilkan otomatis oleh Sistem Penilaian Kinerja");
+        $sheet->mergeCells("B{$row}:F{$row}");
+        $sheet->getStyle("B{$row}:F{$row}")->applyFromArray([
+            'font' => ['italic' => true, 'size' => 10, 'color' => ['rgb' => '666666']],
+            'alignment' => ['horizontal' => 'center'],
         ]);
 
         // =======================
@@ -1265,6 +1536,7 @@ class SuperAdmin extends CI_Controller
         $sheet->getColumnDimension('H')->setWidth(15);
         $sheet->getColumnDimension('I')->setWidth(10);
         $sheet->getColumnDimension('J')->setWidth(15);
+        $sheet->getColumnDimension('K')->setWidth(18);
 
         // tinggi baris auto
         for ($r = 1; $r <= ($row - 1); $r++) {
