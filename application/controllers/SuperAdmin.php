@@ -333,52 +333,50 @@ class SuperAdmin extends CI_Controller
         $this->load->view("layout/footer");
     }
 
+    public function simpanPenilaian()
+    {
+        $nik = $this->input->post('nik');
+        $targets = $this->input->post('target');
+        $batas_waktu = $this->input->post('batas_waktu');
+        $realisasi = $this->input->post('realisasi');
+        $pencapaian = $this->input->post('pencapaian');
+        $nilai = $this->input->post('nilai');
+        $nilaidibobot = $this->input->post('nilai_dibobot');
 
+        // Ambil periode dari form, kalau kosong pakai default tahun ini
+        $periode_awal = $this->input->post('periode_awal') ?? date('Y-01-01');
+        $periode_akhir = $this->input->post('periode_akhir') ?? date('Y-12-31');
 
-    // public function simpanPenilaian()
-    // {
-    //     $nik = $this->input->post('nik');
-    //     $targets = $this->input->post('target');
-    //     $batas_waktu = $this->input->post('batas_waktu');
-    //     $realisasi = $this->input->post('realisasi');
-    //     $pencapaian = $this->input->post('pencapaian');
-    //     $nilai = $this->input->post('nilai');
-    //     $nilaidibobot = $this->input->post('nilai_dibobot');
+        $success = true;
 
-    //     // Ambil periode dari form, kalau kosong pakai default tahun ini
-    //     $periode_awal = $this->input->post('periode_awal') ?? date('Y-01-01');
-    //     $periode_akhir = $this->input->post('periode_akhir') ?? date('Y-12-31');
+        if ($targets) {
+            foreach ($targets as $indikator_id => $t) {
+                $btw = $batas_waktu[$indikator_id] ?? null;
+                $rls = $realisasi[$indikator_id] ?? null;
+                $pnc = $pencapaian[$indikator_id] ?? null;
+                $nli = $nilai[$indikator_id] ?? null;
+                $nld = $nilaidibobot[$indikator_id] ?? null;
 
-    //     $success = true;
+                if (!$this->Penilaian_model->save_penilaian($nik, $indikator_id, $t, $btw, $rls, $pnc, $nli, $nld, $periode_awal, $periode_akhir)) {
+                    $success = false;
+                }
+            }
+        }
 
-    //     if ($targets) {
-    //         foreach ($targets as $indikator_id => $t) {
-    //             $btw = $batas_waktu[$indikator_id] ?? null;
-    //             $rls = $realisasi[$indikator_id] ?? null;
-    //             $pnc = $pencapaian[$indikator_id] ?? null;
-    //             $nli = $nilai[$indikator_id] ?? null;
-    //             $nld = $nilaidibobot[$indikator_id] ?? null;
+        if ($success) {
+            $this->session->set_flashdata('message', [
+                'type' => 'success',
+                'text' => 'Seluruh penilaian berhasil disimpan!'
+            ]);
+        } else {
+            $this->session->set_flashdata('message', [
+                'type' => 'error',
+                'text' => 'Gagal menyimpan sebagian data penilaian.'
+            ]);
+        }
 
-    //             if (!$this->Penilaian_model->save_penilaian($nik, $indikator_id, $t, $btw, $rls, $pnc, $nli, $nld, $periode_awal, $periode_akhir)) {
-    //                 $success = false;
-    //             }
-    //         }
-    //     }
-
-    //     if ($success) {
-    //         $this->session->set_flashdata('message', [
-    //             'type' => 'success',
-    //             'text' => 'Seluruh penilaian berhasil disimpan!'
-    //         ]);
-    //     } else {
-    //         $this->session->set_flashdata('message', [
-    //             'type' => 'error',
-    //             'text' => 'Gagal menyimpan sebagian data penilaian.'
-    //         ]);
-    //     }
-
-    //     redirect('SuperAdmin/penilaiankinerja');
-    // }
+        redirect('SuperAdmin/penilaiankinerja');
+    }
 
     public function simpanPenilaianBaris()
     {
