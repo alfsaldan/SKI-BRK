@@ -877,7 +877,7 @@ if ($message): ?>
 
             return {
                 bobot,
-                nilaiBobot: nilaiBobot === "" ? 0 : nilaiBobot,
+                nilaiBobot: nilaiBobot === "" ? 0 : parseFloat(formatAngka(nilaiBobot)),
                 perspektif: row.dataset.perspektif
             };
         }

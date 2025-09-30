@@ -412,7 +412,7 @@
                             document.getElementById('rata-rata-budaya').value = rata;
                             // update ke bagian Nilai Akhir juga kalau perlu
                             document.getElementById('rata-budaya').innerText = rata;
-                            
+
                             hitungNilaiAkhir();
                         });
                     });
@@ -753,7 +753,7 @@
 
             return {
                 bobot,
-                nilaiBobot: nilaiBobot === "" ? 0 : nilaiBobot,
+                nilaiBobot: nilaiBobot === "" ? 0 : parseFloat(formatAngka(nilaiBobot)), // ← bulatkan per baris
                 perspektif: row.dataset.perspektif
             };
         }

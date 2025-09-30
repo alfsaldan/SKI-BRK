@@ -190,15 +190,15 @@
                                         function count_rows($arr)
                                         {
                                             $sum = 0;
-                                            foreach ($arr as $items)
+                                            foreach ($arr as $items) {
                                                 $sum += count($items);
+                                            }
                                             return $sum;
                                         }
                                         ?>
 
                                         <?php foreach ($order as $persp): ?>
-                                            <?php if (empty($grouped[$persp]))
-                                                continue; ?>
+                                            <?php if (empty($grouped[$persp])) continue; ?>
                                             <?php
                                             $persp_rows = count_rows($grouped[$persp]);
                                             $first_persp_cell = true;
@@ -212,8 +212,8 @@
                                                 ?>
                                                 <?php foreach ($items as $i): ?>
                                                     <?php
-                                                    $subtotal_bobot += $i->bobot;
-                                                    $subtotal_nilai += $i->nilai_dibobot ?? 0;
+                                                    $subtotal_bobot += (float) $i->bobot;
+                                                    $subtotal_nilai += (float) ($i->nilai_dibobot ?? 0);
                                                     ?>
                                                     <tr>
                                                         <?php if ($first_persp_cell): ?>
@@ -249,13 +249,12 @@
                                                 <td colspan="3">Sub Total <?= $persp; ?></td>
                                                 <td class="text-center"><?= $subtotal_bobot; ?></td>
                                                 <td colspan="5" class="text-center">Sub Total Nilai Dibobot</td>
-                                                <td class="text-center"><?= number_format($subtotal_nilai, 2); ?></td>
+                                                <td class="text-center"><?= number_format(round($subtotal_nilai, 2), 2); ?></td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="10" class="text-center">Belum ada data penilaian untuk pegawai
-                                                ini</td>
+                                            <td colspan="10" class="text-center">Belum ada data penilaian untuk pegawai ini</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -265,8 +264,10 @@
                                             <td colspan="3">Total</td>
                                             <td><?= array_sum(array_column($penilaian_pegawai, 'bobot')); ?></td>
                                             <td colspan="5">Total Nilai Dibobot</td>
-                                            <td><?= number_format(array_sum(array_column($penilaian_pegawai, 'nilai_dibobot')), 2); ?>
-                                            </td>
+                                            <?php
+                                            $total_nilai = array_sum(array_map('floatval', array_column($penilaian_pegawai, 'nilai_dibobot')));
+                                            ?>
+                                            <td><?= number_format(round($total_nilai, 2), 2); ?></td>
                                         </tr>
                                     </tfoot>
                                 <?php endif; ?>
@@ -276,6 +277,7 @@
                 </div>
             </div>
         </div>
+
 
         <!-- Nilai Akhir & Catatan -->
         <div class="card mt-4">
@@ -514,9 +516,9 @@
         }
 
         // Ambil nilai dari PHP
-        let nilaiAkhir = <?= isset($nilai['nilai_akhir']) ? (is_numeric($nilai['nilai_akhir']) ? $nilai['nilai_akhir'] : '"'.$nilai['nilai_akhir'].'"') : 0 ?>;
-        let pencapaian = <?= isset($nilai['pencapaian']) ? (is_numeric($nilai['pencapaian']) ? $nilai['pencapaian'] : '"'.$nilai['pencapaian'].'"') : 0 ?>;
-        
+        let nilaiAkhir = <?= isset($nilai['nilai_akhir']) ? (is_numeric($nilai['nilai_akhir']) ? $nilai['nilai_akhir'] : '"' . $nilai['nilai_akhir'] . '"') : 0 ?>;
+        let pencapaian = <?= isset($nilai['pencapaian']) ? (is_numeric($nilai['pencapaian']) ? $nilai['pencapaian'] : '"' . $nilai['pencapaian'] . '"') : 0 ?>;
+
         function HitungNilaiAkhir() {
             // Predikat
             let predikat;

@@ -455,6 +455,33 @@
                     </div>
                 </div>
 
+                <!-- Modal Catatan -->
+                <!-- Modal Catatan -->
+                <div class="modal fade" id="modalCatatan" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form id="form-catatan">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Tambah Catatan</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <input type="hidden" id="indikator_id" name="indikator_id">
+                                    <div class="form-group">
+                                        <label for="catatan">Catatan</label>
+                                        <textarea class="form-control" id="catatan" name="catatan"></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                                    <button type="submit" id="btn-simpan-catatan" class="btn btn-primary">Simpan</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+
+
                 <!-- ================== FORM NILAI AKHIR ================== -->
                 <!-- Nilai Akhir & Catatan -->
                 <div class="card mt-4">
@@ -829,7 +856,7 @@
 
             return {
                 bobot,
-                nilaiBobot: nilaiBobot === "" ? 0 : nilaiBobot,
+                nilaiBobot: nilaiBobot === "" ? 0 : parseFloat(formatAngka(nilaiBobot)),
                 perspektif: row.dataset.perspektif
             };
         }
@@ -977,53 +1004,51 @@
                 const row = this.closest('tr');
                 const id = row.dataset.id;
 
-                // ambil data status
                 const status = row.querySelector('.status-select').value;
-
-                // ambil data penilaian
-                const indikator_id = row.dataset.id;
                 const realisasi = row.querySelector('.realisasi-input')?.value || '';
                 const pencapaian = row.querySelector('.pencapaian-output')?.value || '';
                 const nilai = row.querySelector('.nilai-output')?.value || '';
                 const nilai_dibobot = row.querySelector('.nilai-bobot-output')?.value || '';
 
-                const periode_awal = periodeAwal.value;
-                const periode_akhir = periodeAkhir.value;
+                if (status === "Ada Catatan") {
+                    // buka modal catatan
+                    $('#modalCatatan').modal('show');
 
-                // 1️⃣ Simpan status dulu
-                fetch("<?= base_url('Pegawai/updateStatus'); ?>", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/x-www-form-urlencoded"
-                        },
-                        body: `id=${id}&status=${encodeURIComponent(status)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}`
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (!data.success) {
-                            throw new Error(data.message || "Gagal update status & realisasi");
-                        }
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil',
-                            text: 'Status & Realisasi berhasil disimpan!',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                        hitungTotal();
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: err.message || 'Terjadi kesalahan server',
-                            confirmButtonColor: '#d33'
-                        });
-                    });
+                    // simpan indikator_id di hidden input
+                    document.getElementById('indikator_id').value = id;
 
+                    return; // stop di sini, tunggu submit catatan
+                }
+
+                // selain "Ada Catatan" → simpan langsung
+                simpanStatus(id, status, realisasi, pencapaian, nilai, nilai_dibobot);
             });
         });
+
+        function simpanStatus(id, status, realisasi, pencapaian, nilai, nilai_dibobot) {
+            fetch("<?= base_url('Pegawai/updateStatus'); ?>", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: `id=${id}&status=${encodeURIComponent(status)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) throw new Error("Gagal update status");
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil simpan!'
+                    });
+                    hitungTotal();
+                })
+                .catch(err => Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: err.message
+                }));
+        }
+
 
         // Update semua status sekaligus
         document.getElementById('btn-simpan-semua').addEventListener('click', () => {
@@ -1088,69 +1113,67 @@
 
 
         // AJAX Form Catatan
-        $('#form-catatan').on('submit', function(e) {
-            e.preventDefault();
-            const catatan = $('#catatan').val().trim();
-            if (catatan === '') {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Catatan kosong'
-                });
-                return;
-            }
+        // Pastikan ini ada setelah DOM siap
+        $(document).ready(function() {
+            $('#form-catatan').on('submit', function(e) {
+                e.preventDefault();
 
-            fetch("<?= base_url('pegawai/simpan_catatan'); ?>", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: `nik_pegawai=${nik}&catatan=${encodeURIComponent(catatan)}`
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
+                const catatan = $('#catatan').val().trim();
+                const indikator_id = $('#indikator_id').val();
 
-                        // Ambil tanggal sekarang, format dd-mm-yyyy HH:MM
-                        const tanggal = new Date().toLocaleString('id-ID', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        });
-
-                        // Tambahkan baris baru, pastikan nama penilai dari server
-                        tableCatatan.row.add([
-                            '', // No otomatis oleh drawCallback
-                            data.nama_penilai, // ambil dari server
-                            catatan,
-                            tanggal
-                        ]).draw(false);
-
-
-                        $('#form-catatan')[0].reset();
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal',
-                            text: data.message
-                        });
-                    }
-                })
-                .catch(err => {
+                if (catatan === '') {
                     Swal.fire({
+                        icon: 'warning',
+                        title: 'Catatan kosong'
+                    });
+                    return;
+                }
+
+                fetch("<?= base_url('pegawai/simpan_catatan'); ?>", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: `indikator_id=${indikator_id}&nik_pegawai=${nik}&catatan=${encodeURIComponent(catatan)}`
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            // update DataTable
+                            const tanggal = new Date().toLocaleString('id-ID', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+
+                            tableCatatan.row.add([
+                                '', data.nama_penilai, catatan, tanggal
+                            ]).draw(false);
+
+                            // update status indikator
+                            simpanStatus(indikator_id, "Ada Catatan", "", "", "", "");
+
+                            $('#form-catatan')[0].reset();
+                            $('#modalCatatan').modal('hide');
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: data.message
+                            });
+                        }
+                    })
+                    .catch(err => Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'Terjadi kesalahan server'
-                    });
-                });
+                        text: 'Server error'
+                    }));
+            });
         });
+
+
 
 
 
