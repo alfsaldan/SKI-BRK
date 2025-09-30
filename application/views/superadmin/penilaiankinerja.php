@@ -334,6 +334,89 @@
                         </div>
                     </div>
                 </div>
+                <!-- Form Penilaian Budaya -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body">
+                                <h5 class="text-success font-weight-bold mb-3">
+                                    <i class="mdi mdi-account-star-outline mr-2"></i> Form Penilaian Budaya
+                                </h5>
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="tabel-penilaian-budaya">
+                                        <thead style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
+                                            <tr>
+                                                <th style="width:50px;">No</th>
+                                                <th>Budaya Kerja</th>
+                                                <th style="width:120px;" class="text-center">Nilai (0-5)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                            $budaya_list = [
+                                                "Jujur dan berkomitmen",
+                                                "Bekerja sama, saling menghargai dan mendukung",
+                                                "Berpikir positif",
+                                                "Peduli, proaktif dan cepat tanggap",
+                                                "Tulus ikhlas",
+                                                "Berorientasi pada solusi terbaik",
+                                                "Kompeten dan bertanggung jawab",
+                                                "Bekerja cerdas, efektif dan efisien",
+                                                "Kreatif, inovatif dan bernilai tambah",
+                                                "Memberikan hasil terbaik"
+                                            ];
+                                            $no = 1;
+                                            foreach ($budaya_list as $b): ?>
+                                                <tr>
+                                                    <td class="text-center"><?= $no++; ?></td>
+                                                    <td><?= $b; ?></td>
+                                                    <td class="text-center">
+                                                        <input type="number" step="0.1" min="0" max="5"
+                                                            class="form-control form-control-sm text-center budaya"
+                                                            name="budaya[]" value="">
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                        <tfoot style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
+                                            <tr>
+                                                <td colspan="2" class="text-right align-middle">Rata-Rata Nilai Internalisasi Budaya</td>
+                                                <td class="text-center">
+                                                    <input type="text" id="rata-rata-budaya"
+                                                        class="form-control form-control-sm text-center" readonly>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    // hitung otomatis rata-rata budaya
+                    document.querySelectorAll('.budaya').forEach(input => {
+                        input.addEventListener('input', function() {
+                            let total = 0,
+                                count = 0;
+                            document.querySelectorAll('.budaya').forEach(i => {
+                                let val = parseFloat(i.value);
+                                if (!isNaN(val)) {
+                                    total += val;
+                                    count++;
+                                }
+                            });
+                            let rata = count > 0 ? (total / count).toFixed(2) : 0;
+                            document.getElementById('rata-rata-budaya').value = rata;
+                            // update ke bagian Nilai Akhir juga kalau perlu
+                            document.getElementById('rata-budaya').innerText = rata;
+                            
+                            hitungNilaiAkhir();
+                        });
+                    });
+                </script>
 
                 <!-- Nilai Akhir & Catatan -->
                 <div class="card mt-4">
@@ -720,7 +803,7 @@
 
             // Ambil nilai sasaran dari total-nilai-bobot
             const totalSasaran = parseFloat(document.getElementById("total-nilai-bobot").textContent) || 0;
-            const rataBudaya = parseFloat(document.getElementById("rata-budaya").textContent) || 0;
+            const rataBudaya = parseFloat(document.getElementById("rata-rata-budaya").textContent) || 0;
 
             // Total nilai sasaran kerja 
             const nilaiSasaran = totalSasaran * bobotSasaran;
