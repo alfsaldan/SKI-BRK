@@ -144,10 +144,10 @@
 
         // dummy data per unit
         var dataUnit = {
-            "cabang": [8, 15, 20, 25, 12],
-            "cabang_utama": [2, 5, 10, 15, 30],
-            "cabang_pembantu": [4, 10, 18, 20, 15],
-            "kedai": [6, 8, 12, 18, 22]
+            "cabang": [1, 15, 30, 25, 12],
+            "cabang_utama": [2, 5, 20, 15, 10],
+            "cabang_pembantu": [3, 10, 25, 20, 15],
+            "kedai": [1, 8, 25, 18, 12]
         };
 
         var colors = ["#ff4d4d", "#ff9900", "#1e90ff", "#32cd32", "#186c18"];
