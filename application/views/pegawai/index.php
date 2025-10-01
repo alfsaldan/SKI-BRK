@@ -545,7 +545,7 @@
                                     <input type="number" min="0" max="1"
                                         class="form-control form-control-sm text-center"
                                         id="fraud-input"
-                                        value="<?= $nilai_akhir['fraud'] ?? 0 ?>">
+                                        value="<?= $nilai_akhir['fraud'] ?? 0 ?>" readonly>
                                 </td>
                             </tr>
                         </table>
