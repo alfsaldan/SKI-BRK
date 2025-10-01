@@ -3,6 +3,9 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Coaching_model extends CI_Model
 {
+    /**
+     * Simpan pesan coaching ke database
+     */
     public function simpanPesan($data)
     {
         $result = $this->db->insert('aktivitas_coaching', $data);
@@ -12,6 +15,9 @@ class Coaching_model extends CI_Model
         return ['success' => true];
     }
 
+    /**
+     * Ambil data chat coaching berdasarkan NIK pegawai
+     */
     public function getChat($nikPegawai, $lastId = 0)
     {
         $this->db->select("ac.*, p.nama AS nama_pengirim, p.jabatan");
@@ -27,6 +33,9 @@ class Coaching_model extends CI_Model
         return $this->db->get()->result();
     }
 
+    /**
+     * Tandai semua pesan sebagai sudah dibaca berdasarkan peran user
+     */
     public function clearUnread($nik)
     {
         // kalau user adalah pegawai
@@ -45,6 +54,9 @@ class Coaching_model extends CI_Model
                  ->update('aktivitas_coaching', ['is_read_penilai2' => 1]);
     }
 
+    /**
+     * Ambil daftar pesan yang belum dibaca oleh user tertentu
+     */
     public function getUnreadList($nik)
     {
         $this->db->select('ac.*, p.nama as nama_pengirim');
@@ -72,5 +84,22 @@ class Coaching_model extends CI_Model
             ];
         }
         return $list;
+    }
+
+    /**
+     * Ambil laporan aktivitas coaching berdasarkan NIK Pegawai dan periode
+     */
+    public function getLaporanCoaching($nikPegawai, $periode_awal, $periode_akhir)
+    {
+        return $this->db
+            ->select("ac.*, p.nama AS nama_pengirim")
+            ->from("aktivitas_coaching ac")
+            ->join("pegawai p", "p.nik = ac.pengirim_nik", "left")
+            ->where("ac.nik_pegawai", $nikPegawai)
+            ->where("ac.created_at >=", $periode_awal)
+            ->where("ac.created_at <=", $periode_akhir)
+            ->order_by("ac.created_at", "ASC")
+            ->get()
+            ->result();
     }
 }

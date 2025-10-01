@@ -20,6 +20,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
  * @property RiwayatJabatan_model $RiwayatJabatan_model
  * @property PenilaiMapping_model $PenilaiMapping_model
  * @property DataDiri_model $DataDiri_model
+ * @property Coaching_model $Coaching_model
  * @property CI_Input $input
  * @property CI_Session $session
  * @property CI_DB_query_builder $db
@@ -844,6 +845,7 @@ class SuperAdmin extends CI_Controller
         $periode_akhir = $this->input->get('akhir') ?? date('Y-12-31');
 
         $this->load->model('DataPegawai_model');
+        $this->load->model('pegawai/Coaching_model');
 
         // Ambil data pegawai beserta penilai
         $pegawai = $this->DataPegawai_model->getPegawaiWithPenilai($nik);
@@ -1539,6 +1541,84 @@ class SuperAdmin extends CI_Controller
             'font' => ['italic' => true, 'size' => 10, 'color' => ['rgb' => '666666']],
             'alignment' => ['horizontal' => 'center'],
         ]);
+
+        // =======================
+        // BUAT DISINI UNTUK menampilkan laporan AKTIVITAS COACHING dengan periode range chat yang dilaporkan sesuai range periode yang didownload
+        // =======================
+        // =======================
+        // 📄 SHEET 2: LAPORAN AKTIVITAS COACHING
+        // =======================
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('Aktivitas Coaching');
+
+        $row = 2;
+        $sheet2->setCellValue("B{$row}", "📋 Laporan Aktivitas Coaching");
+        $sheet2->mergeCells("B{$row}:F{$row}");
+        $sheet2->getStyle("B{$row}:F{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 14, 'color' => ['rgb' => 'FFFFFF']],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '2E7D32']],
+        ]);
+        $sheet2->getRowDimension($row)->setRowHeight(30);
+        $row += 2;
+
+        // Header tabel
+        $headers = ['No', 'Tanggal', 'Pengirim', 'Pesan', 'Penerima'];
+        $cols = ['B', 'C', 'D', 'E', 'F'];
+        foreach ($headers as $i => $h) {
+            $sheet2->setCellValue("{$cols[$i]}{$row}", $h);
+            $sheet2->getStyle("{$cols[$i]}{$row}")->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'alignment' => ['horizontal' => 'center', 'vertical' => 'center', 'wrapText' => true],
+                'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '4CAF50']],
+                'borders' => ['allBorders' => ['borderStyle' => 'thin']],
+            ]);
+        }
+        $sheet2->getRowDimension($row)->setRowHeight(24);
+        $row++;
+
+        // Ambil data coaching dari model
+        $aktivitas = $this->Coaching_model->getLaporanCoaching($pegawai->nik, $periode_awal, $periode_akhir);
+
+        if (empty($aktivitas)) {
+            $sheet2->setCellValue("B{$row}", "Tidak ada data aktivitas coaching pada periode ini.");
+            $sheet2->mergeCells("B{$row}:F{$row}");
+            $sheet2->getStyle("B{$row}:F{$row}")->applyFromArray([
+                'alignment' => ['horizontal' => 'center'],
+                'font' => ['italic' => true, 'color' => ['rgb' => '777777']],
+            ]);
+            $row++;
+        } else {
+            $no = 1;
+            foreach ($aktivitas as $item) {
+                // Konversi UTC ke WIB
+                $dt = new DateTime($item->created_at, new DateTimeZone('UTC'));
+                $dt->setTimezone(new DateTimeZone('Asia/Jakarta'));
+                $tanggal = $dt->format('d-m-Y H:i:s');
+
+                $sheet2->setCellValue("B{$row}", $no++);
+                $sheet2->setCellValue("C{$row}", $tanggal);
+                $sheet2->setCellValue("D{$row}", $item->nama_pengirim ?? $item->pengirim_nik);
+                $sheet2->setCellValue("E{$row}", $item->pesan);
+                $sheet2->setCellValue("F{$row}", "Pegawai: {$pegawai->nama}");
+
+                $sheet2->getStyle("B{$row}:F{$row}")->applyFromArray([
+                    'alignment' => ['vertical' => 'top', 'wrapText' => true],
+                    'borders' => ['allBorders' => ['borderStyle' => 'thin']],
+                ]);
+
+                $sheet2->getRowDimension($row)->setRowHeight(-1);
+                $row++;
+            }
+        }
+
+        // Set lebar kolom
+        $sheet2->getColumnDimension('B')->setWidth(5);
+        $sheet2->getColumnDimension('C')->setWidth(20);
+        $sheet2->getColumnDimension('D')->setWidth(25);
+        $sheet2->getColumnDimension('E')->setWidth(70);
+        $sheet2->getColumnDimension('F')->setWidth(25);
+
 
         // =======================
         // WRAP TEXT & LAYOUT

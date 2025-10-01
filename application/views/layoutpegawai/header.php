@@ -196,10 +196,10 @@
 
 
                         <!-- item-->
-                        <a href="javascript:void(0);" class="dropdown-item notify-item">
+                        <!-- <a href="javascript:void(0);" class="dropdown-item notify-item">
                             <i class="fe-settings"></i>
                             <span>Pengaturan</span>
-                        </a>
+                        </a> -->
 
                         <div class="dropdown-divider"></div>
 
