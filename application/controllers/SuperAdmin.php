@@ -1533,6 +1533,129 @@ class SuperAdmin extends CI_Controller
         $sheet->getColumnDimension('E')->setWidth(22);
         $sheet->getColumnDimension('F')->setWidth(20);
 
+        // =======================
+        // BUAT DISINI UNTUK KOMENTAR
+        // =======================
+        // =======================
+        // ✍️ KOMENTAR PEGAWAI DAN PENILAI (SAMPING)
+        // =======================
+
+        // Tentukan posisi baris awal sejajar nilai akhir
+        $row = 44; // mulai di samping bagian "NILAI AKHIR"
+        $colStart = 'H';
+        $colEnd   = 'K';
+
+        // Judul Bagian
+        $sheet->setCellValue("{$colStart}{$row}", "III. KOMENTAR PEGAWAI DAN PENILAI");
+        $sheet->mergeCells("{$colStart}{$row}:{$colEnd}{$row}");
+        $sheet->getStyle("{$colStart}{$row}:{$colEnd}{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 11],
+            'alignment' => ['horizontal' => 'left'],
+        ]);
+        $row++;
+
+        // === Komentar Pegawai ===
+        $sheet->setCellValue("{$colStart}{$row}", "Komentar Pegawai Yang Dinilai Tentang Hasil Kerja Selama Setahun");
+        $sheet->mergeCells("{$colStart}{$row}:{$colEnd}{$row}");
+        $sheet->getStyle("{$colStart}{$row}:{$colEnd}{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '33691E']],
+            'borders' => ['outline' => ['borderStyle' => 'thin']],
+        ]);
+        $row++;
+
+        // Area isi komentar pegawai
+        $startIsi = $row;
+        $row += 3;
+        $sheet->mergeCells("{$colStart}{$startIsi}:{$colEnd}{$row}");
+        $sheet->getStyle("{$colStart}{$startIsi}:{$colEnd}{$row}")->applyFromArray([
+            'borders' => ['outline' => ['borderStyle' => 'thin']],
+        ]);
+        $row++;
+
+        // === Komentar Penilai I ===
+        $sheet->setCellValue("{$colStart}{$row}", "Komentar Penilai I");
+        $sheet->mergeCells("{$colStart}{$row}:{$colEnd}{$row}");
+        $sheet->getStyle("{$colStart}{$row}:{$colEnd}{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '33691E']],
+            'borders' => ['outline' => ['borderStyle' => 'thin']],
+        ]);
+        $row++;
+
+        // Area isi komentar penilai I
+        $startIsi = $row;
+        $row += 3;
+        $sheet->mergeCells("{$colStart}{$startIsi}:{$colEnd}{$row}");
+        $sheet->getStyle("{$colStart}{$startIsi}:{$colEnd}{$row}")->applyFromArray([
+            'borders' => ['outline' => ['borderStyle' => 'thin']],
+        ]);
+        $row++;
+
+        // === Komentar Penilai II ===
+        $sheet->setCellValue("{$colStart}{$row}", "Komentar Penilai II");
+        $sheet->mergeCells("{$colStart}{$row}:{$colEnd}{$row}");
+        $sheet->getStyle("{$colStart}{$row}:{$colEnd}{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '33691E']],
+            'borders' => ['outline' => ['borderStyle' => 'thin']],
+        ]);
+        $row++;
+
+        // Area isi komentar penilai II
+        $startIsi = $row;
+        $row += 3;
+        $sheet->mergeCells("{$colStart}{$startIsi}:{$colEnd}{$row}");
+        $sheet->getStyle("{$colStart}{$startIsi}:{$colEnd}{$row}")->applyFromArray([
+            'borders' => ['outline' => ['borderStyle' => 'thin']],
+        ]);
+        $row += 2;
+
+        // =======================
+        // ✍️ TABEL PERSETUJUAN
+        // =======================
+        $sheet->setCellValue("{$colStart}{$row}", "PERSETUJUAN RENCANA KINERJA AKHIR TAHUN");
+        $sheet->mergeCells("{$colStart}{$row}:J{$row}");
+        $sheet->getStyle("{$colStart}{$row}:J{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '33691E']],
+            'alignment' => ['horizontal' => 'center'],
+        ]);
+        $sheet->setCellValue("K{$row}", "MENGETAHUI");
+        $sheet->getStyle("K{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => 'solid', 'startColor' => ['rgb' => '33691E']],
+            'alignment' => ['horizontal' => 'center'],
+        ]);
+        $row++;
+
+        // Sub header kolom
+        $sheet->setCellValue("{$colStart}{$row}", "Pegawai");
+        $sheet->setCellValue("I{$row}", "Penilai I");
+        $sheet->mergeCells("J{$row}:K{$row}");
+        $sheet->setCellValue("J{$row}", "Penilai II");
+        $sheet->getStyle("{$colStart}{$row}:{$colEnd}{$row}")->applyFromArray([
+            'font' => ['bold' => true],
+            'alignment' => ['horizontal' => 'center'],
+            'borders' => ['allBorders' => ['borderStyle' => 'thin']],
+        ]);
+        $row++;
+
+        // Area tanda tangan
+        $startTTD = $row;
+        $row += 3;
+        $sheet->getStyle("{$colStart}{$startTTD}:{$colEnd}{$row}")->applyFromArray([
+            'borders' => ['allBorders' => ['borderStyle' => 'thin']],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'bottom'],
+        ]);
+
+        // Tambahkan titik-titik
+        $sheet->setCellValue("{$colStart}{$row}", "....................");
+        $sheet->setCellValue("I{$row}", "....................");
+        $sheet->mergeCells("J{$row}:K{$row}");
+        $sheet->setCellValue("J{$row}", "....................");
+
+
         // Tambahkan footer
         $row = $current + 3;
         $sheet->setCellValue("B{$row}", "📄 Laporan ini dihasilkan otomatis oleh Sistem Penilaian Kinerja");
@@ -1667,7 +1790,7 @@ class SuperAdmin extends CI_Controller
         $sheet->getColumnDimension('F')->setWidth(20);
         $sheet->getColumnDimension('G')->setWidth(20);
         $sheet->getColumnDimension('H')->setWidth(15);
-        $sheet->getColumnDimension('I')->setWidth(10);
+        $sheet->getColumnDimension('I')->setWidth(15);
         $sheet->getColumnDimension('J')->setWidth(15);
         $sheet->getColumnDimension('K')->setWidth(18);
 
