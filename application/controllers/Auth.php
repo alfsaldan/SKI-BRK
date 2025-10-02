@@ -1,6 +1,22 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+/**
+ * @property Pegawai_model $Pegawai_model
+ * @property Nilai_model $Nilai_model
+ * @property DataDiri_model $DataDiri_model
+ * @property Penilaian_model $Penilaian_model
+ * @property Indikator_model $Indikator_model
+ * @property Coaching_model $Coaching_model
+
+ * @property RiwayatJabatan_model $RiwayatJabatan_model
+ * @property Auth_model $Auth_model
+ * @property CI_Input $input
+ * @property CI_Session $session
+ * @property CI_DB_query_builder $db
+ */
+
+
 class Auth extends CI_Controller
 {
 
@@ -41,8 +57,8 @@ class Auth extends CI_Controller
 
         // Tentukan role login
         $role_options = [];
-        if ($user->role == 'superadmin') {
-            $role_options = ['superadmin', 'pegawai'];
+        if ($user->role == 'administrator') {
+            $role_options = ['administrator', 'pegawai'];
 
             // Jika belum pilih role, tampilkan form kembali
             if (!$selected_role) {
@@ -66,8 +82,8 @@ class Auth extends CI_Controller
         $this->session->set_flashdata('login_success', 'Selamat datang, ' . $user->nik);
 
         // Redirect sesuai role
-        if ($login_role === 'superadmin') {
-            redirect('superadmin'); // bisa tampilkan SweetAlert di halaman superadmin
+        if ($login_role === 'administrator') {
+            redirect('administrator'); // bisa tampilkan SweetAlert di halaman administrator
         } else {
             redirect('pegawai'); // bisa tampilkan SweetAlert di halaman pegawai
         }
@@ -87,31 +103,31 @@ class Auth extends CI_Controller
         $nik = $this->input->post('nik', TRUE);
 
         if (!$nik) {
-            echo json_encode(['is_superadmin' => false]);
+            echo json_encode(['is_administrator' => false]);
             return;
         }
 
         $this->load->model('Auth_model');
         $user = $this->Auth_model->get_user($nik);
 
-        if ($user && $user->role === 'superadmin') {
-            echo json_encode(['is_superadmin' => true]);
+        if ($user && $user->role === 'administrator') {
+            echo json_encode(['is_administrator' => true]);
         } else {
-            echo json_encode(['is_superadmin' => false]);
+            echo json_encode(['is_administrator' => false]);
         }
     }
 
 
-    // Buat superadmin default (opsional)
-    public function create_superadmin()
+    // Buat administrator default (opsional)
+    public function create_administrator()
     {
         $password = password_hash("admin123", PASSWORD_DEFAULT);
         $data = [
             'nik' => '1234567890',
             'password' => $password,
-            'role' => 'superadmin'
+            'role' => 'administrator'
         ];
         $this->db->insert('users', $data);
-        echo "Superadmin berhasil dibuat!";
+        echo "administrator berhasil dibuat!";
     }
 }

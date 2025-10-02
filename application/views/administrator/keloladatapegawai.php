@@ -13,7 +13,7 @@
                             <i class="fas fa-users mr-2 text-primary"></i> Kelola Data Pegawai
                         </h3>
                         <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a href="#">SKI-BRKS</a></li>
+                            <li class="breadcrumb-item"><a href="#">KPI Online-BRKS</a></li>
                             <li class="breadcrumb-item active">Kelola Data Pegawai</li>
                         </ol>
                     </div>
@@ -34,13 +34,13 @@
                                 <!-- Tombol aksi di bawah -->
                                 <div class="d-flex flex-wrap align-items-center action-buttons">
                                     <!-- Button Template -->
-                                    <a href="<?= base_url('SuperAdmin/downloadTemplatePegawai') ?>"
+                                    <a href="<?= base_url('Administrator/downloadTemplatePegawai') ?>"
                                         class="btn btn-secondary btn-sm mr-2 mb-2">
                                         <i class="fas fa-file-download"></i> Template Excel
                                     </a>
 
                                     <!-- Import Excel -->
-                                    <form action="<?= base_url('SuperAdmin/importPegawai') ?>" method="post"
+                                    <form action="<?= base_url('Administrator/importPegawai') ?>" method="post"
                                         enctype="multipart/form-data" class="mr-2 mb-2">
                                         <div class="input-group input-group-sm">
                                             <div class="custom-file">
@@ -106,12 +106,12 @@
                                                         </a>
                                                         <div class="dropdown-menu dropdown-menu-right">
                                                             <a class="dropdown-item"
-                                                                href="<?= base_url('SuperAdmin/detailPegawai/' . $p->nik) ?>">
+                                                                href="<?= base_url('Administrator/detailPegawai/' . $p->nik) ?>">
                                                                 <i class="fas fa-eye text-info"></i> Detail
                                                             </a>
                                                             <a href="javascript:void(0);"
                                                                 class="dropdown-item text-danger btn-delete"
-                                                                data-url="<?= base_url('SuperAdmin/deletePegawai/' . $p->nik) ?>">
+                                                                data-url="<?= base_url('Administrator/deletePegawai/' . $p->nik) ?>">
                                                                 <i class="fas fa-trash"></i> Hapus
                                                             </a>
                                                         </div>
@@ -148,7 +148,7 @@
 <!-- Modal Tambah Pegawai -->
 <div class="modal fade" id="tambahPegawaiModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
-        <form action="<?= base_url('SuperAdmin/tambahPegawai') ?>" method="post" class="modal-content">
+        <form action="<?= base_url('Administrator/tambahPegawai') ?>" method="post" class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title"><i class="fas fa-user-plus"></i> Tambah Pegawai</h5>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>

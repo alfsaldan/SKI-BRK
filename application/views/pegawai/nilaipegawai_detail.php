@@ -120,7 +120,7 @@
                     <div class="page-title-box">
                         <div class="page-title-right">
                             <ol class="breadcrumb m-0">
-                                <li class="breadcrumb-item"><a href="javascript:void(0);">SKI-BRKS</a></li>
+                                <li class="breadcrumb-item"><a href="javascript:void(0);">KPI Online-BRKS</a></li>
                                 <li class="breadcrumb-item active">Detail Nilai Pegawai</li>
                             </ol>
                         </div>

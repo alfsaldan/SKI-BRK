@@ -8,7 +8,7 @@
                     <div class="page-title-box">
                         <div class="page-title-right">
                             <ol class="breadcrumb m-0">
-                                <li class="breadcrumb-item"><a href="javascript:void(0);">SKI-BRKS</a></li>
+                                <li class="breadcrumb-item"><a href="javascript:void(0);">KPI Online-BRKS</a></li>
                                 <li class="breadcrumb-item active">Data Kinerja Pegawai</li>
                             </ol>
                         </div>
@@ -24,7 +24,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h5>Masukkan NIK Pegawai</h5>
-                            <form action="<?= base_url('SuperAdmin/cariDataPegawai'); ?>" method="post">
+                            <form action="<?= base_url('Administrator/cariDataPegawai'); ?>" method="post">
                                 <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai"
                                     required>
                                 <button type="submit" class="btn btn-success mt-2">Cari</button>
@@ -143,7 +143,7 @@
                                 </div>
 
 
-                                <a href="<?= base_url('SuperAdmin/downloadDataPegawai?nik=' . ($pegawai_detail->nik ?? '') . '&awal=' . $periode_awal . '&akhir=' . $periode_akhir) ?>"
+                                <a href="<?= base_url('Administrator/downloadDataPegawai?nik=' . ($pegawai_detail->nik ?? '') . '&awal=' . $periode_awal . '&akhir=' . $periode_akhir) ?>"
                                     class="btn btn-success mt-3 font-weight-bold" style="background-color:#217346; color:#fff;">
                                     <i class="mdi mdi-file-excel"></i> Download Excel
                                 </a>
@@ -492,7 +492,7 @@
             return;
         }
 
-        window.location.href = "<?= base_url('SuperAdmin/cariDataPegawai') ?>?nik=" + nik + "&awal=" + awal + "&akhir=" + akhir;
+        window.location.href = "<?= base_url('Administrator/cariDataPegawai') ?>?nik=" + nik + "&awal=" + awal + "&akhir=" + akhir;
     });
 </script>
 
@@ -503,7 +503,7 @@
         let akhir = periode[1];
         let nik = "<?= $pegawai_detail->nik ?? '' ?>";
 
-        window.location.href = "<?= base_url('SuperAdmin/cariDataPegawai') ?>?nik=" + nik + "&awal=" + awal + "&akhir=" + akhir;
+        window.location.href = "<?= base_url('Administrator/cariDataPegawai') ?>?nik=" + nik + "&awal=" + awal + "&akhir=" + akhir;
     });
 </script>
 

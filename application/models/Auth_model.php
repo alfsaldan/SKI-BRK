@@ -27,8 +27,8 @@ class Auth_model extends CI_Model
 
         if (!$user) {
             echo json_encode(['status' => 'not_found']);
-        } else if ($user->role == 'superadmin') {
-            echo json_encode(['status' => 'superadmin']);
+        } else if ($user->role == 'administrator') {
+            echo json_encode(['status' => 'administrator']);
         } else {
             echo json_encode(['status' => 'pegawai']);
         }

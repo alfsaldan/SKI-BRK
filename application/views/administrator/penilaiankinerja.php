@@ -9,7 +9,7 @@
                     <div class="page-title-box">
                         <div class="page-title-right">
                             <ol class="breadcrumb m-0">
-                                <li class="breadcrumb-item"><a href="javascript:void(0);">SKI-BRKS</a></li>
+                                <li class="breadcrumb-item"><a href="javascript:void(0);">KPI Online-BRKS</a></li>
                                 <li class="breadcrumb-item active">Penilaian Kinerja</li>
                             </ol>
                         </div>
@@ -23,7 +23,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h5>Masukkan NIK Pegawai</h5>
-                            <form action="<?= base_url('SuperAdmin/cariPenilaian'); ?>" method="post">
+                            <form action="<?= base_url('Administrator/cariPenilaian'); ?>" method="post">
                                 <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai"
                                     required>
                                 <button type="submit" class="btn btn-success mt-2">Nilai</button>
@@ -902,7 +902,7 @@
                 // <-- taruh console.log di sini
                 console.log("DEBUG: nik=", nik, "indikator_id=", indikator_id, "periode_awal=", periode_awal, "periode_akhir=", periode_akhir);
 
-                fetch('<?= base_url("SuperAdmin/simpanPenilaianBaris") ?>', {
+                fetch('<?= base_url("Administrator/simpanPenilaianBaris") ?>', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded'
@@ -956,7 +956,7 @@
                 return;
             }
 
-            window.location.href = `<?= base_url("SuperAdmin/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
+            window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
         });
         $(document).ready(function() {
             const nikPegawai = $('#nik').val(); // NIK pegawai saat ini
@@ -966,7 +966,7 @@
                 serverSide: true,
                 responsive: true,
                 ajax: {
-                    url: '<?= base_url("SuperAdmin/getCatatanPenilai") ?>',
+                    url: '<?= base_url("Administrator/getCatatanPenilai") ?>',
                     type: 'POST',
                     data: {
                         nik_pegawai: nikPegawai
@@ -1040,7 +1040,7 @@
                 serverSide: true,
                 responsive: false,
                 ajax: {
-                    url: '<?= base_url("SuperAdmin/getCatatanPegawai") ?>',
+                    url: '<?= base_url("Administrator/getCatatanPegawai") ?>',
                     type: 'POST',
                     data: {
                         nik_pegawai: nikPegawai
@@ -1122,7 +1122,7 @@
                 periodeManual.style.display = "none";
                 if (this.value && nik) {
                     const [awal, akhir] = this.value.split('|');
-                    window.location.href = `<?= base_url("SuperAdmin/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
+                    window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
                 }
             }
         });
@@ -1140,7 +1140,7 @@
             }
             const awal = periodeAwal.value;
             const akhir = periodeAkhir.value;
-            window.location.href = `<?= base_url("SuperAdmin/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
+            window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
         });
 
         document.getElementById('btn-simpan-nilai-akhir').addEventListener('click', function() {
@@ -1164,7 +1164,7 @@
                 let formData = `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`;
 
                 promises.push(
-                    fetch('<?= base_url("SuperAdmin/simpanPenilaianBaris") ?>', {
+                    fetch('<?= base_url("Administrator/simpanPenilaianBaris") ?>', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded'
@@ -1196,7 +1196,7 @@
                 const predikat = document.getElementById('predikat').textContent;
                 const pencapaian = document.getElementById('pencapaian-akhir').textContent;
 
-                fetch('<?= base_url("SuperAdmin/simpanNilaiAkhir") ?>', {
+                fetch('<?= base_url("Administrator/simpanNilaiAkhir") ?>', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded'

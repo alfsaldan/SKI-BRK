@@ -7,8 +7,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |--------------------------------------------------------------------------
 */
 
-$route['default_controller'] = 'SuperAdmin/index';            // Halaman pertama langsung ke login
-$route['dashboard']          = 'SuperAdmin/index'; // Dashboard superadmin
+$route['default_controller'] = 'Administrator/index';            // Halaman pertama langsung ke login
+$route['dashboard']          = 'Administrator/index'; // Dashboard administrator
 $route['login']              = 'Auth/index';       // Halaman login
 $route['logout']             = 'Auth/logout';      // Logout
 // Route tambahan untuk role lain (pegawai misalnya)

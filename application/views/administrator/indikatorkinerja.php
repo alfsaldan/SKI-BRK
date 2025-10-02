@@ -9,7 +9,7 @@
                     <div class="page-title-box">
                         <div class="page-title-right">
                             <ol class="breadcrumb m-0">
-                                <li class="breadcrumb-item"><a href="javascript:void(0);">SKI-BRKS</a></li>
+                                <li class="breadcrumb-item"><a href="javascript:void(0);">KPI Online-BRKS</a></li>
                                 <li class="breadcrumb-item active">Indikator Kinerja</li>
                             </ol>
                         </div>
@@ -24,7 +24,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h4 class="header-title mb-3">Filter Indikator Kinerja</h4>
-                            <form action="<?= base_url('SuperAdmin/indikatorKinerja'); ?>" method="get">
+                            <form action="<?= base_url('Administrator/indikatorKinerja'); ?>" method="get">
                                 <label>Unit Kantor</label>
                                 <select name="unit_kerja" id="unit_kerja_filter" class="form-control mb-2" required>
                                     <option value="">-- Pilih Unit Kantor --</option>
@@ -262,7 +262,7 @@
         jabatanSelect.disabled = true;
 
         if (unit_kerja) {
-            fetch(`<?= base_url('SuperAdmin/getJabatanByUnit?unit_kerja='); ?>${unit_kerja}`)
+            fetch(`<?= base_url('Administrator/getJabatanByUnit?unit_kerja='); ?>${unit_kerja}`)
                 .then(response => response.json())
                 .then(data => {
                     jabatanSelect.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
@@ -417,7 +417,7 @@
 
         // Jika lolos, lanjut AJAX
         $.ajax({
-            url: "<?= base_url('SuperAdmin/updateIndikator'); ?>",
+            url: "<?= base_url('Administrator/updateIndikator'); ?>",
             method: "POST",
             data: {
                 id: id,
@@ -441,7 +441,7 @@
                         <td class="bobot-text" style="text-align:center;">${bobot}</td>
                         <td class="text-center">
                             <button type="button" class="btn btn-warning btn-sm editBtn"><i class="mdi mdi-pencil"></i></button>
-                            <a href="<?= base_url('SuperAdmin/deleteIndikator/'); ?>${id}" class="btn btn-danger btn-sm deleteIndikatorBtn"><i class="mdi mdi-delete"></i></a>
+                            <a href="<?= base_url('Administrator/deleteIndikator/'); ?>${id}" class="btn btn-danger btn-sm deleteIndikatorBtn"><i class="mdi mdi-delete"></i></a>
                         </td>
                     `);
 
@@ -473,7 +473,7 @@
         let sasaran = row.find('.sasaranInput').val();
 
         $.ajax({
-            url: "<?= base_url('SuperAdmin/updateSasaran'); ?>",
+            url: "<?= base_url('Administrator/updateSasaran'); ?>",
             method: "POST",
             data: {
                 id: id,
@@ -520,7 +520,7 @@
     // 🔹 Simpan Sasaran via AJAX
     $("#submitSasaranBtn").on("click", function() {
         $.ajax({
-            url: "<?= base_url('SuperAdmin/saveSasaranAjax'); ?>",
+            url: "<?= base_url('Administrator/saveSasaranAjax'); ?>",
             method: "POST",
             data: $("#formSasaran").serialize(),
             dataType: "json",
@@ -562,7 +562,7 @@
 
         // Jika lolos, lanjut AJAX
         $.ajax({
-            url: "<?= base_url('SuperAdmin/saveIndikatorAjax'); ?>",
+            url: "<?= base_url('Administrator/saveIndikatorAjax'); ?>",
             method: "POST",
             data: $("#formIndikator").serialize(),
             dataType: "json",
@@ -600,7 +600,7 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: "<?= base_url('SuperAdmin/deleteIndikatorAjax'); ?>",
+                    url: "<?= base_url('Administrator/deleteIndikatorAjax'); ?>",
                     method: "POST",
                     data: {
                         id: id

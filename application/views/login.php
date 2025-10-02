@@ -56,13 +56,13 @@
                                     </div>
                                 </div>
 
-                                <!-- Role (hanya muncul jika superadmin) -->
+                                <!-- Role (hanya muncul jika administrator) -->
                                 <div class="form-group mb-3" id="roleDiv" style="display:none;">
                                     <label><b>Login Sebagai:</b></label><br>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="role" id="role_superadmin"
-                                            value="superadmin" required checked>
-                                        <label class="form-check-label" for="role_superadmin">Superadmin</label>
+                                        <input class="form-check-input" type="radio" name="role" id="role_administrator"
+                                            value="administrator" required checked>
+                                        <label class="form-check-label" for="role_administrator">Administrator</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="role" id="role_pegawai"
@@ -90,7 +90,7 @@
 
                     <div class="row mt-3">
                         <div class="col-sm-12 text-center">
-                            <p class="text-muted mb-0">Sistem Kinerja Insani - BRKS</p>
+                            <p class="text-muted mb-0">KPI Online - BRKS</p>
                         </div>
                     </div>
 
@@ -113,7 +113,7 @@
             const nik = nikInput.value.trim();
             if (!nik) return alert("Masukkan NIK");
 
-            // AJAX cek apakah NIK superadmin
+            // AJAX cek apakah NIK administrator
             fetch("<?= site_url('auth/check_role'); ?>", {
                 method: "POST",
                 headers: {
@@ -128,7 +128,7 @@
                     passwordDiv.style.display = 'block';
                     loginBtnDiv.style.display = 'block';
 
-                    if (data.is_superadmin) {
+                    if (data.is_administrator) {
                         roleDiv.style.display = 'block';
                     } else {
                         // langsung set hidden role=pegawai

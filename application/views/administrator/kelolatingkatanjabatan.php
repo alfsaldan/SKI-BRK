@@ -13,7 +13,7 @@
                             <i class="mdi mdi-briefcase mr-2 text-primary"></i> Kelola Tingkatan Jabatan
                         </h3>
                         <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a href="#">SKI-BRKS</a></li>
+                            <li class="breadcrumb-item"><a href="#">KPI Online-BRKS</a></li>
                             <li class="breadcrumb-item active">Kelola Tingkatan Jabatan</li>
                         </ol>
                     </div>
@@ -60,7 +60,7 @@
                                                     data-penilai2="<?= $row->penilai2_jabatan ?>">
                                                     Edit
                                                 </button>
-                                                <a href="<?= base_url('superadmin/hapusPenilaiMapping/' . $row->id) ?>"
+                                                <a href="<?= base_url('administrator/hapusPenilaiMapping/' . $row->id) ?>"
                                                     class="btn btn-sm btn-danger btn-delete">
                                                     Hapus
                                                 </a>
@@ -85,7 +85,7 @@
 <!-- Modal Tambah -->
 <div class="modal fade" id="modalTambah" tabindex="-1">
     <div class="modal-dialog">
-        <form method="post" action="<?= base_url('superadmin/tambahPenilaiMapping') ?>" class="modal-content">
+        <form method="post" action="<?= base_url('administrator/tambahPenilaiMapping') ?>" class="modal-content">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title">Tambah Mapping Jabatan</h5>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
@@ -197,7 +197,7 @@
             $('#edit_unit').val($(this).data('unit'));
             $('#edit_penilai1').val($(this).data('penilai1'));
             $('#edit_penilai2').val($(this).data('penilai2'));
-            $('#formEdit').attr('action', "<?= base_url('superadmin/editPenilaiMapping/') ?>" + $(this).data('id'));
+            $('#formEdit').attr('action', "<?= base_url('administrator/editPenilaiMapping/') ?>" + $(this).data('id'));
             $('#modalEdit').modal('show');
         });
 

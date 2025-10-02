@@ -164,7 +164,7 @@
                         </div>
 
                         <!-- item-->
-                        <a href="<?= base_url('superadmin/datadiri'); ?>" class="dropdown-item notify-item">
+                        <a href="<?= base_url('administrator/datadiri'); ?>" class="dropdown-item notify-item">
                             <i class="fe-user"></i>
                             <span>Data Diri</span>
                         </a>
@@ -192,7 +192,7 @@
 
             <!-- LOGO -->
             <div class="logo-box">
-                <a href="<?= base_url('SuperAdmin'); ?>" class="logo text-center">
+                <a href="<?= base_url('Administrator'); ?>" class="logo text-center">
                     <span class="logo-lg">
                         <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png') ?>" alt="Logo BRK Syariah"
                             height="20">
@@ -229,7 +229,7 @@
                         <li class="menu-title">Halaman Utama</li>
 
                         <li class="<?= $this->uri->segment(2) == '' ? 'active' : '' ?>">
-                            <a href="<?= base_url('superadmin') ?>">
+                            <a href="<?= base_url('administrator') ?>">
                                 <i class="fe-airplay"></i>
                                 <span> Dashboard </span>
                             </a>
@@ -243,7 +243,7 @@
                         ?>
                         <li
                             class="<?= in_array($activeMenu, ['keloladatapegawai', 'detailpegawai']) ? 'active' : '' ?>">
-                            <a href="<?= base_url('superadmin/keloladatapegawai') ?>">
+                            <a href="<?= base_url('administrator/keloladatapegawai') ?>">
                                 <i class="mdi mdi-account-card-details"></i>
                                 <span>Kelola Data Pegawai</span>
                             </a>
@@ -256,7 +256,7 @@
                         ?>
 
                         <li class="<?= in_array($activeMenu, ['indikatorkinerja']) ? 'active' : '' ?>">
-                            <a href="<?= base_url('superadmin/indikatorkinerja') ?>">
+                            <a href="<?= base_url('administrator/indikatorkinerja') ?>">
                                 <i class="mdi mdi-target-account"></i>
                                 <span> Indikator Kinerja </span>
                             </a>
@@ -269,7 +269,7 @@
                         ?>
 
                         <li class="<?= in_array($activeMenu, ['penilaiankinerja', 'caripenilaian']) ? 'active' : '' ?>">
-                            <a href="<?= base_url('superadmin/penilaiankinerja') ?>">
+                            <a href="<?= base_url('administrator/penilaiankinerja') ?>">
                                 <i class="mdi mdi-account-edit"></i>
                                 <span> Penilaian Kinerja </span>
                             </a>
@@ -284,7 +284,7 @@
                         ?>
 
                         <li class="<?= in_array($activeMenu, ['datapegawai', 'caridatapegawai']) ? 'active' : '' ?>">
-                            <a href="<?= base_url('superadmin/datapegawai') ?>">
+                            <a href="<?= base_url('administrator/datapegawai') ?>">
                                 <i class="mdi mdi-account-card-details"></i>
                                 <span> Cek Kinerja Pegawai </span>
                             </a>
@@ -292,7 +292,7 @@
 
 
                         <li class="<?= $this->uri->segment(2) == 'kelolatingkatanjabatan' ? 'active' : '' ?>">
-                            <a href="<?= base_url('superadmin/kelolatingkatanjabatan') ?>">
+                            <a href="<?= base_url('administrator/kelolatingkatanjabatan') ?>">
                                 <i class="mdi mdi-briefcase"></i>
                                 <span>Kelola Jabatan </span>
                             </a>

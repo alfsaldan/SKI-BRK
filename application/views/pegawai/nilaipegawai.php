@@ -13,7 +13,7 @@
                             <i class="mdi mdi-account-edit mr-2 text-primary"></i> Nilai Pegawai
                         </h3>
                         <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a href="#">SKI-BRKS</a></li>
+                            <li class="breadcrumb-item"><a href="#">KPI Online-BRKS</a></li>
                             <li class="breadcrumb-item active">Nilai Pegawai</li>
                         </ol>
                     </div>

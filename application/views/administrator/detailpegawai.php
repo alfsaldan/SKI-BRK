@@ -78,7 +78,7 @@
                     <h5 class="mb-0"><i class="fas fa-plus-circle mr-2 text-primary"></i> Tambah Riwayat Jabatan</h5>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="<?= base_url('SuperAdmin/updateJabatan') ?>">
+                    <form method="post" action="<?= base_url('Administrator/updateJabatan') ?>">
                         <input type="hidden" name="nik" value="<?= $pegawai->nik ?>">
                         <div class="form-row">
                             <div class="form-group col-md-4">
@@ -117,14 +117,14 @@
             </div>
 
             <div class="card-body text-right">
-                <a href="<?= base_url('SuperAdmin/toggleStatusPegawai/' . $pegawai->nik . '/nonaktif') ?>"
+                <a href="<?= base_url('Administrator/toggleStatusPegawai/' . $pegawai->nik . '/nonaktif') ?>"
                     class="btn btn-danger btn-toggle-status"
                     data-action="nonaktif"
                     data-nik="<?= $pegawai->nik ?>">
                     <i class="fas fa-user-slash"></i> Nonaktifkan
                 </a>
 
-                <a href="<?= base_url('SuperAdmin/toggleStatusPegawai/' . $pegawai->nik . '/aktif') ?>"
+                <a href="<?= base_url('Administrator/toggleStatusPegawai/' . $pegawai->nik . '/aktif') ?>"
                     class="btn btn-success btn-toggle-status"
                     data-action="aktif"
                     data-nik="<?= $pegawai->nik ?>">
@@ -136,7 +136,7 @@
 
             <!-- Judul Halaman -->
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <a href="<?= base_url('SuperAdmin/kelolaDataPegawai') ?>" class="btn btn-outline-secondary btn-sm">
+                <a href="<?= base_url('Administrator/kelolaDataPegawai') ?>" class="btn btn-outline-secondary btn-sm">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -177,7 +177,7 @@
 
             let nik = $(this).data('nik'); // ✅ sekarang ada data-nik
             let action = $(this).data('action');
-            let url = "<?= base_url('SuperAdmin/toggleStatusPegawai') ?>/" + nik + "/" + action;
+            let url = "<?= base_url('Administrator/toggleStatusPegawai') ?>/" + nik + "/" + action;
 
             let title = (action === 'nonaktif') ? 'Nonaktifkan Pegawai?' : 'Aktifkan Pegawai Kembali?';
             let text = (action === 'nonaktif') ?

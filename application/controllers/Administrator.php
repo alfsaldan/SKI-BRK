@@ -28,7 +28,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 
 
-class SuperAdmin extends CI_Controller
+class Administrator extends CI_Controller
 {
     public function __construct()
     {
@@ -41,16 +41,16 @@ class SuperAdmin extends CI_Controller
         $this->load->model('PenilaiMapping_model');
         $this->load->library('session');
 
-        if (!$this->session->userdata('logged_in') || $this->session->userdata('role') !== 'superadmin') {
+        if (!$this->session->userdata('logged_in') || $this->session->userdata('role') !== 'administrator') {
             redirect('auth');
         }
     }
 
     public function index()
     {
-        $data['judul'] = "Halaman Dashboard Super Admin";
+        $data['judul'] = "Halaman Dashboard Administrator";
         $this->load->view("layout/header");
-        $this->load->view("superadmin/index", $data);
+        $this->load->view("administrator/index", $data);
         $this->load->view("layout/footer");
     }
 
@@ -80,7 +80,7 @@ class SuperAdmin extends CI_Controller
         }
 
         $this->load->view("layout/header");
-        $this->load->view('superadmin/indikatorKinerja', $data);
+        $this->load->view('administrator/indikatorKinerja', $data);
         $this->load->view("layout/footer");
     }
 
@@ -109,7 +109,7 @@ class SuperAdmin extends CI_Controller
             $this->session->set_flashdata('message', ['type' => 'error', 'text' => 'Gagal menambahkan Sasaran Kerja!']);
         }
 
-        redirect('SuperAdmin/indikatorKinerja');
+        redirect('Administrator/indikatorKinerja');
     }
 
     public function addIndikator()
@@ -132,7 +132,7 @@ class SuperAdmin extends CI_Controller
             $this->session->set_flashdata('message', ['type' => 'error', 'text' => 'Gagal menambahkan indikator!']);
         }
 
-        redirect('SuperAdmin/indikatorKinerja');
+        redirect('Administrator/indikatorKinerja');
     }
 
     public function deleteIndikator($id)
@@ -142,7 +142,7 @@ class SuperAdmin extends CI_Controller
         } else {
             $this->session->set_flashdata('message', ['type' => 'error', 'text' => 'Gagal menghapus indikator!']);
         }
-        redirect('SuperAdmin/indikatorKinerja');
+        redirect('Administrator/indikatorKinerja');
     }
 
 
@@ -152,7 +152,7 @@ class SuperAdmin extends CI_Controller
         $bobot = $this->input->post('bobot');
 
         $this->Indikator_model->updateIndikator($id, $indikator, $bobot);
-        redirect('SuperAdmin/indikatorKinerja');
+        redirect('Administrator/indikatorKinerja');
     }
 
     public function updateIndikator()
@@ -275,7 +275,7 @@ class SuperAdmin extends CI_Controller
         $data['indikator_by_jabatan'] = [];
 
         $this->load->view("layout/header");
-        $this->load->view("superadmin/penilaiankinerja", $data);
+        $this->load->view("administrator/penilaiankinerja", $data);
         $this->load->view("layout/footer");
     }
 
@@ -330,7 +330,7 @@ class SuperAdmin extends CI_Controller
         $data['periode_akhir'] = $periode_akhir;
 
         $this->load->view("layout/header");
-        $this->load->view("superadmin/penilaiankinerja", $data);
+        $this->load->view("administrator/penilaiankinerja", $data);
         $this->load->view("layout/footer");
     }
 
@@ -376,7 +376,7 @@ class SuperAdmin extends CI_Controller
             ]);
         }
 
-        redirect('SuperAdmin/penilaiankinerja');
+        redirect('Administrator/penilaiankinerja');
     }
 
     public function simpanPenilaianBaris()
@@ -474,7 +474,7 @@ class SuperAdmin extends CI_Controller
         $data['pegawai'] = $this->DataPegawai_model->getAllPegawai();
 
         $this->load->view("layout/header");
-        $this->load->view("superadmin/keloladatapegawai", $data);
+        $this->load->view("administrator/keloladatapegawai", $data);
         $this->load->view("layout/footer");
     }
 
@@ -490,7 +490,7 @@ class SuperAdmin extends CI_Controller
             force_download($path, NULL);
         } else {
             $this->session->set_flashdata('error', 'Template tidak ditemukan.');
-            redirect('SuperAdmin/kelolaDataPegawai');
+            redirect('Administrator/kelolaDataPegawai');
         }
     }
 
@@ -501,7 +501,7 @@ class SuperAdmin extends CI_Controller
 
         if (!isset($_FILES['file_excel']['tmp_name']) || $_FILES['file_excel']['error'] !== UPLOAD_ERR_OK) {
             $this->session->set_flashdata('error', 'File tidak valid atau gagal diupload.');
-            redirect('SuperAdmin/kelolaDataPegawai');
+            redirect('Administrator/kelolaDataPegawai');
             return;
         }
 
@@ -511,7 +511,7 @@ class SuperAdmin extends CI_Controller
 
         if (!in_array($ext, ['xls', 'xlsx'])) {
             $this->session->set_flashdata('error', 'Format file salah. Hanya mendukung .xls atau .xlsx sesuai template.');
-            redirect('SuperAdmin/kelolaDataPegawai');
+            redirect('Administrator/kelolaDataPegawai');
             return;
         }
 
@@ -524,7 +524,7 @@ class SuperAdmin extends CI_Controller
 
         if (!in_array($mime, $allowedMimes)) {
             $this->session->set_flashdata('error', "File tidak valid. Pastikan menggunakan file Excel asli (MIME: $mime).");
-            redirect('SuperAdmin/kelolaDataPegawai');
+            redirect('Administrator/kelolaDataPegawai');
             return;
         }
 
@@ -533,11 +533,11 @@ class SuperAdmin extends CI_Controller
             $spreadsheet = $reader->load($fileTmp);
         } catch (\PhpOffice\PhpSpreadsheet\Reader\Exception $e) {
             $this->session->set_flashdata('error', 'File Excel tidak dapat dibaca: ' . $e->getMessage());
-            redirect('SuperAdmin/kelolaDataPegawai');
+            redirect('Administrator/kelolaDataPegawai');
             return;
         } catch (\Exception $e) {
             $this->session->set_flashdata('error', 'Terjadi error saat membuka file: ' . $e->getMessage());
-            redirect('SuperAdmin/kelolaDataPegawai');
+            redirect('Administrator/kelolaDataPegawai');
             return;
         }
 
@@ -545,7 +545,7 @@ class SuperAdmin extends CI_Controller
 
         if (count($sheetData) <= 1) {
             $this->session->set_flashdata('error', 'File kosong atau tidak sesuai template.');
-            redirect('SuperAdmin/kelolaDataPegawai');
+            redirect('Administrator/kelolaDataPegawai');
             return;
         }
 
@@ -575,7 +575,7 @@ class SuperAdmin extends CI_Controller
                 'error',
                 'Header tidak sesuai. Gunakan template resmi (Nik, Nama, Jabatan, Unit Kerja, Unit Kantor, Password).'
             );
-            redirect('SuperAdmin/kelolaDataPegawai');
+            redirect('Administrator/kelolaDataPegawai');
             return;
         }
 
@@ -646,7 +646,7 @@ class SuperAdmin extends CI_Controller
             $this->session->set_flashdata('error', 'Tidak ada data valid yang bisa diimport.');
         }
 
-        redirect('SuperAdmin/kelolaDataPegawai');
+        redirect('Administrator/kelolaDataPegawai');
     }
 
 
@@ -687,7 +687,7 @@ class SuperAdmin extends CI_Controller
         }
 
         $this->session->set_flashdata('success', 'Pegawai berhasil ditambahkan.');
-        redirect('SuperAdmin/kelolaDataPegawai');
+        redirect('Administrator/kelolaDataPegawai');
     }
 
 
@@ -709,7 +709,7 @@ class SuperAdmin extends CI_Controller
             ]);
         }
 
-        redirect('SuperAdmin/kelolaDataPegawai');
+        redirect('Administrator/kelolaDataPegawai');
     }
 
     // Detail Pegawai + Riwayat
@@ -725,7 +725,7 @@ class SuperAdmin extends CI_Controller
         // $data['unitkantor_list'] = $this->DataPegawai_model->getAllUnitKantor();
 
         $this->load->view("layout/header");
-        $this->load->view("superadmin/detailpegawai", $data);
+        $this->load->view("administrator/detailpegawai", $data);
         $this->load->view("layout/footer");
     }
 
@@ -745,21 +745,21 @@ class SuperAdmin extends CI_Controller
         $this->DataPegawai_model->tambahRiwayatJabatan($nik, $jabatan, $unit_kerja, $unit_kantor, $tgl_mulai);
 
         $this->session->set_flashdata('success', 'Riwayat jabatan baru berhasil ditambahkan.');
-        redirect('SuperAdmin/detailPegawai/' . $nik);
+        redirect('Administrator/detailPegawai/' . $nik);
     }
 
     public function nonaktifPegawai($nik)
     {
         $this->db->where('nik', $nik)->update('pegawai', ['status' => 'nonaktif']);
         $this->session->set_flashdata('message', 'Pegawai berhasil dinonaktifkan.');
-        redirect('SuperAdmin/detailPegawai/' . $nik);
+        redirect('Administrator/detailPegawai/' . $nik);
     }
 
     public function aktifkanPegawai($nik)
     {
         $this->db->where('nik', $nik)->update('pegawai', ['status' => 'aktif']);
         $this->session->set_flashdata('message', 'Pegawai berhasil diaktifkan.');
-        redirect('SuperAdmin/detailPegawai/' . $nik);
+        redirect('Administrator/detailPegawai/' . $nik);
     }
 
     public function toggleStatusPegawai($nik, $action)
@@ -789,7 +789,7 @@ class SuperAdmin extends CI_Controller
         $data['penilaian_pegawai'] = [];
 
         $this->load->view("layout/header");
-        $this->load->view('superadmin/datapegawai', $data);
+        $this->load->view('administrator/datapegawai', $data);
         $this->load->view("layout/footer");
     }
 
@@ -833,7 +833,7 @@ class SuperAdmin extends CI_Controller
         $data['chat']              = $chat;
 
         $this->load->view("layout/header");
-        $this->load->view('superadmin/datapegawai', $data);
+        $this->load->view('administrator/datapegawai', $data);
         $this->load->view("layout/footer");
     }
 
@@ -853,7 +853,7 @@ class SuperAdmin extends CI_Controller
 
         if (!$pegawai) {
             $this->session->set_flashdata('error', 'Data pegawai tidak ditemukan.');
-            redirect('SuperAdmin/dataPegawai');
+            redirect('Administrator/dataPegawai');
         }
 
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
@@ -1847,11 +1847,11 @@ class SuperAdmin extends CI_Controller
             } else {
                 $this->session->set_flashdata('error', 'Password tidak sama atau kosong!');
             }
-            redirect('superadmin/datadiri');
+            redirect('administrator/datadiri');
         }
 
         $this->load->view('layout/header');
-        $this->load->view('superadmin/datadiri', $data);
+        $this->load->view('administrator/datadiri', $data);
         $this->load->view('layout/footer');
     }
 
@@ -1862,7 +1862,7 @@ class SuperAdmin extends CI_Controller
         $data['list'] = $this->PenilaiMapping_model->getAll();
 
         $this->load->view('layout/header', $data);
-        $this->load->view('superadmin/kelolatingkatanjabatan', $data);
+        $this->load->view('administrator/kelolatingkatanjabatan', $data);
         $this->load->view('layout/footer');
     }
 
@@ -1879,7 +1879,7 @@ class SuperAdmin extends CI_Controller
 
             $this->PenilaiMapping_model->insert($insert);
             $this->session->set_flashdata('success', 'Data mapping berhasil ditambahkan.');
-            redirect('Superadmin/kelolatingkatanjabatan');
+            redirect('Administrator/kelolatingkatanjabatan');
         }
     }
 
@@ -1896,7 +1896,7 @@ class SuperAdmin extends CI_Controller
 
             $this->PenilaiMapping_model->update($id, $update);
             $this->session->set_flashdata('success', 'Data mapping berhasil diubah.');
-            redirect('Superadmin/kelolatingkatanjabatan');
+            redirect('Administrator/kelolatingkatanjabatan');
         }
     }
 
@@ -1906,7 +1906,7 @@ class SuperAdmin extends CI_Controller
         if ($this->PenilaiMapping_model->delete($id)) {
             $this->session->set_flashdata('success', 'Data berhasil dihapus');
         }
-        redirect('superadmin/kelolatingkatanjabatan');
+        redirect('administrator/kelolatingkatanjabatan');
     }
 
 
@@ -1971,6 +1971,6 @@ class SuperAdmin extends CI_Controller
         $data['nik_pegawai'] = $nik;
         $data['nik_penilai'] = $penilai_nik;
 
-        $this->load->view('superadmin/chat_coaching', $data);
+        $this->load->view('administrator/chat_coaching', $data);
     }
 }

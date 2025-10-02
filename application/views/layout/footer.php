@@ -3,7 +3,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-6">
-                <span id="footerYear"></span> &copy; SKI-BRKS by
+                <span id="footerYear"></span> &copy; KPI Online-BRKS by
                 <a href="https://www.brksyariah.co.id/brkweb_syariah/" target="_blank">Bank Riau Kepri Syariah</a>
             </div>
             <div class="col-md-6">
@@ -124,7 +124,7 @@
             let perspektif = $(this).val();
             if (perspektif != "") {
                 $.ajax({
-                    url: "<?= base_url('SuperAdmin/get_sasaran_by_perspektif') ?>",
+                    url: "<?= base_url('Administrator/get_sasaran_by_perspektif') ?>",
                     type: "POST",
                     data: {
                         perspektif: perspektif
@@ -265,7 +265,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Redirect ke delete URL
-                    window.location.href = "<?= base_url('SuperAdmin/deleteIndikator/'); ?>" + id;
+                    window.location.href = "<?= base_url('Administrator/deleteIndikator/'); ?>" + id;
                 }
             });
         }
