@@ -57,7 +57,7 @@
                                 </div>
 
                                 <!-- Role (hanya muncul jika administrator) -->
-                                <div class="form-group mb-3" id="roleDiv" style="display:none;">
+                                <!-- <div class="form-group mb-3" id="roleDiv" style="display:none;">
                                     <label><b>Login Sebagai:</b></label><br>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="role" id="role_administrator"
@@ -69,7 +69,7 @@
                                             value="pegawai" required>
                                         <label class="form-check-label" for="role_pegawai">Pegawai</label>
                                     </div>
-                                </div>
+                                </div> -->
 
                                 <!-- Password -->
                                 <div class="form-group mb-3 position-relative" id="passwordDiv" style="display:none;">
@@ -109,18 +109,18 @@
         const passwordDiv = document.getElementById('passwordDiv');
         const loginBtnDiv = document.getElementById('loginBtnDiv');
 
-        checkBtn.addEventListener('click', function () {
+        checkBtn.addEventListener('click', function() {
             const nik = nikInput.value.trim();
             if (!nik) return alert("Masukkan NIK");
 
             // AJAX cek apakah NIK administrator
             fetch("<?= site_url('auth/check_role'); ?>", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: "nik=" + nik
-            })
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: "nik=" + nik
+                })
                 .then(res => res.json())
                 .then(data => {
                     nikInput.readOnly = true;
@@ -128,23 +128,20 @@
                     passwordDiv.style.display = 'block';
                     loginBtnDiv.style.display = 'block';
 
-                    if (data.is_administrator) {
-                        roleDiv.style.display = 'block';
-                    } else {
-                        // langsung set hidden role=pegawai
-                        const hiddenRole = document.createElement('input');
-                        hiddenRole.type = 'hidden';
-                        hiddenRole.name = 'role';
-                        hiddenRole.value = 'pegawai';
-                        document.getElementById('loginForm').appendChild(hiddenRole);
-                    }
+                    // tambahkan hidden input role sesuai hasil cek
+                    const hiddenRole = document.createElement('input');
+                    hiddenRole.type = 'hidden';
+                    hiddenRole.name = 'role';
+                    hiddenRole.value = data.role; // "administrator" atau "pegawai"
+                    document.getElementById('loginForm').appendChild(hiddenRole);
+
                 });
         });
 
         // Toggle password
         const toggle = document.querySelector('.toggle-password');
         if (toggle) {
-            toggle.addEventListener('click', function () {
+            toggle.addEventListener('click', function() {
                 const passwordInput = document.querySelector('#password');
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordInput.setAttribute('type', type);

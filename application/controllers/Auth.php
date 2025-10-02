@@ -8,14 +8,12 @@ defined('BASEPATH') or exit('No direct script access allowed');
  * @property Penilaian_model $Penilaian_model
  * @property Indikator_model $Indikator_model
  * @property Coaching_model $Coaching_model
-
  * @property RiwayatJabatan_model $RiwayatJabatan_model
  * @property Auth_model $Auth_model
  * @property CI_Input $input
  * @property CI_Session $session
  * @property CI_DB_query_builder $db
  */
-
 
 class Auth extends CI_Controller
 {
@@ -30,15 +28,14 @@ class Auth extends CI_Controller
     // Tampilkan form login
     public function index()
     {
-        $this->load->view('login', ['role_options' => []]); // default kosong
+        $this->load->view('login');
     }
 
     // Proses login
     public function login()
     {
-        $nik = $this->input->post('nik', TRUE);
+        $nik      = $this->input->post('nik', TRUE);
         $password = $this->input->post('password', TRUE);
-        $selected_role = $this->input->post('role', TRUE); // role pilihan superadmin
 
         $user = $this->Auth_model->get_user($nik);
 
@@ -55,37 +52,21 @@ class Auth extends CI_Controller
             return;
         }
 
-        // Tentukan role login
-        $role_options = [];
-        if ($user->role == 'administrator') {
-            $role_options = ['administrator', 'pegawai'];
-
-            // Jika belum pilih role, tampilkan form kembali
-            if (!$selected_role) {
-                $this->load->view('login', ['role_options' => $role_options]);
-                return;
-            }
-
-            $login_role = $selected_role;
-        } else {
-            $login_role = 'pegawai';
-        }
-
-        // Simpan session
+        // Simpan session sesuai role dari DB
         $this->session->set_userdata([
-            'nik' => $user->nik,
-            'role' => $login_role,
+            'nik'       => $user->nik,
+            'role'      => $user->role,
             'logged_in' => TRUE
         ]);
 
-        // **Tambahkan flashdata sukses login**
+        // Flashdata sukses login
         $this->session->set_flashdata('login_success', 'Selamat datang, ' . $user->nik);
 
         // Redirect sesuai role
-        if ($login_role === 'administrator') {
-            redirect('administrator'); // bisa tampilkan SweetAlert di halaman administrator
+        if ($user->role === 'administrator') {
+            redirect('administrator'); // dashboard admin (menu lengkap)
         } else {
-            redirect('pegawai'); // bisa tampilkan SweetAlert di halaman pegawai
+            redirect('pegawai'); // dashboard pegawai
         }
     }
 
@@ -97,7 +78,7 @@ class Auth extends CI_Controller
         redirect('auth');
     }
 
-    // Auth.php
+    // Cek role (opsional, bisa dipakai untuk AJAX)
     public function check_role()
     {
         $nik = $this->input->post('nik', TRUE);
@@ -117,15 +98,14 @@ class Auth extends CI_Controller
         }
     }
 
-
     // Buat administrator default (opsional)
     public function create_administrator()
     {
         $password = password_hash("admin123", PASSWORD_DEFAULT);
         $data = [
-            'nik' => '1234567890',
+            'nik'      => '1234567890',
             'password' => $password,
-            'role' => 'administrator'
+            'role'     => 'administrator'
         ];
         $this->db->insert('users', $data);
         echo "administrator berhasil dibuat!";

@@ -242,32 +242,78 @@
 
 
         <!-- ========== Left Sidebar Start ========== -->
+        <?php
+        $activeController = strtolower($this->uri->segment(1, ''));
+        $activeMethod     = strtolower($this->uri->segment(2, ''));
+        $role             = $this->session->userdata('role'); // administrator / pegawai
+        ?>
         <div class="left-side-menu">
-
             <div class="slimscroll-menu">
-
-                <!--- Sidemenu -->
                 <div id="sidebar-menu">
-
                     <ul class="metismenu" id="side-menu">
 
-                        <li class="menu-title">Halaman Utama</li>
+                        <?php if ($role == 'administrator'): ?>
+                            <!-- MENU ADMIN -->
+                            <li class="menu-title">Halaman Utama</li>
 
-                        <li class="<?= $this->uri->segment(2) == '' ? 'active' : '' ?>">
+                            <li class="<?= ($activeController == 'administrator' && $activeMethod == '') ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator') ?>">
+                                    <i class="fe-airplay"></i>
+                                    <span> Dashboard </span>
+                                </a>
+                            </li>
+
+                            <li class="menu-title mt-2">Fitur Utama</li>
+
+                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['keloladatapegawai', 'detailpegawai'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator/keloladatapegawai') ?>">
+                                    <i class="mdi mdi-account-card-details"></i>
+                                    <span>Kelola Data Pegawai</span>
+                                </a>
+                            </li>
+
+                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['indikatorkinerja'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator/indikatorkinerja') ?>">
+                                    <i class="mdi mdi-target-account"></i>
+                                    <span> Indikator Kinerja </span>
+                                </a>
+                            </li>
+
+                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['penilaiankinerja', 'caripenilaian'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator/penilaiankinerja') ?>">
+                                    <i class="mdi mdi-account-edit"></i>
+                                    <span> Penilaian Kinerja </span>
+                                </a>
+                            </li>
+
+                            <li class="menu-title mt-2">Lainnya</li>
+
+                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['datapegawai', 'caridatapegawai'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator/datapegawai') ?>">
+                                    <i class="mdi mdi-account-card-details"></i>
+                                    <span> Cek Kinerja Pegawai </span>
+                                </a>
+                            </li>
+
+                            <li class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolatingkatanjabatan') ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator/kelolatingkatanjabatan') ?>">
+                                    <i class="mdi mdi-briefcase"></i>
+                                    <span>Kelola Jabatan </span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+
+                        <!-- MENU PEGAWAI (muncul untuk semua role) -->
+                        <li class="menu-title">Halaman Pegawai</li>
+                        <li class="<?= ($activeController == 'pegawai' && $activeMethod == '') ? 'active' : '' ?>">
                             <a href="<?= base_url('pegawai') ?>">
-                                <i class="fe-airplay"></i>
-                                <span> Dashboard </span>
+                                <i class="mdi mdi-account"></i>
+                                <span> Kinerja Individu </span>
                             </a>
                         </li>
 
-                        <li class="menu-title mt-2">Fitur Utama</li>
-
-                        <?php
-                        $activeMenu = strtolower($this->uri->segment(2, ''));
-                        ?>
-
-                        <li
-                            class="<?= in_array($activeMenu, ['nilaipegawai', 'nilaipegawaidetail']) ? 'active' : '' ?>">
+                        <li class="menu-title mt-2">Halaman Penilai</li>
+                        <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['nilaipegawai', 'nilaipegawaidetail'])) ? 'active' : '' ?>">
                             <a href="<?= base_url('pegawai/nilaipegawai') ?>">
                                 <i class="mdi mdi-account-edit"></i>
                                 <span> Nilai Pegawai </span>
@@ -275,15 +321,16 @@
                         </li>
 
                     </ul>
-
                 </div>
-                <!-- End Sidebar -->
-
-                <div class="clearfix"></div>
-
             </div>
-            <!-- Sidebar -left -->
-
         </div>
-        <!-- Left Sidebar End -->
 
+        <!-- End Sidebar -->
+
+        <div class="clearfix"></div>
+
+    </div>
+    <!-- Sidebar -left -->
+
+    </div>
+    <!-- Left Sidebar End -->

@@ -30,7 +30,10 @@ class Pegawai extends CI_Controller
         $this->load->library('session');
 
         // Pastikan hanya pegawai yang bisa akses
-        if (!$this->session->userdata('logged_in') || $this->session->userdata('role') !== 'pegawai') {
+        if (
+            !$this->session->userdata('logged_in') ||
+            !in_array($this->session->userdata('role'), ['pegawai', 'administrator'])
+        ) {
             redirect('auth');
         }
     }
