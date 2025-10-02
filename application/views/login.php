@@ -6,9 +6,7 @@
     <title>Login - Sistem SKI BRKS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="Login Sistem SKI BRKS" name="description" />
-    <meta content="Coderthemes" name="author" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-
     <link rel="shortcut icon" href="<?= base_url('assets/images/LogoKapalBRK.png'); ?>">
     <link href="<?= base_url('assets/css/bootstrap.min.css'); ?>" rel="stylesheet" />
     <link href="<?= base_url('assets/css/icons.min.css'); ?>" rel="stylesheet" />
@@ -24,8 +22,7 @@
                         <div class="card-body p-4">
                             <div class="text-center mb-4">
                                 <a href="<?= base_url(); ?>">
-                                    <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png'); ?>" alt=""
-                                        height="40">
+                                    <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png'); ?>" alt="" height="40">
                                 </a>
                                 <h4 class="mt-3">Login Sistem SKI-BRKS</h4>
                             </div>
@@ -38,10 +35,9 @@
                                     setTimeout(() => {
                                         const alertDiv = document.getElementById('nikError');
                                         if (alertDiv) alertDiv.style.display = 'none';
-                                    }, 2000); // hilang setelah 2 detik
+                                    }, 2000);
                                 </script>
                             <?php endif; ?>
-
 
                             <form id="loginForm" action="<?= site_url('auth/login'); ?>" method="post">
                                 <!-- Input NIK -->
@@ -56,21 +52,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Role (hanya muncul jika administrator) -->
-                                <!-- <div class="form-group mb-3" id="roleDiv" style="display:none;">
-                                    <label><b>Login Sebagai:</b></label><br>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="role" id="role_administrator"
-                                            value="administrator" required checked>
-                                        <label class="form-check-label" for="role_administrator">Administrator</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="role" id="role_pegawai"
-                                            value="pegawai" required>
-                                        <label class="form-check-label" for="role_pegawai">Pegawai</label>
-                                    </div>
-                                </div> -->
-
                                 <!-- Password -->
                                 <div class="form-group mb-3 position-relative" id="passwordDiv" style="display:none;">
                                     <label for="password">Password</label>
@@ -81,8 +62,7 @@
                                 </div>
 
                                 <div class="form-group text-center mb-3" id="loginBtnDiv" style="display:none;">
-                                    <button class="btn btn-success btn-lg width-lg btn-rounded"
-                                        type="submit">Login</button>
+                                    <button class="btn btn-success btn-lg width-lg btn-rounded" type="submit">Login</button>
                                 </div>
                             </form>
                         </div>
@@ -105,7 +85,6 @@
     <script>
         const checkBtn = document.getElementById('checkNikBtn');
         const nikInput = document.getElementById('nik');
-        const roleDiv = document.getElementById('roleDiv');
         const passwordDiv = document.getElementById('passwordDiv');
         const loginBtnDiv = document.getElementById('loginBtnDiv');
 
@@ -113,32 +92,33 @@
             const nik = nikInput.value.trim();
             if (!nik) return alert("Masukkan NIK");
 
-            // AJAX cek apakah NIK administrator
             fetch("<?= site_url('auth/check_role'); ?>", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     body: "nik=" + nik
                 })
                 .then(res => res.json())
                 .then(data => {
+                    if (!data.status) {
+                        alert(data.message);
+                        return;
+                    }
+
                     nikInput.readOnly = true;
                     checkBtn.style.display = 'none';
                     passwordDiv.style.display = 'block';
                     loginBtnDiv.style.display = 'block';
 
-                    // tambahkan hidden input role sesuai hasil cek
+                    // hidden input role
                     const hiddenRole = document.createElement('input');
                     hiddenRole.type = 'hidden';
                     hiddenRole.name = 'role';
-                    hiddenRole.value = data.role; // "administrator" atau "pegawai"
+                    hiddenRole.value = data.role;
                     document.getElementById('loginForm').appendChild(hiddenRole);
-
                 });
         });
 
-        // Toggle password
+        // Toggle password visibility
         const toggle = document.querySelector('.toggle-password');
         if (toggle) {
             toggle.addEventListener('click', function() {
@@ -152,5 +132,4 @@
     </script>
 
 </body>
-
 </html>

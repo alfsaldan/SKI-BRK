@@ -2,22 +2,13 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 
 /**
- * @property Pegawai_model $Pegawai_model
- * @property Nilai_model $Nilai_model
- * @property DataDiri_model $DataDiri_model
- * @property Penilaian_model $Penilaian_model
- * @property Indikator_model $Indikator_model
- * @property Coaching_model $Coaching_model
- * @property RiwayatJabatan_model $RiwayatJabatan_model
  * @property Auth_model $Auth_model
  * @property CI_Input $input
  * @property CI_Session $session
  * @property CI_DB_query_builder $db
  */
-
 class Auth extends CI_Controller
 {
-
     public function __construct()
     {
         parent::__construct();
@@ -25,7 +16,7 @@ class Auth extends CI_Controller
         $this->load->library('session');
     }
 
-    // Tampilkan form login
+    // Form login
     public function index()
     {
         $this->load->view('login');
@@ -36,6 +27,7 @@ class Auth extends CI_Controller
     {
         $nik      = $this->input->post('nik', TRUE);
         $password = $this->input->post('password', TRUE);
+        $role     = $this->input->post('role', TRUE);
 
         $user = $this->Auth_model->get_user($nik);
 
@@ -45,32 +37,34 @@ class Auth extends CI_Controller
             return;
         }
 
-        // Cek password
         if (!password_verify($password, $user->password)) {
             $this->session->set_flashdata('error', 'Password salah');
             redirect('auth');
             return;
         }
 
-        // Simpan session sesuai role dari DB
+        // set session
         $this->session->set_userdata([
             'nik'       => $user->nik,
             'role'      => $user->role,
             'logged_in' => TRUE
         ]);
 
-        // Flashdata sukses login
         $this->session->set_flashdata('login_success', 'Selamat datang, ' . $user->nik);
 
-        // Redirect sesuai role
-        if ($user->role === 'administrator') {
-            redirect('administrator'); // dashboard admin (menu lengkap)
-        } else {
-            redirect('pegawai'); // dashboard pegawai
+        // arahkan sesuai role
+        switch ($user->role) {
+            case 'superadmin':
+                redirect('superadmin');
+                break;
+            case 'administrator':
+                redirect('administrator');
+                break;
+            default:
+                redirect('pegawai');
         }
     }
 
-    // Logout
     public function logout()
     {
         $this->session->set_flashdata('logout_success', 'Anda berhasil logout');
@@ -78,36 +72,38 @@ class Auth extends CI_Controller
         redirect('auth');
     }
 
-    // Cek role (opsional, bisa dipakai untuk AJAX)
+    // API untuk cek role by NIK
     public function check_role()
     {
         $nik = $this->input->post('nik', TRUE);
-
         if (!$nik) {
-            echo json_encode(['is_administrator' => false]);
+            echo json_encode(['status' => false, 'message' => 'NIK kosong']);
             return;
         }
 
-        $this->load->model('Auth_model');
         $user = $this->Auth_model->get_user($nik);
 
-        if ($user && $user->role === 'administrator') {
-            echo json_encode(['is_administrator' => true]);
-        } else {
-            echo json_encode(['is_administrator' => false]);
+        if (!$user) {
+            echo json_encode(['status' => false, 'message' => 'NIK tidak ditemukan']);
+            return;
         }
+
+        echo json_encode([
+            'status' => true,
+            'role'   => $user->role // "superadmin", "administrator", "pegawai"
+        ]);
     }
 
-    // Buat administrator default (opsional)
-    public function create_administrator()
+    // buat superadmin default
+    public function create_superadmin()
     {
-        $password = password_hash("admin123", PASSWORD_DEFAULT);
+        $password = password_hash("superadmin123", PASSWORD_DEFAULT);
         $data = [
-            'nik'      => '1234567890',
+            'nik'      => '9999999999',
             'password' => $password,
-            'role'     => 'administrator'
+            'role'     => 'superadmin'
         ];
         $this->db->insert('users', $data);
-        echo "administrator berhasil dibuat!";
+        echo "Superadmin berhasil dibuat!";
     }
 }
