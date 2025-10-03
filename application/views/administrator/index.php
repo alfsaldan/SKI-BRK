@@ -107,12 +107,17 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between mb-3">
                                 <h4 class="header-title">Grafik Nilai Pegawai</h4>
-                                <select id="filter-unit" class="form-control w-50">
-                                    <option value="cabang">Cabang</option>
-                                    <option value="cabang_utama">Cabang Utama</option>
-                                    <option value="cabang_pembantu">Cabang Pembantu</option>
-                                    <option value="kedai">Kedai</option>
-                                </select>
+                                <div class="d-flex w-65">
+                                    <select id="filter-unit" class="form-control mb-2">
+                                        <option value="cabang">Cabang</option>
+                                        <option value="cabang_utama">Cabang Utama</option>
+                                        <option value="cabang_pembantu">Cabang Pembantu</option>
+                                        <option value="kedai">Kedai</option>
+                                    </select>
+                                    <select id="filter-unitkantor" class="form-control">
+                                        <!-- otomatis terisi -->
+                                    </select>
+                                </div>
                             </div>
                             <div id="grafik-nilai-pegawai" style="height: 332px;"></div>
                         </div>
@@ -133,7 +138,7 @@
 
 <!-- Script Grafik -->
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
         var ticks = [
             [0, "Minus"],
             [1, "Fair"],
@@ -142,45 +147,80 @@
             [4, "Excellent"]
         ];
 
-        // dummy data per unit
+        // dummy data per unit + kantor
         var dataUnit = {
-            "cabang": [1, 15, 30, 25, 12],
-            "cabang_utama": [2, 5, 20, 15, 10],
-            "cabang_pembantu": [3, 10, 25, 20, 15],
-            "kedai": [1, 8, 25, 18, 12]
+            "cabang": {
+                "Pekanbaru Sudirman": [1, 12, 28, 22, 10],
+                "Pekanbaru Tangkerang": [0, 10, 25, 20, 12]
+            },
+            "cabang_utama": {
+                "Pekanbaru": [2, 5, 20, 15, 10]
+            },
+            "cabang_pembantu": {
+                "Pekanbaru Harapan Raya": [3, 8, 22, 18, 14]
+            },
+            "kedai": {
+                "Ramayana": [1, 7, 18, 12, 9]
+            }
         };
 
         var colors = ["#ff4d4d", "#ff9900", "#1e90ff", "#32cd32", "#186c18"];
 
-        function renderChart(unit) {
-            var values = dataUnit[unit];
+        function populateKantor(unit) {
+            var $kantor = $("#filter-unitkantor");
+            $kantor.empty();
+            $.each(dataUnit[unit], function(namaKantor, nilai) {
+                $kantor.append(`<option value="${namaKantor}">${namaKantor}</option>`);
+            });
+        }
 
-            var barSeries = values.map(function (v, i) {
+        function renderChart(unit, kantor) {
+            var values = dataUnit[unit][kantor];
+
+            var barSeries = values.map(function(v, i) {
                 return {
                     label: ticks[i][1],
-                    data: [[i, v]],
-                    bars: { show: true, barWidth: 0.5, align: "center" },
+                    data: [
+                        [i, v]
+                    ],
+                    bars: {
+                        show: true,
+                        barWidth: 0.5,
+                        align: "center"
+                    },
                     color: colors[i]
                 };
             });
 
             var lineSeries = {
                 label: "Trend",
-                data: values.map(function (v, i) { return [i, v]; }),
-                lines: { show: true, fill: false },
-                points: { show: true, radius: 3 },
+                data: values.map(function(v, i) {
+                    return [i, v];
+                }),
+                lines: {
+                    show: true,
+                    fill: false
+                },
+                points: {
+                    show: true,
+                    radius: 3
+                },
                 color: "#a3a3a3"
             };
 
             $.plot("#grafik-nilai-pegawai", barSeries.concat([lineSeries]), {
-                xaxis: { ticks: ticks },
+                xaxis: {
+                    ticks: ticks
+                },
                 grid: {
                     hoverable: true,
                     clickable: true,
                     borderWidth: 1,
                     borderColor: "#f0f0f0"
                 },
-                legend: { show: false }
+                legend: {
+                    show: false
+                }
             });
         }
 
@@ -195,25 +235,41 @@
             "z-index": 10000
         }).appendTo("body");
 
-        $("#grafik-nilai-pegawai").bind("plothover", function (event, pos, item) {
+        $("#grafik-nilai-pegawai").bind("plothover", function(event, pos, item) {
             if (item) {
                 var x = Number(item.datapoint[0]);
                 var y = item.datapoint[1];
                 var label = (ticks.find(t => Number(t[0]) === x) || [null, item.series.label])[1];
                 $("#tooltip-nilai").html(label + " : " + y)
-                    .css({ top: item.pageY + 8, left: item.pageX + 8 })
+                    .css({
+                        top: item.pageY + 8,
+                        left: item.pageX + 8
+                    })
                     .fadeIn(100);
             } else {
                 $("#tooltip-nilai").hide();
             }
         });
 
-        // render pertama kali (default cabang)
-        renderChart("cabang");
+        // render pertama kali
+        var defaultUnit = "cabang";
+        populateKantor(defaultUnit);
+        var defaultKantor = $("#filter-unitkantor").val();
+        renderChart(defaultUnit, defaultKantor);
 
-        // render ulang saat ganti filter
-        $("#filter-unit").on("change", function () {
-            renderChart($(this).val());
+        // ketika ganti unit
+        $("#filter-unit").on("change", function() {
+            var unit = $(this).val();
+            populateKantor(unit);
+            var kantor = $("#filter-unitkantor").val();
+            renderChart(unit, kantor);
+        });
+
+        // ketika ganti kantor
+        $("#filter-unitkantor").on("change", function() {
+            var unit = $("#filter-unit").val();
+            var kantor = $(this).val();
+            renderChart(unit, kantor);
         });
     });
 </script>

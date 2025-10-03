@@ -13,6 +13,8 @@ $route['login']              = 'Auth/index';       // Halaman login
 $route['logout']             = 'Auth/logout';      // Logout
 // Route tambahan untuk role lain (pegawai misalnya)
 $route['pegawai']            = 'Pegawai/index';    
+$route['administrator/kpi_indikatorkinerja'] = 'Administrator_Renstra/kpi_indikatorKinerja';
+
 
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;

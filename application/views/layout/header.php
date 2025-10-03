@@ -254,6 +254,13 @@
                                 </a>
                             </li>
 
+                            <li class="<?= ($activeController == 'administrator_renstra' && in_array($activeMethod, ['kpi_indikatorkinerja'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator/kpi_indikatorkinerja') ?>">
+                                    <i class="mdi mdi-key-variant"></i>
+                                    <span> Kelola KPI  </span>
+                                </a>
+                            </li>
+
                             <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['penilaiankinerja', 'caripenilaian'])) ? 'active' : '' ?>">
                                 <a href="<?= base_url('administrator/penilaiankinerja') ?>">
                                     <i class="mdi mdi-account-edit"></i>

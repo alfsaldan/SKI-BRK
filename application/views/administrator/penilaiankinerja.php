@@ -345,33 +345,109 @@
 
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="tabel-penilaian-budaya">
-                                        <thead style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
-                                            <tr>
+                                        <thead>
+                                            <!-- Judul besar -->
+                                            <tr style="background-color:#2E7D32; color:#fff; font-weight:bold; text-align:center;">
+                                                <th colspan="4" class="text-center">Budaya Kerja</th>
+                                            </tr>
+
+                                            <!-- Header kolom -->
+                                            <tr style="background-color:#A5D6A7; color:#fff; font-weight:bold; text-align:center;">
                                                 <th style="width:50px;">No</th>
-                                                <th>Budaya Kerja</th>
+                                                <th style="width:370px;">Perilaku Utama</th>
+                                                <th>Panduan Perilaku</th>
                                                 <th style="width:120px;" class="text-center">Nilai (0-5)</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php
-                                            $budaya_list = [
-                                                "Jujur dan berkomitmen",
-                                                "Bekerja sama, saling menghargai dan mendukung",
-                                                "Berpikir positif",
-                                                "Peduli, proaktif dan cepat tanggap",
-                                                "Tulus ikhlas",
-                                                "Berorientasi pada solusi terbaik",
-                                                "Kompeten dan bertanggung jawab",
-                                                "Bekerja cerdas, efektif dan efisien",
-                                                "Kreatif, inovatif dan bernilai tambah",
-                                                "Memberikan hasil terbaik"
+                                            $budaya = [
+                                                [
+                                                    "utama" => "Komitmen & Bertanggung Jawab",
+                                                    "panduan" => [
+                                                        "Teguh dalam bersikap dan berperilaku sesuai peraturan Bank dan nilai-nilai syariah",
+                                                        "Melaksanakan tugas dan kewajiban secara optimal"
+                                                    ]
+                                                ],
+                                                [
+                                                    "utama" => "Bekerjasama, saling menghargai dan mendukung",
+                                                    "panduan" => [
+                                                        "Membangun, menjaga, dan mengembangkan soliditas tim",
+                                                        "Menunjukkan empati kepada sesama rekan kerja"
+                                                    ]
+                                                ],
+                                                [
+                                                    "utama" => "Berpikir positif",
+                                                    "panduan" => [
+                                                        "Berfikir yang terbaik saat menghadapi tantangan",
+                                                        "Optimis dalam menjalankan tugas"
+                                                    ]
+                                                ],
+                                                [
+                                                    "utama" => "Jujur & Tulus Ikhlas",
+                                                    "panduan" => [
+                                                        "Konsisten antara ucapan dan tindakan",
+                                                        "Menunjukkan dedikasi yang tinggi dalam menjalankan amanah"
+                                                    ]
+                                                ],
+                                                [
+                                                    "utama" => "Kreatif, inovatif dan bernilai tambah",
+                                                    "panduan" => [
+                                                        "Memberikan ide-ide dan cara-cara baru yang semakin baik dan relevan",
+                                                        "Selalu belajar dan mengembangkan diri untuk menghasilkan kinerja yang lebih baik"
+                                                    ]
+                                                ],
+                                                [
+                                                    "utama" => "Peduli, Proaktif & Cepat Tanggap",
+                                                    "panduan" => [
+                                                        "Menjaga lingkungan kerja dan pelayanan yang kondusif, aman, dan nyaman",
+                                                        "Antusias dalam mengedukasi dan melayani nasabah"
+                                                    ]
+                                                ],
+                                                [
+                                                    "utama" => "Berorientasi pada Solusi Terbaik",
+                                                    "panduan" => [
+                                                        "Berempati terhadap masalah dan kebutuhan nasabah",
+                                                        "Mengidentifikasi masalah dan kebutuhan nasabah serta memberikan solusi yang bernilai tambah"
+                                                    ]
+                                                ],
+                                                [
+                                                    "utama" => "Kompeten",
+                                                    "panduan" => [
+                                                        "Menguasai bidang pekerjaan yang digeluti",
+                                                        "Memberikan kontribusi terbaik bagi kemajuan Bank"
+                                                    ]
+                                                ],
+                                                [
+                                                    "utama" => "Bekerja Cerdas, Efektif & Efisien",
+                                                    "panduan" => [
+                                                        "Menjadikan produktivitas dan orientasi pada hasil sebagai acuan dalam mencapai hasil yang optimal",
+                                                        "Menuntaskan pekerjaan secara cepat, tepat, dan akurat"
+                                                    ]
+                                                ],
+                                                [
+                                                    "utama" => "Memberikan hasil terbaik",
+                                                    "panduan" => [
+                                                        "Senantiasa berusaha memberikan kontribusi melebihi ekspektasi",
+                                                        "Melakukan perbaikan dan peningkatan kualitas kerja untuk mendapatkan nilai tambah optimal dan hasil yang terbaik"
+                                                    ]
+                                                ],
                                             ];
                                             $no = 1;
-                                            foreach ($budaya_list as $b): ?>
+                                            foreach ($budaya as $b): ?>
                                                 <tr>
-                                                    <td class="text-center"><?= $no++; ?></td>
-                                                    <td><?= $b; ?></td>
-                                                    <td class="text-center">
+                                                    <td class="text-center align-middle" rowspan="<?= count($b['panduan']); ?>"><?= $no++; ?></td>
+                                                    <td class="align-middle text-left" rowspan="<?= count($b['panduan']); ?>"><?= $b['utama']; ?></td>
+                                                    <td class="text-left"><?= "a. " . $b['panduan'][0]; ?></td>
+                                                    <td class="text-center align-middle">
+                                                        <input type="number" step="0.1" min="0" max="5"
+                                                            class="form-control form-control-sm text-center budaya"
+                                                            name="budaya[]" value="">
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="text-left"><?= "b. " . $b['panduan'][1]; ?></td>
+                                                    <td class="text-center align-middle">
                                                         <input type="number" step="0.1" min="0" max="5"
                                                             class="form-control form-control-sm text-center budaya"
                                                             name="budaya[]" value="">
@@ -381,7 +457,7 @@
                                         </tbody>
                                         <tfoot style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
                                             <tr>
-                                                <td colspan="2" class="text-right align-middle">Rata-Rata Nilai Internalisasi Budaya</td>
+                                                <td colspan="3" class="text-right align-middle">Rata-Rata Nilai Internalisasi Budaya</td>
                                                 <td class="text-center">
                                                     <input type="text" id="rata-rata-budaya"
                                                         class="form-control form-control-sm text-center" readonly>
@@ -394,6 +470,7 @@
                         </div>
                     </div>
                 </div>
+
 
                 <script>
                     // hitung otomatis rata-rata budaya
