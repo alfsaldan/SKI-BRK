@@ -107,15 +107,16 @@ class SuperAdmin extends CI_Controller
     {
         if ($this->input->post()) {
             $insert = [
-                'jabatan' => $this->input->post('jabatan'),
-                'unit_kerja' => $this->input->post('unit_kerja'),
+                'jabatan'          => $this->input->post('jabatan'),
+                'jenis_penilaian'  => $this->input->post('jenis_penilaian'), // ✅ baru ditambahkan
+                'unit_kerja'       => $this->input->post('unit_kerja'),
                 'penilai1_jabatan' => $this->input->post('penilai1_jabatan'),
                 'penilai2_jabatan' => $this->input->post('penilai2_jabatan'),
             ];
 
             $this->PenilaiMapping_model->insert($insert);
             $this->session->set_flashdata('success', 'Data mapping berhasil ditambahkan.');
-            redirect('Administrator/kelolatingkatanjabatan');
+            redirect('superadmin/kelolatingkatanjabatan_kpi');
         }
     }
 
@@ -124,17 +125,19 @@ class SuperAdmin extends CI_Controller
     {
         if ($this->input->post()) {
             $update = [
-                'jabatan' => $this->input->post('jabatan'),
-                'unit_kerja' => $this->input->post('unit_kerja'),
+                'jabatan'          => $this->input->post('jabatan'),
+                'jenis_penilaian'  => $this->input->post('jenis_penilaian'), // ✅ baru ditambahkan
+                'unit_kerja'       => $this->input->post('unit_kerja'),
                 'penilai1_jabatan' => $this->input->post('penilai1_jabatan'),
                 'penilai2_jabatan' => $this->input->post('penilai2_jabatan'),
             ];
 
             $this->PenilaiMapping_model->update($id, $update);
             $this->session->set_flashdata('success', 'Data mapping berhasil diubah.');
-            redirect('Administrator/kelolatingkatanjabatan');
+            redirect('superadmin/kelolatingkatanjabatan_kpi');
         }
     }
+
 
     // Hapus data
     public function hapusPenilaiMapping($id)
@@ -142,11 +145,11 @@ class SuperAdmin extends CI_Controller
         if ($this->PenilaiMapping_model->delete($id)) {
             $this->session->set_flashdata('success', 'Data berhasil dihapus');
         }
-        redirect('administrator/kelolatingkatanjabatan');
+        redirect('superadmin/kelolatingkatanjabatan_kpi');
     }
 
     //Kelola Rumus
-        public function kelolarumus()
+    public function kelolarumus()
     {
         $data['title'] = "Kelola Rumus";
         $data['rumus'] = $this->SuperAdmin_model->getAllUsers();
@@ -155,5 +158,4 @@ class SuperAdmin extends CI_Controller
         $this->load->view('superadmin/kelolarumus', $data);
         $this->load->view('layoutsuperadmin/footer');
     }
-
 }

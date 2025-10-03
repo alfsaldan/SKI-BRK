@@ -14,6 +14,7 @@ $route['logout']             = 'Auth/logout';      // Logout
 // Route tambahan untuk role lain (pegawai misalnya)
 $route['pegawai']            = 'Pegawai/index';    
 $route['administrator/kpi_indikatorkinerja'] = 'Administrator_Renstra/kpi_indikatorKinerja';
+$route['administrator/kpi_penilaiankinerja'] = 'Administrator_Renstra/kpi_penilaianKinerja';
 
 
 $route['404_override'] = '';

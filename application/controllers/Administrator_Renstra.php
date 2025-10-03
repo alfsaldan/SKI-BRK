@@ -71,15 +71,24 @@ class Administrator_Renstra extends CI_Controller
         $this->load->view("layout/footer");
     }
 
+    public function kpi_penilaianKinerja()
+    {
+        $this->load->view("layout/header");
+        $this->load->view('administrator/kpi_penilaianKinerja');
+        $this->load->view("layout/footer");
+    }
+
     public function getJabatanByUnit()
     {
         $unit_kerja = $this->input->get('unit_kerja');
         $this->db->select('jabatan');
         $this->db->distinct();
         $this->db->where('unit_kerja', $unit_kerja);
+        $this->db->where('jenis_penilaian', 'kpi'); // ✅ filter hanya KPI
         $jabatan = $this->db->get('penilai_mapping')->result();
         echo json_encode($jabatan);
     }
+
 
     public function addSasaranKerja()
     {

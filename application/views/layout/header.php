@@ -268,6 +268,13 @@
                                 </a>
                             </li>
 
+                            <li class="<?= ($activeController == 'administrator_renstra' && in_array($activeMethod, ['kpi_indikatorkinerja'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator/kpi_penilaiankinerja') ?>">
+                                    <i class="mdi mdi-account-key"></i>
+                                    <span> Penilaian KPI  </span>
+                                </a>
+                            </li>
+
                             <li class="menu-title mt-2">Lainnya</li>
 
                             <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['datapegawai', 'caridatapegawai'])) ? 'active' : '' ?>">

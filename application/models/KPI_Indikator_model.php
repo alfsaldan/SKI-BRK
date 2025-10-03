@@ -14,8 +14,11 @@ class KPI_Indikator_model extends CI_Model
     {
         $this->db->select('unit_kerja');
         $this->db->distinct();
+        $this->db->where('jenis_penilaian', 'kpi'); // filter KPI
         return $this->db->get('penilai_mapping')->result();
     }
+
+
 
     public function insertSasaranKerja($jabatan, $unit_kerja, $perspektif, $sasaran_kpi)
     {
@@ -65,11 +68,11 @@ class KPI_Indikator_model extends CI_Model
         $this->db->select('kpi_indikator.*, kpi_sasaran.sasaran_kpi, kpi_sasaran.perspektif, kpi_sasaran.jabatan, kpi_sasaran.unit_kerja');
         $this->db->from('kpi_indikator');
         $this->db->join('kpi_sasaran', 'kpi_sasaran.id = kpi_indikator.sasaran_id');
-        
+
         if ($unit_kerja) {
             $this->db->where('kpi_sasaran.unit_kerja', $unit_kerja);
         }
-        
+
         if ($jabatan) {
             $this->db->where('kpi_sasaran.jabatan', $jabatan);
         }
