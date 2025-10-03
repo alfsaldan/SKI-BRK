@@ -239,4 +239,16 @@ class Penilaian_model extends CI_Model
             ->get('nilai_akhir')
             ->row_array();
     }
+
+    public function getLockStatus($periode_awal, $periode_akhir)
+{
+    return $this->db
+        ->select('lock_input')
+        ->where('periode_awal', $periode_awal)
+        ->where('periode_akhir', $periode_akhir)
+        ->limit(1)
+        ->get('penilaian')
+        ->row(); // hasil bisa null jika belum ada data
+}
+
 }

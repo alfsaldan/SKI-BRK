@@ -262,21 +262,62 @@ class Administrator extends CI_Controller
 
     public function penilaiankinerja()
     {
+        $this->load->model('Penilaian_model');
+
+        // 🔹 Ambil periode dari query jika ada
+        $periode_awal  = $this->input->get('awal') ?? date('Y') . "-01-01";
+        $periode_akhir = $this->input->get('akhir') ?? date('Y') . "-12-31";
+
+        // 🔹 Ambil status lock dari DB
+        $lock_status = $this->Penilaian_model->getLockStatus($periode_awal, $periode_akhir);
+
         $data['judul'] = "Penilaian Kinerja Pegawai";
+        $data['periode_list'] = $this->Penilaian_model->getPeriodeList();
+        $data['periode_awal'] = $periode_awal;
+        $data['periode_akhir'] = $periode_akhir;
+        $data['is_locked'] = $lock_status ? true : false;
+
         $data['pegawai'] = $this->db->get('pegawai')->result();
         $data['indikator'] = $this->db->get('indikator')->result();
-
-        // Default periode (1 tahun penuh)
-        $data['periode_awal'] = date('Y') . "-01-01";
-        $data['periode_akhir'] = date('Y') . "-12-31";
-
         $data['penilaian'] = $this->Penilaian_model->get_all_penilaian();
-        $data['pegawai_detail'] = null;
-        $data['indikator_by_jabatan'] = [];
 
         $this->load->view("layout/header");
         $this->load->view("administrator/penilaiankinerja", $data);
         $this->load->view("layout/footer");
+    }
+
+    public function getLockStatus()
+    {
+        $awal = $this->input->get('awal');
+        $akhir = $this->input->get('akhir');
+
+        $lock = $this->db->get_where('penilaian', [
+            'periode_awal' => $awal,
+            'periode_akhir' => $akhir
+        ])->row();
+
+        $locked = $lock && $lock->lock_input == 1;
+
+        echo json_encode(['locked' => $locked]);
+    }
+
+    public function setLockStatus()
+    {
+        $awal = $this->input->post('periode_awal');
+        $akhir = $this->input->post('periode_akhir');
+        $lock_input = $this->input->post('lock_input');
+
+        // Update semua baris periode itu
+        $this->db->where('periode_awal', $awal);
+        $this->db->where('periode_akhir', $akhir);
+        $this->db->set('lock_input', $lock_input);
+        $update = $this->db->update('penilaian');
+
+        if ($update) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error']);
+        }
     }
 
 

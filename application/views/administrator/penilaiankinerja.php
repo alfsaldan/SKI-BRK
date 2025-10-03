@@ -20,12 +20,57 @@
 
             <div class="row">
                 <div class="col-12 col-md-6">
-                    <div class="card">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-body">
+                            <h5 class="text-primary font-weight-bold mb-3">
+                                <i class="mdi mdi-calendar-range mr-2"></i> Pilih Periode Penilaian
+                            </h5>
+
+                            <!-- Dropdown Pilihan Periode -->
+                            <select id="periode_select" class="form-control">
+                                <option value="">-- Pilih Periode --</option>
+                                <?php foreach ($periode_list as $p): ?>
+                                    <option value="<?= $p->periode_awal . '|' . $p->periode_akhir ?>"
+                                        <?= ($p->periode_awal == $periode_awal && $p->periode_akhir == $periode_akhir) ? 'selected' : '' ?>>
+                                        <?= $p->periode_awal ?> s/d <?= $p->periode_akhir ?>
+                                    </option>
+                                <?php endforeach; ?>
+                                <option value="baru">+ Tambah Periode Baru</option>
+                            </select>
+
+                            <!-- Input Manual Periode Baru (disembunyikan dulu) -->
+                            <div id="periode_manual" style="display:none;">
+                                <input type="date" id="periode_awal" class="form-control" name="periode_awal">
+                                <input type="date" id="periode_akhir" class="form-control" name="periode_akhir">
+                            </div>
+
+                            <!-- Hidden untuk dikirim ke server -->
+                            <input type="hidden" id="hidden_periode_awal" value="<?= $periode_awal ?>">
+                            <input type="hidden" id="hidden_periode_akhir" value="<?= $periode_akhir ?>">
+
+                            <!-- Checkbox Lock -->
+                            <div class="form-check mt-3">
+                                <input class="form-check-input" type="checkbox" id="lock_input_checkbox">
+                                <label class="form-check-label" for="lock_input_checkbox">
+                                    🔐 Kunci Periode Ini
+                                </label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Input NIK -->
+            <div class="row">
+                <div class="col-12 col-md-6">
+                    <div class="card shadow-sm">
                         <div class="card-body">
                             <h5>Masukkan NIK Pegawai</h5>
                             <form action="<?= base_url('Administrator/cariPenilaian'); ?>" method="post">
-                                <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai"
-                                    required>
+                                <input type="hidden" name="periode_awal" id="hidden_periode_awal" value="<?= $periode_awal ?>">
+                                <input type="hidden" name="periode_akhir" id="hidden_periode_akhir" value="<?= $periode_akhir ?>">
+                                <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai" required>
                                 <button type="submit" class="btn btn-success mt-2">Nilai</button>
                             </form>
                         </div>
@@ -89,6 +134,7 @@
                                                 <option value="baru">+ Tambah Periode Baru</option>
                                             </select>
                                         </div>
+
 
                                         <div id="periode_manual" style="display: none;">
                                             <div class="form-inline mb-2">
@@ -345,109 +391,33 @@
 
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="tabel-penilaian-budaya">
-                                        <thead>
-                                            <!-- Judul besar -->
-                                            <tr style="background-color:#2E7D32; color:#fff; font-weight:bold; text-align:center;">
-                                                <th colspan="4" class="text-center">Budaya Kerja</th>
-                                            </tr>
-
-                                            <!-- Header kolom -->
-                                            <tr style="background-color:#A5D6A7; color:#fff; font-weight:bold; text-align:center;">
+                                        <thead style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
+                                            <tr>
                                                 <th style="width:50px;">No</th>
-                                                <th style="width:370px;">Perilaku Utama</th>
-                                                <th>Panduan Perilaku</th>
+                                                <th>Budaya Kerja</th>
                                                 <th style="width:120px;" class="text-center">Nilai (0-5)</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php
-                                            $budaya = [
-                                                [
-                                                    "utama" => "Komitmen & Bertanggung Jawab",
-                                                    "panduan" => [
-                                                        "Teguh dalam bersikap dan berperilaku sesuai peraturan Bank dan nilai-nilai syariah",
-                                                        "Melaksanakan tugas dan kewajiban secara optimal"
-                                                    ]
-                                                ],
-                                                [
-                                                    "utama" => "Bekerjasama, saling menghargai dan mendukung",
-                                                    "panduan" => [
-                                                        "Membangun, menjaga, dan mengembangkan soliditas tim",
-                                                        "Menunjukkan empati kepada sesama rekan kerja"
-                                                    ]
-                                                ],
-                                                [
-                                                    "utama" => "Berpikir positif",
-                                                    "panduan" => [
-                                                        "Berfikir yang terbaik saat menghadapi tantangan",
-                                                        "Optimis dalam menjalankan tugas"
-                                                    ]
-                                                ],
-                                                [
-                                                    "utama" => "Jujur & Tulus Ikhlas",
-                                                    "panduan" => [
-                                                        "Konsisten antara ucapan dan tindakan",
-                                                        "Menunjukkan dedikasi yang tinggi dalam menjalankan amanah"
-                                                    ]
-                                                ],
-                                                [
-                                                    "utama" => "Kreatif, inovatif dan bernilai tambah",
-                                                    "panduan" => [
-                                                        "Memberikan ide-ide dan cara-cara baru yang semakin baik dan relevan",
-                                                        "Selalu belajar dan mengembangkan diri untuk menghasilkan kinerja yang lebih baik"
-                                                    ]
-                                                ],
-                                                [
-                                                    "utama" => "Peduli, Proaktif & Cepat Tanggap",
-                                                    "panduan" => [
-                                                        "Menjaga lingkungan kerja dan pelayanan yang kondusif, aman, dan nyaman",
-                                                        "Antusias dalam mengedukasi dan melayani nasabah"
-                                                    ]
-                                                ],
-                                                [
-                                                    "utama" => "Berorientasi pada Solusi Terbaik",
-                                                    "panduan" => [
-                                                        "Berempati terhadap masalah dan kebutuhan nasabah",
-                                                        "Mengidentifikasi masalah dan kebutuhan nasabah serta memberikan solusi yang bernilai tambah"
-                                                    ]
-                                                ],
-                                                [
-                                                    "utama" => "Kompeten",
-                                                    "panduan" => [
-                                                        "Menguasai bidang pekerjaan yang digeluti",
-                                                        "Memberikan kontribusi terbaik bagi kemajuan Bank"
-                                                    ]
-                                                ],
-                                                [
-                                                    "utama" => "Bekerja Cerdas, Efektif & Efisien",
-                                                    "panduan" => [
-                                                        "Menjadikan produktivitas dan orientasi pada hasil sebagai acuan dalam mencapai hasil yang optimal",
-                                                        "Menuntaskan pekerjaan secara cepat, tepat, dan akurat"
-                                                    ]
-                                                ],
-                                                [
-                                                    "utama" => "Memberikan hasil terbaik",
-                                                    "panduan" => [
-                                                        "Senantiasa berusaha memberikan kontribusi melebihi ekspektasi",
-                                                        "Melakukan perbaikan dan peningkatan kualitas kerja untuk mendapatkan nilai tambah optimal dan hasil yang terbaik"
-                                                    ]
-                                                ],
+                                            $budaya_list = [
+                                                "Jujur dan berkomitmen",
+                                                "Bekerja sama, saling menghargai dan mendukung",
+                                                "Berpikir positif",
+                                                "Peduli, proaktif dan cepat tanggap",
+                                                "Tulus ikhlas",
+                                                "Berorientasi pada solusi terbaik",
+                                                "Kompeten dan bertanggung jawab",
+                                                "Bekerja cerdas, efektif dan efisien",
+                                                "Kreatif, inovatif dan bernilai tambah",
+                                                "Memberikan hasil terbaik"
                                             ];
                                             $no = 1;
-                                            foreach ($budaya as $b): ?>
+                                            foreach ($budaya_list as $b): ?>
                                                 <tr>
-                                                    <td class="text-center align-middle" rowspan="<?= count($b['panduan']); ?>"><?= $no++; ?></td>
-                                                    <td class="align-middle text-left" rowspan="<?= count($b['panduan']); ?>"><?= $b['utama']; ?></td>
-                                                    <td class="text-left"><?= "a. " . $b['panduan'][0]; ?></td>
-                                                    <td class="text-center align-middle">
-                                                        <input type="number" step="0.1" min="0" max="5"
-                                                            class="form-control form-control-sm text-center budaya"
-                                                            name="budaya[]" value="">
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="text-left"><?= "b. " . $b['panduan'][1]; ?></td>
-                                                    <td class="text-center align-middle">
+                                                    <td class="text-center"><?= $no++; ?></td>
+                                                    <td><?= $b; ?></td>
+                                                    <td class="text-center">
                                                         <input type="number" step="0.1" min="0" max="5"
                                                             class="form-control form-control-sm text-center budaya"
                                                             name="budaya[]" value="">
@@ -457,7 +427,7 @@
                                         </tbody>
                                         <tfoot style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
                                             <tr>
-                                                <td colspan="3" class="text-right align-middle">Rata-Rata Nilai Internalisasi Budaya</td>
+                                                <td colspan="2" class="text-right align-middle">Rata-Rata Nilai Internalisasi Budaya</td>
                                                 <td class="text-center">
                                                     <input type="text" id="rata-rata-budaya"
                                                         class="form-control form-control-sm text-center" readonly>
@@ -470,7 +440,6 @@
                         </div>
                     </div>
                 </div>
-
 
                 <script>
                     // hitung otomatis rata-rata budaya
@@ -635,11 +604,6 @@
                     </div>
                 </div>
 
-
-
-
-
-
                 <div class="row mt-3">
                     <!-- Catatan Penilai -->
                     <div class="col-md-6">
@@ -774,7 +738,6 @@
             // 🔹 Batas maksimal 130%
             return Math.min(pencapaian, 130);
         }
-
 
 
         function hitungNilai(pencapaian) {
@@ -1310,6 +1273,114 @@
                     });
             });
         });
+    });
+</script>
 
+<script>
+    // ===============================
+    // 🔐 LOCK INPUT GLOBAL
+    // ===============================
+    const lockCheckbox = document.getElementById('lock_input_checkbox');
+    const periodeAwal = document.getElementById('hidden_periode_awal');
+    const periodeAkhir = document.getElementById('hidden_periode_akhir');
+
+    // ⏳ Saat halaman pertama kali dibuka, cek status lock dari server
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch(`<?= base_url("Administrator/getLockStatus") ?>?awal=${periodeAwal.value}&akhir=${periodeAkhir.value}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.locked) {
+                    lockCheckbox.checked = true;
+                    toggleInputLock(true);
+                } else {
+                    lockCheckbox.checked = false;
+                    toggleInputLock(false);
+                }
+            });
+    });
+
+    // 🎯 Saat checkbox diubah (Lock / Unlock)
+    lockCheckbox.addEventListener('change', function() {
+        const isLocked = this.checked ? 1 : 0;
+
+        fetch('<?= base_url("Administrator/setLockStatus") ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `periode_awal=${periodeAwal.value}&periode_akhir=${periodeAkhir.value}&lock_input=${isLocked}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: isLocked ? 'Periode berhasil dikunci.' : 'Kunci periode telah dibuka.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    toggleInputLock(isLocked);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Tidak dapat mengubah status kunci.',
+                    });
+                    // Kembalikan checkbox ke posisi sebelumnya
+                    lockCheckbox.checked = !this.checked;
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan koneksi ke server.'
+                });
+                lockCheckbox.checked = !this.checked;
+            });
+    });
+
+    // 🔒 Fungsi untuk mengunci / membuka semua input
+    function toggleInputLock(lock) {
+        document.querySelectorAll('.target-input, input[type="date"], .realisasi-input, .simpan-penilaian, #btn-simpan-nilai-akhir')
+            .forEach(el => {
+                el.disabled = lock;
+            });
+    }
+
+
+    // ===============================
+    // 🔄 GANTI PERIODE DENGAN ALERT
+    // ===============================
+    document.getElementById('periode_select').addEventListener('change', function() {
+        const val = this.value;
+        const manualDiv = document.getElementById('periode_manual');
+
+        if (val === 'baru') {
+            // Jika user pilih input manual
+            manualDiv.style.display = 'block';
+        } else if (val) {
+            // Jika user pilih periode dari dropdown
+            manualDiv.style.display = 'none';
+            const [awal, akhir] = val.split('|');
+
+            Swal.fire({
+                title: 'Ganti Periode?',
+                text: `Kamu akan beralih ke periode ${awal} s/d ${akhir}.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, ganti!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Refresh halaman dengan query periode agar status lock ikut update
+                    window.location.href = `<?= base_url('Administrator/penilaiankinerja') ?>?awal=${awal}&akhir=${akhir}`;
+                } else {
+                    // Jika dibatalkan, kembalikan dropdown ke nilai sebelumnya
+                    this.value = "<?= $periode_awal . '|' . $periode_akhir ?>";
+                }
+            });
+        }
     });
 </script>
