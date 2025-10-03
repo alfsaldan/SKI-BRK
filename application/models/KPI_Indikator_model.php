@@ -41,7 +41,7 @@ class KPI_Indikator_model extends CI_Model
     public function updateIndikator($id, $indikator, $bobot)
     {
         $this->db->where('id', $id);
-        return $this->db->update('indikator', [
+        return $this->db->update('kpi_indikator', [
             'indikator' => $indikator,
             'bobot' => $bobot
         ]);
