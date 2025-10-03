@@ -283,10 +283,22 @@
                         ?>
 
                         <li
+                            class="<?= in_array($activeMenu, ['kelolatingkatanjabatan', 'kelolatingkatanjabatan_kpi']) ? 'active' : '' ?>">
+                            <a href="<?= base_url('superadmin/kelolatingkatanjabatan_kpi') ?>">
+                                   <i class="mdi mdi-briefcase"></i>
+                                <span> Kelola Jabatan </span>
+                            </a>
+                        </li>
+
+                             <?php
+                        $activeMenu = strtolower($this->uri->segment(2, ''));
+                        ?>
+
+                        <li
                             class="<?= in_array($activeMenu, ['tambahroleuser', 'editroleuser']) ? 'active' : '' ?>">
-                            <a href="<?= base_url('superadmin/kelolatingkatanjabatan_kpi.php') ?>">
-                                <i class="mdi mdi-account-edit"></i>
-                                <span> Kelola Tingkatan KPI </span>
+                            <a href="<?= base_url('superadmin/kelolarumus') ?>">
+                                <i class="mdi mdi-square-root"></i>
+                                <span> Kelola Rumus </span>
                             </a>
                         </li>
 
