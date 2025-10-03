@@ -132,8 +132,8 @@
                 </div>
 
                 <!-- Tabel Data Indikator -->
-                <?php if (!empty($indikator)): ?>
-                    <h3>Data Indikator Kinerja</h3>
+                <?php if (!empty($kpi_indikator)): ?>
+                    <h3>Data Key Performance Indikator</h3>
                     <div class="table-responsive">
                         <table class="table table-bordered">
                             <thead style="background-color:#2E7D32; color:#fff; text-align:center;">
@@ -156,7 +156,7 @@
                                 ];
 
                                 // Urutkan $indikator sesuai $perspektif_order
-                                uksort($indikator, function ($a, $b) use ($perspektif_order) {
+                                uksort($kpi_indikator, function ($a, $b) use ($perspektif_order) {
                                     $posA = array_search($a, $perspektif_order);
                                     $posB = array_search($b, $perspektif_order);
 
@@ -170,7 +170,7 @@
 
                                 <?php
                                 $grandTotal = 0;
-                                foreach ($indikator as $perspektif => $sasaranList): ?>
+                                foreach ($kpi_indikator as $perspektif => $sasaranList): ?>
                                     <tr class="perspektif-row" style="background-color:#C8E6C9; font-weight:bold;">
                                         <td colspan="5"><?= $perspektif; ?></td>
                                     </tr>
