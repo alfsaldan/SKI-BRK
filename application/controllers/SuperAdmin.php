@@ -5,7 +5,6 @@ defined('BASEPATH') or exit('No direct script access allowed');
  * @property SuperAdmin_model $SuperAdmin_model
  * @property CI_Input $input
  * @property CI_Session $session
- * @property CI_DB_query_builder $db
  * @property CI_Form_validation $form_validation
  */
 class SuperAdmin extends CI_Controller
@@ -16,24 +15,24 @@ class SuperAdmin extends CI_Controller
         $this->load->model('SuperAdmin_model');
         $this->load->library('form_validation');
 
-        // Cek login SuperAdmin
+        // 🔒 Cek login SuperAdmin
         if (!$this->session->userdata('nik') || $this->session->userdata('role') != 'superadmin') {
             redirect('auth');
         }
     }
 
-    public function index()
+   public function index()
     {
-        $data['title'] = "Dashboard SuperAdmin";
-        $this->load->view('layoutsuperadmin/header', $data);
-        $this->load->view('superadmin/index', $data);
-        $this->load->view('layoutsuperadmin/footer');
+        $this->load->view("layoutsuperadmin/header");
+        $this->load->view("superadmin/index");
+        $this->load->view("layoutsuperadmin/footer");
     }
 
     public function kelolaRoleUser()
     {
         $data['title'] = "Kelola Role User";
         $data['users'] = $this->SuperAdmin_model->getAllUsers();
+
         $this->load->view('layoutsuperadmin/header', $data);
         $this->load->view('superadmin/kelolaroleuser', $data);
         $this->load->view('layoutsuperadmin/footer');
@@ -65,21 +64,13 @@ class SuperAdmin extends CI_Controller
     public function editRoleUser()
     {
         $id = $this->input->post('id');
-        if (!$id) {
-            $this->session->set_flashdata('error', 'ID user tidak ditemukan.');
-            redirect('superadmin/kelolaroleuser');
-            return;
-        }
-
         $update = [
             'role'      => strtolower($this->input->post('role')),
             'is_active' => $this->input->post('is_active') ? 1 : 0
         ];
 
-        // Update password jika diisi
-        $password = $this->input->post('password');
-        if (!empty($password)) {
-            $update['password'] = password_hash($password, PASSWORD_DEFAULT);
+        if (!empty($this->input->post('password'))) {
+            $update['password'] = password_hash($this->input->post('password'), PASSWORD_DEFAULT);
         }
 
         $this->SuperAdmin_model->updateUser($id, $update);
@@ -87,14 +78,12 @@ class SuperAdmin extends CI_Controller
         redirect('superadmin/kelolaroleuser');
     }
 
-    public function hapusRoleUser($id)
+    public function hapusRoleUser($id = null)
     {
         if (!$id) {
-            $this->session->set_flashdata('error', 'ID user tidak valid.');
+            $this->session->set_flashdata('error', 'ID user tidak ditemukan.');
             redirect('superadmin/kelolaroleuser');
-            return;
         }
-
         $this->SuperAdmin_model->deleteUser($id);
         $this->session->set_flashdata('success', 'User berhasil dihapus.');
         redirect('superadmin/kelolaroleuser');

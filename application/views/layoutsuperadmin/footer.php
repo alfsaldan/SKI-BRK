@@ -115,6 +115,124 @@
     }
 </style>
 
+<script>
+    $(document).ready(function() {
+        console.log("✅ DataTables Init Started...");
+
+        // pastikan tabel ditemukan
+        if ($('#datatable-users').length) {
+            $('#datatable-users').DataTable({
+                responsive: true,
+                pageLength: 5,
+                lengthMenu: [
+                    [5, 10, 25, 50, -1],
+                    [5, 10, 25, 50, "Semua"]
+                ],
+                order: [],
+                dom: '<"row mb-2"<"col-md-6 d-flex align-items-center"l><"col-md-6 text-right"f>>' +
+                    'rt' +
+                    '<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+                language: {
+                    search: "🔍 Pencarian:",
+                    searchPlaceholder: "Masukkan kata kunci...",
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    zeroRecords: "Tidak ditemukan data",
+                    info: "Menampilkan _START_ - _END_ dari _TOTAL_ data",
+                    infoEmpty: "Tidak ada data tersedia",
+                    infoFiltered: "(difilter dari _MAX_ total data)",
+                    paginate: {
+                        previous: "Sebelumnya",
+                        next: "Berikutnya"
+                    }
+                }
+            });
+            console.log("✅ DataTables berhasil diinisialisasi");
+        } else {
+            console.error("❌ Tabel dengan ID #datatable-users tidak ditemukan!");
+        }
+    });
+</script>
+
+<style>
+    .dataTables_length select {
+        width: 70px !important;
+        display: inline-block;
+        margin: 0 5px;
+        padding: 2px 5px;
+        font-size: 0.875rem;
+    }
+</style>
+
+
+<script>
+    $(document).ready(function() {
+        // === Klik tombol Edit ===
+        $('.btn-edit').on('click', function() {
+            const id = $(this).data('id');
+            const nik = $(this).data('nik');
+            const role = $(this).data('role');
+            const status = $(this).data('status');
+
+            // Isi data ke modal edit
+            $('#edit_id').val(id);
+            $('#edit_nik').val(nik);
+            $('#edit_role').val(role);
+            $('#edit_status').val(status);
+
+            // Tampilkan modal
+            $('#editUserModal').modal('show');
+        });
+
+        // === Klik tombol Hapus (SweetAlert) ===
+        $('.btn-delete').on('click', function() {
+            const id = $(this).data('id');
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Data user ini akan dihapus permanen!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "<?= base_url('superadmin/hapusRoleUser/') ?>" + id;
+                }
+            });
+        });
+    });
+</script>
+
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    // Tampilkan SweetAlert kalau ada flashdata dari server
+    <?php if ($this->session->flashdata('success')): ?>
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: "<?= $this->session->flashdata('success'); ?>",
+            showConfirmButton: false,
+            timer: 2000
+        });
+    <?php endif; ?>
+
+    <?php if ($this->session->flashdata('error')): ?>
+        Swal.fire({
+            icon: 'error',
+            title: 'Gagal!',
+            text: "<?= $this->session->flashdata('error'); ?>",
+            showConfirmButton: true
+        });
+    <?php endif; ?>
+</script>
+
+
+
+
 </body>
 
 </html>

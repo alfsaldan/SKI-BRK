@@ -42,6 +42,9 @@
     <link href="<?= base_url('assets/libs/jquery-steps/jquery.steps.css') ?>" rel="stylesheet">
 
 
+
+
+
     <!-- Custom CSS Navbar & Sidebar -->
     <style>
         /* Navbar putih dengan shadow ringan */
@@ -254,7 +257,7 @@
                         <li class="menu-title">Halaman Utama</li>
 
                         <li class="<?= $this->uri->segment(2) == '' ? 'active' : '' ?>">
-                            <a href="<?= base_url('superadmin') ?>">
+                            <a href="<?= base_url('superadmin/index') ?>">
                                 <i class="fe-airplay"></i>
                                 <span> Dashboard </span>
                             </a>
@@ -274,6 +277,19 @@
                             </a>
                         </li>
 
+
+                         <?php
+                        $activeMenu = strtolower($this->uri->segment(2, ''));
+                        ?>
+
+                        <li
+                            class="<?= in_array($activeMenu, ['tambahroleuser', 'editroleuser']) ? 'active' : '' ?>">
+                            <a href="<?= base_url('superadmin/kelolatingkatanjabatan_kpi.php') ?>">
+                                <i class="mdi mdi-account-edit"></i>
+                                <span> Kelola Tingkatan KPI </span>
+                            </a>
+                        </li>
+
                     </ul>
 
                 </div>
@@ -286,4 +302,3 @@
 
         </div>
         <!-- Left Sidebar End -->
-

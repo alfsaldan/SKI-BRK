@@ -7,7 +7,11 @@ class SuperAdmin_model extends CI_Model
 
     public function getAllUsers()
     {
-        return $this->db->order_by('id', 'DESC')->get($this->table)->result();
+        $this->db->select('users.*, pegawai.nama, pegawai.jabatan, pegawai.unit_kerja, pegawai.unit_kantor');
+        $this->db->from($this->table);
+        $this->db->join('pegawai', 'pegawai.nik = users.nik', 'left'); 
+        $this->db->order_by('users.id', 'DESC');
+        return $this->db->get()->result();
     }
 
     public function insertUser($data)
