@@ -501,6 +501,182 @@
                     </div>
                 </div>
 
+                <!-- Form Penilaian Budaya -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body">
+                                <h5 class="text-success fw-bold mb-3">
+                                    <i class="mdi mdi-account-star-outline me-2"></i> Form Penilaian Budaya
+                                </h5>
+
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="tabel-penilaian-budaya">
+                                        <thead class="text-center">
+                                            <tr class="bg-success text-white fw-bold">
+                                                <th colspan="4">Budaya Kerja</th>
+                                            </tr>
+                                            <tr class="bg-success-subtle text-dark fw-bold">
+                                                <th style="width:50px;">No</th>
+                                                <th style="width:370px;">Perilaku Utama</th>
+                                                <th>Panduan Perilaku</th>
+                                                <th style="width:160px;">Nilai (0-5)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php
+                                            $budaya = [
+                                                ["utama" => "Komitmen & Bertanggung Jawab", "panduan" => ["Teguh dalam bersikap dan berperilaku sesuai peraturan Bank dan nilai-nilai syariah", "Melaksanakan tugas dan kewajiban secara optimal"]],
+                                                ["utama" => "Bekerjasama, saling menghargai dan mendukung", "panduan" => ["Membangun, menjaga, dan mengembangkan soliditas tim", "Menunjukkan empati kepada sesama rekan kerja"]],
+                                                ["utama" => "Berpikir positif", "panduan" => ["Berfikir yang terbaik saat menghadapi tantangan", "Optimis dalam menjalankan tugas"]],
+                                                ["utama" => "Jujur & Tulus Ikhlas", "panduan" => ["Konsisten antara ucapan dan tindakan", "Menunjukkan dedikasi yang tinggi dalam menjalankan amanah"]],
+                                                ["utama" => "Kreatif, inovatif dan bernilai tambah", "panduan" => ["Memberikan ide-ide dan cara-cara baru yang semakin baik dan relevan", "Selalu belajar dan mengembangkan diri untuk menghasilkan kinerja yang lebih baik"]],
+                                                ["utama" => "Peduli, Proaktif & Cepat Tanggap", "panduan" => ["Menjaga lingkungan kerja dan pelayanan yang kondusif, aman, dan nyaman", "Antusias dalam mengedukasi dan melayani nasabah"]],
+                                                ["utama" => "Berorientasi pada Solusi Terbaik", "panduan" => ["Berempati terhadap masalah dan kebutuhan nasabah", "Mengidentifikasi masalah dan kebutuhan nasabah serta memberikan solusi yang bernilai tambah"]],
+                                                ["utama" => "Kompeten", "panduan" => ["Menguasai bidang pekerjaan yang digeluti", "Memberikan kontribusi terbaik bagi kemajuan Bank"]],
+                                                ["utama" => "Bekerja Cerdas, Efektif & Efisien", "panduan" => ["Menjadikan produktivitas dan orientasi pada hasil sebagai acuan dalam mencapai hasil yang optimal", "Menuntaskan pekerjaan secara cepat, tepat, dan akurat"]],
+                                                ["utama" => "Memberikan hasil terbaik", "panduan" => ["Senantiasa berusaha memberikan kontribusi melebihi ekspektasi", "Melakukan perbaikan dan peningkatan kualitas kerja untuk mendapatkan nilai tambah optimal dan hasil yang terbaik"]],
+                                            ];
+                                            $no = 1;
+                                            foreach ($budaya as $b):
+                                                foreach ($b['panduan'] as $pIndex => $p):
+                                            ?>
+                                                    <tr>
+                                                        <?php if ($pIndex === 0): ?>
+                                                            <td class="text-center align-middle" rowspan="<?= count($b['panduan']); ?>"><?= $no++; ?></td>
+                                                            <td class="align-middle" rowspan="<?= count($b['panduan']); ?>"><?= $b['utama']; ?></td>
+                                                        <?php endif; ?>
+                                                        <td><?= ($pIndex === 0 ? "a. " : "b. ") . $p; ?></td>
+                                                        <td class="text-center align-middle">
+                                                            <span class="nilai-text">-</span>
+                                                            <button type="button" class="btn btn-sm btn-success ms-2 nilai-budaya-btn" data-index="<?= $no - 2 ?>" data-panduan="<?= $pIndex ?>">Isi Nilai</button>
+                                                            <input type="hidden" class="budaya-value" name="budaya[]" value="">
+                                                        </td>
+                                                    </tr>
+                                            <?php
+                                                endforeach;
+                                            endforeach;
+                                            ?>
+                                        </tbody>
+                                        <tfoot class="text-center fw-bold bg-success text-white">
+                                            <tr>
+                                                <td colspan="3" class="text-end align-middle">Rata-Rata Nilai Internalisasi Budaya</td>
+                                                <td>
+                                                    <input type="text" id="rata-rata-budaya" class="form-control form-control-sm text-center" readonly>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Budaya -->
+                <div class="modal fade" id="modalBudaya" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title" id="modalBudayaTitle">Detail Penilaian Budaya</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body" id="modalBudayaBody"></div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" id="saveBudaya">Simpan</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    document.querySelectorAll('.nilai-budaya-btn').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const index = parseInt(btn.dataset.index);
+                            const pIndex = parseInt(btn.dataset.panduan);
+                            const data = <?= json_encode($budaya); ?>;
+
+                            document.getElementById('modalBudayaTitle').innerText = data[index].utama;
+
+                            // Minimal 3 pertanyaan untuk setiap panduan
+                            const questions = [
+                                `Apakah Anda menerapkan: "${data[index].panduan[pIndex]}" secara konsisten?`,
+                                `Apakah tindakan Anda mencerminkan panduan ini?`,
+                                `Apakah penerapan panduan ini efektif dalam pekerjaan Anda?`
+                            ];
+
+                            let html = `<form id="formModalBudaya">`;
+                            questions.forEach((q, i) => {
+                                html += `
+                            <div class="mb-2">
+                                <label>${q}</label><br>
+                                <input type="radio" name="jawaban${i}" value="ya" id="ya${index}${pIndex}${i}"> 
+                                <label for="ya${index}${pIndex}${i}">Ya</label>
+                                <input type="radio" name="jawaban${i}" value="tidak" id="tidak${index}${pIndex}${i}"> 
+                                <label for="tidak${index}${pIndex}${i}">Tidak</label>
+                            </div>
+                            `;
+                            });
+                            html += `</form>`;
+
+                            document.getElementById('modalBudayaBody').innerHTML = html;
+
+                            btn.dataset.current = "true";
+                            $('#modalBudaya').modal('show'); // Bootstrap 4/5
+                        });
+                    });
+
+                    document.getElementById('saveBudaya').addEventListener('click', () => {
+                        const form = document.getElementById('formModalBudaya');
+                        const questions = form.querySelectorAll('input[type=radio]');
+                        let total = 0,
+                            count = 0;
+
+                        // Hitung nilai berdasarkan jawaban Ya/Tidak
+                        for (let i = 0; i < questions.length; i += 2) { // setiap 2 radio = 1 pertanyaan
+                            const qName = questions[i].name;
+                            const val = form.querySelector(`input[name=${qName}]:checked`);
+                            if (val) {
+                                total += (val.value === 'ya' ? 5 : 1);
+                                count++;
+                            }
+                        }
+
+                        const avg = count > 0 ? (total / count).toFixed(2) : 0;
+
+                        document.querySelectorAll('.nilai-budaya-btn').forEach(btn => {
+                            if (btn.dataset.current === "true") {
+                                btn.previousElementSibling.innerText = avg;
+                                btn.nextElementSibling.value = avg;
+                                btn.dataset.current = "";
+                            }
+                        });
+
+                        updateRataBudaya();
+                        $('#modalBudaya').modal('hide');
+                    });
+
+                    function updateRataBudaya() {
+                        let total = 0,
+                            count = 0;
+                        document.querySelectorAll('.budaya-value').forEach(i => {
+                            const val = parseFloat(i.value);
+                            if (!isNaN(val)) {
+                                total += val;
+                                count++;
+                            }
+                        });
+                        const rata = count > 0 ? (total / count).toFixed(2) : 0;
+                        document.getElementById('rata-rata-budaya').value = rata;
+                        if (typeof hitungNilaiAkhir === "function") hitungNilaiAkhir();
+                    }
+                </script>
+
+
+
 
 
                 <!-- ================== FORM NILAI AKHIR ================== -->
