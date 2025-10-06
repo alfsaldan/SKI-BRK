@@ -22,8 +22,9 @@
                 <div class="col-12 col-md-6">
                     <div class="card">
                         <div class="card-body">
-                            <h5>Pilih Unit Kerja & Jabatan</h5>
-                            <form action="<?= base_url('Administrator/cariPenilaian'); ?>" method="post">
+                            <h5>Pilih Unit Kerja & Pegawai</h5>
+
+                            <form action="<?= base_url('Administrator_Renstra/lihatPenilaianRenstra'); ?>" method="post">
 
                                 <!-- Dropdown Unit Kerja -->
                                 <select name="unit_kerja" id="unit_kerja" class="form-control mb-2" required>
@@ -33,12 +34,12 @@
                                     <?php endforeach; ?>
                                 </select>
 
-                                <!-- Dropdown Jabatan -->
-                                <select name="jabatan" id="jabatan" class="form-control mb-2" required>
-                                    <option value="">-- Pilih Jabatan --</option>
+                                <!-- Dropdown Pegawai -->
+                                <select name="nik" id="pegawai" class="form-control mb-2" required>
+                                    <option value="">-- Pilih Pegawai --</option>
                                 </select>
 
-                                <button type="submit" class="btn btn-success mt-2">Nilai</button>
+                                <button type="submit" class="btn btn-success mt-2 w-100">Lihat Penilaian</button>
                             </form>
                         </div>
                     </div>
@@ -177,7 +178,7 @@
                 if (!empty($indikator_by_jabatan)) {
                     foreach ($indikator_by_jabatan as $row) {
                         $p = $row->perspektif ?? '';
-                        $s = $row->sasaran_kerja ?? '';
+                        $s = $row->sasaran_kpi ?? '';
                         $grouped[$p][$s][] = $row;
                     }
                 }
@@ -199,7 +200,7 @@
                                 <h5>Form Penilaian Sasaran Kerja</h5>
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="tabel-penilaian">
-                                        <thead style="background-color:#2E7D32;color:#fff;text-align:center;">
+                                        <thead style="background-color:#B71C1C;color:#fff;text-align:center;">
                                             <tr>
                                                 <th>Perspektif</th>
                                                 <th>Sasaran Kerja</th>
@@ -231,9 +232,9 @@
                                                     $first_sas_cell = true;
 
                                                     foreach ($items as $i) {
-                                                        $id = $i->id;
+                                                        $id = $i->id_indikator;
                                                         $bobot = $i->bobot ?? 0;
-                                                        $indik = $i->indikator ?? '';
+                                                        $indik = $i->nama_indikator ?? '';
                                                         $subtotal_bobot_perspektif += $bobot;
 
                                                         $status = strtolower(trim($i->status ?? ''));
@@ -332,7 +333,7 @@
                                             <?php } ?>
                                         </tbody>
                                         <tfoot
-                                            style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
+                                            style="background-color:#B71C1C;color:#fff;font-weight:bold;text-align:center;">
                                             <tr>
                                                 <td colspan="2">Total</td>
                                                 <td><span id="total-bobot">0</span></td>
@@ -367,25 +368,10 @@
                                 <td>
                                     <input type="text" id="bobot-sasaran"
                                         class="form-control form-control-sm text-center"
-                                        value="95%" readonly>
+                                        value="100%" readonly>
                                 </td>
                                 <td class="text-center" id="nilai-sasaran">
                                     <?= $nilai_akhir['nilai_sasaran'] ?? 0 ?>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Rata-rata Nilai Internalisasi Budaya</th>
-                                <td class="text-center" id="rata-budaya">
-                                    <?= $nilai_akhir['rata_budaya'] ?? '-' ?>
-                                </td>
-                                <td>x Bobot % Budaya Perusahaan</td>
-                                <td>
-                                    <input type="text" id="bobot-budaya"
-                                        class="form-control form-control-sm text-center"
-                                        value="5%" readonly>
-                                </td>
-                                <td class="text-center" id="nilai-budaya">
-                                    <?= $nilai_akhir['nilai_budaya'] ?? '-' ?>
                                 </td>
                             </tr>
                             <tr>
@@ -539,28 +525,42 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 
 <script>
     $(document).ready(function() {
+        // Load pegawai sesuai unit kerja
         $('#unit_kerja').change(function() {
-            var unitKerja = $(this).val();
-            if (unitKerja != '') {
-                $.ajax({
-                    url: "<?= base_url('Administrator_Renstra/getJabatanByUnit'); ?>",
-                    method: "GET",
-                    data: {
-                        unit_kerja: unitKerja
-                    },
-                    dataType: "json",
-                    success: function(data) {
-                        $('#jabatan').empty();
-                        $('#jabatan').append('<option value="">-- Pilih Jabatan --</option>');
-                        $.each(data, function(index, item) {
-                            $('#jabatan').append('<option value="' + item.jabatan + '">' + item.jabatan + '</option>');
-                        });
-                    }
-                });
+            var unit = $(this).val();
+            if (unit) {
+                $.get("<?= base_url('Administrator_Renstra/getPegawaiByUnit'); ?>", {
+                    unit_kerja: unit
+                }, function(data) {
+                    $('#pegawai').empty().append('<option value="">-- Pilih Pegawai --</option>');
+                    $.each(data, function(i, p) {
+                        $('#pegawai').append('<option value="' + p.nik + '">' + p.nama + ' - ' + p.jabatan + '</option>');
+                    });
+                }, 'json');
+            } else {
+                $('#pegawai').html('<option value="">-- Pilih Pegawai --</option>');
             }
+            // reset detail pegawai lama
+            $('#detail-pegawai').html('');
+        });
+
+        // Load detail pegawai
+        $('#btn-lihat-penilaian').click(function(e) {
+            e.preventDefault();
+            var nik = $('#pegawai').val();
+            if (!nik) return alert('Pilih pegawai dulu');
+            $.post("<?= base_url('Administrator_Renstra/lihatPenilaianRenstra'); ?>", {
+                    nik: nik,
+                    unit_kerja: $('#unit_kerja').val()
+                },
+                function(html) {
+                    $('#detail-pegawai').html(html);
+                });
         });
     });
 </script>

@@ -15,6 +15,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 /**
  * @property KPI_Indikator_model $KPI_Indikator_model
+ * @property KPI_Penilaian_model $KPI_Penilaian_model
  * @property Penilaian_model $Penilaian_model
  * @property DataPegawai_model $DataPegawai_model
  * @property RiwayatJabatan_model $RiwayatJabatan_model
@@ -32,6 +33,7 @@ class Administrator_Renstra extends CI_Controller
     {
         parent::__construct();
         $this->load->model('KPI_Indikator_model');
+        $this->load->model('KPI_Penilaian_model');
         $this->load->model('DataPegawai_model');
         $this->load->model('PenilaiMapping_model');
         $this->load->library('session');
@@ -41,6 +43,7 @@ class Administrator_Renstra extends CI_Controller
         }
     }
 
+    // =================== Halaman Kelola Indikator KPI ===================
     public function kpi_indikatorKinerja()
     {
         $data['judul'] = "Key Performance Indicator (KPI)";
@@ -68,13 +71,6 @@ class Administrator_Renstra extends CI_Controller
 
         $this->load->view("layout/header");
         $this->load->view('administrator/kpi_indikatorKinerja', $data);
-        $this->load->view("layout/footer");
-    }
-
-    public function kpi_penilaianKinerja()
-    {
-        $this->load->view("layout/header");
-        $this->load->view('administrator/kpi_penilaianKinerja');
         $this->load->view("layout/footer");
     }
 
@@ -253,5 +249,139 @@ class Administrator_Renstra extends CI_Controller
         } else {
             echo json_encode(['success' => false, 'message' => 'Gagal menghapus indikator.']);
         }
+    }
+
+    // ==========================
+    // 📊 HALAMAN UTAMA PENILAIAN KPI
+    // ==========================
+    public function kpi_penilaianKinerja()
+    {
+        $data['unit_kerja'] = $this->KPI_Penilaian_model->getUnitKerjaKPI();
+        $data['judul'] = "Penilaian KPI";
+
+        $this->load->view("layout/header");
+        $this->load->view("administrator/kpi_penilaianKinerja", $data);
+        $this->load->view("layout/footer");
+    }
+
+    // ==========================
+    // 🔍 CARI PEGAWAI BERDASARKAN UNIT & JABATAN
+    // ==========================
+    public function cariPenilaian()
+    {
+        $unit_kerja = $this->input->post('unit_kerja');
+        $jabatan = $this->input->post('jabatan');
+
+        // Ambil data pegawai berdasarkan filter
+        $data['pegawai_list'] = $this->KPI_Penilaian_model->getPegawaiByUnit($unit_kerja, $jabatan);
+        $data['unit_kerja'] = $this->KPI_Penilaian_model->getUnitKerjaKPI();
+        $data['judul'] = "Penilaian KPI";
+
+        $this->load->view("layout/header");
+        $this->load->view("administrator/kpi_penilaianKinerja", $data);
+        $this->load->view("layout/footer");
+    }
+
+    // ==========================
+    // 📋 API UNTUK AJAX PEGAWAI BERDASARKAN UNIT (Dropdown)
+    // ==========================
+    public function getPegawaiByUnit()
+    {
+        $unit_kerja = $this->input->get('unit_kerja');
+
+        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja, p.unit_kantor');
+        $this->db->from('pegawai p');
+        $this->db->join('penilai_mapping pm', 'p.jabatan = pm.jabatan', 'inner');
+        $this->db->where('p.unit_kerja', $unit_kerja);
+        $this->db->where('p.status', 'aktif');
+        $this->db->where('pm.jenis_penilaian', 'kpi'); // ✅ hanya KPI
+        $this->db->order_by('p.jabatan', 'ASC');
+
+        $pegawai = $this->db->get()->result();
+
+        echo json_encode($pegawai);
+    }
+
+    // ==========================
+    // 👁️ LIHAT PENILAIAN (DETAIL PER PEGAWAI)
+    // ==========================
+    public function lihatPenilaianRenstra()
+    {
+        $nik = $this->input->post('nik') ?: $this->input->get('nik');
+
+        // 🔹 Default periode: tahun berjalan
+        $periode_awal  = $this->input->get('awal') ?? date('Y-01-01');
+        $periode_akhir = $this->input->get('akhir') ?? date('Y-12-31');
+
+        // 🔹 Load model
+        $this->load->model('KPI_Penilaian_model');
+
+        // 🔹 Ambil data pegawai
+        $pegawai = $this->KPI_Penilaian_model->getPegawaiWithPenilai($nik);
+
+        if ($pegawai) {
+
+            // 🔹 Ambil indikator KPI berdasarkan jabatan & unit kerja
+            // Tetap tampil walau belum ada nilai di kpi_penilaian
+            $indikator = $this->db->select("
+                    ks.id AS id_sasaran,
+                    ks.perspektif,
+                    ks.sasaran_kpi,
+                    ki.id AS id_indikator,
+                    ki.indikator AS nama_indikator,
+                    ki.bobot,
+                    kn.target,
+                    kn.batas_waktu,
+                    kn.realisasi,
+                    kn.pencapaian,
+                    kn.nilai,
+                    kn.nilai_dibobot,
+                    kn.status
+                ")
+                ->from('kpi_sasaran ks')
+                ->join('kpi_indikator ki', 'ki.sasaran_id = ks.id', 'left')
+                ->join('kpi_penilaian kn', "kn.indikator_id = ki.id AND kn.nik = '$nik' AND kn.periode_awal = '$periode_awal' AND kn.periode_akhir = '$periode_akhir'", 'left')
+                ->where('ks.jabatan', $pegawai->jabatan)
+                ->where('ks.unit_kerja', $pegawai->unit_kerja)
+                ->order_by('ks.perspektif', 'ASC')
+                ->order_by('ks.sasaran_kpi', 'ASC')
+                ->order_by('ki.indikator', 'ASC')
+                ->get()
+                ->result();
+
+
+            // 🔹 Ambil nilai akhir KPI dari tabel nilai_akhir
+            $nilai_akhir = $this->db->get_where('nilai_akhir', [
+                'nik' => $nik,
+                'jenis_penilaian' => 'KPI',
+                'periode_awal' => $periode_awal,
+                'periode_akhir' => $periode_akhir
+            ])->row();
+
+            $data['pegawai_detail'] = $pegawai;
+            $data['indikator_by_jabatan'] = $indikator;
+            $data['nilai_akhir'] = $nilai_akhir;
+            $data['message'] = [
+                'type' => 'success',
+                'text' => 'Data penilaian KPI pegawai berhasil dimuat.'
+            ];
+        } else {
+            $data['pegawai_detail'] = null;
+            $data['indikator_by_jabatan'] = [];
+            $data['nilai_akhir'] = null;
+            $data['message'] = [
+                'type' => 'error',
+                'text' => 'Pegawai tidak ditemukan.'
+            ];
+        }
+
+        $data['judul'] = "Detail Penilaian KPI Pegawai";
+        $data['periode_awal'] = $periode_awal;
+        $data['periode_akhir'] = $periode_akhir;
+
+        // 🔹 Load view KPI
+        $this->load->view("layout/header");
+        $this->load->view("administrator/kpi_penilaiankinerja", $data);
+        $this->load->view("layout/footer");
     }
 }
