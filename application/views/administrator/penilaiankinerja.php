@@ -18,59 +18,68 @@
                 </div>
             </div>
 
-            <div class="row">
-                <!-- Card Pilih Periode -->
-                <div class="col-12 col-md-6 mb-3">
-                    <div class="card shadow-sm h-100">
+            <div class="row d-flex align-items-stretch">
+                <!-- Card Pilih Periode Penilaian -->
+                <div class="col-12 col-md-6 mb-3 d-flex">
+                    <div class="card w-100">
                         <div class="card-body">
                             <h5 class="text-primary font-weight-bold mb-3">
                                 <i class="mdi mdi-calendar-range mr-2"></i> Pilih Periode Penilaian
                             </h5>
 
-                            <!-- Dropdown Pilihan Periode -->
-                            <select id="periode_select" class="form-control">
-                                <option value="">-- Pilih Periode --</option>
-                                <?php foreach ($periode_list as $p): ?>
-                                    <option value="<?= $p->periode_awal . '|' . $p->periode_akhir ?>"
-                                        <?= ($p->periode_awal == $periode_awal && $p->periode_akhir == $periode_akhir) ? 'selected' : '' ?>>
-                                        <?= $p->periode_awal ?> s/d <?= $p->periode_akhir ?>
-                                    </option>
-                                <?php endforeach; ?>
-                                <option value="baru">+ Tambah Periode Baru</option>
-                            </select>
-
-                            <div id="periode_manual" style="display:none;">
-                                <input type="date" id="periode_awal" class="form-control" name="periode_awal">
-                                <input type="date" id="periode_akhir" class="form-control" name="periode_akhir">
+                            <div class="form-group">
+                                <label class="text-dark font-weight-medium">Pilih Periode Penilaian:</label>
+                                <select id="periode_select" class="form-control mb-2">
+                                    <option value="">-- Pilih Periode --</option>
+                                    <?php if (!empty($periode_list)): ?>
+                                        <?php foreach ($periode_list as $p):
+                                            $val = $p->periode_awal . "|" . $p->periode_akhir;
+                                            $text = date('d M Y', strtotime($p->periode_awal)) . " s/d " . date('d M Y', strtotime($p->periode_akhir));
+                                            $selected = ($periode_awal == $p->periode_awal && $periode_akhir == $p->periode_akhir) ? 'selected' : '';
+                                        ?>
+                                            <option value="<?= $val ?>" <?= $selected ?>><?= $text ?></option>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                    <option value="baru">+ Tambah Periode Baru</option>
+                                </select>
                             </div>
 
-                            <input type="hidden" id="hidden_periode_awal" value="<?= $periode_awal ?>">
-                            <input type="hidden" id="hidden_periode_akhir" value="<?= $periode_akhir ?>">
-
-                            <div id="periode_manual" style="display:none;">
-                                <input type="date" id="periode_awal" class="form-control mb-2" name="periode_awal">
-                                <input type="date" id="periode_akhir" class="form-control mb-2" name="periode_akhir">
-                                <button type="button" id="btn-tambah-periode" class="btn btn-primary btn-sm">Tambah Periode Baru</button>
+                            <div id="periode_manual" style="display: none;">
+                                <div class="form-inline mb-2">
+                                    <label class="mr-2 text-dark font-weight-medium">Periode Penilaian Baru:</label>
+                                    <input type="date" id="periode_awal" class="form-control mr-2"
+                                        value="<?= $periode_awal ?? date('Y-01-01'); ?>">
+                                    <span class="mr-2">s/d</span>
+                                    <input type="date" id="periode_akhir" class="form-control mr-2"
+                                        value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
+                                    <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary ml-2">
+                                        Terapkan
+                                    </button>
+                                </div>
                             </div>
 
-                            <div class="form-check mt-3">
-                                <input class="form-check-input" type="checkbox" id="lock_input_checkbox">
-                                <label class="form-check-label" for="lock_input_checkbox">
-                                    🔐 Kunci Periode Ini
-                                </label>
+                            <!-- 🔒 LOCK INPUT GLOBAL -->
+                            <div class="d-flex align-items-center mb-3">
+                                <input type="hidden" id="hidden_periode_awal" value="<?= $periode_awal ?>">
+                                <input type="hidden" id="hidden_periode_akhir" value="<?= $periode_akhir ?>">
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="lock_input_checkbox">
+                                    <label class="form-check-label font-weight-medium ms-2" for="lock_input_checkbox">
+                                        🔐 Kunci Input Penilaian
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Card Input NIK -->
-                <div class="col-12 col-md-6 mb-3">
-                    <div class="card shadow-sm h-100">
+                <!-- Card Masukkan NIK Pegawai -->
+                <div class="col-12 col-md-6 mb-3 d-flex">
+                    <div class="card w-100">
                         <div class="card-body">
                             <h5>Masukkan NIK Pegawai</h5>
                             <form action="<?= base_url('Administrator/cariPenilaian'); ?>" method="post">
-                                <input type="hidden" name="periode_awal" id="hidden_periode_awal" value="<?= $periode_awal ?>">
-                                <input type="hidden" name="periode_akhir" id="hidden_periode_akhir" value="<?= $periode_akhir ?>">
                                 <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai" required>
                                 <button type="submit" class="btn btn-success mt-2">Nilai</button>
                             </form>
@@ -78,6 +87,7 @@
                     </div>
                 </div>
             </div>
+
 
             <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>
                 <div class="row">
@@ -121,22 +131,13 @@
 
                                         <div class="form-group">
                                             <label class="text-dark font-weight-medium">Periode Penilaian:</label>
-                                            <input type="text" id="periode_text" class="form-control" readonly>
+                                            <!-- Text yang berubah -->
+                                            <p id="info_periode" class="text-dark font-weight-medium">
+                                                <?= date('d M Y', strtotime($periode_awal)) . " s/d " . date('d M Y', strtotime($periode_akhir)); ?>
+                                            </p>
                                         </div>
 
-                                        <div id="periode_manual" style="display: none;">
-                                            <div class="form-inline mb-2">
-                                                <label class="mr-2 text-dark font-weight-medium">Periode Penilaian Baru:</label>
-                                                <input type="date" id="periode_awal" class="form-control mr-2"
-                                                    value="<?= $periode_awal ?? date('Y-01-01'); ?>">
-                                                <span class="mr-2">s/d</span>
-                                                <input type="date" id="periode_akhir" class="form-control mr-2"
-                                                    value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
-                                                <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary ml-2">
-                                                    Terapkan
-                                                </button>
-                                            </div>
-                                        </div>
+
                                         <p class="text-dark font-weight-medium"><b>Unit Kantor Penilai:</b> <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span></p>
                                     </div>
                                 </div>
@@ -301,8 +302,10 @@
                                                                     value="<?= $i->target ?? ''; ?>">
                                                             </td>
 
-                                                            <td class="text-center align-middle"><input type="date" class="form-control" style="min-width:120px;"
-                                                                    value="<?= $i->batas_waktu ?? ''; ?>"></td>
+                                                            <td class="text-center align-middle">
+                                                                <input type="date" class="form-control batas-waktu" style="min-width:120px;"
+                                                                    value="<?= $i->batas_waktu ?? ''; ?>">
+                                                            </td>
 
                                                             <td class="text-center align-middle">
                                                                 <input type="text"
@@ -728,6 +731,7 @@
         }
 
 
+
         function hitungNilai(pencapaian) {
             let nilai = 0;
 
@@ -1140,16 +1144,14 @@
         const periodeAwal = document.getElementById('periode_awal');
         const periodeAkhir = document.getElementById('periode_akhir');
         const nik = document.getElementById('nik')?.value;
-        const btnTambahPeriode = document.getElementById('btn-tambah-periode');
 
-        // =========================
-        // Toggle form manual periode
-        // =========================
+        // toggle form manual + auto refresh jika pilih periode lama
         periodeSelect.addEventListener('change', function() {
             if (this.value === "baru") {
-                periodeManual.style.display = "block"; // tampilkan input manual
+                // tampilkan input manual
+                periodeManual.style.display = "block";
             } else {
-                periodeManual.style.display = "none"; // sembunyikan
+                periodeManual.style.display = "none";
                 if (this.value && nik) {
                     const [awal, akhir] = this.value.split('|');
                     window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
@@ -1157,9 +1159,7 @@
             }
         });
 
-        // =========================
-        // Tombol sesuaikan periode lama
-        // =========================
+        // tombol manual tetap untuk periode baru
         document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
             if (!nik) {
                 Swal.fire({
@@ -1175,85 +1175,10 @@
             window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
         });
 
-        // =========================
-        // Tombol tambah periode baru
-        // =========================
-        btnTambahPeriode?.addEventListener('click', function() {
-            if (!periodeAwal.value || !periodeAkhir.value) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Tanggal Periode Kosong',
-                    text: 'Isi periode awal dan akhir terlebih dahulu',
-                    confirmButtonColor: '#d33'
-                });
-                return;
-            }
-
-            Swal.fire({
-                title: 'Tambah Periode Baru?',
-                text: `Periode ${periodeAwal.value} s/d ${periodeAkhir.value} akan ditambahkan`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Tambah!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch('<?= base_url("Administrator/tambahPeriode") ?>', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded'
-                            },
-                            body: `periode_awal=${periodeAwal.value}&periode_akhir=${periodeAkhir.value}`
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.status === 'success') {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil',
-                                    text: 'Periode baru berhasil ditambahkan',
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                });
-
-                                // Tambahkan periode baru ke dropdown
-                                const newOption = document.createElement('option');
-                                newOption.value = `${periodeAwal.value}|${periodeAkhir.value}`;
-                                newOption.textContent = `${periodeAwal.value} s/d ${periodeAkhir.value}`;
-                                newOption.selected = true;
-                                periodeSelect.appendChild(newOption);
-
-                                // sembunyikan input manual
-                                periodeManual.style.display = 'none';
-                                periodeSelect.value = newOption.value;
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Gagal',
-                                    text: data.message || 'Gagal menambahkan periode',
-                                    confirmButtonColor: '#d33'
-                                });
-                            }
-                        })
-                        .catch(() => {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'Terjadi kesalahan koneksi',
-                                confirmButtonColor: '#d33'
-                            });
-                        });
-                }
-            });
-        });
-
-        // =========================
-        // Tombol simpan nilai akhir
-        // =========================
         document.getElementById('btn-simpan-nilai-akhir').addEventListener('click', function() {
             const nik = document.getElementById('nik').value;
-            const periode_awal = periodeAwal.value;
-            const periode_akhir = periodeAkhir.value;
+            const periode_awal = document.getElementById('periode_awal').value;
+            const periode_akhir = document.getElementById('periode_akhir').value;
 
             // 1️⃣ Simpan semua baris dulu
             const rows = document.querySelectorAll('#tabel-penilaian tbody tr[data-id]');
@@ -1281,8 +1206,9 @@
                 );
             });
 
-            // 2️⃣ Simpan nilai akhir setelah semua baris
+            // 2️⃣ Setelah semua baris berhasil disimpan, simpan nilai akhir
             Promise.all(promises).then(results => {
+                // kalau ada yang gagal, stop
                 if (results.some(r => r.status !== 'success')) {
                     Swal.fire({
                         icon: 'error',
@@ -1293,6 +1219,7 @@
                     return;
                 }
 
+                // ambil nilai akhir
                 const nilai_sasaran = document.getElementById('total-sasaran').textContent;
                 const nilai_budaya = document.getElementById('nilai-budaya').textContent;
                 const total_nilai = document.getElementById('total-nilai').textContent;
@@ -1338,6 +1265,7 @@
                     });
             });
         });
+
     });
 </script>
 
@@ -1354,13 +1282,12 @@
         fetch(`<?= base_url("Administrator/getLockStatus") ?>?awal=${periodeAwal.value}&akhir=${periodeAkhir.value}`)
             .then(res => res.json())
             .then(data => {
-                if (data.locked) {
-                    lockCheckbox.checked = true;
-                    toggleInputLock(true);
-                } else {
-                    lockCheckbox.checked = false;
-                    toggleInputLock(false);
-                }
+                const locked = data.locked === true || data.locked === "1";
+                lockCheckbox.checked = locked;
+                toggleInputLock(locked);
+            })
+            .catch(() => {
+                console.error('Gagal memeriksa status lock dari server.');
             });
     });
 
@@ -1373,7 +1300,7 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: `periode_awal=${periodeAwal.value}&periode_akhir=${periodeAkhir.value}&lock_input=${isLocked}`
+                body: `periode_awal=${encodeURIComponent(periodeAwal.value)}&periode_akhir=${encodeURIComponent(periodeAkhir.value)}&lock_input=${isLocked}`
             })
             .then(res => res.json())
             .then(data => {
@@ -1392,7 +1319,6 @@
                         title: 'Gagal',
                         text: 'Tidak dapat mengubah status kunci.',
                     });
-                    // Kembalikan checkbox ke posisi sebelumnya
                     lockCheckbox.checked = !this.checked;
                 }
             })
@@ -1407,65 +1333,36 @@
     });
 
     // 🔒 Fungsi untuk mengunci / membuka semua input
+    // 🔒 Fungsi untuk mengunci / membuka semua input
     function toggleInputLock(lock) {
-        document.querySelectorAll('.target-input, .realisasi-input, .simpan-penilaian, #btn-simpan-nilai-akhir')
+        document.querySelectorAll('.target-input, .realisasi-input, .simpan-penilaian, #btn-simpan-nilai-akhir, .batas-waktu')
             .forEach(el => {
                 el.disabled = lock;
+                el.classList.toggle('bg-light', lock);
             });
     }
+</script>
 
+<script>
+    // Ambil elemen dropdown utama dan span info periode
+    const periodeSelect = document.getElementById('periode_select'); // dropdown utama
+    const infoPeriode = document.getElementById('info_periode');
 
-    // ===============================
-    // 🔄 GANTI PERIODE DENGAN ALERT
-    // ===============================
-    document.getElementById('periode_select').addEventListener('change', function() {
-        const val = this.value;
-        const manualDiv = document.getElementById('periode_manual');
+    periodeSelect.addEventListener('change', function() {
+        const value = this.value;
 
-        if (val === 'baru') {
-            // Jika user pilih input manual
-            manualDiv.style.display = 'block';
-        } else if (val) {
-            // Jika user pilih periode dari dropdown
-            manualDiv.style.display = 'none';
-            const [awal, akhir] = val.split('|');
-
-            Swal.fire({
-                title: 'Ganti Periode?',
-                text: `Kamu akan beralih ke periode ${awal} s/d ${akhir}.`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, ganti!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Refresh halaman dengan query periode agar status lock ikut update
-                    window.location.href = `<?= base_url('Administrator/penilaiankinerja') ?>?awal=${awal}&akhir=${akhir}`;
-                } else {
-                    // Jika dibatalkan, kembalikan dropdown ke nilai sebelumnya
-                    this.value = "<?= $periode_awal . '|' . $periode_akhir ?>";
-                }
-            });
-        }
-    });
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Ambil periode dari query string atau value hidden PHP
-        const urlParams = new URLSearchParams(window.location.search);
-        let awal = urlParams.get('awal') || '<?= $periode_awal ?>';
-        let akhir = urlParams.get('akhir') || '<?= $periode_akhir ?>';
-
-        // Format tanggal menjadi d M Y
-        function formatTanggal(tgl) {
-            const date = new Date(tgl);
+        if (value && value !== 'baru') {
+            const [awal, akhir] = value.split('|');
+            // Format tanggal
             const options = {
                 day: '2-digit',
                 month: 'short',
                 year: 'numeric'
             };
-            return date.toLocaleDateString('id-ID', options);
-        }
+            const tanggalAwal = new Date(awal).toLocaleDateString('id-ID', options);
+            const tanggalAkhir = new Date(akhir).toLocaleDateString('id-ID', options);
 
-        document.getElementById('periode_text').value = formatTanggal(awal) + ' s/d ' + formatTanggal(akhir);
+            infoPeriode.textContent = `${tanggalAwal} s/d ${tanggalAkhir}`;
+        }
     });
 </script>

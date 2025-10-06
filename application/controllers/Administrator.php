@@ -264,78 +264,56 @@ class Administrator extends CI_Controller
     {
         $this->load->model('Penilaian_model');
 
-        // 🔹 Ambil periode dari query jika ada
-        $periode_awal  = $this->input->get('awal') ?? date('Y') . "-01-01";
-        $periode_akhir = $this->input->get('akhir') ?? date('Y') . "-12-31";
+        // 🔹 Ambil periode dari query (GET) atau pakai default tahun berjalan
+        $periode_awal  = $this->input->get('awal') ?: date('Y') . "-01-01";
+        $periode_akhir = $this->input->get('akhir') ?: date('Y') . "-12-31";
 
         // 🔹 Ambil status lock dari DB
         $lock_status = $this->Penilaian_model->getLockStatus($periode_awal, $periode_akhir);
 
-        $data['judul'] = "Penilaian Kinerja Pegawai";
-        $data['periode_list'] = $this->Penilaian_model->getPeriodeList();
-        $data['periode_awal'] = $periode_awal;
-        $data['periode_akhir'] = $periode_akhir;
-        $data['is_locked'] = $lock_status ? true : false;
-
-        $data['pegawai'] = $this->db->get('pegawai')->result();
-        $data['indikator'] = $this->db->get('indikator')->result();
-        $data['penilaian'] = $this->Penilaian_model->get_all_penilaian();
+        $data = [
+            'judul'         => "Penilaian Kinerja Pegawai",
+            'periode_list'  => $this->Penilaian_model->getPeriodeList(),
+            'periode_awal'  => $periode_awal,
+            'periode_akhir' => $periode_akhir,
+            'is_locked'     => $lock_status ?? false, // jika null, false
+            'pegawai'       => $this->db->get('pegawai')->result(),
+            'indikator'     => $this->db->get('indikator')->result(),
+            'penilaian'     => $this->Penilaian_model->get_all_penilaian(),
+        ];
 
         $this->load->view("layout/header");
         $this->load->view("administrator/penilaiankinerja", $data);
         $this->load->view("layout/footer");
     }
 
-    public function tambahPeriode()
-    {
-        $periode_awal = $this->input->post('periode_awal');
-        $periode_akhir = $this->input->post('periode_akhir');
 
-        if (!$periode_awal || !$periode_akhir) {
-            echo json_encode(['status' => 'error', 'message' => 'Tanggal periode tidak boleh kosong']);
-            return;
-        }
+public function getLockStatus()
+{
+    $awal = $this->input->get('awal');
+    $akhir = $this->input->get('akhir');
 
-        $this->load->model('Penilaian_model');
-        $result = $this->Penilaian_model->tambahPeriode($periode_awal, $periode_akhir);
+    $this->load->model('Penilaian_model');
+    $locked = $this->Penilaian_model->getLockStatus($awal, $akhir);
 
-        echo json_encode($result);
-    }
+    echo json_encode(['locked' => (bool)$locked]);
+}
+
+public function setLockStatus()
+{
+    $awal = $this->input->post('periode_awal');
+    $akhir = $this->input->post('periode_akhir');
+    $lock = $this->input->post('lock_input');
+
+    $this->load->model('Penilaian_model');
+    $updated = $this->Penilaian_model->setLockStatus($awal, $akhir, $lock);
+
+    echo json_encode([
+        'status' => $updated ? 'success' : 'error'
+    ]);
+}
 
 
-    public function getLockStatus()
-    {
-        $awal = $this->input->get('awal');
-        $akhir = $this->input->get('akhir');
-
-        $lock = $this->db->get_where('penilaian', [
-            'periode_awal' => $awal,
-            'periode_akhir' => $akhir
-        ])->row();
-
-        $locked = $lock && $lock->lock_input == 1;
-
-        echo json_encode(['locked' => $locked]);
-    }
-
-    public function setLockStatus()
-    {
-        $awal = $this->input->post('periode_awal');
-        $akhir = $this->input->post('periode_akhir');
-        $lock_input = $this->input->post('lock_input');
-
-        // Update semua baris periode itu
-        $this->db->where('periode_awal', $awal);
-        $this->db->where('periode_akhir', $akhir);
-        $this->db->set('lock_input', $lock_input);
-        $update = $this->db->update('penilaian');
-
-        if ($update) {
-            echo json_encode(['status' => 'success']);
-        } else {
-            echo json_encode(['status' => 'error']);
-        }
-    }
 
 
     public function cariPenilaian()

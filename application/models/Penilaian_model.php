@@ -242,14 +242,44 @@ class Penilaian_model extends CI_Model
 
     public function getLockStatus($periode_awal, $periode_akhir)
     {
-        return $this->db
+        $row = $this->db
             ->select('lock_input')
             ->where('periode_awal', $periode_awal)
             ->where('periode_akhir', $periode_akhir)
             ->limit(1)
             ->get('penilaian')
-            ->row(); // hasil bisa null jika belum ada data
+            ->row();
+
+        // Jika tidak ada data, anggap belum terkunci (false)
+        return $row ? (bool)$row->lock_input : false;
     }
+
+    public function setLockStatus($periode_awal, $periode_akhir, $lock)
+{
+    $exists = $this->db
+        ->where('periode_awal', $periode_awal)
+        ->where('periode_akhir', $periode_akhir)
+        ->get('penilaian')
+        ->num_rows() > 0;
+
+    if ($exists) {
+        $this->db->where('periode_awal', $periode_awal)
+                 ->where('periode_akhir', $periode_akhir)
+                 ->update('penilaian', ['lock_input' => $lock]);
+    } else {
+        $this->db->insert('penilaian', [
+            'periode_awal' => $periode_awal,
+            'periode_akhir' => $periode_akhir,
+            'lock_input' => $lock
+        ]);
+    }
+
+    return $this->db->affected_rows() > 0;
+}
+
+
+    
+
 
     public function tambahPeriode($periode_awal, $periode_akhir)
     {
