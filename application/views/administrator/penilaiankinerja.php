@@ -28,7 +28,7 @@
                             </h5>
 
                             <!-- Dropdown Pilihan Periode -->
-                            <select id="periode_select" class="form-control mb-2">
+                            <select id="periode_select" class="form-control">
                                 <option value="">-- Pilih Periode --</option>
                                 <?php foreach ($periode_list as $p): ?>
                                     <option value="<?= $p->periode_awal . '|' . $p->periode_akhir ?>"
@@ -39,18 +39,20 @@
                                 <option value="baru">+ Tambah Periode Baru</option>
                             </select>
 
-                            <!-- Form Manual Periode -->
+                            <div id="periode_manual" style="display:none;">
+                                <input type="date" id="periode_awal" class="form-control" name="periode_awal">
+                                <input type="date" id="periode_akhir" class="form-control" name="periode_akhir">
+                            </div>
+
+                            <input type="hidden" id="hidden_periode_awal" value="<?= $periode_awal ?>">
+                            <input type="hidden" id="hidden_periode_akhir" value="<?= $periode_akhir ?>">
+
                             <div id="periode_manual" style="display:none;">
                                 <input type="date" id="periode_awal" class="form-control mb-2" name="periode_awal">
                                 <input type="date" id="periode_akhir" class="form-control mb-2" name="periode_akhir">
                                 <button type="button" id="btn-tambah-periode" class="btn btn-primary btn-sm">Tambah Periode Baru</button>
                             </div>
 
-                            <!-- Hidden untuk lock -->
-                            <input type="hidden" id="hidden_periode_awal" value="<?= $periode_awal ?>">
-                            <input type="hidden" id="hidden_periode_akhir" value="<?= $periode_akhir ?>">
-
-                            <!-- Checkbox Kunci -->
                             <div class="form-check mt-3">
                                 <input class="form-check-input" type="checkbox" id="lock_input_checkbox">
                                 <label class="form-check-label" for="lock_input_checkbox">
@@ -58,7 +60,6 @@
                                 </label>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
@@ -657,30 +658,15 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // ===============================
-        // Variabel Global
-        // ===============================
         const nik = document.getElementById('nik')?.value;
         const periodeAwal = document.getElementById('periode_awal');
         const periodeAkhir = document.getElementById('periode_akhir');
-        const periodeSelect = document.getElementById('periode_select');
-        const periodeManual = document.getElementById('periode_manual');
-        const btnTambahPeriode = document.getElementById('btn-tambah-periode');
-        const btnSesuaikanPeriode = document.getElementById('btn-sesuaikan-periode');
-        const btnSimpanNilaiAkhir = document.getElementById('btn-simpan-nilai-akhir');
-        const lockCheckbox = document.getElementById('lock_input_checkbox');
-        const hiddenPeriodeAwal = document.getElementById('hidden_periode_awal');
-        const hiddenPeriodeAkhir = document.getElementById('hidden_periode_akhir');
 
-        // ===============================
-        // Set default value periode
-        // ===============================
+        // 🔹 Set default value (jaga-jaga kalau value di HTML kosong)
         if (!periodeAwal.value) periodeAwal.value = "2025-01-01";
         if (!periodeAkhir.value) periodeAkhir.value = "2025-12-31";
 
-        // ===============================
-        // Validasi tanggal awal & akhir
-        // ===============================
+        // 🔹 Validasi supaya periode akhir tidak lebih kecil dari awal
         periodeAwal.addEventListener('change', function() {
             if (periodeAkhir.value < this.value) periodeAkhir.value = this.value;
         });
@@ -696,58 +682,513 @@
             }
         });
 
-        // ===============================
-        // Toggle periode manual + ganti periode dropdown
-        // ===============================
-        periodeSelect.addEventListener('change', function() {
-            const val = this.value;
-            if (val === 'baru') {
-                periodeManual.style.display = 'block';
-            } else if (val) {
-                periodeManual.style.display = 'none';
-                const [awal, akhir] = val.split('|');
 
-                Swal.fire({
-                    title: 'Ganti Periode?',
-                    text: `Kamu akan beralih ke periode ${awal} s/d ${akhir}.`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, ganti!',
-                    cancelButtonText: 'Batal'
-                }).then(result => {
-                    if (result.isConfirmed && nik) {
-                        window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
-                    } else {
-                        this.value = "<?= $periode_awal . '|' . $periode_akhir ?>";
-                    }
-                });
-            }
-        });
+        // 🔹 format angka
+        function formatAngka(nilai) {
+            let num = parseFloat(nilai);
+            if (isNaN(num)) return '';
+            return Number.isInteger(num) ? num.toString() : num.toFixed(2);
+        }
 
-        // ===============================
-        // Tombol tambah periode baru
-        // ===============================
-        btnTambahPeriode?.addEventListener('click', function() {
-            const rows = document.querySelectorAll('#tabel-penilaian tbody tr[data-id]');
-            let adaTersimpan = false;
+        function hitungPencapaianOtomatis(target, realisasi, indikatorText = "") {
+            let pencapaian = 0;
 
-            rows.forEach(row => {
-                if (row.dataset.saved === "true") {
-                    adaTersimpan = true;
+            // Normalisasi teks
+            indikatorText = indikatorText.toLowerCase();
+
+            // 🔹 Daftar keyword
+            const keywords = {
+                rumus1: ["biaya", "beban", "efisiensi", "npf pembiayaan", "npf nominal"], // indikator biaya / beban
+                rumus3: ["outstanding", "pertumbuhan"] // indikator outstanding / pertumbuhan
+            };
+
+            // Fungsi cek keyword pakai regex \b...\b
+            const containsKeyword = (list, text) => {
+                return list.some(k => new RegExp(`\\b${k}\\b`, "i").test(text));
+            };
+
+            if (target <= 999) {
+                // 🔹 Rumus 2 (default untuk target ≤ 3 digit)
+                pencapaian = (realisasi / target) * 100;
+            } else {
+                // 🔹 Target > 3 digit → pilih rumus 1 atau 3 berdasarkan kata kunci indikator
+                if (containsKeyword(keywords.rumus1, indikatorText)) {
+                    // Rumus 1 → biasanya indikator biaya/beban
+                    pencapaian = ((target + (target - realisasi)) / target) * 100;
+                } else if (containsKeyword(keywords.rumus3, indikatorText)) {
+                    // Rumus 3 → biasanya indikator outstanding/pertumbuhan
+                    pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
+                } else {
+                    // fallback default (anggap rumus 2)
+                    pencapaian = (realisasi / target) * 100;
                 }
+            }
+            // 🔹 Batas maksimal 130%
+            return Math.min(pencapaian, 130);
+        }
+
+
+        function hitungNilai(pencapaian) {
+            let nilai = 0;
+
+            if (pencapaian < 0) {
+                nilai = 0;
+            } else if (pencapaian < 80) {
+                nilai = (pencapaian / 80) * 2;
+            } else if (pencapaian < 90) {
+                nilai = 2 + ((pencapaian - 80) / 10);
+            } else if (pencapaian < 110) {
+                nilai = 3 + ((pencapaian - 90) / 20 * 0.5);
+            } else if (pencapaian < 120) {
+                nilai = 3.5 + ((pencapaian - 110) / 10 * 1);
+            } else if (pencapaian < 130) {
+                nilai = 4.5 + ((pencapaian - 120) / 10 * 0.5);
+            } else {
+                nilai = 5;
+            }
+
+            return nilai;
+        }
+
+
+        function hitungRow(row, totalBobot) {
+            const targetVal = row.querySelector('.target-input').value;
+            const realisasiVal = row.querySelector('.realisasi-input').value;
+            const bobot = parseFloat(row.querySelector('.bobot').value) || 0;
+
+            // 🔹 Ambil teks indikator dari atribut data-indikator
+            const indikatorText = row.dataset.indikator || "";
+
+            let pencapaian = "";
+            let nilai = "";
+            let nilaiBobot = "";
+
+            if (targetVal !== "" && realisasiVal !== "") {
+                const target = parseFloat(targetVal) || 0;
+                const realisasi = parseFloat(realisasiVal) || 0;
+
+                pencapaian = hitungPencapaianOtomatis(target, realisasi, indikatorText);
+                nilai = hitungNilai(pencapaian);
+
+                if (totalBobot > 0) {
+                    nilaiBobot = (nilai * bobot) / totalBobot;
+                }
+            }
+
+            row.querySelector('.pencapaian-output').value = pencapaian === "" ? "" : formatAngka(pencapaian);
+            row.querySelector('.nilai-output').value = nilai === "" ? "" : formatAngka(nilai);
+            row.querySelector('.nilai-bobot-output').value = nilaiBobot === "" ? "" : formatAngka(nilaiBobot);
+
+            return {
+                bobot,
+                nilaiBobot: nilaiBobot === "" ? 0 : parseFloat(formatAngka(nilaiBobot)), // ← bulatkan per baris
+                perspektif: row.dataset.perspektif
+            };
+        }
+
+        function hitungTotal() {
+            let totalBobot = 0,
+                totalNilai = 0;
+            const subtotalMap = {};
+
+            // 🔹 hitung total bobot dulu
+            document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
+                totalBobot += parseFloat(row.querySelector('.bobot').value) || 0;
             });
 
-            if (!adaTersimpan) {
+            // 🔹 lalu panggil hitungRow dengan totalBobot
+            document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
+                const {
+                    bobot,
+                    nilaiBobot,
+                    perspektif
+                } = hitungRow(row, totalBobot);
+                totalNilai += nilaiBobot;
+
+                if (!subtotalMap[perspektif]) subtotalMap[perspektif] = 0;
+                subtotalMap[perspektif] += nilaiBobot;
+            });
+
+            document.getElementById('total-bobot').innerText = formatAngka(totalBobot);
+            document.getElementById('total-nilai-bobot').innerText = formatAngka(totalNilai);
+
+            document.querySelectorAll('.subtotal-row').forEach(row => {
+                const perspektif = row.dataset.perspektif;
+                row.querySelector('.subtotal-nilai-bobot').innerText = formatAngka(subtotalMap[perspektif] || 0);
+            });
+
+            // Tambahkan baris ini agar total-sasaran sama dengan total-nilai-bobot
+            document.getElementById('total-sasaran').textContent = formatAngka(totalNilai);
+
+            hitungNilaiAkhir();
+        }
+
+        function hitungNilaiAkhir() {
+            const bobotSasaran = 0.95;
+            const bobotBudaya = 0.05;
+
+            const fraud = parseFloat(document.getElementById("fraud-input").value) || 0;
+
+            // Ambil nilai sasaran dari total-nilai-bobot
+            const totalSasaran = parseFloat(document.getElementById("total-nilai-bobot").textContent) || 0;
+            const rataBudaya = parseFloat(document.getElementById("rata-rata-budaya").textContent) || 0;
+
+            // Total nilai sasaran kerja 
+            const nilaiSasaran = totalSasaran * bobotSasaran;
+
+            // Nilai budaya
+            const nilaiBudaya = rataBudaya * bobotBudaya;
+
+            // Total nilai
+            const totalNilai = nilaiSasaran + nilaiBudaya;
+
+            // Nilai akhir sesuai rumus Excel
+            let nilaiAkhir;
+            if (fraud === 1) {
+                nilaiAkhir = totalNilai - fraud;
+            } else {
+                nilaiAkhir = totalNilai;
+            }
+
+            // Predikat
+            let predikat;
+            let predikatClass = "";
+
+            if (nilaiAkhir === "Tidak ada nilai") {
+                predikat = "Tidak ada yudisium/predikat";
+                predikatClass = "text-dark";
+            } else if (nilaiAkhir === 0) {
+                predikat = "Belum Ada Nilai";
+                predikatClass = "text-dark";
+            } else if (nilaiAkhir < 2) {
+                predikat = "Minus";
+                predikatClass = "text-danger"; // merah
+            } else if (nilaiAkhir < 3) {
+                predikat = "Fair";
+                predikatClass = "text-warning"; // jingga
+            } else if (nilaiAkhir < 3.5) {
+                predikat = "Good";
+                predikatClass = "text-primary"; // biru
+            } else if (nilaiAkhir < 4.5) {
+                predikat = "Very Good";
+                predikatClass = "text-success"; // hijau muda
+            } else {
+                predikat = "Excellent";
+                predikatClass = "text-success font-weight-bold"; // hijau tua (lebih tebal)
+            }
+
+            // Pencapaian Akhir
+            let pencapaian = "";
+            if (nilaiAkhir !== "Tidak ada nilai") {
+                const v = parseFloat(nilaiAkhir) || 0;
+                if (v < 0) pencapaian = 0;
+                else if (v < 2) pencapaian = (v / 2) * 0.8 * 100;
+                else if (v < 3) pencapaian = 80 + ((v - 2) / 1) * 10;
+                else if (v < 3.5) pencapaian = 90 + ((v - 3) / 0.5) * 20;
+                else if (v < 4.5) pencapaian = 110 + ((v - 3.5) / 1) * 10;
+                else if (v < 5) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
+                else pencapaian = 130;
+            } else {
+                pencapaian = 0;
+            }
+
+            // Update ke tampilan
+            document.getElementById("nilai-sasaran").textContent = nilaiSasaran.toFixed(2);
+            document.getElementById("nilai-budaya").textContent = nilaiBudaya.toFixed(2);
+            document.getElementById("total-nilai").textContent = totalNilai.toFixed(2);
+            document.getElementById("nilai-akhir").textContent =
+                nilaiAkhir === "Tidak ada nilai" ? nilaiAkhir : nilaiAkhir.toFixed(2);
+            document.getElementById("predikat").textContent = predikat;
+            document.getElementById("predikat").className = predikatClass;
+            document.getElementById("pencapaian-akhir").textContent =
+                pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
+        }
+
+        document.getElementById('fraud-input').addEventListener('input', hitungNilaiAkhir);
+
+        // 🔹 trigger perhitungan saat input diubah
+        document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
+            input.addEventListener('input', hitungTotal);
+        });
+        hitungTotal();
+
+        // 🔹 Simpan penilaian
+        document.querySelectorAll('.simpan-penilaian').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const indikator_id = row.dataset.id;
+                const target = row.querySelector('.target-input').value;
+                const batas_waktu = row.querySelector('input[type="date"]').value;
+                const realisasi = row.querySelector('.realisasi-input').value;
+                const pencapaian = row.querySelector('.pencapaian-output').value;
+                const nilai = row.querySelector('.nilai-output').value;
+                const nilai_dibobot = row.querySelector('.nilai-bobot-output').value;
+
+                const periode_awal = periodeAwal.value;
+                const periode_akhir = periodeAkhir.value;
+
+                // <-- taruh console.log di sini
+                console.log("DEBUG: nik=", nik, "indikator_id=", indikator_id, "periode_awal=", periode_awal, "periode_akhir=", periode_akhir);
+
+                fetch('<?= base_url("Administrator/simpanPenilaianBaris") ?>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
+                    })
+
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: res.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            hitungTotal();
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: res.message || 'Gagal menyimpan',
+                                confirmButtonColor: '#d33'
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Terjadi kesalahan server',
+                            confirmButtonColor: '#d33'
+                        });
+                    });
+            });
+        });
+        document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
+            const nik = document.getElementById('nik').value;
+            const awal = periodeAwal.value;
+            const akhir = periodeAkhir.value;
+
+            if (!nik) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Belum Ada Penilaian Tersimpan',
-                    text: 'Isi dan simpan minimal satu indikator penilaian sebelum menambahkan periode baru.',
+                    title: 'NIK kosong',
+                    text: 'Masukkan NIK terlebih dahulu',
                     confirmButtonColor: '#d33'
                 });
                 return;
             }
 
-            // Jika sudah ada minimal satu indikator tersimpan, lanjut tambah periode
+            window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
+        });
+        $(document).ready(function() {
+            const nikPegawai = $('#nik').val(); // NIK pegawai saat ini
+
+            var tableCatatan = $('#tabel-catatan').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                ajax: {
+                    url: '<?= base_url("Administrator/getCatatanPenilai") ?>',
+                    type: 'POST',
+                    data: {
+                        nik_pegawai: nikPegawai
+                    }
+                },
+                columns: [{
+                        data: 'no',
+                        orderable: false
+                    }, // Nomor urut
+                    {
+                        data: 'nama_penilai'
+                    }, // Nama penilai
+                    {
+                        data: 'catatan',
+                        orderable: false
+                    }, // Catatan
+                    {
+                        data: 'tanggal',
+                        render: function(data, type, row) {
+                            if (!data) return '';
+                            const date = new Date(data + ' UTC'); // pastikan server kirim UTC
+                            return date.toLocaleString('id-ID', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                                timeZone: 'Asia/Jakarta'
+                            });
+                        }
+                    }
+                ],
+                order: [
+                    [3, 'desc']
+                ], // urut terbaru di atas
+                paging: true,
+                searching: true,
+                info: true,
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ baris",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
+                    infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
+                    zeroRecords: "Tidak ada catatan yang ditemukan",
+                    paginate: {
+                        first: "Pertama",
+                        last: "Terakhir",
+                        next: "Berikut",
+                        previous: "Sebelumnya"
+                    }
+                },
+                dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+                drawCallback: function(settings) {
+                    // nomor urut otomatis 1 -> n
+                    var api = this.api();
+                    api.column(0, {
+                        order: 'applied'
+                    }).nodes().each(function(cell, i) {
+                        cell.innerHTML = i + 1;
+                    });
+                }
+            });
+        });
+
+        $(document).ready(function() {
+            const nikPegawai = $('#nik').val(); // NIK pegawai saat ini
+
+            var tableCatatanPegawai = $('#tabel-catatan-pegawai').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: false,
+                ajax: {
+                    url: '<?= base_url("Administrator/getCatatanPegawai") ?>',
+                    type: 'POST',
+                    data: {
+                        nik_pegawai: nikPegawai
+                    }
+                },
+                columns: [{
+                        data: 'no',
+                        orderable: false
+                    }, // Nama penilai
+                    {
+                        data: 'catatan',
+                        orderable: false
+                    }, // Catatan
+                    {
+                        data: 'tanggal',
+                        render: function(data, type, row) {
+                            if (!data) return '';
+                            const date = new Date(data + ' UTC'); // pastikan server kirim UTC
+                            return date.toLocaleString('id-ID', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: false,
+                                timeZone: 'Asia/Jakarta'
+                            });
+                        }
+                    }
+                ],
+                order: [
+                    [2, 'desc']
+                ], // urut terbaru di atas
+                paging: true,
+                searching: true,
+                info: true,
+                language: {
+                    search: "Cari:",
+                    lengthMenu: "Tampilkan _MENU_ baris",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
+                    infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
+                    zeroRecords: "Tidak ada catatan yang ditemukan",
+                    paginate: {
+                        first: "Pertama",
+                        last: "Terakhir",
+                        next: "Berikut",
+                        previous: "Sebelumnya"
+                    }
+                },
+                dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+                drawCallback: function(settings) {
+                    // nomor urut otomatis 1 -> n
+                    var api = this.api();
+                    api.column(0, {
+                        order: 'applied'
+                    }).nodes().each(function(cell, i) {
+                        cell.innerHTML = i + 1;
+                    });
+                }
+            });
+        });
+
+
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const periodeSelect = document.getElementById('periode_select');
+        const periodeManual = document.getElementById('periode_manual');
+        const periodeAwal = document.getElementById('periode_awal');
+        const periodeAkhir = document.getElementById('periode_akhir');
+        const nik = document.getElementById('nik')?.value;
+        const btnTambahPeriode = document.getElementById('btn-tambah-periode');
+
+        // =========================
+        // Toggle form manual periode
+        // =========================
+        periodeSelect.addEventListener('change', function() {
+            if (this.value === "baru") {
+                periodeManual.style.display = "block"; // tampilkan input manual
+            } else {
+                periodeManual.style.display = "none"; // sembunyikan
+                if (this.value && nik) {
+                    const [awal, akhir] = this.value.split('|');
+                    window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
+                }
+            }
+        });
+
+        // =========================
+        // Tombol sesuaikan periode lama
+        // =========================
+        document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
+            if (!nik) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'NIK kosong',
+                    text: 'Masukkan NIK terlebih dahulu',
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+            const awal = periodeAwal.value;
+            const akhir = periodeAkhir.value;
+            window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
+        });
+
+        // =========================
+        // Tombol tambah periode baru
+        // =========================
+        btnTambahPeriode?.addEventListener('click', function() {
+            if (!periodeAwal.value || !periodeAkhir.value) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tanggal Periode Kosong',
+                    text: 'Isi periode awal dan akhir terlebih dahulu',
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+
             Swal.fire({
                 title: 'Tambah Periode Baru?',
                 text: `Periode ${periodeAwal.value} s/d ${periodeAkhir.value} akan ditambahkan`,
@@ -775,11 +1216,14 @@
                                     showConfirmButton: false
                                 });
 
+                                // Tambahkan periode baru ke dropdown
                                 const newOption = document.createElement('option');
                                 newOption.value = `${periodeAwal.value}|${periodeAkhir.value}`;
                                 newOption.textContent = `${periodeAwal.value} s/d ${periodeAkhir.value}`;
                                 newOption.selected = true;
                                 periodeSelect.appendChild(newOption);
+
+                                // sembunyikan input manual
                                 periodeManual.style.display = 'none';
                                 periodeSelect.value = newOption.value;
                             } else {
@@ -803,30 +1247,18 @@
             });
         });
 
-
-        // ===============================
-        // Tombol sesuaikan periode lama
-        // ===============================
-        btnSesuaikanPeriode?.addEventListener('click', function() {
-            if (!nik) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'NIK kosong',
-                    text: 'Masukkan NIK terlebih dahulu',
-                    confirmButtonColor: '#d33'
-                });
-                return;
-            }
-            window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${nik}&awal=${periodeAwal.value}&akhir=${periodeAkhir.value}`;
-        });
-
-        // ===============================
+        // =========================
         // Tombol simpan nilai akhir
-        // ===============================
-        btnSimpanNilaiAkhir?.addEventListener('click', function() {
-            if (!nik) return;
+        // =========================
+        document.getElementById('btn-simpan-nilai-akhir').addEventListener('click', function() {
+            const nik = document.getElementById('nik').value;
+            const periode_awal = periodeAwal.value;
+            const periode_akhir = periodeAkhir.value;
+
+            // 1️⃣ Simpan semua baris dulu
             const rows = document.querySelectorAll('#tabel-penilaian tbody tr[data-id]');
             let promises = [];
+
             rows.forEach(row => {
                 const indikator_id = row.dataset.id;
                 const target = row.querySelector('.target-input').value;
@@ -836,7 +1268,7 @@
                 const nilai = row.querySelector('.nilai-output').value;
                 const nilai_dibobot = row.querySelector('.nilai-bobot-output').value;
 
-                let formData = `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periodeAwal.value)}&periode_akhir=${encodeURIComponent(periodeAkhir.value)}`;
+                let formData = `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`;
 
                 promises.push(
                     fetch('<?= base_url("Administrator/simpanPenilaianBaris") ?>', {
@@ -849,6 +1281,7 @@
                 );
             });
 
+            // 2️⃣ Simpan nilai akhir setelah semua baris
             Promise.all(promises).then(results => {
                 if (results.some(r => r.status !== 'success')) {
                     Swal.fire({
@@ -873,7 +1306,7 @@
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
-                        body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periodeAwal.value)}&periode_akhir=${encodeURIComponent(periodeAkhir.value)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
+                        body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
                     })
                     .then(res => res.json())
                     .then(res => {
@@ -894,134 +1327,135 @@
                             });
                         }
                     })
-                    .catch(() => Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Terjadi kesalahan server',
-                        confirmButtonColor: '#d33'
-                    }));
-            });
-        });
-
-        // ===============================
-        // LOCK INPUT GLOBAL
-        // ===============================
-        function toggleInputLock(lock) {
-            document.querySelectorAll('.target-input, .realisasi-input, .simpan-penilaian, #btn-simpan-nilai-akhir')
-                .forEach(el => el.disabled = lock);
-        }
-
-        // Ambil status lock dari server
-        fetch(`<?= base_url("Administrator/getLockStatus") ?>?awal=${hiddenPeriodeAwal.value}&akhir=${hiddenPeriodeAkhir.value}`)
-            .then(res => res.json())
-            .then(data => {
-                lockCheckbox.checked = data.locked;
-                toggleInputLock(data.locked);
-            });
-
-        lockCheckbox.addEventListener('change', function() {
-            const isLocked = this.checked ? 1 : 0;
-
-            // Hanya tampilkan konfirmasi saat dicentang (lock)
-            if (isLocked) {
-                Swal.fire({
-                    title: 'Konfirmasi',
-                    text: 'Yakin ingin mengunci periode ini? Setelah dikunci, input tidak bisa diubah.',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Ya, kunci!',
-                    cancelButtonText: 'Batal'
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        // Lanjut set lock ke server
-                        fetch('<?= base_url("Administrator/setLockStatus") ?>', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded'
-                                },
-                                body: `periode_awal=${hiddenPeriodeAwal.value}&periode_akhir=${hiddenPeriodeAkhir.value}&lock_input=${isLocked}`
-                            })
-                            .then(res => res.json())
-                            .then(data => {
-                                if (data.status === 'success') {
-                                    toggleInputLock(true);
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Berhasil',
-                                        text: 'Periode berhasil dikunci',
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Gagal',
-                                        text: 'Tidak dapat mengubah status kunci.'
-                                    });
-                                    lockCheckbox.checked = false;
-                                }
-                            })
-                            .catch(() => {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: 'Terjadi kesalahan koneksi ke server.'
-                                });
-                                lockCheckbox.checked = false;
-                            });
-                    } else {
-                        // Batalkan centang
-                        lockCheckbox.checked = false;
-                    }
-                });
-            } else {
-                // Unlock langsung tanpa konfirmasi
-                fetch('<?= base_url("Administrator/setLockStatus") ?>', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `periode_awal=${hiddenPeriodeAwal.value}&periode_akhir=${hiddenPeriodeAkhir.value}&lock_input=0`
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            toggleInputLock(false);
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: 'Kunci periode telah dibuka',
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: 'Tidak dapat mengubah status kunci.'
-                            });
-                            lockCheckbox.checked = true;
-                        }
-                    })
-                    .catch(() => {
+                    .catch(err => {
+                        console.error(err);
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
-                            text: 'Terjadi kesalahan koneksi ke server.'
+                            text: 'Terjadi kesalahan server',
+                            confirmButtonColor: '#d33'
                         });
-                        lockCheckbox.checked = true;
                     });
-            }
+            });
         });
+    });
+</script>
+
+<script>
+    // ===============================
+    // 🔐 LOCK INPUT GLOBAL
+    // ===============================
+    const lockCheckbox = document.getElementById('lock_input_checkbox');
+    const periodeAwal = document.getElementById('hidden_periode_awal');
+    const periodeAkhir = document.getElementById('hidden_periode_akhir');
+
+    // ⏳ Saat halaman pertama kali dibuka, cek status lock dari server
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch(`<?= base_url("Administrator/getLockStatus") ?>?awal=${periodeAwal.value}&akhir=${periodeAkhir.value}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.locked) {
+                    lockCheckbox.checked = true;
+                    toggleInputLock(true);
+                } else {
+                    lockCheckbox.checked = false;
+                    toggleInputLock(false);
+                }
+            });
+    });
+
+    // 🎯 Saat checkbox diubah (Lock / Unlock)
+    lockCheckbox.addEventListener('change', function() {
+        const isLocked = this.checked ? 1 : 0;
+
+        fetch('<?= base_url("Administrator/setLockStatus") ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `periode_awal=${periodeAwal.value}&periode_akhir=${periodeAkhir.value}&lock_input=${isLocked}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: isLocked ? 'Periode berhasil dikunci.' : 'Kunci periode telah dibuka.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    toggleInputLock(isLocked);
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Tidak dapat mengubah status kunci.',
+                    });
+                    // Kembalikan checkbox ke posisi sebelumnya
+                    lockCheckbox.checked = !this.checked;
+                }
+            })
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan koneksi ke server.'
+                });
+                lockCheckbox.checked = !this.checked;
+            });
+    });
+
+    // 🔒 Fungsi untuk mengunci / membuka semua input
+    function toggleInputLock(lock) {
+        document.querySelectorAll('.target-input, .realisasi-input, .simpan-penilaian, #btn-simpan-nilai-akhir')
+            .forEach(el => {
+                el.disabled = lock;
+            });
+    }
 
 
-        // ===============================
-        // Format tampilan periode
-        // ===============================
+    // ===============================
+    // 🔄 GANTI PERIODE DENGAN ALERT
+    // ===============================
+    document.getElementById('periode_select').addEventListener('change', function() {
+        const val = this.value;
+        const manualDiv = document.getElementById('periode_manual');
+
+        if (val === 'baru') {
+            // Jika user pilih input manual
+            manualDiv.style.display = 'block';
+        } else if (val) {
+            // Jika user pilih periode dari dropdown
+            manualDiv.style.display = 'none';
+            const [awal, akhir] = val.split('|');
+
+            Swal.fire({
+                title: 'Ganti Periode?',
+                text: `Kamu akan beralih ke periode ${awal} s/d ${akhir}.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, ganti!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Refresh halaman dengan query periode agar status lock ikut update
+                    window.location.href = `<?= base_url('Administrator/penilaiankinerja') ?>?awal=${awal}&akhir=${akhir}`;
+                } else {
+                    // Jika dibatalkan, kembalikan dropdown ke nilai sebelumnya
+                    this.value = "<?= $periode_awal . '|' . $periode_akhir ?>";
+                }
+            });
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ambil periode dari query string atau value hidden PHP
         const urlParams = new URLSearchParams(window.location.search);
         let awal = urlParams.get('awal') || '<?= $periode_awal ?>';
         let akhir = urlParams.get('akhir') || '<?= $periode_akhir ?>';
 
+        // Format tanggal menjadi d M Y
         function formatTanggal(tgl) {
             const date = new Date(tgl);
             const options = {
@@ -1031,456 +1465,7 @@
             };
             return date.toLocaleDateString('id-ID', options);
         }
+
         document.getElementById('periode_text').value = formatTanggal(awal) + ' s/d ' + formatTanggal(akhir);
-    });
-
-
-
-    // 🔹 format angka
-    function formatAngka(nilai) {
-        let num = parseFloat(nilai);
-        if (isNaN(num)) return '';
-        return Number.isInteger(num) ? num.toString() : num.toFixed(2);
-    }
-
-    function hitungPencapaianOtomatis(target, realisasi, indikatorText = "") {
-        let pencapaian = 0;
-
-        // Normalisasi teks
-        indikatorText = indikatorText.toLowerCase();
-
-        // 🔹 Daftar keyword
-        const keywords = {
-            rumus1: ["biaya", "beban", "efisiensi", "npf pembiayaan", "npf nominal"], // indikator biaya / beban
-            rumus3: ["outstanding", "pertumbuhan"] // indikator outstanding / pertumbuhan
-        };
-
-        // Fungsi cek keyword pakai regex \b...\b
-        const containsKeyword = (list, text) => {
-            return list.some(k => new RegExp(`\\b${k}\\b`, "i").test(text));
-        };
-
-        if (target <= 999) {
-            // 🔹 Rumus 2 (default untuk target ≤ 3 digit)
-            pencapaian = (realisasi / target) * 100;
-        } else {
-            // 🔹 Target > 3 digit → pilih rumus 1 atau 3 berdasarkan kata kunci indikator
-            if (containsKeyword(keywords.rumus1, indikatorText)) {
-                // Rumus 1 → biasanya indikator biaya/beban
-                pencapaian = ((target + (target - realisasi)) / target) * 100;
-            } else if (containsKeyword(keywords.rumus3, indikatorText)) {
-                // Rumus 3 → biasanya indikator outstanding/pertumbuhan
-                pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
-            } else {
-                // fallback default (anggap rumus 2)
-                pencapaian = (realisasi / target) * 100;
-            }
-        }
-        // 🔹 Batas maksimal 130%
-        return Math.min(pencapaian, 130);
-    }
-
-
-    function hitungNilai(pencapaian) {
-        let nilai = 0;
-
-        if (pencapaian < 0) {
-            nilai = 0;
-        } else if (pencapaian < 80) {
-            nilai = (pencapaian / 80) * 2;
-        } else if (pencapaian < 90) {
-            nilai = 2 + ((pencapaian - 80) / 10);
-        } else if (pencapaian < 110) {
-            nilai = 3 + ((pencapaian - 90) / 20 * 0.5);
-        } else if (pencapaian < 120) {
-            nilai = 3.5 + ((pencapaian - 110) / 10 * 1);
-        } else if (pencapaian < 130) {
-            nilai = 4.5 + ((pencapaian - 120) / 10 * 0.5);
-        } else {
-            nilai = 5;
-        }
-
-        return nilai;
-    }
-
-
-    function hitungRow(row, totalBobot) {
-        const targetVal = row.querySelector('.target-input').value;
-        const realisasiVal = row.querySelector('.realisasi-input').value;
-        const bobot = parseFloat(row.querySelector('.bobot').value) || 0;
-
-        // 🔹 Ambil teks indikator dari atribut data-indikator
-        const indikatorText = row.dataset.indikator || "";
-
-        let pencapaian = "";
-        let nilai = "";
-        let nilaiBobot = "";
-
-        if (targetVal !== "" && realisasiVal !== "") {
-            const target = parseFloat(targetVal) || 0;
-            const realisasi = parseFloat(realisasiVal) || 0;
-
-            pencapaian = hitungPencapaianOtomatis(target, realisasi, indikatorText);
-            nilai = hitungNilai(pencapaian);
-
-            if (totalBobot > 0) {
-                nilaiBobot = (nilai * bobot) / totalBobot;
-            }
-        }
-
-        row.querySelector('.pencapaian-output').value = pencapaian === "" ? "" : formatAngka(pencapaian);
-        row.querySelector('.nilai-output').value = nilai === "" ? "" : formatAngka(nilai);
-        row.querySelector('.nilai-bobot-output').value = nilaiBobot === "" ? "" : formatAngka(nilaiBobot);
-
-        return {
-            bobot,
-            nilaiBobot: nilaiBobot === "" ? 0 : parseFloat(formatAngka(nilaiBobot)), // ← bulatkan per baris
-            perspektif: row.dataset.perspektif
-        };
-    }
-
-    function hitungTotal() {
-        let totalBobot = 0,
-            totalNilai = 0;
-        const subtotalMap = {};
-
-        // 🔹 hitung total bobot dulu
-        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
-            totalBobot += parseFloat(row.querySelector('.bobot').value) || 0;
-        });
-
-        // 🔹 lalu panggil hitungRow dengan totalBobot
-        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
-            const {
-                bobot,
-                nilaiBobot,
-                perspektif
-            } = hitungRow(row, totalBobot);
-            totalNilai += nilaiBobot;
-
-            if (!subtotalMap[perspektif]) subtotalMap[perspektif] = 0;
-            subtotalMap[perspektif] += nilaiBobot;
-        });
-
-        document.getElementById('total-bobot').innerText = formatAngka(totalBobot);
-        document.getElementById('total-nilai-bobot').innerText = formatAngka(totalNilai);
-
-        document.querySelectorAll('.subtotal-row').forEach(row => {
-            const perspektif = row.dataset.perspektif;
-            row.querySelector('.subtotal-nilai-bobot').innerText = formatAngka(subtotalMap[perspektif] || 0);
-        });
-
-        // Tambahkan baris ini agar total-sasaran sama dengan total-nilai-bobot
-        document.getElementById('total-sasaran').textContent = formatAngka(totalNilai);
-
-        hitungNilaiAkhir();
-    }
-
-    function hitungNilaiAkhir() {
-        const bobotSasaran = 0.95;
-        const bobotBudaya = 0.05;
-
-        const fraud = parseFloat(document.getElementById("fraud-input").value) || 0;
-
-        // Ambil nilai sasaran dari total-nilai-bobot
-        const totalSasaran = parseFloat(document.getElementById("total-nilai-bobot").textContent) || 0;
-        const rataBudaya = parseFloat(document.getElementById("rata-rata-budaya").textContent) || 0;
-
-        // Total nilai sasaran kerja 
-        const nilaiSasaran = totalSasaran * bobotSasaran;
-
-        // Nilai budaya
-        const nilaiBudaya = rataBudaya * bobotBudaya;
-
-        // Total nilai
-        const totalNilai = nilaiSasaran + nilaiBudaya;
-
-        // Nilai akhir sesuai rumus Excel
-        let nilaiAkhir;
-        if (fraud === 1) {
-            nilaiAkhir = totalNilai - fraud;
-        } else {
-            nilaiAkhir = totalNilai;
-        }
-
-        // Predikat
-        let predikat;
-        let predikatClass = "";
-
-        if (nilaiAkhir === "Tidak ada nilai") {
-            predikat = "Tidak ada yudisium/predikat";
-            predikatClass = "text-dark";
-        } else if (nilaiAkhir === 0) {
-            predikat = "Belum Ada Nilai";
-            predikatClass = "text-dark";
-        } else if (nilaiAkhir < 2) {
-            predikat = "Minus";
-            predikatClass = "text-danger"; // merah
-        } else if (nilaiAkhir < 3) {
-            predikat = "Fair";
-            predikatClass = "text-warning"; // jingga
-        } else if (nilaiAkhir < 3.5) {
-            predikat = "Good";
-            predikatClass = "text-primary"; // biru
-        } else if (nilaiAkhir < 4.5) {
-            predikat = "Very Good";
-            predikatClass = "text-success"; // hijau muda
-        } else {
-            predikat = "Excellent";
-            predikatClass = "text-success font-weight-bold"; // hijau tua (lebih tebal)
-        }
-
-        // Pencapaian Akhir
-        let pencapaian = "";
-        if (nilaiAkhir !== "Tidak ada nilai") {
-            const v = parseFloat(nilaiAkhir) || 0;
-            if (v < 0) pencapaian = 0;
-            else if (v < 2) pencapaian = (v / 2) * 0.8 * 100;
-            else if (v < 3) pencapaian = 80 + ((v - 2) / 1) * 10;
-            else if (v < 3.5) pencapaian = 90 + ((v - 3) / 0.5) * 20;
-            else if (v < 4.5) pencapaian = 110 + ((v - 3.5) / 1) * 10;
-            else if (v < 5) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
-            else pencapaian = 130;
-        } else {
-            pencapaian = 0;
-        }
-
-        // Update ke tampilan
-        document.getElementById("nilai-sasaran").textContent = nilaiSasaran.toFixed(2);
-        document.getElementById("nilai-budaya").textContent = nilaiBudaya.toFixed(2);
-        document.getElementById("total-nilai").textContent = totalNilai.toFixed(2);
-        document.getElementById("nilai-akhir").textContent =
-            nilaiAkhir === "Tidak ada nilai" ? nilaiAkhir : nilaiAkhir.toFixed(2);
-        document.getElementById("predikat").textContent = predikat;
-        document.getElementById("predikat").className = predikatClass;
-        document.getElementById("pencapaian-akhir").textContent =
-            pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
-    }
-
-    document.getElementById('fraud-input').addEventListener('input', hitungNilaiAkhir);
-
-    // 🔹 trigger perhitungan saat input diubah
-    document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
-        input.addEventListener('input', hitungTotal);
-    });
-    hitungTotal();
-
-    // 🔹 Simpan penilaian
-    document.querySelectorAll('.simpan-penilaian').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const row = this.closest('tr');
-            const indikator_id = row.dataset.id;
-            const target = row.querySelector('.target-input').value;
-            const batas_waktu = row.querySelector('input[type="date"]').value;
-            const realisasi = row.querySelector('.realisasi-input').value;
-            const pencapaian = row.querySelector('.pencapaian-output').value;
-            const nilai = row.querySelector('.nilai-output').value;
-            const nilai_dibobot = row.querySelector('.nilai-bobot-output').value;
-
-            const periode_awal = periodeAwal.value;
-            const periode_akhir = periodeAkhir.value;
-
-            // <-- taruh console.log di sini
-            console.log("DEBUG: nik=", nik, "indikator_id=", indikator_id, "periode_awal=", periode_awal, "periode_akhir=", periode_akhir);
-
-            fetch('<?= base_url("Administrator/simpanPenilaianBaris") ?>', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `nik=${nik}&indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
-                })
-
-                .then(res => res.json())
-                .then(res => {
-                    if (res.status === 'success') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil',
-                            text: res.message,
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                        hitungTotal();
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal',
-                            text: res.message || 'Gagal menyimpan',
-                            confirmButtonColor: '#d33'
-                        });
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Terjadi kesalahan server',
-                        confirmButtonColor: '#d33'
-                    });
-                });
-        });
-    });
-    document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
-        const nik = document.getElementById('nik').value;
-        const awal = periodeAwal.value;
-        const akhir = periodeAkhir.value;
-
-        if (!nik) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'NIK kosong',
-                text: 'Masukkan NIK terlebih dahulu',
-                confirmButtonColor: '#d33'
-            });
-            return;
-        }
-
-        window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
-    });
-    $(document).ready(function() {
-        const nikPegawai = $('#nik').val(); // NIK pegawai saat ini
-
-        var tableCatatan = $('#tabel-catatan').DataTable({
-            processing: true,
-            serverSide: true,
-            responsive: true,
-            ajax: {
-                url: '<?= base_url("Administrator/getCatatanPenilai") ?>',
-                type: 'POST',
-                data: {
-                    nik_pegawai: nikPegawai
-                }
-            },
-            columns: [{
-                    data: 'no',
-                    orderable: false
-                }, // Nomor urut
-                {
-                    data: 'nama_penilai'
-                }, // Nama penilai
-                {
-                    data: 'catatan',
-                    orderable: false
-                }, // Catatan
-                {
-                    data: 'tanggal',
-                    render: function(data, type, row) {
-                        if (!data) return '';
-                        const date = new Date(data + ' UTC'); // pastikan server kirim UTC
-                        return date.toLocaleString('id-ID', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false,
-                            timeZone: 'Asia/Jakarta'
-                        });
-                    }
-                }
-            ],
-            order: [
-                [3, 'desc']
-            ], // urut terbaru di atas
-            paging: true,
-            searching: true,
-            info: true,
-            language: {
-                search: "Cari:",
-                lengthMenu: "Tampilkan _MENU_ baris",
-                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
-                infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
-                zeroRecords: "Tidak ada catatan yang ditemukan",
-                paginate: {
-                    first: "Pertama",
-                    last: "Terakhir",
-                    next: "Berikut",
-                    previous: "Sebelumnya"
-                }
-            },
-            dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
-            drawCallback: function(settings) {
-                // nomor urut otomatis 1 -> n
-                var api = this.api();
-                api.column(0, {
-                    order: 'applied'
-                }).nodes().each(function(cell, i) {
-                    cell.innerHTML = i + 1;
-                });
-            }
-        });
-    });
-
-    $(document).ready(function() {
-        const nikPegawai = $('#nik').val(); // NIK pegawai saat ini
-
-        var tableCatatanPegawai = $('#tabel-catatan-pegawai').DataTable({
-            processing: true,
-            serverSide: true,
-            responsive: false,
-            ajax: {
-                url: '<?= base_url("Administrator/getCatatanPegawai") ?>',
-                type: 'POST',
-                data: {
-                    nik_pegawai: nikPegawai
-                }
-            },
-            columns: [{
-                    data: 'no',
-                    orderable: false
-                }, // Nama penilai
-                {
-                    data: 'catatan',
-                    orderable: false
-                }, // Catatan
-                {
-                    data: 'tanggal',
-                    render: function(data, type, row) {
-                        if (!data) return '';
-                        const date = new Date(data + ' UTC'); // pastikan server kirim UTC
-                        return date.toLocaleString('id-ID', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: false,
-                            timeZone: 'Asia/Jakarta'
-                        });
-                    }
-                }
-            ],
-            order: [
-                [2, 'desc']
-            ], // urut terbaru di atas
-            paging: true,
-            searching: true,
-            info: true,
-            language: {
-                search: "Cari:",
-                lengthMenu: "Tampilkan _MENU_ baris",
-                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
-                infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
-                zeroRecords: "Tidak ada catatan yang ditemukan",
-                paginate: {
-                    first: "Pertama",
-                    last: "Terakhir",
-                    next: "Berikut",
-                    previous: "Sebelumnya"
-                }
-            },
-            dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
-            drawCallback: function(settings) {
-                // nomor urut otomatis 1 -> n
-                var api = this.api();
-                api.column(0, {
-                    order: 'applied'
-                }).nodes().each(function(cell, i) {
-                    cell.innerHTML = i + 1;
-                });
-            }
-        });
     });
 </script>
