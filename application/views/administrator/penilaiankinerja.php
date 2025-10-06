@@ -1329,15 +1329,52 @@
     });
 
     // 🔒 Fungsi untuk mengunci / membuka semua input
-    // 🔒 Fungsi untuk mengunci / membuka semua input
     function toggleInputLock(lock) {
         document.querySelectorAll('.target-input, .realisasi-input, .simpan-penilaian, #btn-simpan-nilai-akhir, .batas-waktu')
             .forEach(el => {
                 el.disabled = lock;
-                el.classList.toggle('bg-light', lock);
+
+                // 🌙 Tambah efek visual
+                if (lock) {
+                    el.classList.add('locked-style');
+                    el.setAttribute('data-original-text', el.innerHTML);
+
+                    // kalau button → tambahkan ikon gembok
+                    if (el.tagName === 'BUTTON' || el.type === 'button' || el.classList.contains('btn')) {
+                        el.innerHTML = `<i class="mdi mdi-lock-outline mr-1"></i> Terkunci`;
+                    }
+                } else {
+                    el.classList.remove('locked-style');
+                    // kembalikan teks tombol semula
+                    if (el.getAttribute('data-original-text')) {
+                        el.innerHTML = el.getAttribute('data-original-text');
+                        el.removeAttribute('data-original-text');
+                    }
+                }
             });
     }
 </script>
+
+<style>
+    .locked-style {
+        background-color: #e9ecef !important;
+        border-color: #d6d8db !important;
+        color: #6c757d !important;
+        opacity: 0.8;
+        cursor: not-allowed !important;
+        box-shadow: none !important;
+        position: relative;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .locked-style:hover {
+        transform: none !important;
+    }
+
+    .locked-style i {
+        color: #6c757d !important;
+    }
+</style>
 
 <script>
     // Ambil elemen dropdown utama dan span info periode
