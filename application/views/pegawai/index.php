@@ -430,9 +430,15 @@
                                                                 <?= $i->batas_waktu ? date('d-m-Y', strtotime($i->batas_waktu)) : '-'; ?>
                                                             </td>
                                                             <td class="text-center align-middle">
-                                                                <input type="text" class="form-control text-center realisasi-input"
-                                                                    value="<?= $i->realisasi ?? ''; ?>"
-                                                                    style="min-width:100px;">
+                                                                <?php if (!$is_locked): ?>
+                                                                    <input type="text" class="form-control text-center realisasi-input"
+                                                                        value="<?= $i->realisasi ?? ''; ?>"
+                                                                        style="min-width:100px;">
+                                                                <?php else: ?>
+                                                                    <input type="text" class="form-control text-center realisasi-input"
+                                                                        value="<?= $i->realisasi ?? ''; ?>"
+                                                                        style="min-width:100px;" readonly>
+                                                                <?php endif; ?>
                                                             </td>
 
                                                             <td class="text-center align-middle">
@@ -453,7 +459,12 @@
                                                                 <span class="<?= $statusClass; ?>"><?= $statusText; ?></span>
                                                             </td>
                                                             <td class="text-center align-middle">
-                                                                <button type="button" class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
+                                                                <?php if (!$is_locked): ?>
+                                                                    <button type="button" class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
+                                                                <?php else: ?>
+                                                                    <button type="button" class="btn btn-sm btn-secondary" disabled>Terkunci</button>
+                                                                <?php endif; ?>
+
                                                             </td>
                                                         </tr>
                                                 <?php
@@ -622,9 +633,16 @@
                                 </div>
 
                                 <div class="text-right mt-3">
-                                    <button id="btn-simpan-nilai-akhir" class="btn btn-primary">
-                                        <i class="mdi mdi-content-save"></i> Simpan Nilai Akhir
-                                    </button>
+                                    <?php if (!$is_locked): ?>
+                                        <button id="btn-simpan-nilai-akhir" class="btn btn-primary">
+                                            <i class="mdi mdi-content-save"></i> Simpan Nilai Akhir
+                                        </button>
+                                    <?php else: ?>
+                                        <button class="btn btn-secondary" disabled>
+                                            <i class="mdi mdi-lock"></i> Terkunci
+                                        </button>
+                                    <?php endif; ?>
+
                                 </div>
                             </div>
                         </div>
@@ -1340,5 +1358,23 @@ if ($message): ?>
                 });
             }
         });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const isLocked = <?= $is_locked ? 'true' : 'false' ?>;
+        if (isLocked) {
+            document.querySelectorAll('.target-input, .realisasi-input, .simpan-penilaian, #btn-simpan-nilai-akhir')
+                .forEach(el => el.disabled = true);
+
+            Swal.fire({
+                icon: 'info',
+                title: 'Periode Dikunci',
+                text: 'Anda tidak dapat mengubah data karena periode ini sudah dikunci oleh admin.',
+                timer: 2500,
+                showConfirmButton: false
+            });
+        }
     });
 </script>

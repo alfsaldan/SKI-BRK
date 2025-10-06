@@ -211,4 +211,27 @@ class Pegawai_model extends CI_Model
             return $this->db->insert('nilai_akhir', $data);
         }
     }
+
+
+    public function getLockStatus($periode_awal, $periode_akhir)
+    {
+        $this->db->where('periode_awal', $periode_awal);
+        $this->db->where('periode_akhir', $periode_akhir);
+        $query = $this->db->get('penilaian');
+
+        // Jika tidak ada data, anggap terbuka
+        if ($query->num_rows() == 0) {
+            return false;
+        }
+
+        foreach ($query->result() as $row) {
+            if (empty($row->lock_input) || $row->lock_input == 0) {
+                // Jika ada 0 → masih terbuka
+                return false;
+            }
+        }
+
+        // Jika semua 1 → terkunci
+        return true;
+    }
 }

@@ -136,4 +136,24 @@ class Nilai_model extends CI_Model
         $this->db->order_by('c.tanggal', 'ASC');
         return $this->db->get()->result();
     }
+
+    public function getLockStatus($nik, $periode_awal, $periode_akhir)
+    {
+        $this->db->where('nik', $nik);
+        $this->db->where('periode_awal', $periode_awal);
+        $this->db->where('periode_akhir', $periode_akhir);
+        $query = $this->db->get('penilaian');
+
+        if ($query->num_rows() == 0) {
+            return false; // tidak ada data → dianggap terbuka
+        }
+
+        foreach ($query->result() as $row) {
+            if (empty($row->lock_input) || $row->lock_input == 0) {
+                return false; // ada yang terbuka
+            }
+        }
+
+        return true; // semua terkunci
+    }
 }

@@ -119,22 +119,9 @@
                                         </h5>
 
                                         <div class="form-group">
-                                            <label class="text-dark font-weight-medium">Pilih Periode Penilaian:</label>
-                                            <select id="periode_select" class="form-control mb-2">
-                                                <option value="">-- Pilih Periode --</option>
-                                                <?php if (!empty($periode_list)): ?>
-                                                    <?php foreach ($periode_list as $p):
-                                                        $val = $p->periode_awal . "|" . $p->periode_akhir;
-                                                        $text = date('d M Y', strtotime($p->periode_awal)) . " s/d " . date('d M Y', strtotime($p->periode_akhir));
-                                                        $selected = ($periode_awal == $p->periode_awal && $periode_akhir == $p->periode_akhir) ? 'selected' : '';
-                                                    ?>
-                                                        <option value="<?= $val ?>" <?= $selected ?>><?= $text ?></option>
-                                                    <?php endforeach; ?>
-                                                <?php endif; ?>
-                                                <option value="baru">+ Tambah Periode Baru</option>
-                                            </select>
+                                            <label class="text-dark font-weight-medium">Periode Penilaian:</label>
+                                            <input type="text" id="periode_text" class="form-control" readonly>
                                         </div>
-
 
                                         <div id="periode_manual" style="display: none;">
                                             <div class="form-inline mb-2">
@@ -1382,5 +1369,25 @@
                 }
             });
         }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ambil periode dari query string atau value hidden PHP
+        const urlParams = new URLSearchParams(window.location.search);
+        let awal = urlParams.get('awal') || '<?= $periode_awal ?>';
+        let akhir = urlParams.get('akhir') || '<?= $periode_akhir ?>';
+
+        // Format tanggal menjadi d M Y
+        function formatTanggal(tgl) {
+            const date = new Date(tgl);
+            const options = {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            };
+            return date.toLocaleDateString('id-ID', options);
+        }
+
+        document.getElementById('periode_text').value = formatTanggal(awal) + ' s/d ' + formatTanggal(akhir);
     });
 </script>

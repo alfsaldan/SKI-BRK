@@ -382,9 +382,15 @@
                                                                 <?= $i->batas_waktu ? date('d-m-Y', strtotime($i->batas_waktu)) : '-'; ?>
                                                             </td>
                                                             <td class="text-center align-middle">
-                                                                <input type="text" class="form-control text-center realisasi-input"
-                                                                    value="<?= $i->realisasi ?? ''; ?>"
-                                                                    style="min-width:100px;">
+                                                                <?php if (!$is_locked): ?>
+                                                                    <input type="text" class="form-control text-center realisasi-input"
+                                                                        value="<?= $i->realisasi ?? ''; ?>"
+                                                                        style="min-width:100px;">
+                                                                <?php else: ?>
+                                                                    <input type="text" class="form-control text-center realisasi-input"
+                                                                        value="<?= $i->realisasi ?? ''; ?>"
+                                                                        style="min-width:100px;" readonly>
+                                                                <?php endif; ?>
                                                             </td>
 
                                                             <td class="text-center align-middle">
@@ -401,14 +407,21 @@
                                                             </td>
 
                                                             <td class="text-center align-middle" style="min-width: 150px;">
-                                                                <select class="form-select form-select-sm status-select">
+                                                                <select class="form-select form-select-sm status-select"
+                                                                    data-id="<?= $i->id; ?>"
+                                                                    data-locked="<?= $is_locked ? '1' : '0'; ?>"
+                                                                    <?= $is_locked ? 'disabled' : ''; ?>>
                                                                     <option value="Belum Dinilai" <?= ($i->status == 'Belum Dinilai') ? 'selected' : ''; ?>>Belum Dinilai</option>
                                                                     <option value="Ada Catatan" <?= ($i->status == 'Ada Catatan') ? 'selected' : ''; ?>>Ada Catatan</option>
                                                                     <option value="Disetujui" <?= ($i->status == 'Disetujui') ? 'selected' : ''; ?>>Disetujui</option>
                                                                 </select>
                                                             </td>
                                                             <td class="text-center align-middle">
-                                                                <button type="button" class="btn btn-sm btn-success simpan-status">Simpan</button>
+                                                                <button type="button" class="btn btn-sm btn-success simpan-status"
+                                                                    data-id="<?= $i->id; ?>"
+                                                                    <?= $is_locked ? 'disabled' : ''; ?>>
+                                                                    Simpan
+                                                                </button>
                                                             </td>
                                                         </tr>
                                                 <?php
@@ -443,13 +456,21 @@
                                 </div>
                                 <div class="d-flex justify-content-end align-items-center mt-2 gap-2">
                                     <label for="status-semua" class="mb-0"><b>Ubah Semua Status:</b></label>
-                                    <select id="status-semua" class="form-select form-select-sm" style="width: 180px; padding: 0.25rem 0.5rem;">
+                                    <select id="status-semua" class="form-select form-select-sm"
+                                        style="width: 180px; padding: 0.25rem 0.5rem;"
+                                        data-locked="<?= $is_locked ? '1' : '0'; ?>"
+                                        <?= $is_locked ? 'disabled' : ''; ?>>
                                         <option value="Belum Dinilai">Belum Dinilai</option>
                                         <option value="Ada Catatan">Ada Catatan</option>
                                         <option value="Disetujui">Disetujui</option>
                                     </select>
-                                    <button type="button" id="btn-simpan-semua" class="btn btn-success btn-sm" style="padding: 0.35rem 0.75rem;">Simpan Semua</button>
+                                    <button type="button" id="btn-simpan-semua" class="btn btn-success btn-sm"
+                                        style="padding: 0.35rem 0.75rem;"
+                                        <?= $is_locked ? 'disabled' : ''; ?>>
+                                        Simpan Semua
+                                    </button>
                                 </div>
+
                             </div>
                         </div>
                     </div>
@@ -614,7 +635,8 @@
                                 </div>
 
                                 <div class="text-right mt-3">
-                                    <button id="btn-simpan-nilai-akhir" class="btn btn-primary">
+                                    <button id="btn-simpan-nilai-akhir" class="btn btn-primary"
+                                        <?= $is_locked ? 'disabled' : ''; ?>>
                                         <i class="mdi mdi-content-save"></i> Simpan Nilai Akhir
                                     </button>
                                 </div>
@@ -1319,5 +1341,23 @@
                     });
                 });
         });
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const isLocked = <?= $is_locked ? 'true' : 'false' ?>;
+        if (isLocked) {
+            document.querySelectorAll('.target-input, .realisasi-input, .simpan-penilaian, #btn-simpan-nilai-akhir')
+                .forEach(el => el.disabled = true);
+
+            Swal.fire({
+                icon: 'info',
+                title: 'Periode Dikunci',
+                text: 'Anda tidak dapat mengubah data karena periode ini sudah dikunci oleh admin.',
+                timer: 2500,
+                showConfirmButton: false
+            });
+        }
     });
 </script>

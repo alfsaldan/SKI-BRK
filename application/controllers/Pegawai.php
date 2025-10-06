@@ -49,6 +49,10 @@ class Pegawai extends CI_Controller
         $periode_awal = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y') . "-01-01";
         $periode_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
 
+        // 🔹 Ambil status lock dari kolom lock_input
+        $lock_status = $this->Pegawai_model->getLockStatus($periode_awal, $periode_akhir);
+
+
         $indikator = $this->Pegawai_model->get_indikator_by_jabatan_dan_unit(
             $pegawai->jabatan,
             $pegawai->unit_kerja,
@@ -58,6 +62,7 @@ class Pegawai extends CI_Controller
         );
 
         $periode_list = $this->Pegawai_model->getPeriodePegawai($nik);
+        $nilai_akhir  = $this->Pegawai_model->getNilaiAkhir($nik, $periode_awal, $periode_akhir);
 
         $data = [
             'judul' => "Dashboard Pegawai",
@@ -65,18 +70,16 @@ class Pegawai extends CI_Controller
             'indikator_by_jabatan' => $indikator,
             'periode_awal' => $periode_awal,
             'periode_akhir' => $periode_akhir,
-            'periode_list' => $periode_list
+            'periode_list' => $periode_list,
+            'nilai_akhir' => $nilai_akhir,
+            'is_locked' => $lock_status
         ];
-
-        // 🔹 ambil nilai_akhir dari tabel nilai_akhir
-        $nilai_akhir = $this->Pegawai_model->getNilaiAkhir($nik, $periode_awal, $periode_akhir);
-
-        $data['nilai_akhir']         = $nilai_akhir;
 
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/index', $data);
         $this->load->view('layoutpegawai/footer');
     }
+
 
     public function simpanPenilaianBaris()
     {
@@ -194,24 +197,28 @@ class Pegawai extends CI_Controller
         $this->db->order_by('periode_awal', 'ASC');
         $periode_list = $this->db->get()->result();
 
+        // 🔹 Ambil nilai akhir
+        $nilai_akhir = $this->Pegawai_model->getNilaiAkhir($nik, $awal, $akhir);
+
+        // 🔹 Ambil status lock
+        $is_locked = $this->Nilai_model->getLockStatus($nik, $awal, $akhir);
+
         $data = [
             'judul' => "Form Penilaian Pegawai",
             'pegawai_detail' => $pegawai,
             'indikator_by_jabatan' => $indikator,
             'periode_awal' => $awal,
             'periode_akhir' => $akhir,
-            'periode_list' => $periode_list
+            'periode_list' => $periode_list,
+            'nilai_akhir' => $nilai_akhir,
+            'is_locked' => $is_locked
         ];
-
-        // 🔹 ambil nilai_akhir dari tabel nilai_akhir
-        $nilai_akhir = $this->Pegawai_model->getNilaiAkhir($nik, $awal, $akhir);
-
-        $data['nilai_akhir']         = $nilai_akhir;
 
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/nilaipegawai_detail', $data);
         $this->load->view('layoutpegawai/footer');
     }
+
 
     public function datadiriPegawai()
     {
