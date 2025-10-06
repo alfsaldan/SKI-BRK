@@ -286,6 +286,23 @@ class Administrator extends CI_Controller
         $this->load->view("layout/footer");
     }
 
+    public function tambahPeriode()
+    {
+        $periode_awal = $this->input->post('periode_awal');
+        $periode_akhir = $this->input->post('periode_akhir');
+
+        if (!$periode_awal || !$periode_akhir) {
+            echo json_encode(['status' => 'error', 'message' => 'Tanggal periode tidak boleh kosong']);
+            return;
+        }
+
+        $this->load->model('Penilaian_model');
+        $result = $this->Penilaian_model->tambahPeriode($periode_awal, $periode_akhir);
+
+        echo json_encode($result);
+    }
+
+
     public function getLockStatus()
     {
         $awal = $this->input->get('awal');
