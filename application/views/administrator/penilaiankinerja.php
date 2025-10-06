@@ -2,7 +2,6 @@
     <div class="content">
         <div class="container-fluid">
 
-
             <!-- Judul Halaman -->
             <div class="row">
                 <div class="col-12">
@@ -141,7 +140,6 @@
                                         <p class="text-dark font-weight-medium"><b>Unit Kantor Penilai:</b> <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span></p>
                                     </div>
                                 </div>
-
                                 <hr>
 
                                 <!-- Penilai I & Penilai II -->
@@ -186,12 +184,10 @@
                                         </ul>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
                 </div>
-
 
                 <?php
                 $order = ['Keuangan (F)', 'Pelanggan (C)', 'Proses Internal (IP)', 'Pembelajaran & Pertumbuhan (LG)'];
