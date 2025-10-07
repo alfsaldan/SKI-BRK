@@ -202,77 +202,84 @@ class Penilaian_model extends CI_Model
         $this->db->where('id', $id)->update('penilaian', ['status' => $status]);
         return $this->db->affected_rows();
     }
-// 🔹 Untuk catatan penilai
-public function countAllCatatanByPegawai($nik) {
-    return $this->db->where('c.nik_pegawai', $nik)
-                    ->from('catatan_penilai c')
-                    ->count_all_results();
-}
 
-public function countFilteredCatatanByPegawai($nik, $search = '') {
-    $this->db->from('catatan_penilai c');
-    $this->db->join('pegawai p', 'p.nik = c.nik_penilai', 'left');
-    $this->db->where('c.nik_pegawai', $nik);
-    if ($search) {
-        $this->db->group_start();
-        $this->db->like('p.nama', $search);
-        $this->db->or_like('c.catatan', $search);
-        $this->db->or_like('c.tanggal', $search);
-        $this->db->group_end();
+    // 🔹 Untuk catatan penilai
+    public function countAllCatatanByPegawai($nik)
+    {
+        return $this->db->where('c.nik_pegawai', $nik)
+            ->from('catatan_penilai c')
+            ->count_all_results();
     }
-    return $this->db->count_all_results();
-}
 
-public function getCatatanByPegawaiFiltered($nik, $start, $length, $search = '', $orderColumn = 'tanggal', $sortDir = 'desc') {
-    $this->db->select('c.*, p.nama as penilai_nama');
-    $this->db->from('catatan_penilai c');
-    $this->db->join('pegawai p', 'p.nik = c.nik_penilai', 'left');
-    $this->db->where('c.nik_pegawai', $nik);
-    if ($search) {
-        $this->db->group_start();
-        $this->db->like('p.nama', $search);
-        $this->db->or_like('c.catatan', $search);
-        $this->db->or_like('c.tanggal', $search);
-        $this->db->group_end();
+    public function countFilteredCatatanByPegawai($nik, $search = '')
+    {
+        $this->db->from('catatan_penilai c');
+        $this->db->join('pegawai p', 'p.nik = c.nik_penilai', 'left');
+        $this->db->where('c.nik_pegawai', $nik);
+        if ($search) {
+            $this->db->group_start();
+            $this->db->like('p.nama', $search);
+            $this->db->or_like('c.catatan', $search);
+            $this->db->or_like('c.tanggal', $search);
+            $this->db->group_end();
+        }
+        return $this->db->count_all_results();
     }
-    $this->db->order_by('c.' . $orderColumn, $sortDir);
-    $this->db->limit($length, $start);
-    return $this->db->get()->result();
-}
 
-// 🔹 Untuk catatan pegawai
-public function countAllCatatanPegawai($nik) {
-    return $this->db->where('c.nik', $nik)
-                    ->from('catatan_pegawai c')
-                    ->count_all_results();
-}
-
-public function countFilteredCatatanPegawai($nik, $search = '') {
-    $this->db->from('catatan_pegawai c');
-    $this->db->where('c.nik', $nik);
-    if ($search) {
-        $this->db->group_start();
-        $this->db->like('c.catatan', $search);
-        $this->db->or_like('c.tanggal', $search);
-        $this->db->group_end();
+    public function getCatatanByPegawaiFiltered($nik, $start, $length, $search = '', $orderColumn = 'tanggal', $sortDir = 'desc')
+    {
+        $this->db->select('c.*, p.nama as penilai_nama');
+        $this->db->from('catatan_penilai c');
+        $this->db->join('pegawai p', 'p.nik = c.nik_penilai', 'left');
+        $this->db->where('c.nik_pegawai', $nik);
+        if ($search) {
+            $this->db->group_start();
+            $this->db->like('p.nama', $search);
+            $this->db->or_like('c.catatan', $search);
+            $this->db->or_like('c.tanggal', $search);
+            $this->db->group_end();
+        }
+        $this->db->order_by('c.' . $orderColumn, $sortDir);
+        $this->db->limit($length, $start);
+        return $this->db->get()->result();
     }
-    return $this->db->count_all_results();
-}
 
-public function getCatatanPegawaiFiltered($nik, $start, $length, $search = '', $orderColumn = 'tanggal', $sortDir = 'desc') {
-    $this->db->select('c.*');
-    $this->db->from('catatan_pegawai c');
-    $this->db->where('c.nik', $nik);
-    if ($search) {
-        $this->db->group_start();
-        $this->db->like('c.catatan', $search);
-        $this->db->or_like('c.tanggal', $search);
-        $this->db->group_end();
+    // 🔹 Untuk catatan pegawai
+    public function countAllCatatanPegawai($nik)
+    {
+        return $this->db->where('c.nik', $nik)
+            ->from('catatan_pegawai c')
+            ->count_all_results();
     }
-    $this->db->order_by('c.' . $orderColumn, $sortDir);
-    $this->db->limit($length, $start);
-    return $this->db->get()->result();
-}
+
+    public function countFilteredCatatanPegawai($nik, $search = '')
+    {
+        $this->db->from('catatan_pegawai c');
+        $this->db->where('c.nik', $nik);
+        if ($search) {
+            $this->db->group_start();
+            $this->db->like('c.catatan', $search);
+            $this->db->or_like('c.tanggal', $search);
+            $this->db->group_end();
+        }
+        return $this->db->count_all_results();
+    }
+
+    public function getCatatanPegawaiFiltered($nik, $start, $length, $search = '', $orderColumn = 'tanggal', $sortDir = 'desc')
+    {
+        $this->db->select('c.*');
+        $this->db->from('catatan_pegawai c');
+        $this->db->where('c.nik', $nik);
+        if ($search) {
+            $this->db->group_start();
+            $this->db->like('c.catatan', $search);
+            $this->db->or_like('c.tanggal', $search);
+            $this->db->group_end();
+        }
+        $this->db->order_by('c.' . $orderColumn, $sortDir);
+        $this->db->limit($length, $start);
+        return $this->db->get()->result();
+    }
 
 
     public function getPeriodeList()
@@ -309,30 +316,30 @@ public function getCatatanPegawaiFiltered($nik, $start, $length, $search = '', $
     }
 
     public function setLockStatus($periode_awal, $periode_akhir, $lock)
-{
-    $exists = $this->db
-        ->where('periode_awal', $periode_awal)
-        ->where('periode_akhir', $periode_akhir)
-        ->get('penilaian')
-        ->num_rows() > 0;
+    {
+        $exists = $this->db
+            ->where('periode_awal', $periode_awal)
+            ->where('periode_akhir', $periode_akhir)
+            ->get('penilaian')
+            ->num_rows() > 0;
 
-    if ($exists) {
-        $this->db->where('periode_awal', $periode_awal)
-                 ->where('periode_akhir', $periode_akhir)
-                 ->update('penilaian', ['lock_input' => $lock]);
-    } else {
-        $this->db->insert('penilaian', [
-            'periode_awal' => $periode_awal,
-            'periode_akhir' => $periode_akhir,
-            'lock_input' => $lock
-        ]);
+        if ($exists) {
+            $this->db->where('periode_awal', $periode_awal)
+                ->where('periode_akhir', $periode_akhir)
+                ->update('penilaian', ['lock_input' => $lock]);
+        } else {
+            $this->db->insert('penilaian', [
+                'periode_awal' => $periode_awal,
+                'periode_akhir' => $periode_akhir,
+                'lock_input' => $lock
+            ]);
+        }
+
+        return $this->db->affected_rows() > 0;
     }
 
-    return $this->db->affected_rows() > 0;
-}
 
 
-    
 
 
     public function tambahPeriode($periode_awal, $periode_akhir)

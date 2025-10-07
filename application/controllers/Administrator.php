@@ -1969,6 +1969,13 @@ class Administrator extends CI_Controller
 
         $recordsTotal = $this->Penilaian_model->countAllCatatanByPegawai($nik);
         $recordsFiltered = $this->Penilaian_model->countFilteredCatatanByPegawai($nik, $search);
+
+        // ✅ Tangani $length = -1
+        if ($length == -1) {
+            $start = 0;
+            $length = $recordsFiltered; // ambil semua data
+        }
+
         $list = $this->Penilaian_model->getCatatanByPegawaiFiltered($nik, $start, $length, $search, $orderColumn, $sortDir);
 
         $data = [];
@@ -2011,6 +2018,13 @@ class Administrator extends CI_Controller
 
         $recordsTotal = $this->Penilaian_model->countAllCatatanPegawai($nik);
         $recordsFiltered = $this->Penilaian_model->countFilteredCatatanPegawai($nik, $search);
+
+        // ✅ Tangani $length = -1
+        if ($length == -1) {
+            $start = 0;
+            $length = $recordsFiltered; // ambil semua data
+        }
+
         $list = $this->Penilaian_model->getCatatanPegawaiFiltered($nik, $start, $length, $search, $orderColumn, $sortDir);
 
         $data = [];
