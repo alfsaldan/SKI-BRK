@@ -20,7 +20,7 @@
                 </div>
             </div>
 
-            
+
 
             <!-- Card -->
             <div class="card">
@@ -35,6 +35,7 @@
                                 <tr>
                                     <th width="5%">No</th>
                                     <th>Jabatan</th>
+                                    <th>Jenis Penilaian</th>
                                     <th>Jenis Unit</th>
                                     <th>Penilai I</th>
                                     <th>Penilai II</th>
@@ -48,6 +49,7 @@
                                         <tr>
                                             <td><?= $no++; ?></td>
                                             <td><?= $row->jabatan; ?></td>
+                                            <td class="text-center"><?= strtoupper($row->jenis_penilaian); ?></td>
                                             <td><?= $row->unit_kerja; ?></td>
                                             <td><?= $row->penilai1_jabatan; ?></td>
                                             <td><?= $row->penilai2_jabatan; ?></td>
@@ -55,6 +57,7 @@
                                                 <button class="btn btn-sm btn-warning btn-edit"
                                                     data-id="<?= $row->id ?>"
                                                     data-jabatan="<?= $row->jabatan ?>"
+                                                    data-jenis="<?= strtolower($row->jenis_penilaian) ?>"
                                                     data-unit="<?= $row->unit_kerja ?>"
                                                     data-penilai1="<?= $row->penilai1_jabatan ?>"
                                                     data-penilai2="<?= $row->penilai2_jabatan ?>">
@@ -96,6 +99,14 @@
                     <input type="text" name="jabatan" class="form-control" required>
                 </div>
                 <div class="form-group">
+                    <label>Jenis Penilaian</label>
+                    <select name="jenis_penilaian" class="form-control" required>
+                        <option value="">-- Pilih --</option>
+                        <option value="kpi">KPI</option>
+                        <option value="ski">SKI</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Jenis Unit</label>
                     <input type="text" name="unit_kerja" class="form-control">
                 </div>
@@ -129,6 +140,13 @@
                 <div class="form-group">
                     <label>Jabatan</label>
                     <input type="text" name="jabatan" id="edit_jabatan" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Jenis Penilaian</label>
+                    <select name="jenis_penilaian" id="edit_jenis" class="form-control" required>
+                        <option value="kpi">KPI</option>
+                        <option value="ski">SKI</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>Unit Kerja</label>
@@ -194,6 +212,7 @@
         $(document).on('click', '.btn-edit', function() {
             $('#edit_id').val($(this).data('id'));
             $('#edit_jabatan').val($(this).data('jabatan'));
+            $('#edit_jenis').val($(this).data('jenis'));
             $('#edit_unit').val($(this).data('unit'));
             $('#edit_penilai1').val($(this).data('penilai1'));
             $('#edit_penilai2').val($(this).data('penilai2'));

@@ -1,8 +1,6 @@
 <div class="content-page">
     <div class="content">
         <div class="container-fluid">
-
-
             <!-- Judul Halaman -->
             <div class="row">
                 <div class="col-12">
@@ -23,9 +21,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h5>Pilih Unit Kerja & Pegawai</h5>
-
                             <form action="<?= base_url('Administrator_Renstra/lihatPenilaianRenstra'); ?>" method="post">
-
                                 <!-- Dropdown Unit Kerja -->
                                 <select name="unit_kerja" id="unit_kerja" class="form-control mb-2" required>
                                     <option value="">-- Pilih Unit Kerja --</option>
@@ -33,12 +29,10 @@
                                         <option value="<?= $u->unit_kerja ?>"><?= $u->unit_kerja ?></option>
                                     <?php endforeach; ?>
                                 </select>
-
                                 <!-- Dropdown Pegawai -->
                                 <select name="nik" id="pegawai" class="form-control mb-2" required>
                                     <option value="">-- Pilih Pegawai --</option>
                                 </select>
-
                                 <button type="submit" class="btn btn-success mt-2 w-100">Lihat Penilaian</button>
                             </form>
                         </div>
@@ -120,9 +114,7 @@
                                         <p class="text-dark font-weight-medium"><b>Unit Kantor Penilai:</b> <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span></p>
                                     </div>
                                 </div>
-
                                 <hr>
-
                                 <!-- Penilai I & Penilai II -->
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
@@ -170,7 +162,6 @@
                         </div>
                     </div>
                 </div>
-
 
                 <?php
                 $order = ['Keuangan (F)', 'Pelanggan (C)', 'Proses Internal (IP)', 'Pembelajaran & Pertumbuhan (LG)'];
@@ -348,7 +339,6 @@
                         </div>
                     </div>
                 </div>
-
 
                 <!-- Nilai Akhir & Catatan -->
                 <div class="card mt-4">
@@ -539,7 +529,7 @@
                 }, function(data) {
                     $('#pegawai').empty().append('<option value="">-- Pilih Pegawai --</option>');
                     $.each(data, function(i, p) {
-                        $('#pegawai').append('<option value="' + p.nik + '">' + p.nama + ' - ' + p.jabatan + '</option>');
+                        $('#pegawai').append('<option value="' + p.nik + '">' + p.nama + ' - ' + p.jabatan + ' - ' + p.unit_kantor + '</option>');
                     });
                 }, 'json');
             } else {

@@ -1908,6 +1908,7 @@ public function setLockStatus()
         if ($this->input->post()) {
             $insert = [
                 'jabatan' => $this->input->post('jabatan'),
+                'jenis_penilaian'  => $this->input->post('jenis_penilaian'),
                 'unit_kerja' => $this->input->post('unit_kerja'),
                 'penilai1_jabatan' => $this->input->post('penilai1_jabatan'),
                 'penilai2_jabatan' => $this->input->post('penilai2_jabatan'),
@@ -1925,6 +1926,7 @@ public function setLockStatus()
         if ($this->input->post()) {
             $update = [
                 'jabatan' => $this->input->post('jabatan'),
+                'jenis_penilaian'  => $this->input->post('jenis_penilaian'),
                 'unit_kerja' => $this->input->post('unit_kerja'),
                 'penilai1_jabatan' => $this->input->post('penilai1_jabatan'),
                 'penilai2_jabatan' => $this->input->post('penilai2_jabatan'),
