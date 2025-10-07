@@ -216,7 +216,7 @@
         },
         series: [40, 35, 25], // contoh data jumlah pegawai
         labels: ['Selesai', 'Proses', 'Belum'],
-        colors: ['#039be5', '#f9a825','#d32f2f', ], 
+        colors: ['#039be5', '#f9a825', '#d32f2f', ],
         legend: {
             position: 'bottom'
         },
@@ -414,6 +414,154 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = url;
+            }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        const nikPegawai = $('#nik').val(); // NIK pegawai saat ini
+
+        var tableCatatan = $('#tabel-catatan').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: true,
+            ajax: {
+                url: '<?= base_url("Administrator/getCatatanPenilai") ?>',
+                type: 'POST',
+                data: {
+                    nik_pegawai: nikPegawai
+                }
+            },
+            columns: [{
+                    data: 'no',
+                    orderable: false
+                }, // Nomor urut
+                {
+                    data: 'nama_penilai'
+                }, // Nama penilai
+                {
+                    data: 'catatan',
+                    orderable: false
+                }, // Catatan
+                {
+                    data: 'tanggal',
+                    render: function(data, type, row) {
+                        if (!data) return '';
+                        const date = new Date(data + ' UTC'); // pastikan server kirim UTC
+                        return date.toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                            timeZone: 'Asia/Jakarta'
+                        });
+                    }
+                }
+            ],
+            order: [
+                [3, 'desc']
+            ], // urut terbaru di atas
+            paging: true,
+            searching: true,
+            info: true,
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ baris",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
+                infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
+                zeroRecords: "Tidak ada catatan yang ditemukan",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "Berikut",
+                    previous: "Sebelumnya"
+                }
+            },
+            dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+            drawCallback: function(settings) {
+                // nomor urut otomatis 1 -> n
+                var api = this.api();
+                api.column(0, {
+                    order: 'applied'
+                }).nodes().each(function(cell, i) {
+                    cell.innerHTML = i + 1;
+                });
+            }
+        });
+    });
+
+
+    $(document).ready(function() {
+        const nikPegawai = $('#nik').val(); // NIK pegawai saat ini
+
+        var tableCatatanPegawai = $('#tabel-catatan-pegawai').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: false,
+            ajax: {
+                url: '<?= base_url("Administrator/getCatatanPegawai") ?>',
+                type: 'POST',
+                data: {
+                    nik_pegawai: nikPegawai
+                }
+            },
+            columns: [{
+                    data: 'no',
+                    orderable: false
+                }, // Nama penilai
+                {
+                    data: 'catatan',
+                    orderable: false
+                }, // Catatan
+                {
+                    data: 'tanggal',
+                    render: function(data, type, row) {
+                        if (!data) return '';
+                        const date = new Date(data + ' UTC'); // pastikan server kirim UTC
+                        return date.toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                            timeZone: 'Asia/Jakarta'
+                        });
+                    }
+                }
+            ],
+            order: [
+                [2, 'desc']
+            ], // urut terbaru di atas
+            paging: true,
+            searching: true,
+            info: true,
+            language: {
+                search: "Cari:",
+                lengthMenu: "Tampilkan _MENU_ baris",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
+                infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
+                zeroRecords: "Tidak ada catatan yang ditemukan",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "Berikut",
+                    previous: "Sebelumnya"
+                }
+            },
+            dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+            drawCallback: function(settings) {
+                // nomor urut otomatis 1 -> n
+                var api = this.api();
+                api.column(0, {
+                    order: 'applied'
+                }).nodes().each(function(cell, i) {
+                    cell.innerHTML = i + 1;
+                });
             }
         });
     });
