@@ -349,7 +349,13 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h5>Form Penilaian</h5>
+                                <h5 class="text-success fw-bold mb-3">
+                                    <i class="mdi mdi-account-outline me-2"></i> Form Penilaian
+                                </h5>
+                                <a href="<?= base_url('Pegawai/downloadDataPegawai?nik=' . ($pegawai_detail->nik ?? '') . '&awal=' . $periode_awal . '&akhir=' . $periode_akhir) ?>"
+                                    class="btn btn-success mt-2 mb-2 font-weight-bold" style="background-color:#217346; color:#fff;">
+                                    <i class="mdi mdi-file-excel"></i> Download Excel
+                                </a>
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="tabel-penilaian">
                                         <thead style="background-color:#2E7D32;color:#fff;text-align:center;">

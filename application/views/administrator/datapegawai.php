@@ -159,7 +159,9 @@
             <div class="col-12">
                 <div class="card mt-3">
                     <div class="card-body">
-                        <h5>Hasil Penilaian</h5>
+                        <h5 class="text-success font-weight-bold mb-3">
+                                    <i class="mdi mdi-star-circle mr-2"></i> Hasil Penilaian 
+                                </h5>
                         <div class="table-responsive">
                             <table class="table table-bordered">
                                 <thead style="background-color:#2E7D32;color:#fff;text-align:center;">
