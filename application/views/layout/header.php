@@ -263,15 +263,15 @@
 
                             <li class="menu-title mt-2">Fitur Renstra</li>
 
-                            <li class="<?= ($activeController == 'administrator_renstra' && in_array($activeMethod, ['kpi_indikatorkinerja'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/kpi_indikatorkinerja') ?>">
+                            <li class="<?= ($activeController == 'administrator_renstra' && in_array($activeMethod, ['kpi_indikatorkinerja', 'kpi_indikatorKinerja?unit_kerja'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator_renstra/kpi_indikatorkinerja') ?>">
                                     <i class="mdi mdi-key-variant"></i>
                                     <span> Kelola KPI  </span>
                                 </a>
                             </li>
 
-                            <li class="<?= ($activeController == 'administrator_renstra' && in_array($activeMethod, ['kpi_indikatorkinerja'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/kpi_penilaiankinerja') ?>">
+                            <li class="<?= ($activeController == 'administrator_renstra' && in_array($activeMethod, ['kpi_penilaiankinerja', 'lihatpenilaianrenstra'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator_renstra/kpi_penilaiankinerja') ?>">
                                     <i class="mdi mdi-account-key"></i>
                                     <span> Penilaian KPI  </span>
                                 </a>

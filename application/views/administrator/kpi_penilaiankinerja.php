@@ -21,7 +21,7 @@
                     <div class="card">
                         <div class="card-body">
                             <h5>Pilih Unit Kerja & Pegawai</h5>
-                            <form action="<?= base_url('Administrator_Renstra/lihatPenilaianRenstra'); ?>" method="post">
+                            <form action="<?= base_url('administrator_renstra/lihatPenilaianRenstra'); ?>" method="post">
                                 <!-- Dropdown Unit Kerja -->
                                 <select name="unit_kerja" id="unit_kerja" class="form-control mb-2" required>
                                     <option value="">-- Pilih Unit Kerja --</option>
