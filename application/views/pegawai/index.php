@@ -1230,6 +1230,21 @@ if ($message): ?>
             window.location.href = `<?= base_url("Pegawai") ?>?awal=${awal}&akhir=${akhir}`;
         });
 
+        // ==== Tambahkan custom sorting untuk tanggal DD-MM-YYYY ====
+        $.extend($.fn.dataTableExt.oSort, {
+            "date-uk-pre": function(a) {
+                if (!a) return 0;
+                var ukDatea = a.split('-'); // misal "22-09-2025"
+                return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1; // YYYYMMDD sebagai angka
+            },
+            "date-uk-asc": function(a, b) {
+                return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+            },
+            "date-uk-desc": function(a, b) {
+                return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+            }
+        });
+
         // ==== DataTables Catatan Pegawai ====
         var tableCatatanPegawai = $('#tabel-catatan-pegawai').DataTable({
             responsive: false,
@@ -1242,7 +1257,11 @@ if ($message): ?>
             columnDefs: [{
                     orderable: false,
                     targets: [0]
-                } // kolom nomor
+                }, // kolom nomor
+                {
+                    type: 'date-uk',
+                    targets: 2
+                } // kolom tanggal pakai custom sorting
             ],
             language: {
                 search: "Cari:",
@@ -1257,7 +1276,6 @@ if ($message): ?>
                     previous: "Sebelumnya"
                 }
             },
-            // 🔹 Atur layout DOM
             dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
             drawCallback: function(settings) {
                 var api = this.api();
@@ -1266,7 +1284,27 @@ if ($message): ?>
                 }).nodes().each(function(cell, i) {
                     cell.innerHTML = i + 1;
                 });
-            }
+            },
+            // 🔹 Render tanggal supaya selalu tampil DD-MM-YYYY tapi sorting tetap benar
+            columns: [{
+                    data: 'no'
+                },
+                {
+                    data: 'catatan'
+                },
+                {
+                    data: 'tanggal',
+                    render: function(data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            // tampilkan tanggal ke user
+                            return data;
+                        }
+                        // pakai angka YYYYMMDD untuk sorting
+                        var parts = data.split('-'); // "DD-MM-YYYY"
+                        return parts[2] + parts[1] + parts[0];
+                    }
+                }
+            ]
         });
 
         // ==== AJAX Form Catatan Pegawai ====
@@ -1300,12 +1338,10 @@ if ($message): ?>
                             showConfirmButton: false
                         });
 
-                        const tanggal = new Date().toLocaleString('id-ID', {
+                        const tanggal = new Date().toLocaleDateString('id-ID', {
                             day: '2-digit',
                             month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
+                            year: 'numeric'
                         });
 
                         tableCatatanPegawai.row.add([
@@ -1331,6 +1367,7 @@ if ($message): ?>
                     });
                 });
         });
+
         $(document).ready(function() {
             const nikPegawai = "<?= $pegawai_detail->nik; ?>"; // pegawai yang sedang dilihat
             const penilai1_selected = "<?= $pegawai_detail->penilai1_nik ?? ''; ?>";
