@@ -827,11 +827,11 @@
                         <div class="card">
                             <div class="card-body">
                                 <h5 class="card-title">Catatan Penilai</h5>
-                                <form id="form-catatan" class="mb-3">
+                                <!-- <form id="form-catatan" class="mb-3">
                                     <input type="hidden" name="nik_pegawai" value="<?= $pegawai_detail->nik ?>">
                                     <textarea name="catatan" id="catatan" class="form-control mb-2" rows="3" placeholder="Masukkan catatan"></textarea>
                                     <button type="submit" class="btn btn-primary btn-sm">Simpan Catatan</button>
-                                </form>
+                                </form> -->
 
                                 <div class="table-responsive">
                                     <table class="table table-sm table-bordered" id="tabel-catatan">
@@ -1271,6 +1271,24 @@
                 });
         });
 
+        // ==== Custom sorting untuk tanggal DD-MM-YYYY HH:MM ====
+        $.extend($.fn.dataTableExt.oSort, {
+            "date-uk-pre": function(a) {
+                if (!a) return 0;
+                // a = "07-10-2025 10:30"
+                var parts = a.split(' '); // ["07-10-2025", "10:30"]
+                var dateParts = parts[0].split('-'); // ["07","10","2025"]
+                var timeParts = parts[1] ? parts[1].split(':') : ["00", "00"]; // ["10","30"]
+                return (dateParts[2] + dateParts[1] + dateParts[0] + timeParts[0] + timeParts[1]) * 1;
+            },
+            "date-uk-asc": function(a, b) {
+                return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+            },
+            "date-uk-desc": function(a, b) {
+                return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+            }
+        });
+
         // ==== DataTables Catatan ====
         var tableCatatan = $('#tabel-catatan').DataTable({
             responsive: false,
@@ -1279,11 +1297,16 @@
             ordering: true,
             order: [
                 [3, 'desc']
-            ],
+            ], // kolom tanggal
             columnDefs: [{
-                orderable: false,
-                targets: [2]
-            }],
+                    orderable: false,
+                    targets: [2]
+                }, // kolom catatan
+                {
+                    type: 'date-uk',
+                    targets: 3
+                } // kolom tanggal pakai custom sorting
+            ],
             language: {
                 search: "Cari:",
                 lengthMenu: "Tampilkan _MENU_ baris",
@@ -1297,7 +1320,6 @@
                     previous: "Sebelumnya"
                 }
             },
-            // 🔹 Atur layout DOM
             dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
             drawCallback: function(settings) {
                 var api = this.api();
@@ -1309,9 +1331,7 @@
             }
         });
 
-
-        // AJAX Form Catatan
-        // Pastikan ini ada setelah DOM siap
+        // ==== AJAX Form Catatan ====
         $(document).ready(function() {
             $('#form-catatan').on('submit', function(e) {
                 e.preventDefault();
@@ -1337,22 +1357,30 @@
                     .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            // update DataTable
-                            const tanggal = new Date().toLocaleString('id-ID', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            });
+                            // format tanggal konsisten DD-MM-YYYY HH:MM
+                            const now = new Date();
+                            const tanggal =
+                                String(now.getDate()).padStart(2, '0') + '-' +
+                                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                                now.getFullYear() + ' ' +
+                                String(now.getHours()).padStart(2, '0') + ':' +
+                                String(now.getMinutes()).padStart(2, '0');
 
+                            // tambahkan row baru
                             tableCatatan.row.add([
-                                '', data.nama_penilai, catatan, tanggal
-                            ]).draw(false);
+                                '', // nomor otomatis
+                                data.nama_penilai, // nama penilai dari response
+                                catatan, // catatan
+                                tanggal // tanggal baru
+                            ]).draw();
 
-                            // update status indikator
+                            // paksa sorting ulang setelah row baru ditambahkan
+                            tableCatatan.order([3, 'desc']).draw();
+
+                            // update status indikator jika ada
                             simpanStatus(indikator_id, "Ada Catatan", "", "", "", "");
 
+                            // reset form & tutup modal
                             $('#form-catatan')[0].reset();
                             $('#modalCatatan').modal('hide');
                         } else {
@@ -1370,8 +1398,6 @@
                     }));
             });
         });
-
-
 
 
 

@@ -1230,12 +1230,14 @@ if ($message): ?>
             window.location.href = `<?= base_url("Pegawai") ?>?awal=${awal}&akhir=${akhir}`;
         });
 
-        // ==== Tambahkan custom sorting untuk tanggal DD-MM-YYYY ====
+        // ==== Custom sorting untuk tanggal DD-MM-YYYY HH:MM ====
         $.extend($.fn.dataTableExt.oSort, {
             "date-uk-pre": function(a) {
                 if (!a) return 0;
-                var ukDatea = a.split('-'); // misal "22-09-2025"
-                return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1; // YYYYMMDD sebagai angka
+                var parts = a.split(' '); // ["07-10-2025", "10:30"]
+                var dateParts = parts[0].split('-'); // ["07","10","2025"]
+                var timeParts = parts[1] ? parts[1].split(':') : ["00", "00"]; // ["10","30"]
+                return (dateParts[2] + dateParts[1] + dateParts[0] + timeParts[0] + timeParts[1]) * 1;
             },
             "date-uk-asc": function(a, b) {
                 return ((a < b) ? -1 : ((a > b) ? 1 : 0));
@@ -1284,32 +1286,13 @@ if ($message): ?>
                 }).nodes().each(function(cell, i) {
                     cell.innerHTML = i + 1;
                 });
-            },
-            // 🔹 Render tanggal supaya selalu tampil DD-MM-YYYY tapi sorting tetap benar
-            columns: [{
-                    data: 'no'
-                },
-                {
-                    data: 'catatan'
-                },
-                {
-                    data: 'tanggal',
-                    render: function(data, type, row) {
-                        if (type === 'display' || type === 'filter') {
-                            // tampilkan tanggal ke user
-                            return data;
-                        }
-                        // pakai angka YYYYMMDD untuk sorting
-                        var parts = data.split('-'); // "DD-MM-YYYY"
-                        return parts[2] + parts[1] + parts[0];
-                    }
-                }
-            ]
+            }
         });
 
         // ==== AJAX Form Catatan Pegawai ====
         $('#form-catatan-pegawai').on('submit', function(e) {
             e.preventDefault();
+
             const nik = $('#nik').val();
             const catatan = $('#catatan-pegawai').val().trim();
 
@@ -1338,17 +1321,24 @@ if ($message): ?>
                             showConfirmButton: false
                         });
 
-                        const tanggal = new Date().toLocaleDateString('id-ID', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric'
-                        });
+                        // tanggal sekarang DD-MM-YYYY HH:MM
+                        const now = new Date();
+                        const tanggal =
+                            String(now.getDate()).padStart(2, '0') + '-' +
+                            String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                            now.getFullYear() + ' ' +
+                            String(now.getHours()).padStart(2, '0') + ':' +
+                            String(now.getMinutes()).padStart(2, '0');
 
+                        // tambahkan row baru
                         tableCatatanPegawai.row.add([
-                            '', // nomor auto
-                            catatan,
-                            tanggal
-                        ]).draw(false);
+                            '', // nomor otomatis
+                            catatan, // catatan
+                            tanggal // tanggal
+                        ]).draw();
+
+                        // paksa sorting ulang agar row baru langsung diurutkan
+                        tableCatatanPegawai.order([2, 'desc']).draw();
 
                         $('#form-catatan-pegawai')[0].reset();
                     } else {
