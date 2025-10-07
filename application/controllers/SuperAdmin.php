@@ -25,10 +25,36 @@ class SuperAdmin extends CI_Controller
 
     public function index()
     {
-        $this->load->view("layoutsuperadmin/header");
-        $this->load->view("superadmin/index");
+        $users = $this->SuperAdmin_model->getAllUsers();
+
+        // Hitung jumlah user berdasarkan role
+        $roleCount = [];
+        $statusCount = ['aktif' => 0, 'nonaktif' => 0];
+
+        foreach ($users as $u) {
+            $role = strtolower($u->role);
+            if (!isset($roleCount[$role])) {
+                $roleCount[$role] = 0;
+            }
+            $roleCount[$role]++;
+
+            if ($u->is_active == 1) {
+                $statusCount['aktif']++;
+            } else {
+                $statusCount['nonaktif']++;
+            }
+        }
+
+        $data['title'] = "Dashboard SuperAdmin";
+        $data['total_users'] = count($users);
+        $data['roleCount'] = $roleCount;
+        $data['statusCount'] = $statusCount;
+
+        $this->load->view("layoutsuperadmin/header", $data);
+        $this->load->view("superadmin/index", $data);
         $this->load->view("layoutsuperadmin/footer");
     }
+
 
     public function kelolaRoleUser()
     {
