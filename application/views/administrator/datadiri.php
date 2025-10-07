@@ -1,6 +1,6 @@
 <div class="content-page">
     <div class="content">
-        <div class="container-fluid">
+        <div class="container-fluid mt-4">
 
             <?php if ($this->session->flashdata('success')): ?>
                 <div class="alert alert-success"><?= $this->session->flashdata('success'); ?></div>
