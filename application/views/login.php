@@ -11,114 +11,222 @@
     <link href="<?= base_url('assets/css/bootstrap.min.css'); ?>" rel="stylesheet" />
     <link href="<?= base_url('assets/css/icons.min.css'); ?>" rel="stylesheet" />
     <link href="<?= base_url('assets/css/app.min.css'); ?>" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* 🌿 Background */
+        body {
+            background: radial-gradient(circle at top right, #2A9D8F 0%, #E9C46A 100%);
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* ✨ Floating Particles */
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .circle:nth-child(1) {
+            width: 120px;
+            height: 120px;
+            top: 10%;
+            left: 15%;
+            animation-delay: 0s;
+        }
+
+        .circle:nth-child(2) {
+            width: 80px;
+            height: 80px;
+            bottom: 15%;
+            right: 20%;
+            animation-delay: 2s;
+        }
+
+        .circle:nth-child(3) {
+            width: 100px;
+            height: 100px;
+            bottom: 25%;
+            left: 10%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-30px) rotate(45deg);
+            }
+        }
+
+        /* 🧊 Card Style (Glassmorphism) */
+        .card {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ✍️ Form Input */
+        .form-control {
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.25);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 12px rgba(233, 196, 106, 0.7);
+            border-color: #E9C46A;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        label {
+            color: #fff;
+            font-weight: 500;
+            text-align: left;
+            width: 100%;
+        }
+
+        /* 🌟 Button */
+        .btn-success {
+            background: linear-gradient(45deg, #2A9D8F, #E9C46A);
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(233, 196, 106, 0.4);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(233, 196, 106, 0.7);
+        }
+
+        /* 👁️ Toggle Password */
+        .toggle-password {
+            color: #fff;
+            opacity: 0.8;
+            transition: 0.3s;
+        }
+
+        .toggle-password:hover {
+            opacity: 1;
+        }
+
+        /* ✨ Title */
+        h4 {
+            color: #fff;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        p.text-muted {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        /* 🌈 Logo */
+        .logo img {
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+            transition: transform 0.4s ease;
+        }
+
+        .logo img:hover {
+            transform: scale(1.08);
+        }
+
+        /* 🔔 Alert Fade */
+        #nikError {
+            animation: fadeOut 0.5s ease-in-out 3s forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+        }
+    </style>
 </head>
 
-<body class="bg-white">
-    <div class="account-pages my-5 pt-5">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-8 col-lg-6 col-xl-5">
-                    <div class="card shadow">
-                        <div class="card-body p-4">
-                            <div class="text-center mb-4">
-                                <a href="<?= base_url(); ?>">
-                                    <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png'); ?>" alt="" height="40">
-                                </a>
-                                <h4 class="mt-3">Login Sistem SKI-BRKS</h4>
-                            </div>
+<body>
+    <!-- ✨ Floating Particles -->
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
 
-                            <?php if ($this->session->flashdata('error')): ?>
-                                <div class="alert alert-danger" id="nikError">
-                                    <?= $this->session->flashdata('error'); ?>
-                                </div>
-                                <script>
-                                    setTimeout(() => {
-                                        const alertDiv = document.getElementById('nikError');
-                                        if (alertDiv) alertDiv.style.display = 'none';
-                                    }, 2000);
-                                </script>
-                            <?php endif; ?>
-
-                            <form id="loginForm" action="<?= site_url('auth/login'); ?>" method="post">
-                                <!-- Input NIK -->
-                                <div class="form-group mb-3" id="nikDiv">
-                                    <label for="nik"><b>Masukkan NIK</b></label>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" id="nik" name="nik" required maxlength="16"
-                                            placeholder="Masukkan NIK (16 Digit)" value="<?= isset($nik) ? $nik : ''; ?>">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-success" type="button" id="checkNikBtn">Next</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Password -->
-                                <div class="form-group mb-3 position-relative" id="passwordDiv" style="display:none;">
-                                    <label for="password">Password</label>
-                                    <input class="form-control" type="password" id="password" name="password" required
-                                        placeholder="Masukkan Password">
-                                    <span toggle="#password" class="mdi mdi-eye-outline field-icon toggle-password"
-                                        style="position:absolute; top:38px; right:15px; cursor:pointer;"></span>
-                                </div>
-
-                                <div class="form-group text-center mb-3" id="loginBtnDiv" style="display:none;">
-                                    <button class="btn btn-success btn-lg width-lg btn-rounded" type="submit">Login</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-sm-12 text-center">
-                            <p class="text-muted mb-0">KPI Online - BRKS</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
+    <div class="card">
+        <div class="text-center mb-4 logo">
+            <a href="<?= base_url(); ?>">
+                <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png'); ?>" alt="Logo" height="70">
+            </a>
+            <h4 class="mt-3">Login Sistem SKI-BRKS</h4>
         </div>
+
+        <?php if ($this->session->flashdata('error')): ?>
+            <div class="alert alert-danger text-center" id="nikError">
+                <?= $this->session->flashdata('error'); ?>
+            </div>
+        <?php endif; ?>
+
+        <form id="loginForm" action="<?= site_url('auth/login'); ?>" method="post">
+            <div class="form-group mb-3 text-left">
+                <label for="nik"><b>NIK</b></label>
+                <input type="text" class="form-control" id="nik" name="nik" required maxlength="16"
+                    placeholder="Masukkan NIK (16 Digit)" value="<?= isset($nik) ? $nik : ''; ?>">
+            </div>
+
+            <div class="form-group mb-4 position-relative">
+                <label for="password">Password</label>
+                <input class="form-control" type="password" id="password" name="password" required
+                    placeholder="Masukkan Password">
+                <span toggle="#password" class="mdi mdi-eye-outline field-icon toggle-password"
+                    style="position:absolute; top:40px; right:15px; cursor:pointer;"></span>
+            </div>
+
+            <button class="btn btn-success btn-lg w-100" type="submit">
+                <i class="mdi mdi-login"></i> Login
+            </button>
+        </form>
+
+        <p class="text-center text-muted mt-4">KPI Online - BRKS</p>
     </div>
 
     <script src="<?= base_url('assets/js/vendor.min.js'); ?>"></script>
     <script src="<?= base_url('assets/js/app.min.js'); ?>"></script>
 
     <script>
-        const checkBtn = document.getElementById('checkNikBtn');
-        const nikInput = document.getElementById('nik');
-        const passwordDiv = document.getElementById('passwordDiv');
-        const loginBtnDiv = document.getElementById('loginBtnDiv');
-
-        checkBtn.addEventListener('click', function() {
-            const nik = nikInput.value.trim();
-            if (!nik) return alert("Masukkan NIK");
-
-            fetch("<?= site_url('auth/check_role'); ?>", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: "nik=" + nik
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.status) {
-                        alert(data.message);
-                        return;
-                    }
-
-                    nikInput.readOnly = true;
-                    checkBtn.style.display = 'none';
-                    passwordDiv.style.display = 'block';
-                    loginBtnDiv.style.display = 'block';
-
-                    // hidden input role
-                    const hiddenRole = document.createElement('input');
-                    hiddenRole.type = 'hidden';
-                    hiddenRole.name = 'role';
-                    hiddenRole.value = data.role;
-                    document.getElementById('loginForm').appendChild(hiddenRole);
-                });
-        });
-
-        // Toggle password visibility
+        // 👁️ Toggle Password Visibility
         const toggle = document.querySelector('.toggle-password');
         if (toggle) {
             toggle.addEventListener('click', function() {
@@ -130,6 +238,5 @@
             });
         }
     </script>
-
 </body>
 </html>
