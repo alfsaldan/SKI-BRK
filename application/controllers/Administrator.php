@@ -288,30 +288,30 @@ class Administrator extends CI_Controller
     }
 
 
-public function getLockStatus()
-{
-    $awal = $this->input->get('awal');
-    $akhir = $this->input->get('akhir');
+    public function getLockStatus()
+    {
+        $awal = $this->input->get('awal');
+        $akhir = $this->input->get('akhir');
 
-    $this->load->model('Penilaian_model');
-    $locked = $this->Penilaian_model->getLockStatus($awal, $akhir);
+        $this->load->model('Penilaian_model');
+        $locked = $this->Penilaian_model->getLockStatus($awal, $akhir);
 
-    echo json_encode(['locked' => (bool)$locked]);
-}
+        echo json_encode(['locked' => (bool)$locked]);
+    }
 
-public function setLockStatus()
-{
-    $awal = $this->input->post('periode_awal');
-    $akhir = $this->input->post('periode_akhir');
-    $lock = $this->input->post('lock_input');
+    public function setLockStatus()
+    {
+        $awal = $this->input->post('periode_awal');
+        $akhir = $this->input->post('periode_akhir');
+        $lock = $this->input->post('lock_input');
 
-    $this->load->model('Penilaian_model');
-    $updated = $this->Penilaian_model->setLockStatus($awal, $akhir, $lock);
+        $this->load->model('Penilaian_model');
+        $updated = $this->Penilaian_model->setLockStatus($awal, $akhir, $lock);
 
-    echo json_encode([
-        'status' => $updated ? 'success' : 'error'
-    ]);
-}
+        echo json_encode([
+            'status' => $updated ? 'success' : 'error'
+        ]);
+    }
 
 
 
@@ -1951,40 +1951,70 @@ public function setLockStatus()
     // Catatan Penilai
     public function getCatatanPenilai()
     {
-        $nik = $this->input->post('nik_pegawai');
+        header('Content-Type: application/json');
 
-        $list = $this->Penilaian_model->getCatatanByPegawai($nik);
+        $nik = $this->input->post('nik_pegawai');
+        $draw = intval($this->input->post("draw"));
+        $start = intval($this->input->post("start"));
+        $length = intval($this->input->post("length"));
+        $search = $this->input->post("search")['value'] ?? '';
+        $order = $this->input->post("order")[0] ?? null;
+        $columnIndex = $order['column'] ?? 3;
+        $sortDir = $order['dir'] ?? 'desc';
+
+        $columns = ['no', 'nama_penilai', 'catatan', 'tanggal'];
+        $orderColumn = $columns[$columnIndex] ?? 'tanggal';
+
+        $this->load->model('Penilaian_model');
+
+        $recordsTotal = $this->Penilaian_model->countAllCatatanByPegawai($nik);
+        $recordsFiltered = $this->Penilaian_model->countFilteredCatatanByPegawai($nik, $search);
+        $list = $this->Penilaian_model->getCatatanByPegawaiFiltered($nik, $start, $length, $search, $orderColumn, $sortDir);
 
         $data = [];
-        $no = $_POST['start'] ?? 0;
-
+        $no = $start;
         foreach ($list as $row) {
             $no++;
             $data[] = [
                 'no' => $no,
-                'nama_penilai' => $row->penilai_nama, // ambil nama penilai dari join ke tabel pegawai
+                'nama_penilai' => $row->penilai_nama,
                 'catatan' => $row->catatan,
                 'tanggal' => $row->tanggal
             ];
         }
 
         echo json_encode([
-            "draw" => intval($_POST['draw']),
-            "recordsTotal" => count($list),
-            "recordsFiltered" => count($list),
+            "draw" => $draw,
+            "recordsTotal" => $recordsTotal,
+            "recordsFiltered" => $recordsFiltered,
             "data" => $data
         ]);
     }
-    // Catatan Pegawai
+
     public function getCatatanPegawai()
     {
-        $nik = $this->input->post('nik_pegawai');
+        header('Content-Type: application/json');
 
-        $list = $this->Penilaian_model->getCatatanPegawai($nik);
+        $nik = $this->input->post('nik_pegawai');
+        $draw = intval($this->input->post("draw"));
+        $start = intval($this->input->post("start"));
+        $length = intval($this->input->post("length"));
+        $search = $this->input->post("search")['value'] ?? '';
+        $order = $this->input->post("order")[0] ?? null;
+        $columnIndex = $order['column'] ?? 2;
+        $sortDir = $order['dir'] ?? 'desc';
+
+        $columns = ['no', 'catatan', 'tanggal'];
+        $orderColumn = $columns[$columnIndex] ?? 'tanggal';
+
+        $this->load->model('Penilaian_model');
+
+        $recordsTotal = $this->Penilaian_model->countAllCatatanPegawai($nik);
+        $recordsFiltered = $this->Penilaian_model->countFilteredCatatanPegawai($nik, $search);
+        $list = $this->Penilaian_model->getCatatanPegawaiFiltered($nik, $start, $length, $search, $orderColumn, $sortDir);
 
         $data = [];
-        $no = $_POST['start'] ?? 0;
-
+        $no = $start;
         foreach ($list as $row) {
             $no++;
             $data[] = [
@@ -1995,12 +2025,13 @@ public function setLockStatus()
         }
 
         echo json_encode([
-            "draw" => intval($_POST['draw']),
-            "recordsTotal" => count($list),
-            "recordsFiltered" => count($list),
+            "draw" => $draw,
+            "recordsTotal" => $recordsTotal,
+            "recordsFiltered" => $recordsFiltered,
             "data" => $data
         ]);
     }
+
     public function lihatCoachingChat($nik, $penilai_nik)
     {
         $this->load->model('DataPegawai_model');
