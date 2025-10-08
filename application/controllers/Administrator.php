@@ -259,7 +259,7 @@ class Administrator extends CI_Controller
         }
     }
 
-// ========== Halaman Penilaian Kinerja ==========
+    // ========== Halaman Penilaian Kinerja ==========
     public function penilaiankinerja()
     {
         $this->load->model('Penilaian_model');
@@ -495,7 +495,7 @@ class Administrator extends CI_Controller
         }
     }
 
-// ========== Halaman Kelola Data Pegawai ==========
+    // ========== Halaman Kelola Data Pegawai ==========
     public function kelolaDataPegawai()
     {
         $this->load->model('DataPegawai_model');
@@ -1248,7 +1248,9 @@ class Administrator extends CI_Controller
             // Subtotal
             $sheet->setCellValue("B{$row}", "Sub Total {$perspektif}");
             $sheet->mergeCells("B{$row}:D{$row}");
+            // Subtotal Bobot (kolom E)
             $sheet->setCellValue("E{$row}", "=SUM(E{$bobotStartRow}:E{$bobotEndRow})");
+            // Subtotal Nilai Dibobot (kolom K)
             $sheet->mergeCells("F{$row}:J{$row}");
             $sheet->setCellValue("K{$row}", "=SUM(K{$perspStartRow}:K" . ($row - 1) . ")");
             $sheet->getStyle("B{$row}:K{$row}")->applyFromArray([
@@ -1265,17 +1267,24 @@ class Administrator extends CI_Controller
                 ]
             ]);
             $subtotalRows[] = $row;
+            $subtotalBobotRows[] = $row; // simpan juga baris subtotal bobot
             $row++;
         }
 
         // Total Akhir
-        $formula = "=SUM(" . implode(",", array_map(function ($r) {
+        $formulaNilai = "=SUM(" . implode(",", array_map(function ($r) {
             return "K{$r}";
         }, $subtotalRows)) . ")";
 
+        $formulaBobot = "=SUM(" . implode(",", array_map(function ($r) {
+            return "E{$r}";
+        }, $subtotalBobotRows)) . ")";
+
         $sheet->setCellValue("B{$row}", "TOTAL");
-        $sheet->mergeCells("B{$row}:J{$row}");
-        $sheet->setCellValue("K{$row}", $formula);
+        $sheet->mergeCells("B{$row}:D{$row}");
+        $sheet->setCellValue("E{$row}", $formulaBobot); // 🔹 total bobot
+        $sheet->mergeCells("F{$row}:J{$row}");
+        $sheet->setCellValue("K{$row}", $formulaNilai); // 🔹 total nilai dibobot
         $sheet->getStyle("B{$row}:K{$row}")->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF'], 'size' => 12],
             'fill' => [
