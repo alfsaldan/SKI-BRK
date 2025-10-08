@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title>Login - Sistem SKI BRKS</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta content="Login Sistem SKI BRKS" name="description" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="shortcut icon" href="<?= base_url('assets/images/LogoKapalBRK.png'); ?>">
@@ -17,13 +17,14 @@
         /* 🌿 Background */
         body {
             background: radial-gradient(circle at top right, #2A9D8F 0%, #E9C46A 100%);
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
             font-family: 'Poppins', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
+            margin: 0;
+            padding: 20px;
         }
 
         /* ✨ Floating Particles */
@@ -32,6 +33,7 @@
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.2);
             animation: float 8s ease-in-out infinite;
+            z-index: 0;
         }
 
         .circle:nth-child(1) {
@@ -59,13 +61,8 @@
         }
 
         @keyframes float {
-            0%,
-            100% {
-                transform: translateY(0px) rotate(0deg);
-            }
-            50% {
-                transform: translateY(-30px) rotate(45deg);
-            }
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(45deg); }
         }
 
         /* 🧊 Card Style (Glassmorphism) */
@@ -74,23 +71,19 @@
             border-radius: 20px;
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 40px;
+            padding: 40px 30px;
             width: 100%;
             max-width: 420px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             animation: fadeInUp 1s ease forwards;
+            position: relative;
+            z-index: 1;
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* ✍️ Form Input */
@@ -140,9 +133,7 @@
             transition: 0.3s;
         }
 
-        .toggle-password:hover {
-            opacity: 1;
-        }
+        .toggle-password:hover { opacity: 1; }
 
         /* ✨ Title */
         h4 {
@@ -174,6 +165,35 @@
             to {
                 opacity: 0;
                 transform: scale(0.9);
+            }
+        }
+
+        /* 📱 Responsif */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+            }
+            .card {
+                margin-top: 40px;
+                padding: 25px 20px;
+            }
+            .logo img {
+                height: 55px;
+            }
+            h4 {
+                font-size: 18px;
+            }
+            .btn-success {
+                font-size: 14px;
+                padding: 10px;
+            }
+            label {
+                font-size: 14px;
+            }
+            .form-control {
+                font-size: 14px;
+                padding: 10px;
             }
         }
     </style>
@@ -219,7 +239,7 @@
             </button>
         </form>
 
-        <p class="text-center text-muted mt-4">KPI Online - BRKS</p>
+        <p class="text-center text-muted mt-4 mb-0">KPI Online - BRKS</p>
     </div>
 
     <script src="<?= base_url('assets/js/vendor.min.js'); ?>"></script>
