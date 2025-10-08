@@ -220,64 +220,42 @@
         <?php
         $activeController = strtolower($this->uri->segment(1, ''));
         $activeMethod     = strtolower($this->uri->segment(2, ''));
-        $role             = $this->session->userdata('role'); // administrator / pegawai
+        $role             = $this->session->userdata('role'); // administrator renstra
         ?>
         <div class="left-side-menu">
             <div class="slimscroll-menu">
                 <div id="sidebar-menu">
                     <ul class="metismenu" id="side-menu">
 
-                        <?php if ($role == 'administrator'): ?>
+                        <?php if ($role == 'administrator_renstra'): ?>
                             <!-- MENU ADMIN -->
                             <li class="menu-title">Halaman Utama</li>
 
-                            <li class="<?= ($activeController == 'administrator' && $activeMethod == '') ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator') ?>">
+                            <li class="<?= ($activeController == 'administrator_renstra' && $activeMethod == '') ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator_renstra') ?>">
                                     <i class="fe-airplay"></i>
                                     <span> Dashboard </span>
                                 </a>
                             </li>
 
-                            <li class="menu-title mt-2">Fitur Utama</li>
+                            <li class="menu-title mt-2">Fitur Utama Renstra</li>
 
-                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['keloladatapegawai', 'detailpegawai'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/keloladatapegawai') ?>">
-                                    <i class="mdi mdi-account-card-details"></i>
-                                    <span>Kelola Data Pegawai</span>
+                            <li class="<?= ($activeController == 'administrator_renstra' && in_array($activeMethod, ['kpi_indikatorkinerja', 'kpi_indikatorKinerja?unit_kerja'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator_renstra/kpi_indikatorkinerja') ?>">
+                                    <i class="mdi mdi-key-variant"></i>
+                                    <span> Kelola KPI </span>
                                 </a>
                             </li>
 
-                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['indikatorkinerja'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/indikatorkinerja') ?>">
-                                    <i class="mdi mdi-target-account"></i>
-                                    <span> Indikator Kinerja </span>
+                            <li class="<?= ($activeController == 'administrator_renstra' && in_array($activeMethod, ['kpi_penilaiankinerja', 'lihatpenilaianrenstra'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator_renstra/kpi_penilaiankinerja') ?>">
+                                    <i class="mdi mdi-account-key"></i>
+                                    <span> Penilaian KPI </span>
                                 </a>
                             </li>
 
-                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['penilaiankinerja', 'caripenilaian'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/penilaiankinerja') ?>">
-                                    <i class="mdi mdi-account-edit"></i>
-                                    <span> Penilaian Kinerja </span>
-                                </a>
-                            </li>
 
-                            <li class="menu-title mt-2">Lainnya</li>
-
-                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['datapegawai', 'caridatapegawai'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/datapegawai') ?>">
-                                    <i class="mdi mdi-account-card-details"></i>
-                                    <span> Cek Kinerja Pegawai </span>
-                                </a>
-                            </li>
-
-                            <li class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolatingkatanjabatan') ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/kelolatingkatanjabatan') ?>">
-                                    <i class="mdi mdi-briefcase"></i>
-                                    <span>Kelola Jabatan </span>
-                                </a>
-                            </li>
                         <?php endif; ?>
-
                         <!-- MENU PEGAWAI (muncul untuk semua role) -->
                         <li class="menu-title">Halaman Pegawai</li>
                         <li class="<?= ($activeController == 'pegawai' && $activeMethod == '') ? 'active' : '' ?>">
@@ -294,7 +272,6 @@
                                 <span> Nilai Pegawai </span>
                             </a>
                         </li>
-
                     </ul>
                 </div>
             </div>

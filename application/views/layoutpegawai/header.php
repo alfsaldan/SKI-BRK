@@ -302,6 +302,35 @@
                                 </a>
                             </li>
                         <?php endif; ?>
+                        <?php if ($role == 'administrator_renstra'): ?>
+                            <!-- MENU ADMIN -->
+                            <li class="menu-title">Halaman Utama</li>
+
+                            <li class="<?= ($activeController == 'administrator_renstra' && $activeMethod == '') ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator_renstra') ?>">
+                                    <i class="fe-airplay"></i>
+                                    <span> Dashboard </span>
+                                </a>
+                            </li>
+
+                            <li class="menu-title mt-2">Fitur Utama Renstra</li>
+
+                            <li class="<?= ($activeController == 'administrator_renstra' && in_array($activeMethod, ['kpi_indikatorkinerja', 'kpi_indikatorKinerja?unit_kerja'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator_renstra/kpi_indikatorkinerja') ?>">
+                                    <i class="mdi mdi-key-variant"></i>
+                                    <span> Kelola KPI </span>
+                                </a>
+                            </li>
+
+                            <li class="<?= ($activeController == 'administrator_renstra' && in_array($activeMethod, ['kpi_penilaiankinerja', 'lihatpenilaianrenstra'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator_renstra/kpi_penilaiankinerja') ?>">
+                                    <i class="mdi mdi-account-key"></i>
+                                    <span> Penilaian KPI </span>
+                                </a>
+                            </li>
+
+
+                        <?php endif; ?>
 
                         <!-- MENU PEGAWAI (muncul untuk semua role) -->
                         <li class="menu-title">Halaman Pegawai</li>

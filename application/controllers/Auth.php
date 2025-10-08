@@ -60,6 +60,9 @@ class Auth extends CI_Controller
             case 'administrator':
                 redirect('administrator');
                 break;
+            case 'administrator_renstra':
+                redirect('administrator_renstra');
+                break;
             default:
                 redirect('pegawai');
         }

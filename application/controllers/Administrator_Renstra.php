@@ -38,9 +38,16 @@ class Administrator_Renstra extends CI_Controller
         $this->load->model('PenilaiMapping_model');
         $this->load->library('session');
 
-        if (!$this->session->userdata('logged_in') || $this->session->userdata('role') !== 'administrator') {
+        if (!$this->session->userdata('logged_in') || $this->session->userdata('role') !== 'administrator_renstra') {
             redirect('auth');
         }
+    }
+    public function index()
+    {
+        $data['judul'] = "Halaman Dashboard Administrator Renstra";
+        $this->load->view("layoutrenstra/header");
+        $this->load->view("administrator_renstra/index", $data);
+        $this->load->view("layoutrenstra/footer");
     }
 
     // =================== Halaman Kelola Indikator KPI ===================
@@ -69,9 +76,9 @@ class Administrator_Renstra extends CI_Controller
             $data['jabatan_terpilih'] = null;
         }
 
-        $this->load->view("layout/header");
-        $this->load->view('administrator/kpi_indikatorKinerja', $data);
-        $this->load->view("layout/footer");
+        $this->load->view("layoutrenstra/header");
+        $this->load->view('administrator_renstra/kpi_indikatorKinerja', $data);
+        $this->load->view("layoutrenstra/footer");
     }
 
     public function getJabatanByUnit()
@@ -259,9 +266,9 @@ class Administrator_Renstra extends CI_Controller
         $data['unit_kerja'] = $this->KPI_Penilaian_model->getUnitKerjaKPI();
         $data['judul'] = "Penilaian KPI";
 
-        $this->load->view("layout/header");
-        $this->load->view("administrator/kpi_penilaianKinerja", $data);
-        $this->load->view("layout/footer");
+        $this->load->view("layoutrenstra/header");
+        $this->load->view("administrator_renstra/kpi_penilaianKinerja", $data);
+        $this->load->view("layoutrenstra/footer");
     }
 
     // ==========================
@@ -277,9 +284,9 @@ class Administrator_Renstra extends CI_Controller
         $data['unit_kerja'] = $this->KPI_Penilaian_model->getUnitKerjaKPI();
         $data['judul'] = "Penilaian KPI";
 
-        $this->load->view("layout/header");
-        $this->load->view("administrator/kpi_penilaianKinerja", $data);
-        $this->load->view("layout/footer");
+        $this->load->view("layoutrenstra/header");
+        $this->load->view("administrator_renstra/kpi_penilaianKinerja", $data);
+        $this->load->view("layoutrenstra/footer");
     }
 
     // ==========================
@@ -380,8 +387,8 @@ class Administrator_Renstra extends CI_Controller
         $data['periode_akhir'] = $periode_akhir;
 
         // 🔹 Load view KPI
-        $this->load->view("layout/header");
-        $this->load->view("administrator/kpi_penilaiankinerja", $data);
-        $this->load->view("layout/footer");
+        $this->load->view("layoutrenstra/header");
+        $this->load->view("administrator_renstra/kpi_penilaiankinerja", $data);
+        $this->load->view("layoutrenstra/footer");
     }
 }

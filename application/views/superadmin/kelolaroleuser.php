@@ -117,6 +117,7 @@
                         <select name="role" class="form-control" required>
                             <option value="pegawai">pegawai</option>
                             <option value="administrator">administrator</option>
+                            <option value="administrator_renstra">administrator_renstra</option>
                             <option value="superadmin">superadmin</option>
                         </select>
                     </div>
@@ -162,6 +163,7 @@
                         <select name="role" id="edit_role" class="form-control" required>
                             <option value="pegawai">pegawai</option>
                             <option value="administrator">administrator</option>
+                            <option value="administrator_renstra">administrator_renstra</option>
                             <option value="superadmin">superadmin</option>
                         </select>
                     </div>
