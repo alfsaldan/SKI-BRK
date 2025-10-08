@@ -69,6 +69,7 @@
                                                         <button type="button" class="btn btn-warning btn-sm btn-edit"
                                                             data-id="<?= $u->id ?>"
                                                             data-nik="<?= $u->nik ?>"
+                                                            data-nama="<?= $u->nama ?>"
                                                             data-role="<?= $u->role ?>"
                                                             data-status="<?= $u->is_active ?>">
                                                             <i class="fas fa-edit"></i> Edit
@@ -149,6 +150,10 @@
                         <input type="text" id="edit_nik" class="form-control" readonly>
                     </div>
                     <div class="form-group">
+                        <label>Nama</label>
+                        <input type="text" id="edit_nama" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
                         <label>Password</label>
                         <input type="password" name="password" class="form-control" readonly>
                     </div>
@@ -174,3 +179,5 @@
             </form>
         </div>
     </div>
+
+    

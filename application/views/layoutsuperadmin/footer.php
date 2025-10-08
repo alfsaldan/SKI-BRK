@@ -165,41 +165,39 @@
 
 
 <script>
-    $(document).ready(function() {
-        // === Klik tombol Edit ===
-        $('.btn-edit').on('click', function() {
-            const id = $(this).data('id');
-            const nik = $(this).data('nik');
-            const role = $(this).data('role');
-            const status = $(this).data('status');
+    $(document).on('click', '.btn-edit', function() {
+        const id = $(this).data('id');
+        const nik = $(this).data('nik');
+        const nama = $(this).data('nama');
+        const role = $(this).data('role');
+        const status = $(this).data('status');
 
-            // Isi data ke modal edit
-            $('#edit_id').val(id);
-            $('#edit_nik').val(nik);
-            $('#edit_role').val(role);
-            $('#edit_status').val(status);
+        // Isi data ke modal edit
+        $('#edit_id').val(id);
+        $('#edit_nik').val(nik);
+        $('#edit_nama').val(nama);
+        $('#edit_role').val(role);
+        $('#edit_status').val(status);
 
-            // Tampilkan modal
-            $('#editUserModal').modal('show');
-        });
+        // Tampilkan modal
+        $('#editUserModal').modal('show');
+    });
 
-        // === Klik tombol Hapus (SweetAlert) ===
-        $('.btn-delete').on('click', function() {
-            const id = $(this).data('id');
-            Swal.fire({
-                title: 'Apakah Anda yakin?',
-                text: "Data user ini akan dihapus permanen!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "<?= base_url('superadmin/hapusRoleUser/') ?>" + id;
-                }
-            });
+    $(document).on('click', '.btn-delete', function() {
+        const id = $(this).data('id');
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Data user ini akan dihapus permanen!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "<?= base_url('superadmin/hapusRoleUser/') ?>" + id;
+            }
         });
     });
 </script>
