@@ -603,29 +603,48 @@
 
                             // Minimal 3 pertanyaan untuk setiap panduan
                             const questions = [
-                                `Apakah Anda menerapkan: "${data[index].panduan[pIndex]}" secara konsisten?`,
-                                `Apakah tindakan Anda mencerminkan panduan ini?`,
-                                `Apakah penerapan panduan ini efektif dalam pekerjaan Anda?`
+                                `Seberapa sering pegawai ini menerapkan: "${data[index].panduan[pIndex]}"?`,
+                                `Seberapa sering tindakan pegawai ini mencerminkan panduan ini?`,
+                                `Seberapa sering penerapan panduan ini efektif dalam pekerjaan pegawai ini?`
                             ];
 
                             let html = `<form id="formModalBudaya">`;
                             questions.forEach((q, i) => {
                                 html += `
-                            <div class="mb-2">
-                                <label>${q}</label><br>
-                                <input type="radio" name="jawaban${i}" value="ya" id="ya${index}${pIndex}${i}"> 
-                                <label for="ya${index}${pIndex}${i}">Ya</label>
-                                <input type="radio" name="jawaban${i}" value="tidak" id="tidak${index}${pIndex}${i}"> 
-                                <label for="tidak${index}${pIndex}${i}">Tidak</label>
-                            </div>
-                            `;
+                                <div class="mb-4">
+                                    <label class="fw-semibold d-block mb-2">${q}</label>
+                                    <div class="ms-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="jawaban${i}" value="1" id="sangatjarang${i}">
+                                            <label class="form-check-label" for="sangatjarang${i}">Sangat Jarang</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="jawaban${i}" value="2" id="jarang${i}">
+                                            <label class="form-check-label" for="jarang${i}">Jarang</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="jawaban${i}" value="3" id="kadang${i}">
+                                            <label class="form-check-label" for="kadang${i}">Kadang-kadang</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="jawaban${i}" value="4" id="sering${i}">
+                                            <label class="form-check-label" for="sering${i}">Sering</label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="jawaban${i}" value="5" id="selalu${i}">
+                                            <label class="form-check-label" for="selalu${i}">Selalu</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                `;
                             });
                             html += `</form>`;
+
 
                             document.getElementById('modalBudayaBody').innerHTML = html;
 
                             btn.dataset.current = "true";
-                            $('#modalBudaya').modal('show'); // Bootstrap 4/5
+                            $('#modalBudaya').modal('show');
                         });
                     });
 
@@ -635,18 +654,25 @@
                         let total = 0,
                             count = 0;
 
-                        // Hitung nilai berdasarkan jawaban Ya/Tidak
-                        for (let i = 0; i < questions.length; i += 2) { // setiap 2 radio = 1 pertanyaan
+                        // Hitung nilai berdasarkan skala 1–5
+                        for (let i = 0; i < questions.length; i += 5) { // setiap 5 radio = 1 pertanyaan
                             const qName = questions[i].name;
                             const val = form.querySelector(`input[name=${qName}]:checked`);
                             if (val) {
-                                total += (val.value === 'ya' ? 5 : 1);
+                                total += parseInt(val.value);
                                 count++;
                             }
                         }
 
+                        // Validasi wajib isi semua pertanyaan
+                        if (count < 3) {
+                            alert("Harap isi semua pertanyaan sebelum menyimpan.");
+                            return;
+                        }
+
                         const avg = count > 0 ? (total / count).toFixed(2) : 0;
 
+                        // Simpan nilai ke tabel
                         document.querySelectorAll('.nilai-budaya-btn').forEach(btn => {
                             if (btn.dataset.current === "true") {
                                 btn.previousElementSibling.innerText = avg;
@@ -674,7 +700,6 @@
                         if (typeof hitungNilaiAkhir === "function") hitungNilaiAkhir();
                     }
                 </script>
-
 
 
 
