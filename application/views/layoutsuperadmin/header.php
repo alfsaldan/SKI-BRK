@@ -165,10 +165,10 @@
                         </div>
 
                         <!-- item-->
-                        <a href="<?= base_url('pegawai/datadiriPegawai'); ?>" class="dropdown-item notify-item">
+                        <!-- <a href="<?= base_url('pegawai/datadiriPegawai'); ?>" class="dropdown-item notify-item">
                             <i class="fe-user"></i>
                             <span>Data Diri</span>
-                        </a>
+                        </a> -->
 
 
                         <!-- item-->
