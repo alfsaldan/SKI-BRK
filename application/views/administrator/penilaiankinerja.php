@@ -1065,6 +1065,13 @@
                     const nilai = (row.querySelector('.nilai-output') || {}).value || '';
                     const nilai_dibobot = (row.querySelector('.nilai-bobot-output') || {}).value || '';
 
+                    // 🛑 Skip jika target atau realisasi masih kosong/null
+                    if (target.trim() === '' || realisasi.trim() === '') {
+                        console.warn(`Lewati indikator ${indikator_id} karena target/realisasi kosong`);
+                        return; // lanjut ke baris berikutnya
+                    }
+
+
                     const formData = `nik=${encodeURIComponent(nik)}&indikator_id=${encodeURIComponent(indikator_id)}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`;
 
                     promises.push(fetch('<?= base_url("Administrator/simpanPenilaianBaris") ?>', {
@@ -1155,6 +1162,17 @@
                         month: 'short',
                         year: 'numeric'
                     };
+                    const nik = getNik();
+                    if (nik) {
+                        window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${encodeURIComponent(nik)}&awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`;
+                    } else {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'NIK kosong',
+                            text: 'Masukkan NIK terlebih dahulu!',
+                        });
+                    }
+
                     if (infoPeriode) infoPeriode.textContent = `${new Date(awal).toLocaleDateString('id-ID', opt)} s/d ${new Date(akhir).toLocaleDateString('id-ID', opt)}`;
                     if (periodeManual) periodeManual.style.display = 'none';
                 } else {
@@ -1184,7 +1202,8 @@
                         }
                     }
                 } catch (e) {
-                    /* ignore single element errors */ }
+                    /* ignore single element errors */
+                }
             });
         }
 
