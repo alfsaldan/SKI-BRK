@@ -164,7 +164,6 @@ class SuperAdmin extends CI_Controller
         }
     }
 
-
     // Hapus data
     public function hapusPenilaiMapping($id)
     {

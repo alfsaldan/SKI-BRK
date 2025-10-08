@@ -65,11 +65,11 @@ class Indikator_model extends CI_Model
         $this->db->select('indikator.*, sasaran_kerja.sasaran_kerja, sasaran_kerja.perspektif, sasaran_kerja.jabatan, sasaran_kerja.unit_kerja');
         $this->db->from('indikator');
         $this->db->join('sasaran_kerja', 'sasaran_kerja.id = indikator.sasaran_id');
-        
+
         if ($unit_kerja) {
             $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
         }
-        
+
         if ($jabatan) {
             $this->db->where('sasaran_kerja.jabatan', $jabatan);
         }

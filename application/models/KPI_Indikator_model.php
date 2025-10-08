@@ -19,7 +19,6 @@ class KPI_Indikator_model extends CI_Model
     }
 
 
-
     public function insertSasaranKerja($jabatan, $unit_kerja, $perspektif, $sasaran_kpi)
     {
         $data = [

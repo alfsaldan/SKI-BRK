@@ -95,7 +95,6 @@ class Pegawai extends CI_Controller
         $this->load->view('layoutpegawai/footer');
     }
 
-
     public function simpanPenilaianBaris()
     {
         $nik = $this->session->userdata('nik');
@@ -170,7 +169,7 @@ class Pegawai extends CI_Controller
             ]);
         }
     }
-
+// ========== Halaman Penilaian (Nilai Pegawai) ==========
     public function nilaiPegawai()
     {
         $nik = $this->session->userdata('nik');
@@ -187,7 +186,6 @@ class Pegawai extends CI_Controller
         $this->load->view('pegawai/nilaipegawai', $data);
         $this->load->view('layoutpegawai/footer');
     }
-
     public function nilaiPegawaiDetail($nik)
     {
         $awal = $this->input->get('awal');
@@ -233,7 +231,6 @@ class Pegawai extends CI_Controller
         $this->load->view('pegawai/nilaipegawai_detail', $data);
         $this->load->view('layoutpegawai/footer');
     }
-
 
     public function datadiriPegawai()
     {
@@ -329,7 +326,6 @@ class Pegawai extends CI_Controller
             echo json_encode(['success' => false, 'message' => 'Gagal update status']);
         }
     }
-
     public function simpan_catatan()
     {
         $nik_pegawai = $this->input->post('nik_pegawai');

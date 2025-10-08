@@ -153,33 +153,6 @@
                 </li> -->
 
                 <li class="dropdown notification-list">
-                    <a class="nav-link dropdown-toggle  waves-effect waves-light" data-toggle="dropdown" href="#"
-                        role="button" aria-haspopup="false" aria-expanded="false">
-                        <i class="fe-bell noti-icon"></i>
-                        <span class="badge badge-danger rounded-circle noti-icon-badge" id="chat-unread-count">0</span>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right dropdown-lg">
-                        <div class="dropdown-item noti-title">
-                            <h5 class="m-0">
-                                <span class="float-right">
-                                    <a href="javascript:void(0);" class="text-dark" id="clear-chat-notif">
-                                        <small>Clear All</small>
-                                    </a>
-                                </span>Notification
-                            </h5>
-                        </div>
-                        <div class="slimscroll noti-scroll" id="chat-unread-list">
-                            <!-- Pesan baru room chat akan di-load via AJAX -->
-                        </div>
-                        <a href="javascript:void(0);"
-                            class="dropdown-item text-center text-primary notify-item notify-all">
-                            View all
-                            <i class="fi-arrow-right"></i>
-                        </a>
-                    </div>
-                </li>
-
-                <li class="dropdown notification-list">
                     <a class="nav-link dropdown-toggle nav-user mr-0 waves-effect waves-light" data-toggle="dropdown"
                         href="#" role="button" aria-haspopup="false" aria-expanded="false">
                         <img src="<?= base_url('assets/images/users/avatar-1.png') ?>" alt="user-image"
@@ -278,19 +251,19 @@
                         </li>
 
 
-                         <?php
+                        <?php
                         $activeMenu = strtolower($this->uri->segment(2, ''));
                         ?>
 
                         <li
                             class="<?= in_array($activeMenu, ['kelolatingkatanjabatan', 'kelolatingkatanjabatan_kpi']) ? 'active' : '' ?>">
                             <a href="<?= base_url('superadmin/kelolatingkatanjabatan_kpi') ?>">
-                                   <i class="mdi mdi-briefcase"></i>
+                                <i class="mdi mdi-briefcase"></i>
                                 <span> Kelola Jabatan </span>
                             </a>
                         </li>
 
-                             <?php
+                        <?php
                         $activeMenu = strtolower($this->uri->segment(2, ''));
                         ?>
 

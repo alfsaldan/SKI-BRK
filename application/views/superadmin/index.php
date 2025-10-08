@@ -146,8 +146,11 @@ date_default_timezone_set('Asia/Jakarta');
     // 🔹 Format waktu update
     const now = new Date();
     const options = {
-        day: '2-digit', month: 'short', year: 'numeric',
-        hour: '2-digit', minute: '2-digit',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
         hour12: false,
         timeZone: 'Asia/Jakarta'
     };
@@ -182,11 +185,15 @@ date_default_timezone_set('Asia/Jakarta');
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom' },
+                    legend: {
+                        position: 'bottom'
+                    },
                     title: {
                         display: true,
                         text: 'Distribusi Role Pengguna',
-                        font: { size: 16 }
+                        font: {
+                            size: 16
+                        }
                     }
                 }
             }
@@ -211,11 +218,15 @@ date_default_timezone_set('Asia/Jakarta');
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom' },
+                    legend: {
+                        position: 'bottom'
+                    },
                     title: {
                         display: true,
                         text: 'Status Keaktifan Pengguna',
-                        font: { size: 16 }
+                        font: {
+                            size: 16
+                        }
                     }
                 }
             }

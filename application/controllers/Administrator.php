@@ -259,7 +259,7 @@ class Administrator extends CI_Controller
         }
     }
 
-
+// ========== Halaman Penilaian Kinerja ==========
     public function penilaiankinerja()
     {
         $this->load->model('Penilaian_model');
@@ -312,9 +312,6 @@ class Administrator extends CI_Controller
             'status' => $updated ? 'success' : 'error'
         ]);
     }
-
-
-
 
     public function cariPenilaian()
     {
@@ -498,11 +495,7 @@ class Administrator extends CI_Controller
         }
     }
 
-
-
-    // ==============================
-    // Kelola Data Pegawai
-    // ==============================
+// ========== Halaman Kelola Data Pegawai ==========
     public function kelolaDataPegawai()
     {
         $this->load->model('DataPegawai_model');
@@ -514,10 +507,7 @@ class Administrator extends CI_Controller
         $this->load->view("layout/footer");
     }
 
-
-
-    // Download template Excel
-
+    // Download template Excel Pegawai
     public function downloadTemplatePegawai()
     {
         $this->load->helper('download'); // Load helper disini
@@ -727,8 +717,6 @@ class Administrator extends CI_Controller
     }
 
 
-
-
     // Hapus Pegawai
     public function deletePegawai($nik)
     {
@@ -764,8 +752,6 @@ class Administrator extends CI_Controller
         $this->load->view("administrator/detailpegawai", $data);
         $this->load->view("layout/footer");
     }
-
-
 
     // Tambah Jabatan Baru
     public function updateJabatan()
@@ -815,8 +801,6 @@ class Administrator extends CI_Controller
         echo json_encode(['status' => 'success', 'message' => 'Pegawai berhasil ' . $status]);
     }
 
-
-
     // Halaman Cek Data Pegawai
     public function dataPegawai()
     {
@@ -829,7 +813,6 @@ class Administrator extends CI_Controller
         $this->load->view("layout/footer");
     }
 
-    // Cari Data Pegawai berdasarkan NIK
     // Cari Data Pegawai berdasarkan NIK
     public function cariDataPegawai()
     {
@@ -872,7 +855,6 @@ class Administrator extends CI_Controller
         $this->load->view('administrator/datapegawai', $data);
         $this->load->view("layout/footer");
     }
-
 
     public function downloadDataPegawai()
     {
@@ -1847,8 +1829,6 @@ class Administrator extends CI_Controller
         $writer->save('php://output');
         exit;
     }
-
-
 
     // Halaman Data Diri
     public function datadiri()

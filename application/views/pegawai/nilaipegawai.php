@@ -48,7 +48,8 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php $no=1; foreach($pegawai_dinilai as $p) { ?>
+                                            <?php $no = 1;
+                                            foreach ($pegawai_dinilai as $p) { ?>
                                                 <tr>
                                                     <td class="text-center"><?= $no++; ?></td>
                                                     <td><?= $p->nik; ?></td>
@@ -56,7 +57,7 @@
                                                     <td><?= $p->jabatan; ?></td>
                                                     <td><?= $p->unit_kerja; ?></td>
                                                     <td class="text-center">
-                                                        <a href="<?= base_url('Pegawai/nilaiPegawaiDetail/'.$p->nik) ?>" class="btn btn-sm btn-primary">Nilai</a>
+                                                        <a href="<?= base_url('Pegawai/nilaiPegawaiDetail/' . $p->nik) ?>" class="btn btn-sm btn-primary">Nilai</a>
                                                     </td>
                                                 </tr>
                                             <?php } ?>
@@ -78,14 +79,14 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const filterInput = document.getElementById('filter-nik');
-    filterInput.addEventListener('input', function() {
-        const filter = this.value.toLowerCase();
-        document.querySelectorAll('#tabel-pegawai-dinilai tbody tr').forEach(row => {
-            const nik = row.cells[1].innerText.toLowerCase();
-            row.style.display = nik.includes(filter) ? '' : 'none';
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterInput = document.getElementById('filter-nik');
+        filterInput.addEventListener('input', function() {
+            const filter = this.value.toLowerCase();
+            document.querySelectorAll('#tabel-pegawai-dinilai tbody tr').forEach(row => {
+                const nik = row.cells[1].innerText.toLowerCase();
+                row.style.display = nik.includes(filter) ? '' : 'none';
+            });
         });
     });
-});
 </script>

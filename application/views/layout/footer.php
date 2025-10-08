@@ -420,133 +420,157 @@
 </script>
 
 <script>
-$(document).ready(function() {
-    const nikPegawai = $('#nik').val(); // Ambil NIK pegawai dari input hidden
+    $(document).ready(function() {
+        const nikPegawai = $('#nik').val(); // Ambil NIK pegawai dari input hidden
 
-    $('#tabel-catatan').DataTable({
-        processing: true,
-        serverSide: true,
-        responsive: true,
-        pageLength: 10,
-        lengthMenu: [
-            [10, 25, 50, 100, -1],
-            [10, 25, 50, 100, "Semua"]
-        ],
-        ajax: {
-            url: '<?= base_url("Administrator/getCatatanPenilai") ?>',
-            type: 'POST',
-            data: { nik_pegawai: nikPegawai }
-        },
-        columns: [
-            { data: 'no', orderable: false },
-            { data: 'nama_penilai' },
-            { data: 'catatan', orderable: false },
-            { 
-                data: 'tanggal',
-                render: function(data) {
-                    if (!data) return '';
-                    const date = new Date(data + ' UTC');
-                    return date.toLocaleString('id-ID', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                        timeZone: 'Asia/Jakarta'
-                    });
+        $('#tabel-catatan').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: true,
+            pageLength: 10,
+            lengthMenu: [
+                [10, 25, 50, 100, -1],
+                [10, 25, 50, 100, "Semua"]
+            ],
+            ajax: {
+                url: '<?= base_url("Administrator/getCatatanPenilai") ?>',
+                type: 'POST',
+                data: {
+                    nik_pegawai: nikPegawai
                 }
+            },
+            columns: [{
+                    data: 'no',
+                    orderable: false
+                },
+                {
+                    data: 'nama_penilai'
+                },
+                {
+                    data: 'catatan',
+                    orderable: false
+                },
+                {
+                    data: 'tanggal',
+                    render: function(data) {
+                        if (!data) return '';
+                        const date = new Date(data + ' UTC');
+                        return date.toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                            timeZone: 'Asia/Jakarta'
+                        });
+                    }
+                }
+            ],
+            order: [
+                [3, 'desc']
+            ],
+            dom: '<"row mb-1"<"col-md-6 d-flex align-items-center"l><"col-md-6 text-right"f>>' +
+                'rt' +
+                '<"row mt-3"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+            language: {
+                search: "Pencarian:",
+                searchPlaceholder: "Masukan keyword",
+                lengthMenu: "Tampilkan _MENU_ data",
+                zeroRecords: "Tidak ditemukan data",
+                info: "Menampilkan _START_ - _END_ dari _TOTAL_ catatan",
+                infoEmpty: "Tidak ada data tersedia",
+                infoFiltered: "(difilter dari _MAX_ total catatan)",
+                paginate: {
+                    previous: "Sebelumnya",
+                    next: "Berikutnya"
+                }
+            },
+            drawCallback: function(settings) {
+                var api = this.api();
+                api.column(0, {
+                    order: 'applied'
+                }).nodes().each(function(cell, i) {
+                    cell.innerHTML = i + 1;
+                });
             }
-        ],
-        order: [[3, 'desc']],
-        dom: '<"row mb-1"<"col-md-6 d-flex align-items-center"l><"col-md-6 text-right"f>>' +
-             'rt' +
-             '<"row mt-3"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
-        language: {
-            search: "Pencarian:",
-            searchPlaceholder: "Masukan keyword",
-            lengthMenu: "Tampilkan _MENU_ data",
-            zeroRecords: "Tidak ditemukan data",
-            info: "Menampilkan _START_ - _END_ dari _TOTAL_ catatan",
-            infoEmpty: "Tidak ada data tersedia",
-            infoFiltered: "(difilter dari _MAX_ total catatan)",
-            paginate: {
-                previous: "Sebelumnya",
-                next: "Berikutnya"
-            }
-        },
-        drawCallback: function(settings) {
-            var api = this.api();
-            api.column(0, { order: 'applied' }).nodes().each(function(cell, i) {
-                cell.innerHTML = i + 1;
-            });
-        }
+        });
     });
-});
 </script>
 
 <script>
-$(document).ready(function() {
-    const nikPegawai = $('#nik').val();
+    $(document).ready(function() {
+        const nikPegawai = $('#nik').val();
 
-    $('#tabel-catatan-pegawai').DataTable({
-        processing: true,
-        serverSide: true,
-        responsive: false,
-        pageLength: 10,
-        lengthMenu: [
-            [10, 25, 50, 100, -1],
-            [10, 25, 50, 100, "Semua"]
-        ],
-        ajax: {
-            url: '<?= base_url("Administrator/getCatatanPegawai") ?>',
-            type: 'POST',
-            data: { nik_pegawai: nikPegawai }
-        },
-        columns: [
-            { data: 'no', orderable: false },
-            { data: 'catatan', orderable: false },
-            { 
-                data: 'tanggal',
-                render: function(data) {
-                    if (!data) return '';
-                    const date = new Date(data + ' UTC');
-                    return date.toLocaleString('id-ID', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                        timeZone: 'Asia/Jakarta'
-                    });
+        $('#tabel-catatan-pegawai').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: false,
+            pageLength: 10,
+            lengthMenu: [
+                [10, 25, 50, 100, -1],
+                [10, 25, 50, 100, "Semua"]
+            ],
+            ajax: {
+                url: '<?= base_url("Administrator/getCatatanPegawai") ?>',
+                type: 'POST',
+                data: {
+                    nik_pegawai: nikPegawai
                 }
+            },
+            columns: [{
+                    data: 'no',
+                    orderable: false
+                },
+                {
+                    data: 'catatan',
+                    orderable: false
+                },
+                {
+                    data: 'tanggal',
+                    render: function(data) {
+                        if (!data) return '';
+                        const date = new Date(data + ' UTC');
+                        return date.toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false,
+                            timeZone: 'Asia/Jakarta'
+                        });
+                    }
+                }
+            ],
+            order: [
+                [2, 'desc']
+            ],
+            dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+            language: {
+                search: "Pencarian:",
+                searchPlaceholder: "Masukan keyword",
+                lengthMenu: "Tampilkan _MENU_ catatan",
+                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
+                infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
+                zeroRecords: "Tidak ada catatan yang ditemukan",
+                paginate: {
+                    first: "Pertama",
+                    last: "Terakhir",
+                    next: "Berikut",
+                    previous: "Sebelumnya"
+                }
+            },
+            drawCallback: function(settings) {
+                var api = this.api();
+                api.column(0, {
+                    order: 'applied'
+                }).nodes().each(function(cell, i) {
+                    cell.innerHTML = i + 1;
+                });
             }
-        ],
-        order: [[2, 'desc']],
-        dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
-        language: {
-            search: "Pencarian:",
-            searchPlaceholder: "Masukan keyword",
-            lengthMenu: "Tampilkan _MENU_ catatan",
-            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
-            infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
-            zeroRecords: "Tidak ada catatan yang ditemukan",
-            paginate: {
-                first: "Pertama",
-                last: "Terakhir",
-                next: "Berikut",
-                previous: "Sebelumnya"
-            }
-        },
-        drawCallback: function(settings) {
-            var api = this.api();
-            api.column(0, { order: 'applied' }).nodes().each(function(cell, i) {
-                cell.innerHTML = i + 1;
-            });
-        }
+        });
     });
-});
 </script>
 
 

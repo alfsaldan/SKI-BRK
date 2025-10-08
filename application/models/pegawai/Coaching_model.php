@@ -40,18 +40,18 @@ class Coaching_model extends CI_Model
     {
         // kalau user adalah pegawai
         $this->db->where('nik_pegawai', $nik)
-                 ->where('is_read_pegawai', 0)
-                 ->update('aktivitas_coaching', ['is_read_pegawai' => 1]);
+            ->where('is_read_pegawai', 0)
+            ->update('aktivitas_coaching', ['is_read_pegawai' => 1]);
 
         // kalau user adalah penilai1
         $this->db->where('nik_penilai1', $nik)
-                 ->where('is_read_penilai1', 0)
-                 ->update('aktivitas_coaching', ['is_read_penilai1' => 1]);
+            ->where('is_read_penilai1', 0)
+            ->update('aktivitas_coaching', ['is_read_penilai1' => 1]);
 
         // kalau user adalah penilai2
         $this->db->where('nik_penilai2', $nik)
-                 ->where('is_read_penilai2', 0)
-                 ->update('aktivitas_coaching', ['is_read_penilai2' => 1]);
+            ->where('is_read_penilai2', 0)
+            ->update('aktivitas_coaching', ['is_read_penilai2' => 1]);
     }
 
     /**
@@ -65,9 +65,9 @@ class Coaching_model extends CI_Model
 
         // kondisi unread berdasarkan role
         $this->db->group_start()
-            ->where('(ac.nik_pegawai = "'.$nik.'" AND ac.is_read_pegawai = 0)')
-            ->or_where('(ac.nik_penilai1 = "'.$nik.'" AND ac.is_read_penilai1 = 0)')
-            ->or_where('(ac.nik_penilai2 = "'.$nik.'" AND ac.is_read_penilai2 = 0)')
+            ->where('(ac.nik_pegawai = "' . $nik . '" AND ac.is_read_pegawai = 0)')
+            ->or_where('(ac.nik_penilai1 = "' . $nik . '" AND ac.is_read_penilai1 = 0)')
+            ->or_where('(ac.nik_penilai2 = "' . $nik . '" AND ac.is_read_penilai2 = 0)')
             ->group_end();
 
         $query = $this->db->get();
