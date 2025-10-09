@@ -2045,4 +2045,164 @@ class Administrator extends CI_Controller
 
         $this->load->view('administrator/chat_coaching', $data);
     }
+
+
+    // Halaman Verifikasi Penilaian - tabel list pegawai + status penilaian
+    public function verifikasi_penilaian()
+    {
+        $this->load->model('Penilaian_model');
+
+        // ambil periode dari query string jika ada, gunakan default tahun berjalan
+        $periode_awal = $this->input->get('awal') ?? date('Y-01-01');
+        $periode_akhir = $this->input->get('akhir') ?? date('Y-12-31');
+
+        $data['periode_list'] = $this->Penilaian_model->getPeriodeList();
+        $data['selected_awal'] = $periode_awal;
+        $data['selected_akhir'] = $periode_akhir;
+        $data['judul'] = 'Verifikasi Penilaian Pegawai';
+
+        $this->load->view('layout/header', $data);
+        $this->load->view('administrator/verifikasi_penilaian', $data);
+        $this->load->view('layout/footer');
+    }
+
+    // Endpoint AJAX untuk mengembalikan JSON data pegawai + status penilaian
+    public function getVerifikasiData()
+    {
+        $this->load->model('DataPegawai_model');
+        $this->load->model('Penilaian_model');
+
+        $periode_awal = $this->input->get('awal') ?? date('Y-01-01');
+        $periode_akhir = $this->input->get('akhir') ?? date('Y-12-31');
+
+        $pegawais = $this->DataPegawai_model->getAllPegawai();
+        $result = [];
+        foreach ($pegawais as $p) {
+            // hitung apakah ada penilaian untuk periode ini
+            $penilaian_count = $this->db->where('nik', $p->nik)
+                ->where('periode_awal', $periode_awal)
+                ->where('periode_akhir', $periode_akhir)
+                ->from('penilaian')->count_all_results();
+
+            // nama field bisa berbeda antar query (nama / nama_pegawai) -> fallback
+            $namaPegawai = $p->nama ?? $p->nama_pegawai ?? $p->nama_peg ?? '';
+
+            // default status
+            if ($penilaian_count == 0) {
+                $statusLabel = 'Belum Dinilai';
+            } else {
+                // Ambil status penilaian dari tabel penilaian untuk periode ini (db value: pending/disetujui/ditolak)
+                $dbStatus = $this->Penilaian_model->getStatusPenilaian($p->nik, $periode_awal, $periode_akhir);
+                switch ($dbStatus) {
+                    case 'disetujui':
+                        $statusLabel = 'Diverifikasi';
+                        break;
+                    case 'ditolak':
+                        $statusLabel = 'Ditolak';
+                        break;
+                    case 'pending':
+                    default:
+                        // ada penilaian tapi belum diverifikasi
+                        $statusLabel = 'Dinilai';
+                        break;
+                }
+            }
+
+            $result[] = [
+                'nik' => $p->nik,
+                'nama' => $namaPegawai,
+                'jabatan' => $p->jabatan ?? ($p->jabatan ?? ''),
+                'status_penilaian' => $statusLabel,
+                'action' => site_url('administrator/detailverifikasi/' . $p->nik) . '?awal=' . $periode_awal . '&akhir=' . $periode_akhir
+            ];
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode(['data' => $result]);
+        exit;
+    }
+    // ===============================================================
+    // ✅ DETAIL VERIFIKASI PENILAIAN PEGAWAI
+    // ===============================================================
+    public function detailVerifikasi($nik = null)
+    {
+        if (!$nik) {
+            show_error("NIK pegawai tidak ditemukan.", 404);
+        }
+
+        $awal = $this->input->get('awal') ?? date('Y-01-01');
+        $akhir = $this->input->get('akhir') ?? date('Y-12-31');
+
+        $this->load->model('Penilaian_model');
+        // Ambil daftar periode untuk select
+        $data['periode_list'] = $this->Penilaian_model->getPeriodeList();
+
+        // Ambil data pegawai (model mungkin mengembalikan field 'nama' atau 'nama_pegawai')
+        $pegawai = $this->Penilaian_model->getPegawaiWithPenilai($nik);
+        if (!$pegawai) {
+            show_error("Data pegawai dengan NIK {$nik} tidak ditemukan.", 404);
+        }
+
+        // normalize fields expected by the view
+        if (empty($pegawai->nama_pegawai) && !empty($pegawai->nama)) {
+            $pegawai->nama_pegawai = $pegawai->nama;
+        }
+        // penilai1_nama / penilai2_nama assumed provided by model
+
+    // Ambil data penilaian berdasarkan periode
+    $penilaian = $this->Penilaian_model->getPenilaianDetail($nik, $awal, $akhir);
+    $status_penilaian = $this->Penilaian_model->getStatusPenilaian($nik, $awal, $akhir);
+    // Ambil nilai akhir (untuk nilai budaya dan predikat jika tersedia)
+    $nilai_akhir = $this->Penilaian_model->getNilaiAkhir($nik, $awal, $akhir);
+
+        $data['judul'] = "Detail Verifikasi Penilaian";
+        $data['pegawai_detail'] = $pegawai;
+        $data['penilaian'] = $penilaian;
+        $data['status_penilaian'] = $status_penilaian;
+    $data['nilai_akhir'] = $nilai_akhir;
+        $data['selected_awal'] = $awal;
+        $data['selected_akhir'] = $akhir;
+
+        $this->load->view("layout/header");
+        $this->load->view("administrator/detailverifikasi", $data);
+        $this->load->view("layout/footer");
+    }
+
+
+    // ===============================================================
+    // ✅ AKSI VERIFIKASI PENILAIAN (AJAX)
+    // ===============================================================
+    public function verifikasiPenilaian()
+    {
+        $nik = $this->input->post('nik');
+        $status = $this->input->post('status');
+
+        // periode yang dikirimkan dari halaman detail (opsional)
+        $awal = $this->input->post('awal') ?? $this->input->post('awal') ?? $this->input->get('awal') ?? date('Y-01-01');
+        $akhir = $this->input->post('akhir') ?? $this->input->post('akhir') ?? $this->input->get('akhir') ?? date('Y-12-31');
+
+        if (!$nik || !$status) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Data tidak lengkap.'
+            ]);
+            return;
+        }
+
+    $this->load->model('Penilaian_model');
+    $update = $this->Penilaian_model->updateStatusPenilaian($nik, $status, $awal, $akhir);
+
+        if ($update) {
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Status penilaian berhasil diperbarui!',
+                'new_status' => $status
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Gagal memperbarui status penilaian.'
+            ]);
+        }
+    }
 }

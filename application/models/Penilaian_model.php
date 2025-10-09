@@ -338,10 +338,6 @@ class Penilaian_model extends CI_Model
         return $this->db->affected_rows() > 0;
     }
 
-
-
-
-
     public function tambahPeriode($periode_awal, $periode_akhir)
     {
         $data = [
@@ -367,4 +363,90 @@ class Penilaian_model extends CI_Model
     {
         return $this->db->get('periode')->result();
     }
+
+
+    // ===============================================
+    // ✅ VERIFIKASI PENILAIAN PEGAWAI
+    // ===============================================
+    public function getPenilaianByNik($nik)
+    {
+        return $this->db
+            ->select('p.*, i.indikator AS nama_indikator, i.bobot')
+            ->from('penilaian p')
+            ->join('indikator i', 'p.indikator_id = i.id', 'left')
+            ->where('p.nik', $nik)
+            ->order_by('i.id', 'ASC')
+            ->get()
+            ->result();
+    }
+
+
+    public function updateStatusPenilaian($nik, $status)
+    {
+        // Backwards compatible: if $status is actually $status and next params provided, handle later
+        $args = func_get_args();
+        if (count($args) >= 4) {
+            $nik = $args[0];
+            $status = $args[1];
+            $awal = $args[2];
+            $akhir = $args[3];
+            return $this->db->where('nik', $nik)
+                ->where('periode_awal', $awal)
+                ->where('periode_akhir', $akhir)
+                ->update('penilaian', ['status_penilaian' => $status]);
+        }
+
+        // Default: update all records for nik
+        return $this->db->where('nik', $nik)->update('penilaian', ['status_penilaian' => $status]);
+    }
+
+    public function getStatusPenilaian($nik, $awal, $akhir)
+    {
+        $row = $this->db->select('status_penilaian')
+            ->from('penilaian')
+            ->where('nik', $nik)
+            ->where('periode_awal', $awal)
+            ->where('periode_akhir', $akhir)
+            ->limit(1)
+            ->get()->row();
+        return $row->status_penilaian ?? 'pending';
+    }
+
+    public function getPegawaiPenilaian($awal, $akhir)
+    {
+        return $this->db->select('p.nik, pg.nama_pegawai, pg.jabatan, p.status_penilaian')
+            ->from('penilaian p')
+            ->join('pegawai pg', 'pg.nik = p.nik', 'left')
+            ->where('p.periode_awal', $awal)
+            ->where('p.periode_akhir', $akhir)
+            ->group_by('p.nik')
+            ->get()->result();
+    }
+
+    public function getPegawaiDetail($nik)
+    {
+        return $this->db->select('pg.*, a.nama_pegawai AS penilai1_nama, b.nama_pegawai AS penilai2_nama')
+            ->from('pegawai pg')
+            ->join('pegawai a', 'a.nik = pg.penilai1', 'left')
+            ->join('pegawai b', 'b.nik = pg.penilai2', 'left')
+            ->where('pg.nik', $nik)
+            ->get()->row();
+    }
+
+    public function getPenilaianDetail($nik, $awal, $akhir)
+    {
+        return $this->db->select('sk.perspektif, sk.sasaran_kerja, i.indikator, i.bobot, 
+                              p.target, p.batas_waktu, p.realisasi, p.pencapaian, 
+                              p.nilai, p.nilai_dibobot')
+            ->from('penilaian p')
+            ->join('indikator i', 'i.id = p.indikator_id', 'left')
+            ->join('sasaran_kerja sk', 'sk.id = i.sasaran_id', 'left')
+            ->where('p.nik', $nik)
+            ->where('p.periode_awal', $awal)
+            ->where('p.periode_akhir', $akhir)
+            ->order_by('sk.perspektif, sk.id, i.id')
+            ->get()->result();
+    }
+
+
 }

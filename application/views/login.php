@@ -16,7 +16,7 @@
     <style>
         /* 🌿 Background */
         body {
-            background: radial-gradient(circle at top right, #2A9D8F 0%, #E9C46A 100%);
+            background: radial-gradient(circle at top right, #1d6e35ff 30%, #ef7809ff 100%);
             min-height: 100vh;
             font-family: 'Poppins', sans-serif;
             display: flex;
@@ -61,8 +61,15 @@
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-30px) rotate(45deg); }
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-30px) rotate(45deg);
+            }
         }
 
         /* 🧊 Card Style (Glassmorphism) */
@@ -82,8 +89,15 @@
         }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* ✍️ Form Input */
@@ -113,7 +127,7 @@
 
         /* 🌟 Button */
         .btn-success {
-            background: linear-gradient(45deg, #2A9D8F, #E9C46A);
+            background: linear-gradient(45deg, #2a9d4dff, #ef7809ff);
             border: none;
             border-radius: 12px;
             font-weight: 600;
@@ -133,7 +147,9 @@
             transition: 0.3s;
         }
 
-        .toggle-password:hover { opacity: 1; }
+        .toggle-password:hover {
+            opacity: 1;
+        }
 
         /* ✨ Title */
         h4 {
@@ -174,23 +190,29 @@
                 padding: 10px;
                 align-items: flex-start;
             }
+
             .card {
                 margin-top: 40px;
                 padding: 25px 20px;
             }
+
             .logo img {
                 height: 55px;
             }
+
             h4 {
                 font-size: 18px;
             }
+
             .btn-success {
                 font-size: 14px;
                 padding: 10px;
             }
+
             label {
                 font-size: 14px;
             }
+
             .form-control {
                 font-size: 14px;
                 padding: 10px;
@@ -231,7 +253,7 @@
                 <input class="form-control" type="password" id="password" name="password" required
                     placeholder="Masukkan Password">
                 <span toggle="#password" class="mdi mdi-eye-outline field-icon toggle-password"
-                    style="position:absolute; top:40px; right:15px; cursor:pointer;"></span>
+                    style="color: rgba(9, 121, 11, 0.9); position:absolute; top:40px; right:15px; cursor:pointer;"></span>
             </div>
 
             <button class="btn btn-success btn-lg w-100" type="submit">
@@ -259,4 +281,5 @@
         }
     </script>
 </body>
+
 </html>
