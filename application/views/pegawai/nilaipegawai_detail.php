@@ -238,48 +238,70 @@
 
                                 <hr>
 
+                                <?php
+                                // Ambil NIK user login
+                                $nik_login = $this->session->userdata('nik');
+
+                                // Tentukan peran user
+                                $is_penilai1 = ($pegawai_detail->penilai1_nik ?? '') === $nik_login;
+                                $is_penilai2 = ($pegawai_detail->penilai2_nik ?? '') === $nik_login;
+
+                                // Warna tetap untuk header & badge
+                                $warna_header_penilai1 = 'text-info';
+                                $warna_header_penilai2 = 'text-warning';
+                                $badge_penilai1 = 'badge-info';
+                                $badge_penilai2 = 'badge-warning';
+
+                                // Warna isi teks (dinamis tergantung siapa yang login)
+                                $warna_text_penilai1 = $is_penilai1 ? 'text-info' : 'text-dark';
+                                $warna_text_penilai2 = $is_penilai2 ? 'text-warning' : 'text-dark';
+                                ?>
+
                                 <!-- Penilai I & Penilai II -->
                                 <div class="row">
+                                    <!-- Penilai I -->
                                     <div class="col-md-6 mb-3">
-                                        <h5 class="text-info mb-3 font-weight-bold">
+                                        <h5 class="<?= $warna_header_penilai1 ?> mb-3 font-weight-bold">
                                             <i class="mdi mdi-account-check-outline mr-2"></i>Penilai I
                                         </h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">NIK</span>
-                                                <span class="badge badge-info badge-pill"><?= $pegawai_detail->penilai1_nik ?? '-'; ?></span>
+                                                <span class="<?= $warna_text_penilai1 ?> font-weight-medium">NIK</span>
+                                                <span class="badge <?= $badge_penilai1 ?> badge-pill"><?= $pegawai_detail->penilai1_nik ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">Nama</span>
-                                                <span class="text-dark"><?= $pegawai_detail->penilai1_nama ?? '-'; ?></span>
+                                                <span class="<?= $warna_text_penilai1 ?> font-weight-medium">Nama</span>
+                                                <span class="<?= $warna_text_penilai1 ?>"><?= $pegawai_detail->penilai1_nama ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">Jabatan</span>
-                                                <span class="text-dark"><?= $pegawai_detail->penilai1_jabatan_detail ?? '-'; ?></span>
+                                                <span class="<?= $warna_text_penilai1 ?> font-weight-medium">Jabatan</span>
+                                                <span class="<?= $warna_text_penilai1 ?>"><?= $pegawai_detail->penilai1_jabatan_detail ?? '-'; ?></span>
                                             </li>
                                         </ul>
                                     </div>
 
+                                    <!-- Penilai II -->
                                     <div class="col-md-6 mb-3">
-                                        <h5 class="text-warning mb-3 font-weight-bold">
+                                        <h5 class="<?= $warna_header_penilai2 ?> mb-3 font-weight-bold">
                                             <i class="mdi mdi-account-check-outline mr-2"></i>Penilai II
                                         </h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">NIK</span>
-                                                <span class="badge badge-warning badge-pill"><?= $pegawai_detail->penilai2_nik ?? '-'; ?></span>
+                                                <span class="<?= $warna_text_penilai2 ?> font-weight-medium">NIK</span>
+                                                <span class="badge <?= $badge_penilai2 ?> badge-pill"><?= $pegawai_detail->penilai2_nik ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">Nama</span>
-                                                <span class="text-dark"><?= $pegawai_detail->penilai2_nama ?? '-'; ?></span>
+                                                <span class="<?= $warna_text_penilai2 ?> font-weight-medium">Nama</span>
+                                                <span class="<?= $warna_text_penilai2 ?>"><?= $pegawai_detail->penilai2_nama ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">Jabatan</span>
-                                                <span class="text-dark"><?= $pegawai_detail->penilai2_jabatan_detail ?? '-'; ?></span>
+                                                <span class="<?= $warna_text_penilai2 ?> font-weight-medium">Jabatan</span>
+                                                <span class="<?= $warna_text_penilai2 ?>"><?= $pegawai_detail->penilai2_jabatan_detail ?? '-'; ?></span>
                                             </li>
                                         </ul>
                                     </div>
                                 </div>
+
 
                             </div>
                         </div>
@@ -310,7 +332,9 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h5>Form Penilaian</h5>
+                                <h5 class="text-success font-weight-bold mb-3">
+                                    <i class="mdi mdi-star-circle mr-2"></i> Form Penilaian Sasaran Kerja
+                                </h5>
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="tabel-penilaian">
                                         <thead style="background-color:#2E7D32;color:#fff;text-align:center;">
