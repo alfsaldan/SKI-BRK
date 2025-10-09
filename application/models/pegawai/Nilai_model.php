@@ -11,27 +11,44 @@ class Nilai_model extends CI_Model
     /**
      * Ambil daftar pegawai yang bisa dinilai oleh penilai tertentu
      */
-    public function getPegawaiYangDinilai($nik_penilai)
+    public function getPegawaiSebagaiPenilai1($nik_penilai)
     {
-        // ambil jabatan penilai terlebih dahulu
         $row = $this->db->select('jabatan, unit_kerja')->get_where('pegawai', ['nik' => $nik_penilai])->row();
         if (!$row || empty($row->jabatan)) {
             return [];
         }
+
         $jabatan_penilai = $row->jabatan;
         $unit_penilai    = $row->unit_kerja;
 
         $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja');
         $this->db->from('pegawai p');
         $this->db->join('penilai_mapping pm', 'p.jabatan = pm.jabatan AND p.unit_kerja = pm.unit_kerja');
-        $this->db->group_start();
         $this->db->where('pm.penilai1_jabatan', $jabatan_penilai);
-        $this->db->or_where('pm.penilai2_jabatan', $jabatan_penilai);
-        $this->db->group_end();
+        $this->db->where('p.unit_kerja', $unit_penilai);
         $this->db->group_by('p.nik');
-
         return $this->db->get()->result();
     }
+
+    public function getPegawaiSebagaiPenilai2($nik_penilai)
+    {
+        $row = $this->db->select('jabatan, unit_kerja')->get_where('pegawai', ['nik' => $nik_penilai])->row();
+        if (!$row || empty($row->jabatan)) {
+            return [];
+        }
+
+        $jabatan_penilai = $row->jabatan;
+        $unit_penilai    = $row->unit_kerja;
+
+        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja');
+        $this->db->from('pegawai p');
+        $this->db->join('penilai_mapping pm', 'p.jabatan = pm.jabatan AND p.unit_kerja = pm.unit_kerja');
+        $this->db->where('pm.penilai2_jabatan', $jabatan_penilai);
+        $this->db->where('p.unit_kerja', $unit_penilai);
+        $this->db->group_by('p.nik');
+        return $this->db->get()->result();
+    }
+
 
     /**
      * Ambil detail pegawai + penilai1 & penilai2 (mirip Pegawai_model::getPegawaiWithPenilai)

@@ -175,17 +175,20 @@ class Pegawai extends CI_Controller
         $nik = $this->session->userdata('nik');
         $this->load->model('pegawai/Nilai_model');
 
-        $pegawai_dinilai = $this->Nilai_model->getPegawaiYangDinilai($nik);
+        $pegawai_penilai1 = $this->Nilai_model->getPegawaiSebagaiPenilai1($nik);
+        $pegawai_penilai2 = $this->Nilai_model->getPegawaiSebagaiPenilai2($nik);
 
         $data = [
             'judul' => 'Nilai Pegawai',
-            'pegawai_dinilai' => $pegawai_dinilai
+            'pegawai_penilai1' => $pegawai_penilai1,
+            'pegawai_penilai2' => $pegawai_penilai2
         ];
 
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/nilaipegawai', $data);
         $this->load->view('layoutpegawai/footer');
     }
+
     public function nilaiPegawaiDetail($nik)
     {
         $awal = $this->input->get('awal');
