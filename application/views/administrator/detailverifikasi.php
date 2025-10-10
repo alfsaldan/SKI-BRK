@@ -107,45 +107,9 @@
                 </div>
                 <div class="card-body table-responsive">
                     <?php
-                    // helper functions from JS: hitungPencapaianOtomatis & hitungNilai
-                    function hitungPencapaianOtomatisPHP($target, $realisasi, $indikatorText = '') {
-                        $indikatorText = strtolower($indikatorText ?? '');
-                        $keywords_rumus1 = ['biaya','beban','efisiensi','npf pembiayaan','npf nominal'];
-                        $keywords_rumus3 = ['outstanding','pertumbuhan'];
-                        $contains = function($list, $text) {
-                            foreach ($list as $k) {
-                                if (preg_match('/\b' . preg_quote($k,'/') . '\b/i', $text)) return true;
-                            }
-                            return false;
-                        };
-                        $pencapaian = 0;
-                        if ($target <= 999) {
-                            if ($target == 0) $pencapaian = 0; else $pencapaian = ($realisasi / $target) * 100;
-                        } else {
-                            if ($contains($keywords_rumus1, $indikatorText)) {
-                                $pencapaian = (($target + ($target - $realisasi)) / $target) * 100;
-                            } else if ($contains($keywords_rumus3, $indikatorText)) {
-                                if ($target == 0) $pencapaian = 0; else $pencapaian = (($realisasi - $target) / abs($target) + 1) * 100;
-                            } else {
-                                if ($target == 0) $pencapaian = 0; else $pencapaian = ($realisasi / $target) * 100;
-                            }
-                        }
-                        return min($pencapaian, 130);
-                    }
-
-                    function hitungNilaiPHP($pencapaian) {
-                        $nilai = 0;
-                        if ($pencapaian < 0) $nilai = 0;
-                        else if ($pencapaian < 80) $nilai = ($pencapaian / 80) * 2;
-                        else if ($pencapaian < 90) $nilai = 2 + (($pencapaian - 80) / 10);
-                        else if ($pencapaian < 110) $nilai = 3 + (($pencapaian - 90) / 20 * 0.5);
-                        else if ($pencapaian < 120) $nilai = 3.5 + (($pencapaian - 110) / 10 * 1);
-                        else if ($pencapaian < 130) $nilai = 4.5 + (($pencapaian - 120) / 10 * 0.5);
-                        else $nilai = 5;
-                        return $nilai;
-                    }
-
-                    // Group penilaian by perspektif -> sasaran_kerja for clean rowspan merging
+                    // ======================
+                    // Group data by Perspektif & Sasaran
+                    // ======================
                     $grouped = [];
                     if (!empty($penilaian)) {
                         foreach ($penilaian as $row) {
@@ -157,33 +121,40 @@
                         }
                     }
 
-                    // compute totals per perspektif and global using computed values
+                    // ======================
+                    // Hitung subtotal & total dari DB
+                    // ======================
                     $pers_totals = [];
                     $global_bobot_sum = 0;
                     $global_nilai_dibobot = 0;
-                    // first, compute total bobot
-                    $totalBobot = 0;
-                    foreach ($penilaian as $r) $totalBobot += floatval($r->bobot ?? 0);
 
                     foreach ($grouped as $pers => $sasList) {
                         $p_bobot = 0;
                         $p_nilai_dibobot = 0;
+
                         foreach ($sasList as $sas => $items) {
                             foreach ($items as $it) {
-                                $target = floatval($it->target ?? 0);
-                                $realisasi = floatval($it->realisasi ?? 0);
-                                $indikatorText = $it->indikator ?? '';
-                                $penc = hitungPencapaianOtomatisPHP($target, $realisasi, $indikatorText);
-                                $n = hitungNilaiPHP($penc);
-                                $n_bobot = ($totalBobot > 0) ? ($n * floatval($it->bobot ?? 0) / $totalBobot) : 0;
                                 $p_bobot += floatval($it->bobot ?? 0);
-                                $p_nilai_dibobot += $n_bobot;
+                                $p_nilai_dibobot += floatval($it->nilai_dibobot ?? 0);
                             }
                         }
-                        $pers_totals[$pers] = ['bobot' => $p_bobot, 'nilai_dibobot' => $p_nilai_dibobot];
+
+                        // bulatkan subtotal per perspektif dulu
+                        $p_bobot = round($p_bobot, 2);
+                        $p_nilai_dibobot = round($p_nilai_dibobot, 2);
+
+                        $pers_totals[$pers] = [
+                            'bobot' => $p_bobot,
+                            'nilai_dibobot' => $p_nilai_dibobot
+                        ];
+
                         $global_bobot_sum += $p_bobot;
                         $global_nilai_dibobot += $p_nilai_dibobot;
                     }
+
+                    // bulatkan total akhir
+                    $global_bobot_sum = round($global_bobot_sum, 2);
+                    $global_nilai_dibobot = round($global_nilai_dibobot, 2);
                     ?>
 
                     <table class="table table-bordered table-hover align-middle text-center">
@@ -204,59 +175,55 @@
                         </thead>
                         <tbody>
                             <?php if (!empty($grouped)): ?>
-                                <?php $no = 1; foreach ($grouped as $pers => $sasList):
+                                <?php $no = 1;
+                                foreach ($grouped as $pers => $sasList):
                                     $pers_rowspan = 0;
                                     foreach ($sasList as $sas => $items) $pers_rowspan += count($items);
                                 ?>
                                     <?php $firstPers = true; ?>
                                     <?php foreach ($sasList as $sas => $items): ?>
-                                        <?php $sas_rowspan = count($items); $firstSas = true; ?>
+                                        <?php $sas_rowspan = count($items);
+                                        $firstSas = true; ?>
                                         <?php foreach ($items as $it): ?>
                                             <tr>
                                                 <td><?= $no++ ?></td>
                                                 <?php if ($firstPers): ?>
-                                                    <td class="text-start align-middle" rowspan="<?= $pers_rowspan ?>" style="background-color:#eaf6ea; color:#0a6b2b; font-weight:600; vertical-align:middle;"><?= htmlspecialchars($pers, ENT_QUOTES, 'UTF-8') ?></td>
+                                                    <td rowspan="<?= $pers_rowspan ?>" class="text-start align-middle" style="background-color:#eaf6ea; color:#0a6b2b; font-weight:600;"><?= htmlspecialchars($pers) ?></td>
                                                     <?php $firstPers = false; ?>
                                                 <?php endif; ?>
 
                                                 <?php if ($firstSas): ?>
-                                                    <td class="text-start align-middle" rowspan="<?= $sas_rowspan ?>" style="background-color:#eef8ff; color:#0a4a6b;"><?= htmlspecialchars($sas, ENT_QUOTES, 'UTF-8') ?></td>
+                                                    <td rowspan="<?= $sas_rowspan ?>" class="text-start align-middle" style="background-color:#eef8ff;"><?= htmlspecialchars($sas) ?></td>
                                                     <?php $firstSas = false; ?>
                                                 <?php endif; ?>
 
-                                                <?php
-                                                    $target = floatval($it->target ?? 0);
-                                                    $realisasi = floatval($it->realisasi ?? 0);
-                                                    $indikatorText = $it->indikator ?? '';
-                                                    $penc = hitungPencapaianOtomatisPHP($target, $realisasi, $indikatorText);
-                                                    $n = hitungNilaiPHP($penc);
-                                                    $n_bobot = ($totalBobot > 0) ? ($n * floatval($it->bobot ?? 0) / $totalBobot) : 0;
-                                                ?>
-                                                <td class="text-start"><?= htmlspecialchars($it->indikator ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
+                                                <td class="text-start"><?= htmlspecialchars($it->indikator ?? '-') ?></td>
                                                 <td><?= number_format($it->bobot ?? 0, 2) ?></td>
-                                                <td><?= $target !== 0 ? htmlspecialchars($it->target, ENT_QUOTES, 'UTF-8') : '-' ?></td>
-                                                <td><?= $realisasi !== 0 ? htmlspecialchars($it->realisasi, ENT_QUOTES, 'UTF-8') : '-' ?></td>
-                                                <td><?= $it->batas_waktu ? htmlspecialchars($it->batas_waktu, ENT_QUOTES, 'UTF-8') : '-' ?></td>
-                                                <td><?= $penc !== '' ? number_format($penc, 2) : '-' ?></td>
-                                                <td><?= number_format($n, 2) ?></td>
-                                                <td><?= number_format($n_bobot, 2) ?></td>
+                                                <td><?= htmlspecialchars($it->target ?? '-') ?></td>
+                                                <td><?= htmlspecialchars($it->batas_waktu ?? '-') ?></td>
+                                                <td><?= htmlspecialchars($it->realisasi ?? '-') ?></td>
+                                                <td><?= number_format($it->pencapaian ?? 0, 2) ?></td>
+                                                <td><?= number_format($it->nilai ?? 0, 2) ?></td>
+                                                <td><?= number_format($it->nilai_dibobot ?? 0, 2) ?></td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php endforeach; ?>
-                                    <!-- Subtotal for perspektif -->
-                                    <tr class="fw-bold subtotal-row" data-perspektif="<?= htmlspecialchars($pers, ENT_QUOTES, 'UTF-8') ?>" style="background-color:#f3f8f3;">
+
+                                    <!-- subtotal per perspektif -->
+                                    <tr class="fw-bold" style="background-color:#f3f8f3;">
                                         <td colspan="4" class="text-end">Sub Total <?= htmlspecialchars($pers) ?></td>
-                                        <td><?= number_format($pers_totals[$pers]['bobot'] ?? 0, 2) ?></td>
+                                        <td><?= number_format($pers_totals[$pers]['bobot'], 2) ?></td>
                                         <td colspan="5" class="text-end">Sub Total Nilai Dibobot</td>
-                                        <td class="subtotal-nilai-bobot"><?= number_format($pers_totals[$pers]['nilai_dibobot'] ?? 0, 2) ?></td>
+                                        <td><?= number_format($pers_totals[$pers]['nilai_dibobot'], 2) ?></td>
                                     </tr>
                                 <?php endforeach; ?>
-                                <!-- Grand total -->
+
+                                <!-- total akhir -->
                                 <tr class="fw-bold" style="background-color:#1b722a; color:#fff;">
                                     <td colspan="4" class="text-center">Total</td>
                                     <td><?= number_format($global_bobot_sum, 2) ?></td>
                                     <td colspan="5" class="text-end">Total Nilai Dibobot</td>
-                                    <td id="total-nilai-bobot"><?= number_format($global_nilai_dibobot, 2) ?></td>
+                                    <td><?= number_format($global_nilai_dibobot, 2) ?></td>
                                 </tr>
                             <?php else: ?>
                                 <tr>
@@ -268,37 +235,25 @@
                 </div>
             </div>
 
+
             <!-- Ringkasan Nilai Akhir -->
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body">
                     <h4 class="card-title mb-3">
                         <i class="mdi mdi-chart-line text-success"></i>
-                        Nilai Akhir (q)
+                        Nilai Akhir
                     </h4>
 
                     <?php
-                    // global_nilai_dibobot computed earlier, fallback if not set
-                    $total_skor = $global_nilai_dibobot ?? 0;
-                    // weights (as in screenshot): 95% untuk sasaran kerja, 5% untuk budaya
-                    $w_sasaran = 0.95;
-                    $w_budaya = 0.05;
-                    // budaya average unknown in this view -> assume 0
-                    $avg_budaya = 0.00;
-                    $kontrib_sasaran = $total_skor * $w_sasaran;
-                    $kontrib_budaya = $avg_budaya * $w_budaya;
-                    $total_nilai = $kontrib_sasaran + $kontrib_budaya;
-
-                    // Pencapaian (%) relative to max score (assume max 2.5 for scaling as used elsewhere)
-                    $max_scale = 2.5;
-                    $pencapaian_pct = $max_scale > 0 ? ($total_nilai / $max_scale) * 100 : 0;
-
-                    // predikat mapping
-                    $predikat = 'Minus';
-                    if ($total_nilai >= 4.5) $predikat = 'Excellent (E)';
-                    elseif ($total_nilai >= 3.5) $predikat = 'Very Good (VG)';
-                    elseif ($total_nilai >= 3.0) $predikat = 'Good (G)';
-                    elseif ($total_nilai >= 2.0) $predikat = 'Fair (F)';
-                    else $predikat = 'Minus (M)';
+                    // Pastikan variabel dari controller
+                    $total_skor     = $nilai_akhir['nilai_sasaran'] ?? 0;
+                    $avg_budaya     = $nilai_akhir['nilai_budaya'] ?? 0;
+                    $kontrib_sasaran = $total_skor * 0.95;
+                    $kontrib_budaya = $avg_budaya * 0.05;
+                    $total_nilai    = $nilai_akhir['total_nilai'] ?? $kontrib_sasaran + $kontrib_budaya;
+                    $pencapaian_pct = floatval(str_replace('%', '', $nilai_akhir['pencapaian'] ?? 0));
+                    $predikat       = $nilai_akhir['predikat'] ?? 'Minus (M)';
+                    $fraud          = $nilai_akhir['fraud'] ?? 0;
                     ?>
 
                     <div class="row">
@@ -308,25 +263,29 @@
                                     <td>Total Nilai Sasaran Kerja</td>
                                     <td style="width:140px; text-align:right;"><?= number_format($total_skor, 2) ?></td>
                                     <td style="width:160px; text-align:center;">x Bobot % Sasaran Kerja</td>
-                                    <td style="width:100px; text-align:right;"><?= ($w_sasaran*100) ?>%</td>
+                                    <td style="width:100px; text-align:right;">95%</td>
                                     <td style="width:140px; text-align:right;"><?= number_format($kontrib_sasaran, 2) ?></td>
                                 </tr>
-
                                 <tr>
                                     <td>Rata-rata Nilai Internalisasi Budaya</td>
                                     <td style="text-align:right;"><?= number_format($avg_budaya, 2) ?></td>
                                     <td style="text-align:center;">x Bobot % Budaya Perusahaan</td>
-                                    <td style="text-align:right;"><?= ($w_budaya*100) ?>%</td>
+                                    <td style="text-align:right;">5%</td>
                                     <td style="text-align:right;"><?= number_format($kontrib_budaya, 2) ?></td>
                                 </tr>
-
                                 <tr>
                                     <td colspan="4" class="text-end fw-bold">Total Nilai</td>
                                     <td class="fw-bold" style="text-align:right;"><?= number_format($total_nilai, 2) ?></td>
                                 </tr>
-
                                 <tr>
-                                    <td colspan="5" class="text-muted small">Fraud<br><span class="text-muted small">(1 jika melakukan fraud, 0 jika tidak melakukan fraud)</span></td>
+                                    <td colspan="5" class="text-muted small">
+                                        Fraud<br>
+                                        <span class="text-muted small">(1 jika melakukan fraud, 0 jika tidak melakukan fraud)</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end fw-bold">Status Fraud</td>
+                                    <td class="fw-bold text-danger" style="text-align:right;"><?= $fraud ?></td>
                                 </tr>
                             </table>
                         </div>

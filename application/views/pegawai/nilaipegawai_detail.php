@@ -544,7 +544,7 @@
                                                 <th style="width:50px;">No</th>
                                                 <th style="width:370px;">Perilaku Utama</th>
                                                 <th>Panduan Perilaku</th>
-                                                <th style="width:160px;">Nilai (0-5)</th>
+                                                <th style="width:160px;">Nilai (1-5)</th>
                                             </tr>
                                         </thead>
                                         <tbody>
