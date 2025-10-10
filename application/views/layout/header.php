@@ -286,7 +286,7 @@
 
                             <li class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolaBudaya') ? 'active' : '' ?>">
                                 <a href="<?= base_url('administrator/kelolaBudaya') ?>">
-                                    <i class="mdi mdi-briefcase"></i>
+                                    <i class="mdi mdi-white-balance-sunny"></i>
                                     <span>Kelola Budaya</span>
                                 </a>
                             </li>
