@@ -99,8 +99,19 @@ class Penilaian_model extends CI_Model
         }
     }
 
-    public function save_nilai_akhir($nik, $nilai_sasaran, $nilai_budaya, $total_nilai, $fraud, $nilai_akhir, $pencapaian, $predikat, $periode_awal, $periode_akhir)
-    {
+    public function save_nilai_akhir(
+        $nik,
+        $nilai_sasaran,
+        $nilai_budaya,
+        $total_nilai,
+        $fraud,
+        $nilai_akhir,
+        $pencapaian,
+        $predikat,
+        $periode_awal,
+        $periode_akhir,
+        $koefisien // ✅ tambahan baru
+    ) {
         $data = [
             'nik'           => $nik,
             'nilai_sasaran' => $nilai_sasaran,
@@ -112,10 +123,11 @@ class Penilaian_model extends CI_Model
             'predikat'      => $predikat,
             'periode_awal'  => $periode_awal,
             'periode_akhir' => $periode_akhir,
+            'koefisien'     => $koefisien, // ✅ disimpan ke database
             'updated_at'    => date('Y-m-d H:i:s')
         ];
 
-        // cek data existing
+        // cek apakah data sudah ada
         $this->db->where('nik', $nik);
         $this->db->where('periode_awal', $periode_awal);
         $this->db->where('periode_akhir', $periode_akhir);
@@ -447,5 +459,4 @@ class Penilaian_model extends CI_Model
             ->order_by('sk.perspektif, sk.id, i.id')
             ->get()->result();
     }
-    
 }

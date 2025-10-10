@@ -468,6 +468,7 @@ class Administrator extends CI_Controller
         $predikat      = $this->input->post('predikat');
         $periode_awal  = $this->input->post('periode_awal');
         $periode_akhir = $this->input->post('periode_akhir');
+        $koefisien     = $this->input->post('koefisien'); // ✅ tambahan baru
 
         $save = $this->Penilaian_model->save_nilai_akhir(
             $nik,
@@ -479,7 +480,8 @@ class Administrator extends CI_Controller
             $pencapaian,
             $predikat,
             $periode_awal,
-            $periode_akhir
+            $periode_akhir,
+            $koefisien // ✅ ikut dikirim ke model
         );
 
         if ($save) {

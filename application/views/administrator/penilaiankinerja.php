@@ -563,15 +563,26 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th colspan="4" class="text-right" value=100>
+                                <th colspan="4" class="text-right">
                                     Koefisien Nilai<br>
-                                    <small>(Wajib diisi)</small>
+                                    <small>(wajib diisi)</small>
                                 </th>
                                 <td>
-                                    <input type="number" max="100"
-                                        class="form-control form-control-sm text-center"
-                                        id=""
-                                        value=100>
+                                    <div class="input-group input-group-sm">
+                                        <input
+                                            type="number"
+                                            name="koefisien"
+                                            id="koefisien-input"
+                                            class="form-control text-center"
+                                            max="100"
+                                            min="70"
+                                            step="5"
+                                            value="<?= isset($nilai_akhir['koefisien']) ? htmlspecialchars($nilai_akhir['koefisien']) : 100 ?>"
+                                            required>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         </table>
@@ -657,6 +668,7 @@
                     </div>
                 </div>
 
+                <!-- Catatan Penilai & Pegawai -->
                 <div class="row mt-3">
                     <!-- Catatan Penilai -->
                     <div class="col-md-6">
@@ -737,6 +749,10 @@
         const hiddenAkhir = document.getElementById('hidden_periode_akhir');
         const btnSimpanNilaiAkhir = document.getElementById('btn-simpan-nilai-akhir');
         const btnSesuaikanPeriode = document.getElementById('btn-sesuaikan-periode');
+
+        const koefInput = document.getElementById('koefisien-input');
+        const fraudInput = document.getElementById('fraud-input');
+        const nilaiAkhirEl = document.getElementById("nilai-akhir");
 
         const getNik = () => nikInput ? nikInput.value : '';
 
@@ -872,6 +888,7 @@
                 });
 
                 hitungNilaiAkhir();
+                updatePredikatDanPencapaian();
             } catch (err) {
                 console.error('hitungTotal error', err);
             }
@@ -949,6 +966,62 @@
                 console.error('hitungNilaiAkhir error', err);
             }
         }
+
+        if (koefInput) {
+            koefInput.addEventListener('blur', function() {
+                let val = parseFloat(this.value);
+                if (isNaN(val)) val = 100; // jika kosong, default 100
+                if (val < 70) val = 70;
+                if (val > 100) val = 100;
+                this.value = val; // set ulang nilainya
+            });
+        }
+        
+        function updatePredikatDanPencapaian() {
+            const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
+            const nilaiAkhir = nilaiAkhirEl ? (parseFloat(nilaiAkhirEl.textContent) || 0) : 0;
+
+            // Predikat
+            let predikat = '';
+            if (nilaiAkhir === 0) predikat = "Belum Ada Nilai";
+            else if (nilaiAkhir < 2 * koef) predikat = "Minus";
+            else if (nilaiAkhir < 3 * koef) predikat = "Fair";
+            else if (nilaiAkhir < 3.5 * koef) predikat = "Good";
+            else if (nilaiAkhir < 4.5 * koef) predikat = "Very Good";
+            else predikat = "Excellent";
+
+            const elPredikat = document.getElementById("predikat");
+            if (elPredikat) {
+                elPredikat.textContent = predikat;
+                elPredikat.className = (predikat === "Excellent") ? "text-success font-weight-bold" :
+                    (predikat === "Very Good") ? "text-success" :
+                    (predikat === "Good") ? "text-primary" :
+                    (predikat === "Fair") ? "text-warning" :
+                    (predikat === "Minus") ? "text-danger" : "text-dark";
+            }
+
+            // Pencapaian akhir
+            let pencapaian = 0;
+            if (nilaiAkhir < 0) pencapaian = 0;
+            else if (nilaiAkhir < 2 * koef) pencapaian = (nilaiAkhir / 2) * 80;
+            else if (nilaiAkhir < 3 * koef) pencapaian = 80 + ((nilaiAkhir - 2) / 1) * 10;
+            else if (nilaiAkhir < 3.5 * koef) pencapaian = 90 + ((nilaiAkhir - 3) / 0.5) * 20;
+            else if (nilaiAkhir < 4.5 * koef) pencapaian = 110 + ((nilaiAkhir - 3.5) / 1) * 10;
+            else if (nilaiAkhir < 5 * koef) pencapaian = 120 + ((nilaiAkhir - 4.5) / 0.5) * 10;
+            else pencapaian = 130;
+
+            const elPencapaian = document.getElementById("pencapaian-akhir");
+            if (elPencapaian) elPencapaian.textContent = pencapaian.toFixed(2) + "%";
+        }
+
+        // Event listener untuk koefisien
+        if (koefInput) koefInput.addEventListener('input', updatePredikatDanPencapaian);
+
+        // Event listener untuk fraud jika mau predikat ikut berubah
+        if (fraudInput) fraudInput.addEventListener('input', updatePredikatDanPencapaian);
+
+        // Hitung pertama kali saat halaman load
+        updatePredikatDanPencapaian();
 
         // ---------------------------
         // Delegasi input (aman untuk elemen dinamis)
@@ -1080,9 +1153,8 @@
                     // 🛑 Skip jika target atau realisasi masih kosong/null
                     if (target.trim() === '' || realisasi.trim() === '') {
                         console.warn(`Lewati indikator ${indikator_id} karena target/realisasi kosong`);
-                        return; // lanjut ke baris berikutnya
+                        return;
                     }
-
 
                     const formData = `nik=${encodeURIComponent(nik)}&indikator_id=${encodeURIComponent(indikator_id)}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`;
 
@@ -1099,68 +1171,72 @@
                 });
 
                 Promise.all(promises).then(results => {
-                    if (results.some(r => r.status !== 'success')) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal',
-                            text: 'Ada baris yang gagal disimpan. Cek kembali inputnya.',
-                            confirmButtonColor: '#d33'
-                        });
-                        return;
-                    }
-
-                    // ambil nilai akhir dari DOM
-                    const nilai_sasaran = document.getElementById('total-sasaran')?.textContent || '';
-                    const nilai_budaya = document.getElementById('nilai-budaya')?.textContent || '';
-                    const total_nilai = document.getElementById('total-nilai')?.textContent || '';
-                    const fraud = document.getElementById('fraud-input')?.value || '';
-                    const nilai_akhir = document.getElementById('nilai-akhir')?.textContent || '';
-                    const predikat = document.getElementById('predikat')?.textContent || '';
-                    const pencapaian = document.getElementById('pencapaian-akhir')?.textContent || '';
-
-                    fetch('<?= base_url("Administrator/simpanNilaiAkhir") ?>', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded'
-                            },
-                            body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
-                        }).then(r => r.json())
-                        .then(res => {
-                            if (res && res.status === 'success') {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Berhasil',
-                                    text: 'Semua nilai berhasil disimpan',
-                                    timer: 2000,
-                                    showConfirmButton: false
-                                });
-                            } else {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Gagal',
-                                    text: (res && res.message) || 'Gagal menyimpan nilai akhir',
-                                    confirmButtonColor: '#d33'
-                                });
-                            }
-                        }).catch(err => {
-                            console.error('simpanNilaiAkhir error', err);
+                        if (results.some(r => r.status !== 'success')) {
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Error',
-                                text: 'Terjadi kesalahan server'
+                                title: 'Gagal',
+                                text: 'Ada baris yang gagal disimpan. Cek kembali inputnya.',
+                                confirmButtonColor: '#d33'
                             });
+                            return;
+                        }
+
+                        // 🔹 Ambil semua nilai akhir dari DOM
+                        const nilai_sasaran = document.getElementById('total-sasaran')?.textContent || '';
+                        const nilai_budaya = document.getElementById('nilai-budaya')?.textContent || '';
+                        const total_nilai = document.getElementById('total-nilai')?.textContent || '';
+                        const fraud = document.getElementById('fraud-input')?.value || '';
+                        const nilai_akhir = document.getElementById('nilai-akhir')?.textContent || '';
+                        const predikat = document.getElementById('predikat')?.textContent || '';
+                        const pencapaian = document.getElementById('pencapaian-akhir')?.textContent || '';
+                        const koefisien = document.getElementById('koefisien-input')?.value || 100; // 🟢 Tambahan ini
+
+                        // 🔹 Simpan nilai akhir + koefisien
+                        fetch('<?= base_url("Administrator/simpanNilaiAkhir") ?>', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/x-www-form-urlencoded'
+                                },
+                                body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}&koefisien=${encodeURIComponent(koefisien)}`
+                            })
+                            .then(r => r.json())
+                            .then(res => {
+                                if (res && res.status === 'success') {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Berhasil',
+                                        text: 'Semua nilai berhasil disimpan',
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: (res && res.message) || 'Gagal menyimpan nilai akhir',
+                                        confirmButtonColor: '#d33'
+                                    });
+                                }
+                            })
+                            .catch(err => {
+                                console.error('simpanNilaiAkhir error', err);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Terjadi kesalahan server'
+                                });
+                            });
+                    })
+                    .catch(err => {
+                        console.error('Promise.all save rows error', err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Terjadi kesalahan saat menyimpan baris'
                         });
-                }).catch(err => {
-                    console.error('Promise.all save rows error', err);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Terjadi kesalahan saat menyimpan baris'
                     });
-                });
             });
         }
-
         // ---------------------------
         // Periode select -> tampilkan info atau manual
         // ---------------------------
