@@ -6,28 +6,21 @@
         <div class="container-fluid">
 
             <!-- Judul Halaman -->
-            <div class="row mb-3">
-                <div class="col-12 d-flex justify-content-between align-items-center">
-                    <h3 class="page-title">
-                        <i class="mdi mdi-clipboard-check-outline"></i>
-                        Detail Verifikasi Penilaian Pegawai
-                    </h3>
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box d-flex justify-content-between align-items-center">
+                        <h3 class="page-title">
+                            <i class="mdi mdi-clipboard-check-outline mr-2 text-primary"></i> Detail Verifikasi Penilaian Pegawai
+                        </h3>
+                        <ol class="breadcrumb m-0">
+                            <li class="breadcrumb-item"><a href="#">KPI Online-BRKS</a></li>
+                            <li class="breadcrumb-item active">Detail Verifikasi Penilaian Pegawai</li>
+                        </ol>
+                    </div>
 
-                    <?php if ($status_penilaian == 'disetujui'): ?>
-                        <span class="badge bg-success px-3 py-2 shadow-sm fs-6">
-                            ✅ Sudah Diverifikasi
-                        </span>
-                    <?php elseif ($status_penilaian == 'ditolak'): ?>
-                        <span class="badge bg-danger px-3 py-2 shadow-sm fs-6">
-                            ❌ Ditolak
-                        </span>
-                    <?php else: ?>
-                        <span class="badge bg-warning text-dark px-3 py-2 shadow-sm fs-6">
-                            ⏳ Belum Diverifikasi
-                        </span>
-                    <?php endif; ?>
                 </div>
             </div>
+
 
             <!-- Pilih Periode (untuk menyesuaikan periode yang dilihat) -->
             <div class="row mb-3">
@@ -54,6 +47,26 @@
                 </div>
             </div>
 
+            <!-- Judul Halaman -->
+            <div class="row mb-3">
+                <div class="col-12 d-flex justify-content-between align-items-center">
+                    <?php if ($status_penilaian == 'disetujui'): ?>
+                        <span class="badge bg-success px-3 py-2 shadow-sm fs-6">
+                            ✅ Sudah Diverifikasi
+                        </span>
+                    <?php elseif ($status_penilaian == 'ditolak'): ?>
+                        <span class="badge bg-danger px-3 py-2 shadow-sm fs-6">
+                            ❌ Ditolak
+                        </span>
+                    <?php else: ?>
+                        <span class="badge bg-warning text-dark px-3 py-2 shadow-sm fs-6">
+                            ⏳ Belum Diverifikasi
+                        </span>
+                    <?php endif; ?>
+
+                </div>
+            </div>
+            
             <!-- Data Pegawai -->
             <div class="card shadow-lg rounded-4 mb-4">
                 <div class="card-header bg-primary text-white rounded-top-4">

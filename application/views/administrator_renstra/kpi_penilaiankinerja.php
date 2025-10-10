@@ -8,7 +8,7 @@
                         <div class="page-title-right">
                             <ol class="breadcrumb m-0">
                                 <li class="breadcrumb-item"><a href="javascript:void(0);">KPI Online-BRKS</a></li>
-                                <li class="breadcrumb-item active">Penilaian Key Performance Indicator (KPI)</li>
+                                <li class="breadcrumb-item active">Penilaian KPI</li>
                             </ol>
                         </div>
                         <h4 class="page-title"><i class="mdi mdi-account-edit mr-2 text-primary"></i> Penilaian Key Performance Indicator (KPI)</h4>
