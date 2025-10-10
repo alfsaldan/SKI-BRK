@@ -2149,17 +2149,17 @@ class Administrator extends CI_Controller
         }
         // penilai1_nama / penilai2_nama assumed provided by model
 
-    // Ambil data penilaian berdasarkan periode
-    $penilaian = $this->Penilaian_model->getPenilaianDetail($nik, $awal, $akhir);
-    $status_penilaian = $this->Penilaian_model->getStatusPenilaian($nik, $awal, $akhir);
-    // Ambil nilai akhir (untuk nilai budaya dan predikat jika tersedia)
-    $nilai_akhir = $this->Penilaian_model->getNilaiAkhir($nik, $awal, $akhir);
+        // Ambil data penilaian berdasarkan periode
+        $penilaian = $this->Penilaian_model->getPenilaianDetail($nik, $awal, $akhir);
+        $status_penilaian = $this->Penilaian_model->getStatusPenilaian($nik, $awal, $akhir);
+        // Ambil nilai akhir (untuk nilai budaya dan predikat jika tersedia)
+        $nilai_akhir = $this->Penilaian_model->getNilaiAkhir($nik, $awal, $akhir);
 
         $data['judul'] = "Detail Verifikasi Penilaian";
         $data['pegawai_detail'] = $pegawai;
         $data['penilaian'] = $penilaian;
         $data['status_penilaian'] = $status_penilaian;
-    $data['nilai_akhir'] = $nilai_akhir;
+        $data['nilai_akhir'] = $nilai_akhir;
         $data['selected_awal'] = $awal;
         $data['selected_akhir'] = $akhir;
 
@@ -2189,8 +2189,8 @@ class Administrator extends CI_Controller
             return;
         }
 
-    $this->load->model('Penilaian_model');
-    $update = $this->Penilaian_model->updateStatusPenilaian($nik, $status, $awal, $akhir);
+        $this->load->model('Penilaian_model');
+        $update = $this->Penilaian_model->updateStatusPenilaian($nik, $status, $awal, $akhir);
 
         if ($update) {
             echo json_encode([
@@ -2204,5 +2204,48 @@ class Administrator extends CI_Controller
                 'message' => 'Gagal memperbarui status penilaian.'
             ]);
         }
+    }
+    // ===============================================================
+    // ✅ AMBIL NILAI AKHIR (KHUSUS UNTUK DETAIL VERIFIKASI)
+    // ===============================================================
+    public function getNilaiAkhirBulat($nik = null, $awal = null, $akhir = null)
+    {
+        if (!$nik) {
+            show_error("NIK tidak ditemukan.", 404);
+        }
+
+        $this->load->model('Penilaian_model');
+
+        // kalau parameter kosong, ambil dari query string
+        $periode_awal = $awal ?? $this->input->get('awal') ?? date('Y-01-01');
+        $periode_akhir = $akhir ?? $this->input->get('akhir') ?? date('Y-12-31');
+
+        // ambil data asli dari DB
+        $row = $this->Penilaian_model->getNilaiAkhir($nik, $periode_awal, $periode_akhir);
+
+        if (!empty($row)) {
+            // bulatkan nilai budaya kalau 0.00
+            $avg_budaya = floatval($row['nilai_budaya']);
+            if ($avg_budaya == 0.00) {
+                $avg_budaya = 0;
+            } else {
+                $avg_budaya = round($avg_budaya);
+            }
+
+            // buat versi baru dengan pembulatan
+            $data = [
+                'nilai_sasaran' => round(floatval($row['nilai_sasaran'])),
+                'nilai_budaya'  => $avg_budaya,
+                'total_nilai'   => round(floatval($row['total_nilai'])),
+                'fraud'         => intval($row['fraud']),
+                'pencapaian'    => $row['pencapaian'],
+                'predikat'      => $row['predikat'],
+            ];
+        } else {
+            $data = [];
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode($data);
     }
 }

@@ -447,6 +447,5 @@ class Penilaian_model extends CI_Model
             ->order_by('sk.perspektif, sk.id, i.id')
             ->get()->result();
     }
-
-
+    
 }

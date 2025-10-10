@@ -562,6 +562,18 @@
                                         value="<?= $nilai_akhir['fraud'] ?? 0 ?>">
                                 </td>
                             </tr>
+                            <tr>
+                                <th colspan="4" class="text-right" value=100>
+                                    Koefisien Nilai<br>
+                                    <small>(Wajib diisi)</small>
+                                </th>
+                                <td>
+                                    <input type="number" max="100"
+                                        class="form-control form-control-sm text-center"
+                                        id=""
+                                        value=100>
+                                </td>
+                            </tr>
                         </table>
 
                         <!-- Bagian Bawah: Kiri-Kanan -->
