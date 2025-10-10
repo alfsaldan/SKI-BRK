@@ -21,6 +21,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
  * @property PenilaiMapping_model $PenilaiMapping_model
  * @property DataDiri_model $DataDiri_model
  * @property Coaching_model $Coaching_model
+ * @property CI_Form_validation $form_validation
+ * @property Budaya_model $Budaya_model
  * @property CI_Input $input
  * @property CI_Session $session
  * @property CI_DB_query_builder $db
@@ -2205,47 +2207,45 @@ class Administrator extends CI_Controller
             ]);
         }
     }
-    // ===============================================================
-    // ✅ AMBIL NILAI AKHIR (KHUSUS UNTUK DETAIL VERIFIKASI)
-    // ===============================================================
-    public function getNilaiAkhirBulat($nik = null, $awal = null, $akhir = null)
+
+    // ==================== KELOLA BUDAYA (AJAX) ====================
+
+    public function kelolaBudaya()
     {
-        if (!$nik) {
-            show_error("NIK tidak ditemukan.", 404);
-        }
+        $this->load->view('layout/header');
+        $this->load->view('administrator/kelolabudaya');
+        $this->load->view('layout/footer');
+    }
 
-        $this->load->model('Penilaian_model');
+    public function getBudaya()
+    {
+        $this->load->model('Budaya_model');
+        echo json_encode($this->Budaya_model->getAll());
+    }
 
-        // kalau parameter kosong, ambil dari query string
-        $periode_awal = $awal ?? $this->input->get('awal') ?? date('Y-01-01');
-        $periode_akhir = $akhir ?? $this->input->get('akhir') ?? date('Y-12-31');
+    public function simpanBudayaAjax()
+    {
+        $this->load->model('Budaya_model');
+        $data = [
+            'id_budaya' => $this->input->post('id_budaya'),
+            'perilaku_utama' => $this->input->post('perilaku_utama'),
+            'panduan_perilaku' => $this->input->post('panduan_perilaku')
+        ];
 
-        // ambil data asli dari DB
-        $row = $this->Penilaian_model->getNilaiAkhir($nik, $periode_awal, $periode_akhir);
-
-        if (!empty($row)) {
-            // bulatkan nilai budaya kalau 0.00
-            $avg_budaya = floatval($row['nilai_budaya']);
-            if ($avg_budaya == 0.00) {
-                $avg_budaya = 0;
-            } else {
-                $avg_budaya = round($avg_budaya);
-            }
-
-            // buat versi baru dengan pembulatan
-            $data = [
-                'nilai_sasaran' => round(floatval($row['nilai_sasaran'])),
-                'nilai_budaya'  => $avg_budaya,
-                'total_nilai'   => round(floatval($row['total_nilai'])),
-                'fraud'         => intval($row['fraud']),
-                'pencapaian'    => $row['pencapaian'],
-                'predikat'      => $row['predikat'],
-            ];
+        if ($this->Budaya_model->save($data)) {
+            echo json_encode(['status' => 'success', 'message' => 'Data budaya berhasil disimpan!']);
         } else {
-            $data = [];
+            echo json_encode(['status' => 'error', 'message' => 'Gagal menyimpan data!']);
         }
+    }
 
-        header('Content-Type: application/json');
-        echo json_encode($data);
+    public function hapusBudayaAjax($id)
+    {
+        $this->load->model('Budaya_model');
+        if ($this->Budaya_model->delete($id)) {
+            echo json_encode(['status' => 'success', 'title' => 'Berhasil', 'message' => 'Data berhasil dihapus!']);
+        } else {
+            echo json_encode(['status' => 'error', 'title' => 'Gagal', 'message' => 'Data gagal dihapus!']);
+        }
     }
 }

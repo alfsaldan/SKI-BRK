@@ -283,6 +283,14 @@
                                     <span>Kelola Jabatan </span>
                                 </a>
                             </li>
+
+                            <li class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolaBudaya') ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator/kelolaBudaya') ?>">
+                                    <i class="mdi mdi-briefcase"></i>
+                                    <span>Kelola Budaya</span>
+                                </a>
+                            </li>
+
                         <?php endif; ?>
 
                         <!-- MENU PEGAWAI (muncul untuk semua role) -->
