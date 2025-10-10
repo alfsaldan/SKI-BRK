@@ -263,7 +263,7 @@
 
                             <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['verifikasi_penilaian', 'detailverifikasi'])) ? 'active' : '' ?>">
                                 <a href="<?= base_url('administrator/verifikasi_penilaian') ?>">
-                                    <i class="mdi mdi-account-edit"></i>
+                                    <i class="mdi mdi-clipboard-check-outline"></i>
                                     <span> Verifikasi Penilaian </span>
                                 </a>
                             </li>
