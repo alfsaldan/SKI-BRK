@@ -536,97 +536,78 @@
 
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="tabel-penilaian-budaya">
-                                        <thead class="text-center">
+                                        <thead class="text-center align-middle">
                                             <tr class="bg-success text-white fw-bold">
-                                                <th colspan="8">Budaya Kerja</th>
+                                                <th colspan="8" style="vertical-align: middle;">Budaya Kerja</th>
                                             </tr>
                                             <tr class="bg-success-subtle text-dark fw-bold align-middle">
-                                                <th style="width:50px;">No</th>
-                                                <th style="width:280px;">Perilaku Utama</th>
-                                                <th>Panduan Perilaku</th>
-                                                <th style="width:50px;">1<br><small>Sangat Jarang</small></th>
-                                                <th style="width:50px;">2<br><small>Jarang</small></th>
-                                                <th style="width:50px;">3<br><small>Kadang</small></th>
-                                                <th style="width:50px;">4<br><small>Sering</small></th>
-                                                <th style="width:100px;">5<br><small>Selalu</small></th>
+                                                <th style="width:50px; vertical-align: middle;">No</th>
+                                                <th style="width:280px; vertical-align: middle;">Perilaku Utama</th>
+                                                <th style="vertical-align: middle;">Panduan Perilaku</th>
+                                                <th style="width:80px; vertical-align: middle;"><small>Sangat Jarang</small></th>
+                                                <th style="width:80px; vertical-align: middle;"><small>Jarang</small></th>
+                                                <th style="width:80px; vertical-align: middle;"><small>Kadang</small></th>
+                                                <th style="width:80px; vertical-align: middle;"><small>Sering</small></th>
+                                                <th style="width:80px; vertical-align: middle;"><small>Selalu</small></th>
                                             </tr>
                                         </thead>
+
                                         <tbody>
                                             <?php
-                                            $budaya = [
-                                                ["utama" => "Komitmen & Bertanggung Jawab", "panduan" => [
-                                                    "Teguh dalam bersikap dan berperilaku sesuai peraturan Bank dan nilai-nilai syariah",
-                                                    "Melaksanakan tugas dan kewajiban secara optimal"
-                                                ]],
-                                                ["utama" => "Bekerjasama, saling menghargai dan mendukung", "panduan" => [
-                                                    "Membangun, menjaga, dan mengembangkan soliditas tim",
-                                                    "Menunjukkan empati kepada sesama rekan kerja"
-                                                ]],
-                                                ["utama" => "Berpikir positif", "panduan" => [
-                                                    "Berfikir yang terbaik saat menghadapi tantangan",
-                                                    "Optimis dalam menjalankan tugas"
-                                                ]],
-                                                ["utama" => "Jujur & Tulus Ikhlas", "panduan" => [
-                                                    "Konsisten antara ucapan dan tindakan",
-                                                    "Menunjukkan dedikasi yang tinggi dalam menjalankan amanah"
-                                                ]],
-                                                ["utama" => "Kreatif, inovatif dan bernilai tambah", "panduan" => [
-                                                    "Memberikan ide-ide dan cara-cara baru yang semakin baik dan relevan",
-                                                    "Selalu belajar dan mengembangkan diri untuk menghasilkan kinerja yang lebih baik"
-                                                ]],
-                                                ["utama" => "Peduli, Proaktif & Cepat Tanggap", "panduan" => [
-                                                    "Menjaga lingkungan kerja dan pelayanan yang kondusif, aman, dan nyaman",
-                                                    "Antusias dalam mengedukasi dan melayani nasabah"
-                                                ]],
-                                                ["utama" => "Berorientasi pada Solusi Terbaik", "panduan" => [
-                                                    "Berempati terhadap masalah dan kebutuhan nasabah",
-                                                    "Mengidentifikasi masalah dan kebutuhan nasabah serta memberikan solusi yang bernilai tambah"
-                                                ]],
-                                                ["utama" => "Kompeten", "panduan" => [
-                                                    "Menguasai bidang pekerjaan yang digeluti",
-                                                    "Memberikan kontribusi terbaik bagi kemajuan Bank"
-                                                ]],
-                                                ["utama" => "Bekerja Cerdas, Efektif & Efisien", "panduan" => [
-                                                    "Menjadikan produktivitas dan orientasi pada hasil sebagai acuan dalam mencapai hasil yang optimal",
-                                                    "Menuntaskan pekerjaan secara cepat, tepat, dan akurat"
-                                                ]],
-                                                ["utama" => "Memberikan hasil terbaik", "panduan" => [
-                                                    "Senantiasa berusaha memberikan kontribusi melebihi ekspektasi",
-                                                    "Melakukan perbaikan dan peningkatan kualitas kerja untuk mendapatkan nilai tambah optimal dan hasil yang terbaik"
-                                                ]],
-                                            ];
-
                                             $no = 1;
-                                            foreach ($budaya as $b) :
-                                                foreach ($b['panduan'] as $pIndex => $p) :
-                                                    $idRadio = 'budaya_' . $no . '_' . $pIndex;
+                                            if (!empty($budaya)) :
+                                                foreach ($budaya as $b) :
+                                                    $panduanList = json_decode($b['panduan_perilaku'], true);
+                                                    if (is_array($panduanList)) :
+                                                        foreach ($panduanList as $pIndex => $p) :
+                                                            $idRadio = 'budaya_' . $no . '_' . $pIndex;
                                             ?>
-                                                    <tr>
-                                                        <?php if ($pIndex === 0): ?>
-                                                            <td class="text-center align-middle" rowspan="<?= count($b['panduan']); ?>"><?= $no++; ?></td>
-                                                            <td class="align-middle" rowspan="<?= count($b['panduan']); ?>"><?= $b['utama']; ?></td>
-                                                        <?php endif; ?>
-                                                        <td><?= ($pIndex === 0 ? "a. " : "b. ") . $p; ?></td>
+                                                            <tr>
+                                                                <?php if ($pIndex === 0): ?>
+                                                                    <td class="text-center align-middle" rowspan="<?= count($panduanList); ?>">
+                                                                        <?= $no; ?>
+                                                                    </td>
+                                                                    <td class="align-middle" rowspan="<?= count($panduanList); ?>">
+                                                                        <?= htmlspecialchars($b['perilaku_utama']); ?>
+                                                                    </td>
+                                                                <?php endif; ?>
 
-                                                        <?php for ($i = 1; $i <= 5; $i++): ?>
-                                                            <td class="text-center align-middle">
-                                                                <input type="radio"
-                                                                    class="form-check-input budaya-radio"
-                                                                    name="<?= $idRadio; ?>"
-                                                                    value="<?= $i; ?>">
-                                                            </td>
-                                                        <?php endfor; ?>
-                                                    </tr>
+                                                                <td><?= chr(97 + $pIndex) . ". " . htmlspecialchars($p); ?></td>
+
+                                                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                                                    <?php
+                                                                    $checked = '';
+                                                                    if (isset($budaya_nilai[$idRadio]) && $budaya_nilai[$idRadio] == $i) {
+                                                                        $checked = 'checked';
+                                                                    }
+                                                                    ?>
+                                                                    <td class="text-center align-middle">
+                                                                        <input type="radio"
+                                                                            class="form-check-input budaya-radio"
+                                                                            name="<?= $idRadio; ?>"
+                                                                            value="<?= $i; ?>"
+                                                                            <?= $checked; ?>>
+                                                                    </td>
+                                                                <?php endfor; ?>
+                                                            </tr>
                                             <?php
+                                                        endforeach;
+                                                        $no++;
+                                                    endif;
                                                 endforeach;
-                                            endforeach;
+                                            else :
+                                                echo '<tr><td colspan="8" class="text-center text-muted">Data budaya belum tersedia.</td></tr>';
+                                            endif;
                                             ?>
                                         </tbody>
+
                                         <tfoot class="text-center fw-bold bg-success text-white">
                                             <tr>
                                                 <td colspan="7" class="text-end align-middle">Rata-Rata Nilai Internalisasi Budaya</td>
                                                 <td colspan="1">
-                                                    <input type="text" id="rata-rata-budaya" class="form-control form-control-sm text-center" readonly>
+                                                    <input type="text" id="rata-rata-budaya"
+                                                        class="form-control form-control-sm text-center"
+                                                        value="<?= number_format($rata_rata_budaya ?? 0, 2); ?>" readonly>
                                                 </td>
                                             </tr>
                                         </tfoot>
@@ -636,32 +617,6 @@
                         </div>
                     </div>
                 </div>
-
-                <script>
-                    // Hitung otomatis setiap kali ada perubahan nilai radio
-                    document.querySelectorAll('.budaya-radio').forEach(radio => {
-                        radio.addEventListener('change', updateRataBudaya);
-                    });
-
-                    function updateRataBudaya() {
-                        let total = 0,
-                            count = 0;
-                        document.querySelectorAll('.budaya-radio:checked').forEach(r => {
-                            total += parseInt(r.value);
-                            count++;
-                        });
-
-                        const rata = count > 0 ? (total / count).toFixed(2) : 0;
-                        document.getElementById('rata-rata-budaya').value = rata;
-
-                        // Jika ada fungsi nilai akhir global
-                        if (typeof hitungNilaiAkhir === "function") hitungNilaiAkhir();
-                    }
-                </script>
-
-
-
-
 
                 <!-- ================== FORM NILAI AKHIR ================== -->
                 <!-- Nilai Akhir & Catatan -->
@@ -690,8 +645,8 @@
                             </tr>
                             <tr>
                                 <th>Rata-rata Nilai Internalisasi Budaya</th>
-                                <td class="text-center" id="rata-budaya">
-                                    <?= $nilai_akhir['rata_budaya'] ?? '-' ?>
+                                <td class="text-center" id="ratarata-budaya">
+                                    <?= number_format($rata_rata_budaya ?? 0, 2); ?>
                                 </td>
                                 <td>x Bobot % Budaya Perusahaan</td>
                                 <td>
@@ -1088,7 +1043,7 @@
 
             // Ambil nilai sasaran dari total-nilai-bobot
             const totalSasaran = parseFloat(document.getElementById("total-nilai-bobot").textContent) || 0;
-            const rataBudaya = parseFloat(document.getElementById("rata-budaya").textContent) || 0;
+            const rataBudaya = parseFloat(document.getElementById("ratarata-budaya").textContent) || 0;
 
             // Total nilai sasaran kerja 
             const nilaiSasaran = totalSasaran * bobotSasaran;
@@ -1527,6 +1482,73 @@
                     });
                 });
         });
+
+        // =================== NILAI BUDAYA ==================
+        const radios = document.querySelectorAll('.budaya-radio');
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                updateRataBudaya();
+                simpanNilaiBudaya(this);
+            });
+        });
+
+        // 🔹 Rehitung rata-rata awal (jika sudah ada nilai sebelumnya)
+        updateRataBudaya();
+
+        function simpanNilaiBudaya(radio) {
+            const nikPegawai = "<?= $pegawai_detail->nik ?>";
+            const periodeAwal = "<?= $periode_awal ?>";
+            const periodeAkhir = "<?= $periode_akhir ?>";
+            const rataRata = document.getElementById('rata-rata-budaya').value;
+            const key = radio.name;
+
+            $.ajax({
+                url: "<?= base_url('Pegawai/simpanNilaiBudaya') ?>",
+                method: "POST",
+                data: {
+                    nik_pegawai: nikPegawai,
+                    key: key,
+                    skor: radio.value,
+                    periode_awal: periodeAwal,
+                    periode_akhir: periodeAkhir,
+                    rata_rata: rataRata
+                },
+                success: function(res) {
+                    console.log("✅ Nilai budaya tersimpan:", res);
+                },
+                error: function() {
+                    alert("Gagal menyimpan nilai budaya!");
+                }
+            });
+        }
+
+        function updateRataBudaya() {
+            let total = 0,
+                count = 0;
+            document.querySelectorAll('.budaya-radio:checked').forEach(r => {
+                total += parseInt(r.value);
+                count++;
+            });
+
+            const rata = count > 0 ? (total / count).toFixed(2) : 0;
+            document.getElementById('rata-rata-budaya').value = rata;
+
+            // 🔹 Sinkronkan ke tampilan Nilai Akhir
+            const targetNilaiAkhir = document.getElementById('ratarata-budaya');
+            if (targetNilaiAkhir) {
+                targetNilaiAkhir.textContent = rata;
+            }
+
+            // 🔹 Update tampilan nilai budaya (hasil kali 0.05)
+            const nilaiBudayaCell = document.getElementById("nilai-budaya");
+            if (nilaiBudayaCell) {
+                const nilaiBudayaBaru = (rata * 0.05).toFixed(2);
+                nilaiBudayaCell.textContent = nilaiBudayaBaru;
+            }
+
+            // 🔹 Rehitung Nilai Akhir biar langsung update total
+            hitungNilaiAkhir();
+        }
     });
 </script>
 

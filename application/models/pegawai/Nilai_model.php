@@ -173,4 +173,57 @@ class Nilai_model extends CI_Model
 
         return true; // semua terkunci
     }
+
+    public function getAllBudaya()
+    {
+        return $this->db->get('budaya')->result_array();
+    }
+
+    public function getNilaiBudayaByPegawai($nik, $periode_awal, $periode_akhir)
+    {
+        $this->db->select('nilai_budaya, rata_rata');
+        $this->db->from('budaya_nilai');
+        $this->db->where([
+            'nik_pegawai'   => $nik,
+            'periode_awal'  => $periode_awal,
+            'periode_akhir' => $periode_akhir
+        ]);
+        return $this->db->get()->row();
+    }
+
+
+
+    public function simpanNilaiBudayaSatuBaris($data)
+    {
+        $this->db->where([
+            'nik_pegawai' => $data['nik_pegawai'],
+            'periode_awal' => $data['periode_awal'],
+            'periode_akhir' => $data['periode_akhir']
+        ]);
+
+        $cek = $this->db->get('budaya_nilai')->row();
+
+        if ($cek) {
+            // update JSON
+            $nilai = json_decode($cek->nilai_budaya, true);
+            $nilai[$data['key']] = $data['skor']; // update nilai spesifik
+
+            $rata = $data['rata_rata'];
+            $this->db->where('id', $cek->id);
+            return $this->db->update('budaya_nilai', [
+                'nilai_budaya' => json_encode($nilai),
+                'rata_rata' => $rata
+            ]);
+        } else {
+            // insert baru
+            $nilai = [$data['key'] => $data['skor']];
+            return $this->db->insert('budaya_nilai', [
+                'nik_pegawai' => $data['nik_pegawai'],
+                'periode_awal' => $data['periode_awal'],
+                'periode_akhir' => $data['periode_akhir'],
+                'nilai_budaya' => json_encode($nilai),
+                'rata_rata' => $data['rata_rata']
+            ]);
+        }
+    }
 }

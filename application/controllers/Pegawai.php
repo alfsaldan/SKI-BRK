@@ -206,6 +206,7 @@ class Pegawai extends CI_Controller
         $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik);
         $indikator = $this->Nilai_model->getIndikatorPegawai($nik, $awal, $akhir);
 
+        // 🔹 Ambil daftar periode
         $this->db->select('periode_awal, periode_akhir');
         $this->db->from('penilaian');
         $this->db->where('nik', $nik);
@@ -219,6 +220,17 @@ class Pegawai extends CI_Controller
         // 🔹 Ambil status lock
         $is_locked = $this->Nilai_model->getLockStatus($nik, $awal, $akhir);
 
+        // 🔹 Ambil data budaya dari tabel master
+        $budaya = $this->Nilai_model->getAllBudaya();
+
+        // 🔹 Ambil nilai budaya (hasil penilaian sebelumnya)
+        $nilaiBudayaDB = $this->Nilai_model->getNilaiBudayaByPegawai($nik, $awal, $akhir);
+        $budaya_nilai = [];
+        if (!empty($nilaiBudayaDB) && !empty($nilaiBudayaDB->nilai_budaya)) {
+            $budaya_nilai = json_decode($nilaiBudayaDB->nilai_budaya, true);
+        }
+
+
         $data = [
             'judul' => "Form Penilaian Pegawai",
             'pegawai_detail' => $pegawai,
@@ -227,13 +239,35 @@ class Pegawai extends CI_Controller
             'periode_akhir' => $akhir,
             'periode_list' => $periode_list,
             'nilai_akhir' => $nilai_akhir,
-            'is_locked' => $is_locked
+            'is_locked' => $is_locked,
+            'budaya' => $budaya,
+            'budaya_nilai' => $budaya_nilai, // ✅ kirim ke view
+            'rata_rata_budaya' => $nilaiBudayaDB->rata_rata ?? 0
         ];
 
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/nilaipegawai_detail', $data);
         $this->load->view('layoutpegawai/footer');
     }
+
+
+    public function simpanNilaiBudaya()
+    {
+        $this->load->model('pegawai/Nilai_model');
+
+        $data = [
+            'nik_pegawai' => $this->input->post('nik_pegawai'),
+            'periode_awal' => $this->input->post('periode_awal'),
+            'periode_akhir' => $this->input->post('periode_akhir'),
+            'key' => $this->input->post('key'),  // contoh: budaya_3_1
+            'skor' => $this->input->post('skor'),
+            'rata_rata' => $this->input->post('rata_rata')
+        ];
+
+        $this->Nilai_model->simpanNilaiBudayaSatuBaris($data);
+        echo json_encode(['status' => 'success']);
+    }
+
 
     public function datadiriPegawai()
     {
