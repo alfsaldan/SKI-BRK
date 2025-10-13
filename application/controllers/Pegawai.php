@@ -1299,11 +1299,12 @@ class Pegawai extends CI_Controller
 
         // 📋 Data tabel nilai
         $dataRows = [
-            ["Total Nilai Sasaran Kerja", $nilai['nilai_sasaran'], "x Bobot % Sasaran Kerja", "95%", $nilai['total_nilai']],
-            ["Rata-rata Nilai Internalisasi Budaya", $nilai['nilai_budaya'], "x Bobot % Budaya Perusahaan", "5%", $nilai['nilai_budaya']],
-            ["Total Nilai", "", "", "", $nilai['total_nilai']],
-            ["Fraud (1 jika fraud, 0 jika tidak)", "", "", "", $nilai['fraud']],
+            ["Total Nilai Sasaran Kerja", $nilai->nilai_sasaran ?? 0, "x Bobot % Sasaran Kerja", "95%", $nilai->total_nilai ?? 0],
+            ["Rata-rata Nilai Internalisasi Budaya", $nilai->nilai_budaya ?? 0, "x Bobot % Budaya Perusahaan", "5%", $nilai->nilai_budaya ?? 0],
+            ["Total Nilai", "", "", "", $nilai->total_nilai ?? 0],
+            ["Fraud (1 jika fraud, 0 jika tidak)", "", "", "", $nilai->fraud ?? 0],
         ];
+
 
         $warnaZebra1 = 'F9FAFB'; // abu muda
         $warnaZebra2 = 'FFFFFF'; // putih
@@ -1344,7 +1345,7 @@ class Pegawai extends CI_Controller
         $row++;
 
         // 🏆 Tentukan warna predikat
-        $predikat = strtoupper($nilai['predikat'] ?? '-');
+        $predikat = strtoupper($nilai->predikat ?? '-');
         $warnaPredikat = 'B0B0B0';
         $emojiPredikat = '❔';
 
@@ -1374,7 +1375,7 @@ class Pegawai extends CI_Controller
         // ⭐ TOTAL NILAI AKHIR
         $sheet->setCellValue("B{$row}", "⭐ TOTAL NILAI AKHIR");
         $sheet->mergeCells("B{$row}:E{$row}");
-        $sheet->setCellValue("F{$row}", $nilai['total_nilai']);
+        $sheet->setCellValue("F{$row}", $nilai->total_nilai ?? 0);
         $sheet->getStyle("B{$row}:F{$row}")->applyFromArray([
             'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => 'FFFFFF']],
             'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
@@ -1444,8 +1445,8 @@ class Pegawai extends CI_Controller
         $summaryCol = 'E';
 
         $labels = [
-            ['Nilai Akhir', $nilai['nilai_akhir'] ?? '0'],
-            ['Pencapaian Akhir', $nilai['pencapaian'] ?? '0%'],
+            ['Nilai Akhir', $nilai->nilai_akhir ?? '0'],
+            ['Pencapaian Akhir', $nilai->pencapaian ?? '0%'],
             ['Yudisium / Predikat', "{$emojiPredikat} {$predikat}"],
         ];
 
