@@ -16,7 +16,7 @@
     <style>
         /* 🌿 Background */
         body {
-            background: radial-gradient(circle at top right, #1d6e35ff 30%, #ef7809ff 100%);
+            background: radial-gradient(circle at top right, #17562aff 30%, #a8270bff 100%);
             min-height: 100vh;
             font-family: 'Poppins', sans-serif;
             display: flex;
@@ -127,7 +127,7 @@
 
         /* 🌟 Button */
         .btn-success {
-            background: linear-gradient(45deg, #2a9d4dff, #ef7809ff);
+            background: linear-gradient(45deg, #1d6b35ff, #c1330cff);
             border: none;
             border-radius: 12px;
             font-weight: 600;
