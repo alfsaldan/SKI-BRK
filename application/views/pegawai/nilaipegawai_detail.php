@@ -1440,7 +1440,7 @@
             const periode_akhir = document.getElementById('periode_akhir').value;
 
             const nilai_sasaran = document.getElementById('total-sasaran').textContent;
-            const nilai_budaya = document.getElementById('nilai-budaya').textContent;
+            const nilai_budaya = document.getElementById('ratarata-budaya').textContent;
             const total_nilai = document.getElementById('total-nilai').textContent;
             const fraud = document.getElementById('fraud-input').value;
             const nilai_akhir = document.getElementById('nilai-akhir').textContent;
