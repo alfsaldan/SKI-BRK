@@ -817,44 +817,63 @@ class Administrator extends CI_Controller
         $this->load->view("layout/footer");
     }
 
-    // Cari Data Pegawai berdasarkan NIK
     public function cariDataPegawai()
     {
+        // Ambil input NIK dan periode
         $nik   = $this->input->get('nik') ?? $this->input->post('nik');
         $awal  = $this->input->get('awal') ?? $this->input->post('periode_awal');
         $akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir');
 
-        // default periode jika kosong
+        // Default periode jika kosong
         if (!$awal || !$akhir) {
             $tahun = date('Y');
             $awal  = $tahun . '-01-01';
             $akhir = $tahun . '-12-31';
         }
 
+        // Load model
         $this->load->model('DataPegawai_model');
+        $this->load->model('Penilaian_model');
 
-        $pegawai    = $this->DataPegawai_model->getPegawaiWithPenilai($nik);
-        $penilaian  = $this->DataPegawai_model->getPenilaianByNik($nik, $awal, $akhir);
+        // Ambil data pegawai
+        $pegawai   = $this->DataPegawai_model->getPegawaiWithPenilai($nik);
+
+        // Ambil penilaian detail
+        $penilaian = $this->DataPegawai_model->getPenilaianByNik($nik, $awal, $akhir);
+
+        // 🔹 Ambil nilai akhir langsung dari tabel nilai_akhir
         $nilaiAkhir = $this->DataPegawai_model->getNilaiAkhirByNikPeriode($nik, $awal, $akhir);
 
-        // 🔹 ambil semua periode unik dari tabel penilaian
+        // Ambil periode unik dari tabel penilaian
         $periode_list = $this->DataPegawai_model->getAvailablePeriode();
 
-        // 🔹 ambil chat coaching (tidak ada duplikat)
+        // Ambil chat coaching (jika ada)
         $chat = [];
         if ($pegawai) {
             $chat = $this->DataPegawai_model->getCoachingChat($nik);
         }
 
-        $data['judul'] = "Data Pegawai";
-        $data['pegawai_detail']    = $pegawai;
-        $data['penilaian_pegawai'] = $penilaian;
-        $data['nilai']             = $nilaiAkhir;
-        $data['periode_awal']      = $awal;
-        $data['periode_akhir']     = $akhir;
-        $data['periode_list']      = $periode_list;
-        $data['chat']              = $chat;
+        // Ambil nilai budaya
+        $budayaData = $this->Penilaian_model->getBudayaNilaiByNik($nik, $awal, $akhir);
+        $budaya_nilai = $budayaData['nilai_budaya'] ?? [];
+        $rata_rata_budaya = $budayaData['rata_rata'] ?? 0;
 
+        // Siapkan data untuk view
+        $data = [
+            'judul'               => "Data Pegawai",
+            'pegawai_detail'      => $pegawai,
+            'penilaian_pegawai'   => $penilaian,
+            'nilai_akhir'         => $nilaiAkhir,   // 🔹 nilai akhir langsung dari DB
+            'periode_awal'        => $awal,
+            'periode_akhir'       => $akhir,
+            'periode_list'        => $periode_list,
+            'chat'                => $chat,
+            'budaya_nilai'        => $budaya_nilai,
+            'rata_rata_budaya'    => $rata_rata_budaya,
+            'budaya'              => $this->Penilaian_model->getAllBudaya(),
+        ];
+
+        // Load view
         $this->load->view("layout/header");
         $this->load->view('administrator/datapegawai', $data);
         $this->load->view("layout/footer");
@@ -1371,12 +1390,20 @@ class Administrator extends CI_Controller
         $sheet->getRowDimension($row)->setRowHeight(36);
         $row++;
 
+        // Ambil nilai awal, pastikan ada default 0
+        $nilaiSasaran = round($nilai->nilai_sasaran ?? 0, 2);
+        $nilaiBudaya  = round($nilai->nilai_budaya ?? 0, 2);
+
+        // Hitung kontribusi dengan pembobot
+        $kontribSasaran = round($nilaiSasaran * 0.95, 2); // 95%
+        $kontribBudaya  = round($nilaiBudaya * 0.05, 2);   // 5%
+
         // 📋 Data tabel nilai
         $dataRows = [
-            ["Total Nilai Sasaran Kerja", $nilai['nilai_sasaran'], "x Bobot % Sasaran Kerja", "95%", $nilai['total_nilai']],
-            ["Rata-rata Nilai Internalisasi Budaya", $nilai['nilai_budaya'], "x Bobot % Budaya Perusahaan", "5%", $nilai['nilai_budaya']],
-            ["Total Nilai", "", "", "", $nilai['total_nilai']],
-            ["Fraud (1 jika fraud, 0 jika tidak)", "", "", "", $nilai['fraud']],
+            ["Total Nilai Sasaran Kerja", $nilaiSasaran, "x Bobot % Sasaran Kerja", "95%", $kontribSasaran],
+            ["Rata-rata Nilai Internalisasi Budaya", $nilaiBudaya, "x Bobot % Budaya Perusahaan", "5%", $kontribBudaya],
+            ["Total Nilai", "", "", "", round($kontribSasaran + $kontribBudaya, 2)],
+            ["Fraud (1 jika fraud, 0 jika tidak)", "", "", "", $nilai->fraud ?? 0],
         ];
 
         $warnaZebra1 = 'F9FAFB'; // abu muda
@@ -1418,7 +1445,7 @@ class Administrator extends CI_Controller
         $row++;
 
         // 🏆 Tentukan warna predikat
-        $predikat = strtoupper($nilai['predikat'] ?? '-');
+        $predikat = strtoupper($nilai->predikat ?? '-');
         $warnaPredikat = 'B0B0B0';
         $emojiPredikat = '❔';
 
@@ -1448,7 +1475,7 @@ class Administrator extends CI_Controller
         // ⭐ TOTAL NILAI AKHIR
         $sheet->setCellValue("B{$row}", "⭐ TOTAL NILAI AKHIR");
         $sheet->mergeCells("B{$row}:E{$row}");
-        $sheet->setCellValue("F{$row}", $nilai['total_nilai']);
+        $sheet->setCellValue("F{$row}", $nilai->total_nilai ?? 0);
         $sheet->getStyle("B{$row}:F{$row}")->applyFromArray([
             'font' => ['bold' => true, 'size' => 16, 'color' => ['rgb' => 'FFFFFF']],
             'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
@@ -1518,8 +1545,8 @@ class Administrator extends CI_Controller
         $summaryCol = 'E';
 
         $labels = [
-            ['Nilai Akhir', $nilai['nilai_akhir'] ?? '0'],
-            ['Pencapaian Akhir', $nilai['pencapaian'] ?? '0%'],
+            ['Nilai Akhir', $nilai->nilai_akhir ?? '0'],
+            ['Pencapaian Akhir', $nilai->pencapaian ?? '0%'],
             ['Yudisium / Predikat', "{$emojiPredikat} {$predikat}"],
         ];
 

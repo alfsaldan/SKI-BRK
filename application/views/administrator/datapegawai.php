@@ -398,52 +398,89 @@
             </div>
         </div>
 
-
-        <!-- Nilai Akhir & Catatan -->
+        <!-- Nilai Akhir & Predikat -->
         <div class="card mt-4">
             <div class="card-body">
-                <h5 class="text-success font-weight-bold mb-3">
-                    <i class="mdi mdi-star-circle mr-2"></i> Nilai Akhir (q)
+                <h5 class="text-success fw-bold mb-3">
+                    <i class="mdi mdi-star-circle mr-2"></i> Nilai Akhir
                 </h5>
+
+                <?php
+                // 🔹 Pastikan data aman
+                $total_skor      = $nilai_akhir->nilai_sasaran ?? 0;
+                $avg_budaya      = $rata_rata_budaya ?? 0;
+                $kontrib_sasaran = $total_skor * 0.95;
+                $kontrib_budaya  = $avg_budaya * 0.05;
+                $total_nilai     = $nilai_akhir->total_nilai ?? 0;
+                $nilai           = $nilai_akhir->nilai_akhir ?? 0;
+                $pencapaian_pct  = floatval(str_replace('%', '', $nilai_akhir->pencapaian ?? 0));
+                $predikat        = $nilai_akhir->predikat ?? 'Minus (M)';
+                $fraud           = $nilai_akhir->fraud ?? 0;
+                ?>
 
                 <!-- Bagian Atas: Perhitungan -->
                 <table class="table table-bordered mb-4">
                     <tr>
                         <th>Total Nilai Sasaran Kerja</th>
-                        <td class="text-center"><?= $nilai['nilai_sasaran'] ?? 0 ?></td>
+                        <td class="text-center"><?= number_format($total_skor, 2) ?></td>
                         <td>x Bobot % Sasaran Kerja</td>
-                        <td class="text-center">
-                            95%<!-- <input type="text" class="form-control form-control-sm text-center"
-                                value="95%" readonly> -->
-                        </td>
-                        <td class="text-center"><?= $nilai['nilai_sasaran'] ?? 0 ?></td>
+                        <td class="text-center">95%</td>
+                        <td class="text-center"><?= number_format($kontrib_sasaran, 2) ?></td>
                     </tr>
                     <tr>
                         <th>Rata-rata Nilai Internalisasi Budaya</th>
-                        <td class="text-center"><?= $nilai['nilai_budaya'] ?? 0 ?></td>
+                        <td class="text-center"><?= number_format($avg_budaya, 2) ?></td>
                         <td>x Bobot % Budaya Perusahaan</td>
-                        <td class="text-center">
-                            5%<!-- <input type="text" class="form-control form-control-sm text-center"
-                                value="5%" readonly> -->
-                        </td>
-                        <td class="text-center"><?= $nilai['nilai_budaya'] ?? 0 ?></td>
+                        <td class="text-center">5%</td>
+                        <td class="text-center"><?= number_format($kontrib_budaya, 2) ?></td>
                     </tr>
                     <tr>
-                        <th colspan="4" class="text-right">Total Nilai</th>
-                        <td class="text-center"><?= $nilai['total_nilai'] ?? 0 ?></td>
+                        <th colspan="4" class="text-end">Total Nilai</th>
+                        <td class="text-center"><?= number_format($total_nilai, 2) ?></td>
                     </tr>
                     <tr>
-                        <th colspan="4" class="text-right">
+                        <th colspan="4" class="text-end">
                             Fraud<br>
                             <small>(1 jika melakukan fraud, 0 jika tidak melakukan fraud)</small>
                         </th>
-                        <td class="text-center"><?= $nilai['fraud'] ?? 0 ?></td>
+                        <td class="text-center"><?= $fraud ?></td>
                     </tr>
                 </table>
+
+                <?php
+                // Tentukan predikat & warna berdasarkan nilai akhir
+                $nilai_akhir_value = $nilai_akhir->nilai_akhir ?? 0; // pastikan ada nilai
+                $predikat = "";
+                $predikatClass = "";
+
+                if ($nilai_akhir_value === "Tidak ada nilai") {
+                    $predikat = "Tidak ada yudisium/predikat";
+                    $predikatClass = "text-dark";
+                } elseif ($nilai_akhir_value == 0) {
+                    $predikat = "Belum Ada Nilai";
+                    $predikatClass = "text-dark";
+                } elseif ($nilai_akhir_value < 2) {
+                    $predikat = "Minus (M)";
+                    $predikatClass = "text-danger"; // merah
+                } elseif ($nilai_akhir_value < 3) {
+                    $predikat = "Fair (F)";
+                    $predikatClass = "text-warning"; // jingga
+                } elseif ($nilai_akhir_value < 3.5) {
+                    $predikat = "Good (G)";
+                    $predikatClass = "text-primary"; // biru
+                } elseif ($nilai_akhir_value < 4.5) {
+                    $predikat = "Very Good (VG)";
+                    $predikatClass = "text-success"; // hijau muda
+                } else {
+                    $predikat = "Excellent (E)";
+                    $predikatClass = "text-success fw-bold"; // hijau tua tebal
+                }
+                ?>
 
                 <!-- Bagian Bawah: Kiri-Kanan -->
                 <div class="row">
                     <div class="col-md-6">
+                        <!-- Tabel Yudisium / Predikat -->
                         <table class="table table-bordered text-center">
                             <thead class="bg-success text-white">
                                 <tr>
@@ -483,35 +520,31 @@
                                 <div class="card text-center mb-3">
                                     <div class="card-header bg-success text-white">Nilai Akhir</div>
                                     <div class="card-body">
-                                        <h3 id="nilai-akhir">
-                                            <?= (isset($nilai['nilai_akhir']) && $nilai['nilai_akhir'] > 0)
-                                                ? $nilai['nilai_akhir']
-                                                : 'Tidak ada nilai'; ?>
-                                        </h3>
+                                        <h3 id="nilai-akhir"><?= number_format($nilai_akhir_value, 2) ?></h3>
                                     </div>
                                 </div>
                             </div>
-
                             <div class="col-md-6">
-                                <div class="card text-center">
+                                <div class="card text-center mb-3">
                                     <div class="card-header bg-success text-white">Pencapaian Akhir</div>
                                     <div class="card-body">
-                                        <h3 id="pencapaian-akhir"><?= $nilai['pencapaian'] ?? '0%' ?></h3>
+                                        <h3 id="pencapaian-akhir"><?= number_format($pencapaian_pct ?? 0, 2) ?>%</h3>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- Predikat -->
                         <div class="card text-center mb-3">
                             <div class="card-header bg-success text-white">Yudisium / Predikat</div>
                             <div class="card-body">
-                                <h3 id="predikat"><?= $nilai['predikat'] ?? '-' ?></h3>
+                                <h3 id="predikat" class="<?= $predikatClass ?>"><?= $predikat ?></h3>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
+
 
         <!-- Aktivitas Coaching / Chat -->
         <div class="card mt-4 border-0 shadow-lg rounded-4 overflow-hidden">
@@ -599,25 +632,6 @@
 
 <script>
     document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
-        let awal = document.getElementById('periode_awal').value;
-        let akhir = document.getElementById('periode_akhir').value;
-        let nik = "<?= $pegawai_detail->nik ?? '' ?>"; // pastikan variabel ini ada
-
-        if (!awal || !akhir) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Oops...',
-                text: 'Silakan pilih periode awal dan akhir terlebih dahulu'
-            });
-            return;
-        }
-
-        window.location.href = "<?= base_url('Administrator/cariDataPegawai') ?>?nik=" + nik + "&awal=" + awal + "&akhir=" + akhir;
-    });
-</script>
-
-<script>
-    document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
         let periode = document.getElementById('periode_select').value.split('|');
         let awal = periode[0];
         let akhir = periode[1];
@@ -625,55 +639,11 @@
 
         window.location.href = "<?= base_url('Administrator/cariDataPegawai') ?>?nik=" + nik + "&awal=" + awal + "&akhir=" + akhir;
     });
-</script>
-
-<script>
     // Auto scroll ke bawah saat halaman dibuka
     document.addEventListener("DOMContentLoaded", function() {
         var chatBox = document.getElementById("chat-box");
         if (chatBox) {
             chatBox.scrollTop = chatBox.scrollHeight;
         }
-
-        // Ambil nilai dari PHP
-        let nilaiAkhir = <?= isset($nilai['nilai_akhir']) ? (is_numeric($nilai['nilai_akhir']) ? $nilai['nilai_akhir'] : '"' . $nilai['nilai_akhir'] . '"') : 0 ?>;
-        let pencapaian = <?= isset($nilai['pencapaian']) ? (is_numeric($nilai['pencapaian']) ? $nilai['pencapaian'] : '"' . $nilai['pencapaian'] . '"') : 0 ?>;
-
-        function HitungNilaiAkhir() {
-            // Predikat
-            let predikat;
-            let predikatClass = "";
-
-            if (nilaiAkhir === "Tidak ada nilai") {
-                predikat = "Tidak ada yudisium/predikat";
-                predikatClass = "text-dark";
-            } else if (nilaiAkhir === 0) {
-                predikat = "Belum Ada Nilai";
-                predikatClass = "text-dark";
-            } else if (nilaiAkhir < 2) {
-                predikat = "Minus";
-                predikatClass = "text-danger"; // merah
-            } else if (nilaiAkhir < 3) {
-                predikat = "Fair";
-                predikatClass = "text-warning"; // jingga
-            } else if (nilaiAkhir < 3.5) {
-                predikat = "Good";
-                predikatClass = "text-primary"; // biru
-            } else if (nilaiAkhir < 4.5) {
-                predikat = "Very Good";
-                predikatClass = "text-success"; // hijau muda
-            } else {
-                predikat = "Excellent";
-                predikatClass = "text-success font-weight-bold"; // hijau tua (lebih tebal)
-            }
-
-            document.getElementById("nilai-akhir").textContent =
-                nilaiAkhir === "Tidak ada nilai" ? nilaiAkhir : nilaiAkhir.toFixed(2);
-            document.getElementById("predikat").textContent = predikat;
-            document.getElementById("predikat").className = predikatClass;
-            document.getElementById("pencapaian-akhir").textContent =
-                pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
-        }
-        HitungNilaiAkhir();
     });
 </script>

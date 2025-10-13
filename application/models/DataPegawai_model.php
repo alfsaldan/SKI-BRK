@@ -198,13 +198,15 @@ class DataPegawai_model extends CI_Model
         return $this->db->get()->result();
     }
 
-    public function getNilaiAkhirByNikPeriode($nik, $periode_awal, $periode_akhir)
+    // 🔹 Ambil nilai akhir pegawai dari tabel nilai_akhir
+    public function getNilaiAkhirByNikPeriode($nik, $awal, $akhir)
     {
-        return $this->db->where('nik', $nik)
-            ->where('periode_awal', $periode_awal)
-            ->where('periode_akhir', $periode_akhir)
-            ->get('nilai_akhir')
-            ->row_array();
+        $this->db->select('*');
+        $this->db->from('nilai_akhir');
+        $this->db->where('nik', $nik);
+        $this->db->where('periode_awal >=', $awal);
+        $this->db->where('periode_akhir <=', $akhir);
+        return $this->db->get()->row(); // kembalikan object
     }
 
     // ✅ Ambil chat coaching antara pegawai dan semua penilainya (tidak duplikat)
