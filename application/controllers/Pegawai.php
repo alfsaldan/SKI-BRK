@@ -996,6 +996,257 @@ class Pegawai extends CI_Controller
             ->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM)
             ->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('000000'));
 
+        $row += 2;
+        // =======================
+        // SKALA NILAI BUDAYA PERUSAHAAN (O)
+        // =======================
+        $sheet->setCellValue("B{$row}", "Skala Nilai Internalisasi Budaya");
+        $sheet->mergeCells("B{$row}:G{$row}");
+        $sheet->getStyle("B{$row}")->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
+        $sheet->getStyle("B{$row}")->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('2E7D32');
+        $row++;
+
+        // Simpan baris awal tabel
+        $skalaAwal = $row;
+
+        // $headers = ["Realisasi (%)", "< 80%", "80% sd < 90%", "90% sd < 110%", "110% sd < 120%", "120% sd ≤ 130%"];
+        // $col = 'B';
+        foreach ($headers as $h) {
+            $sheet->setCellValue("{$col}{$row}", $h);
+            $col++;
+        }
+        $sheet->getStyle("B{$row}:G{$row}")->applyFromArray([
+            'font' => ['bold' => true],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'baff95']
+            ]
+        ]);
+
+        $skalaDetail = [
+            ["Kondisi", "Tidak pernah menunjukkan perilaku ini", "Jarang menunjukkan perilaku ini", "Sering menunjukkan perilaku ini", "Sangat sering menunjukkan perilaku ini", "Setiap saat menunjukkan perilaku ini"],
+            ["Yudisium/Predikat", "Minus", "Fair", "Good", "Very Good", "Excellent"],
+            ["Nilai", "1", "2", "3", "4", "5"]
+        ];
+
+        foreach ($skalaDetail as $det) {
+            $row++;
+            $col = 'B';
+            foreach ($det as $i => $cell) {
+                $sheet->setCellValue("{$col}{$row}", $cell);
+
+                // Style border + alignment
+                $sheet->getStyle("{$col}{$row}")->applyFromArray([
+                    'borders' => [
+                        'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                    ],
+                    'alignment' => [
+                        'horizontal' => 'center',
+                        'vertical' => 'center',
+                        'wrapText' => true
+                    ]
+                ]);
+
+                // Kolom pertama diberi warna hijau dan font putih tebal
+                if ($i == 0) {
+                    $sheet->getStyle("{$col}{$row}")
+                        ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                        ->getStartColor()->setRGB('2E7D32');
+
+                    $sheet->getStyle("{$col}{$row}")
+                        ->getFont()->getColor()->setRGB('FFFFFF');
+
+                    $sheet->getStyle("{$col}{$row}")
+                        ->getFont()->setBold(true);
+                }
+
+                // Baris nilai → warna hijau muda
+                if ($det[0] == "Nilai" && $i > 0) {
+                    $sheet->getStyle("{$col}{$row}")
+                        ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                        ->getStartColor()->setRGB('baff95');
+                }
+
+                $col++;
+            }
+        }
+
+        $skalaAkhir = $row;
+
+        // =======================
+        // NILAI BUDAYA PERUSAHAAN (O)
+        // =======================
+        $row += 2;
+        $sheet->setCellValue("B{$row}", "Penilaian Budaya Perusahaan");
+        $sheet->mergeCells("B{$row}:G{$row}");
+        $sheet->getStyle("B{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'size' => 12, 'color' => ['rgb' => 'FFFFFF']],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '2E7D32']
+            ]
+        ]);
+        $row++;
+
+        // Header tabel
+        $sheet->mergeCells("D{$row}:E{$row}");
+        $sheet->mergeCells("F{$row}:G{$row}");
+        $sheet->setCellValue("B{$row}", "No");
+        $sheet->setCellValue("C{$row}", "Perilaku Utama");
+        $sheet->setCellValue("D{$row}", "Panduan Perilaku");
+        $sheet->setCellValue("F{$row}", "Nilai");
+
+        $sheet->getStyle("B{$row}:G{$row}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center', 'wrapText' => true],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '2E7D32']
+            ]
+        ]);
+
+        $row++;
+        $startTable = $row;
+        $no = 1;
+
+        // Ambil data budaya & nilai
+        $budaya = $this->Nilai_model->getAllBudaya();
+        $nilaiBudayaRow = $this->Nilai_model->getNilaiBudayaByPegawai($pegawai->nik, $periode_awal, $periode_akhir);
+        $budaya_nilai = [];
+        $rata_rata_budaya = 0;
+
+        if ($nilaiBudayaRow) {
+            $budaya_nilai = json_decode($nilaiBudayaRow->nilai_budaya, true);
+            $rata_rata_budaya = $nilaiBudayaRow->rata_rata ?? 0;
+        }
+
+        if (!empty($budaya)) {
+            foreach ($budaya as $b) {
+                $panduanList = json_decode($b['panduan_perilaku'], true);
+
+                if (is_array($panduanList)) {
+                    foreach ($panduanList as $pIndex => $p) {
+                        $nilaiKey = "budaya_{$no}_{$pIndex}";
+                        $nilai = isset($budaya_nilai[$nilaiKey]) ? (int)$budaya_nilai[$nilaiKey] : 0;
+
+                        switch ($nilai) {
+                            case 1:
+                                $labelNilai = "1 - Sangat Jarang";
+                                $color = "FF0000";
+                                break;
+                            case 2:
+                                $labelNilai = "2 - Jarang";
+                                $color = "FFA500";
+                                break;
+                            case 3:
+                                $labelNilai = "3 - Kadang";
+                                $color = "1E88E5";
+                                break;
+                            case 4:
+                                $labelNilai = "4 - Sering";
+                                $color = "43A047";
+                                break;
+                            case 5:
+                                $labelNilai = "5 - Selalu";
+                                $color = "1E5631";
+                                break;
+                            default:
+                                $labelNilai = "Belum Dinilai";
+                                $color = "808080";
+                        }
+
+                        if ($pIndex === 0) {
+                            $rowspan = count($panduanList);
+                            $sheet->setCellValue("B{$row}", $no);
+                            $sheet->setCellValue("C{$row}", $b['perilaku_utama']);
+
+                            $sheet->getStyle("B{$row}")->getAlignment()
+                                ->setHorizontal('center')->setVertical('center');
+
+                            if ($rowspan > 1) {
+                                $sheet->mergeCells("B{$row}:B" . ($row + $rowspan - 1));
+                                $sheet->mergeCells("C{$row}:C" . ($row + $rowspan - 1));
+                            }
+                        }
+
+                        $sheet->mergeCells("D{$row}:E{$row}");
+                        $sheet->setCellValue("D{$row}", chr(97 + $pIndex) . ". " . $p);
+
+                        $sheet->mergeCells("F{$row}:G{$row}");
+                        $sheet->setCellValue("F{$row}", $labelNilai);
+                        $sheet->getStyle("F{$row}")->getFont()->getColor()->setRGB($color);
+
+                        $sheet->getStyle("B{$row}:G{$row}")->applyFromArray([
+                            'borders' => [
+                                'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+                            ],
+                            'alignment' => [
+                                'horizontal' => 'left',
+                                'vertical' => 'center',
+                                'wrapText' => true
+                            ]
+                        ]);
+
+                        $row++;
+                    }
+                    $no++;
+                }
+            }
+
+            $sheet->getStyle("B{$startTable}:B" . ($row - 1))
+                ->getAlignment()->setHorizontal('center')->setVertical('center');
+        } else {
+            $sheet->mergeCells("B{$row}:G{$row}");
+            $sheet->setCellValue("B{$row}", "Data penilaian budaya belum tersedia.");
+            $sheet->getStyle("B{$row}")->getAlignment()->setHorizontal('center');
+            $sheet->getStyle("B{$row}")->getFont()->setItalic(true)->getColor()->setRGB('808080');
+            $row++;
+        }
+
+        $endTable = $row - 1;
+
+        // Border tebal luar
+        $sheet->getStyle("B" . ($startTable - 1) . ":G{$endTable}")->applyFromArray([
+            'borders' => [
+                'outline' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ]);
+
+        // =======================
+        // RATA-RATA NILAI BUDAYA
+        // =======================
+        $sheet->mergeCells("B{$row}:E{$row}");
+        $sheet->mergeCells("F{$row}:G{$row}");
+        $sheet->setCellValue("B{$row}", "Rata-Rata Nilai Internalisasi Budaya");
+        $sheet->setCellValue("F{$row}", number_format($rata_rata_budaya ?? 0, 2));
+
+        $sheet->getStyle("B{$row}:G{$row}")->applyFromArray([
+            'font' => ['bold' => true],
+            'borders' => [
+                'allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]
+            ],
+            'alignment' => ['horizontal' => 'center', 'vertical' => 'center']
+        ]);
+        $sheet->getStyle("B{$row}:E{$row}")
+            ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('2E7D32');
+        $sheet->getStyle("B{$row}:E{$row}")->getFont()->getColor()->setRGB('FFFFFF');
+
+
+        // ======================= 
+        // NILAI BUDAYA (0)
+        // =======================
+
+
         // ======================= 
         // SUMMARY NILAI AKHIR (q)
         // =======================
@@ -1239,17 +1490,11 @@ class Pegawai extends CI_Controller
         $sheet->getColumnDimension('E')->setWidth(22);
         $sheet->getColumnDimension('F')->setWidth(20);
 
-        // =======================
-        // BUAT DISINI UNTUK KOMENTAR
-        // =======================
-        // =======================
-        // ✍️ KOMENTAR PEGAWAI DAN PENILAI (SAMPING)
-        // =======================
 
         // Tentukan posisi baris awal sejajar nilai akhir
-        $row = 44; // mulai di samping bagian "NILAI AKHIR"
-        $colStart = 'H';
-        $colEnd   = 'K';
+        $row = 93; // mulai di samping bagian "NILAI AKHIR"
+        $colStart = 'B';
+        $colEnd   = 'E';
 
         // Judul Bagian
         $sheet->setCellValue("{$colStart}{$row}", "III. KOMENTAR PEGAWAI DAN PENILAI");
