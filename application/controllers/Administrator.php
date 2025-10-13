@@ -282,6 +282,7 @@ class Administrator extends CI_Controller
             'pegawai'       => $this->db->get('pegawai')->result(),
             'indikator'     => $this->db->get('indikator')->result(),
             'penilaian'     => $this->Penilaian_model->get_all_penilaian(),
+            'budaya'        => $this->Penilaian_model->getAllBudaya(),
         ];
 
         $this->load->view("layout/header");
@@ -343,24 +344,37 @@ class Administrator extends CI_Controller
             // 🔹 ambil nilai_akhir dari tabel nilai_akhir
             $nilai_akhir = $this->Penilaian_model->getNilaiAkhir($nik, $periode_awal, $periode_akhir);
 
-            $data['pegawai_detail']      = $pegawai;
+            // 🔹 ambil nilai budaya dari tabel budaya_nilai
+            $budayaData = $this->Penilaian_model->getBudayaNilaiByNik($nik, $periode_awal, $periode_akhir);
+
+            // pisahkan nilai_budaya & rata-rata
+            $budaya_nilai = $budayaData['nilai_budaya'] ?? [];
+            $rata_rata_budaya = $budayaData['rata_rata'] ?? 0;
+
+            $data['pegawai_detail']       = $pegawai;
             $data['indikator_by_jabatan'] = $indikator;
-            $data['nilai_akhir']         = $nilai_akhir;
+            $data['nilai_akhir']          = $nilai_akhir;
+            $data['budaya_nilai']         = $budaya_nilai;
+            $data['rata_rata_budaya']     = $rata_rata_budaya;
+            $data['budaya']               = $this->Penilaian_model->getAllBudaya();
+
             $data['message'] = [
                 'type' => 'success',
                 'text' => 'Data penilaian pegawai ditemukan!'
             ];
         } else {
-            $data['pegawai_detail'] = null;
+            $data['pegawai_detail']       = null;
             $data['indikator_by_jabatan'] = [];
-            $data['nilai_akhir'] = null;
+            $data['nilai_akhir']          = null;
+            $data['budaya_nilai']         = [];
+            $data['rata_rata_budaya']     = 0;
             $data['message'] = [
                 'type' => 'error',
                 'text' => 'Pegawai dengan NIK tersebut tidak ditemukan.'
             ];
         }
 
-        $data['judul'] = "Penilaian Kinerja Pegawai";
+        $data['judul']        = "Penilaian Kinerja Pegawai";
         $data['periode_awal'] = $periode_awal;
         $data['periode_akhir'] = $periode_akhir;
 
@@ -2138,6 +2152,7 @@ class Administrator extends CI_Controller
         $akhir = $this->input->get('akhir') ?? date('Y-12-31');
 
         $this->load->model('Penilaian_model');
+
         // Ambil daftar periode untuk select
         $data['periode_list'] = $this->Penilaian_model->getPeriodeList();
 
@@ -2156,8 +2171,17 @@ class Administrator extends CI_Controller
         // Ambil data penilaian berdasarkan periode
         $penilaian = $this->Penilaian_model->getPenilaianDetail($nik, $awal, $akhir);
         $status_penilaian = $this->Penilaian_model->getStatusPenilaian($nik, $awal, $akhir);
+
         // Ambil nilai akhir (untuk nilai budaya dan predikat jika tersedia)
         $nilai_akhir = $this->Penilaian_model->getNilaiAkhir($nik, $awal, $akhir);
+
+        // 🔹 Ambil nilai budaya pegawai berdasarkan periode
+        $budayaData = $this->Penilaian_model->getBudayaNilaiByNik($nik, $awal, $akhir);
+        $data['budaya_nilai'] = $budayaData['nilai_budaya'];
+        $data['rata_rata_budaya'] = $budayaData['rata_rata'];
+
+        // 🔹 Ambil daftar budaya utama & panduan
+        $data['budaya'] = $this->Penilaian_model->getAllBudaya();
 
         $data['judul'] = "Detail Verifikasi Penilaian";
         $data['pegawai_detail'] = $pegawai;

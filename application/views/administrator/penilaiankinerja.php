@@ -369,7 +369,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Form Penilaian Budaya (Read-only) -->
+                <!-- Form Penilaian Budaya (Read-Only untuk Pegawai) -->
                 <div class="row mt-4">
                     <div class="col-12">
                         <div class="card shadow-sm border-0">
@@ -380,81 +380,103 @@
 
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="tabel-penilaian-budaya">
-                                        <thead class="text-center">
+                                        <thead class="text-center align-middle">
                                             <tr class="bg-success text-white fw-bold">
-                                                <th colspan="4">Budaya Kerja</th>
+                                                <th colspan="4" style="vertical-align: middle;">Budaya Kerja</th>
                                             </tr>
-                                            <tr class="bg-success-subtle text-dark fw-bold">
+                                            <tr class="bg-success-subtle text-dark fw-bold align-middle">
                                                 <th style="width:50px;">No</th>
-                                                <th style="width:370px;">Perilaku Utama</th>
+                                                <th style="width:300px;">Perilaku Utama</th>
                                                 <th>Panduan Perilaku</th>
-                                                <th style="width:120px;">Nilai / Detail</th>
+                                                <th style="width:180px;">Nilai</th>
                                             </tr>
                                         </thead>
+
                                         <tbody>
                                             <?php
-                                            // Data budaya + nilai sudah dinilai (contoh)
-                                            $budaya = [
-                                                [
-                                                    "utama" => "Komitmen & Bertanggung Jawab",
-                                                    "panduan" => [
-                                                        "Teguh dalam bersikap sesuai peraturan",
-                                                        "Melaksanakan tugas dan kewajiban optimal"
-                                                    ],
-                                                    "nilai" => [5, 4.33],
-                                                    "detail" => [
-                                                        ["Ya", "Ya", "Tidak"], // pertanyaan 3
-                                                        ["Ya", "Ya", "Ya"]
-                                                    ]
-                                                ],
-                                                [
-                                                    "utama" => "Bekerjasama, saling menghargai dan mendukung",
-                                                    "panduan" => [
-                                                        "Membangun, menjaga soliditas tim",
-                                                        "Menunjukkan empati pada rekan kerja"
-                                                    ],
-                                                    "nilai" => [5, 5],
-                                                    "detail" => [
-                                                        ["Ya", "Ya", "Ya"],
-                                                        ["Ya", "Ya", "Ya"]
-                                                    ]
-                                                ],
-                                            ];
                                             $no = 1;
-                                            foreach ($budaya as $b):
-                                                foreach ($b['panduan'] as $pIndex => $p):
+                                            // Pastikan $budaya_nilai selalu array
+                                            $budaya_nilai = $budaya_nilai ?? [];
+
+                                            if (!empty($budaya)) :
+                                                foreach ($budaya as $b) :
+                                                    // Pastikan $b adalah array jika diambil dari DB object
+                                                    $b_data = is_object($b) ? (array)$b : $b;
+                                                    $panduanList = json_decode($b_data['panduan_perilaku'], true);
+
+                                                    if (is_array($panduanList)) :
+                                                        foreach ($panduanList as $pIndex => $p) :
+                                                            // Key sesuai format JSON nilai_budaya
+                                                            $nilaiKey = "budaya_{$no}_{$pIndex}";
+                                                            $nilai = isset($budaya_nilai[$nilaiKey]) ? (int)$budaya_nilai[$nilaiKey] : 0;
+
+                                                            // Mapping label dan warna
+                                                            switch ($nilai) {
+                                                                case 1:
+                                                                    $labelNilai = "1 - Sangat Jarang";
+                                                                    $color = "text-danger";
+                                                                    break;
+                                                                case 2:
+                                                                    $labelNilai = "2 - Jarang";
+                                                                    $color = "text-warning";
+                                                                    break;
+                                                                case 3:
+                                                                    $labelNilai = "3 - Kadang";
+                                                                    $color = "text-primary";
+                                                                    break;
+                                                                case 4:
+                                                                    $labelNilai = "4 - Sering";
+                                                                    $color = "text-success";
+                                                                    break;
+                                                                case 5:
+                                                                    $labelNilai = "5 - Selalu";
+                                                                    $color = "fw-bold";
+                                                                    break;
+                                                                default:
+                                                                    $labelNilai = "<span class='text-muted fst-italic'>Belum Dinilai</span>";
+                                                                    $color = "";
+                                                            }
                                             ?>
-                                                    <tr>
-                                                        <?php if ($pIndex === 0): ?>
-                                                            <td class="text-center align-middle" rowspan="<?= count($b['panduan']); ?>"><?= $no++; ?></td>
-                                                            <td class="align-middle" rowspan="<?= count($b['panduan']); ?>"><?= $b['utama']; ?></td>
-                                                        <?php endif; ?>
-                                                        <td><?= ($pIndex === 0 ? "a. " : "b. ") . $p; ?></td>
-                                                        <td class="text-center align-middle">
-                                                            <span class="nilai-text"><?= $b['nilai'][$pIndex] ?></span>
-                                                            <button type="button" class="btn btn-sm btn-info ms-2 detail-budaya-btn"
-                                                                data-index="<?= $no - 2 ?>" data-panduan="<?= $pIndex ?>"
-                                                                data-detail='<?= json_encode($b['detail'][$pIndex]) ?>'>
-                                                                Detail
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                            <?php endforeach;
-                                            endforeach; ?>
+                                                            <tr>
+                                                                <?php if ($pIndex === 0): ?>
+                                                                    <td class="text-center align-middle" rowspan="<?= count($panduanList); ?>">
+                                                                        <?= $no; ?>
+                                                                    </td>
+                                                                    <td class="align-middle" rowspan="<?= count($panduanList); ?>">
+                                                                        <?= htmlspecialchars($b_data['perilaku_utama']); ?>
+                                                                    </td>
+                                                                <?php endif; ?>
+                                                                <td><?= chr(97 + $pIndex) . ". " . htmlspecialchars($p); ?></td>
+                                                                <td class="text-center align-middle">
+                                                                    <?php
+                                                                    if ($nilai >= 1 && $nilai <= 5) {
+                                                                        $style = $nilai == 5 ? "color:#1e9c44;" : "";
+                                                                        echo "<span class='$color' style='$style'>$labelNilai</span>";
+                                                                    } else {
+                                                                        echo $labelNilai;
+                                                                    }
+                                                                    ?>
+                                                                </td>
+                                                            </tr>
+                                            <?php
+                                                        endforeach;
+                                                        $no++;
+                                                    endif;
+                                                endforeach;
+                                            else :
+                                                echo '<tr><td colspan="4" class="text-center text-muted">Data penilaian budaya belum tersedia.</td></tr>';
+                                            endif;
+                                            ?>
                                         </tbody>
+
                                         <tfoot class="text-center fw-bold bg-success text-white">
                                             <tr>
-                                                <td colspan="3" class="text-end align-middle">Rata-Rata Nilai Internalisasi Budaya</td>
+                                                <td colspan="3" class="text-end align-middle">
+                                                    Rata-Rata Nilai Internalisasi Budaya
+                                                </td>
                                                 <td>
-                                                    <?php
-                                                    // hitung rata-rata otomatis
-                                                    $all_values = [];
-                                                    foreach ($budaya as $b) {
-                                                        $all_values = array_merge($all_values, $b['nilai']);
-                                                    }
-                                                    $rata = count($all_values) > 0 ? array_sum($all_values) / count($all_values) : 0;
-                                                    ?>
-                                                    <input type="text" class="form-control form-control-sm text-center" value="<?= number_format($rata, 2) ?>" readonly>
+                                                    <input type="text" class="form-control form-control-sm text-center"
+                                                        value="<?= number_format($rata_rata_budaya ?? 0, 2); ?>" readonly>
                                                 </td>
                                             </tr>
                                         </tfoot>
@@ -464,46 +486,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Modal Detail Budaya -->
-                <div class="modal fade" id="modalDetailBudaya" tabindex="-1" role="dialog" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header bg-info text-white">
-                                <h5 class="modal-title" id="modalDetailBudayaTitle">Detail Penilaian Budaya</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body" id="modalDetailBudayaBody"></div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <script>
-                    document.querySelectorAll('.detail-budaya-btn').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            const index = btn.dataset.index;
-                            const pIndex = btn.dataset.panduan;
-                            const detail = JSON.parse(btn.dataset.detail);
-
-                            document.getElementById('modalDetailBudayaTitle').innerText = "Detail Pertanyaan - Panduan " + (pIndex + 1);
-
-                            let html = "<ul>";
-                            detail.forEach((d, i) => {
-                                html += `<li>Pertanyaan ${i+1}: ${d}</li>`;
-                            });
-                            html += "</ul>";
-
-                            document.getElementById('modalDetailBudayaBody').innerHTML = html;
-
-                            $('#modalDetailBudaya').modal('show');
-                        });
-                    });
-                </script>
 
                 <!-- Nilai Akhir & Catatan -->
                 <div class="card mt-4">
@@ -532,7 +514,7 @@
                             <tr>
                                 <th>Rata-rata Nilai Internalisasi Budaya</th>
                                 <td class="text-center" id="rata-budaya">
-                                    <?= $nilai_akhir['rata_budaya'] ?? '-' ?>
+                                    <?= number_format($rata_rata_budaya ?? 0, 2); ?>
                                 </td>
                                 <td>x Bobot % Budaya Perusahaan</td>
                                 <td>
@@ -896,11 +878,11 @@
 
         function hitungNilaiAkhir() {
             try {
-                const bobotSasaran = 0.95,
-                    bobotBudaya = 0.05;
+                const bobotSasaran = 0.95;
+                const bobotBudaya = 0.05;
                 const fraudEl = document.getElementById("fraud-input");
                 const totalNilaiBobotEl = document.getElementById("total-nilai-bobot");
-                const rataBudayaEl = document.getElementById("rata-rata-budaya");
+                const rataBudayaEl = document.getElementById("rata-budaya");
 
                 const fraud = fraudEl ? (parseFloat(fraudEl.value) || 0) : 0;
                 const totalSasaran = totalNilaiBobotEl ? (parseFloat(totalNilaiBobotEl.textContent) || 0) : 0;
@@ -976,7 +958,7 @@
                 this.value = val; // set ulang nilainya
             });
         }
-        
+
         function updatePredikatDanPencapaian() {
             const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
             const nilaiAkhir = nilaiAkhirEl ? (parseFloat(nilaiAkhirEl.textContent) || 0) : 0;

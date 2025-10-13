@@ -66,7 +66,7 @@
 
                 </div>
             </div>
-            
+
             <!-- Data Pegawai -->
             <div class="card shadow-lg rounded-4 mb-4">
                 <div class="card-header bg-primary text-white rounded-top-4">
@@ -248,6 +248,123 @@
                 </div>
             </div>
 
+            <!-- Form Penilaian Budaya (Read-Only untuk Pegawai) -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h5 class="text-success fw-bold mb-3">
+                                <i class="mdi mdi-account-star-outline me-2"></i> Form Penilaian Budaya
+                            </h5>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="tabel-penilaian-budaya">
+                                    <thead class="text-center align-middle">
+                                        <tr class="bg-success text-white fw-bold">
+                                            <th colspan="4" style="vertical-align: middle;">Budaya Kerja</th>
+                                        </tr>
+                                        <tr class="bg-success-subtle text-dark fw-bold align-middle">
+                                            <th style="width:50px;">No</th>
+                                            <th style="width:300px;">Perilaku Utama</th>
+                                            <th>Panduan Perilaku</th>
+                                            <th style="width:180px;">Nilai</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+                                        <?php
+                                        $no = 1;
+                                        // Pastikan $budaya_nilai selalu array
+                                        $budaya_nilai = $budaya_nilai ?? [];
+
+                                        if (!empty($budaya)) :
+                                            foreach ($budaya as $b) :
+                                                // Pastikan $b adalah array jika diambil dari DB object
+                                                $b_data = is_object($b) ? (array)$b : $b;
+                                                $panduanList = json_decode($b_data['panduan_perilaku'], true);
+
+                                                if (is_array($panduanList)) :
+                                                    foreach ($panduanList as $pIndex => $p) :
+                                                        // Key sesuai format JSON nilai_budaya
+                                                        $nilaiKey = "budaya_{$no}_{$pIndex}";
+                                                        $nilai = isset($budaya_nilai[$nilaiKey]) ? (int)$budaya_nilai[$nilaiKey] : 0;
+
+                                                        // Mapping label dan warna
+                                                        switch ($nilai) {
+                                                            case 1:
+                                                                $labelNilai = "1 - Sangat Jarang";
+                                                                $color = "text-danger";
+                                                                break;
+                                                            case 2:
+                                                                $labelNilai = "2 - Jarang";
+                                                                $color = "text-warning";
+                                                                break;
+                                                            case 3:
+                                                                $labelNilai = "3 - Kadang";
+                                                                $color = "text-primary";
+                                                                break;
+                                                            case 4:
+                                                                $labelNilai = "4 - Sering";
+                                                                $color = "text-success";
+                                                                break;
+                                                            case 5:
+                                                                $labelNilai = "5 - Selalu";
+                                                                $color = "fw-bold";
+                                                                break;
+                                                            default:
+                                                                $labelNilai = "<span class='text-muted fst-italic'>Belum Dinilai</span>";
+                                                                $color = "";
+                                                        }
+                                        ?>
+                                                        <tr>
+                                                            <?php if ($pIndex === 0): ?>
+                                                                <td class="text-center align-middle" rowspan="<?= count($panduanList); ?>">
+                                                                    <?= $no; ?>
+                                                                </td>
+                                                                <td class="align-middle" rowspan="<?= count($panduanList); ?>">
+                                                                    <?= htmlspecialchars($b_data['perilaku_utama']); ?>
+                                                                </td>
+                                                            <?php endif; ?>
+                                                            <td><?= chr(97 + $pIndex) . ". " . htmlspecialchars($p); ?></td>
+                                                            <td class="text-center align-middle">
+                                                                <?php
+                                                                if ($nilai >= 1 && $nilai <= 5) {
+                                                                    $style = $nilai == 5 ? "color:#1e9c44;" : "";
+                                                                    echo "<span class='$color' style='$style'>$labelNilai</span>";
+                                                                } else {
+                                                                    echo $labelNilai;
+                                                                }
+                                                                ?>
+                                                            </td>
+                                                        </tr>
+                                        <?php
+                                                    endforeach;
+                                                    $no++;
+                                                endif;
+                                            endforeach;
+                                        else :
+                                            echo '<tr><td colspan="4" class="text-center text-muted">Data penilaian budaya belum tersedia.</td></tr>';
+                                        endif;
+                                        ?>
+                                    </tbody>
+
+                                    <tfoot class="text-center fw-bold bg-success text-white">
+                                        <tr>
+                                            <td colspan="3" class="text-end align-middle">
+                                                Rata-Rata Nilai Internalisasi Budaya
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control form-control-sm text-center"
+                                                    value="<?= number_format($rata_rata_budaya ?? 0, 2); ?>" readonly>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Ringkasan Nilai Akhir -->
             <div class="card shadow-sm border-0 mb-4">
@@ -260,7 +377,7 @@
                     <?php
                     // Pastikan variabel dari controller
                     $total_skor     = $nilai_akhir['nilai_sasaran'] ?? 0;
-                    $avg_budaya     = $nilai_akhir['nilai_budaya'] ?? 0;
+                    $avg_budaya     = number_format($rata_rata_budaya ?? 0, 2);
                     $kontrib_sasaran = $total_skor * 0.95;
                     $kontrib_budaya = $avg_budaya * 0.05;
                     $total_nilai    = $nilai_akhir['total_nilai'] ?? $kontrib_sasaran + $kontrib_budaya;

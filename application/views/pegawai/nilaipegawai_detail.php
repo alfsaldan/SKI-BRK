@@ -581,9 +581,10 @@
                                                                         $checked = 'checked';
                                                                     }
                                                                     ?>
-                                                                    <td class="text-center align-middle">
+                                                                    <td class="text-center align-middle" style="width:80px; cursor:pointer;"
+                                                                        onclick="this.querySelector('input').click();">
                                                                         <input type="radio"
-                                                                            class="form-check-input budaya-radio"
+                                                                            class="budaya-radio"
                                                                             name="<?= $idRadio; ?>"
                                                                             value="<?= $i; ?>"
                                                                             <?= $checked; ?>>

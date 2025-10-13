@@ -459,4 +459,40 @@ class Penilaian_model extends CI_Model
             ->order_by('sk.perspektif, sk.id, i.id')
             ->get()->result();
     }
+
+    // 🔹 Ambil semua budaya dari tabel budaya
+    public function getAllBudaya()
+    {
+        return $this->db->get('budaya')->result();
+    }
+
+    public function getBudayaNilaiByNik($nik, $periode_awal = null, $periode_akhir = null)
+    {
+        $this->db->where('nik_pegawai', $nik);
+
+        // 🔹 filter periode jika diberikan
+        if ($periode_awal) {
+            $this->db->where('periode_awal', $periode_awal);
+        }
+        if ($periode_akhir) {
+            $this->db->where('periode_akhir', $periode_akhir);
+        }
+
+        $result = $this->db->get('budaya_nilai')->row(); // gunakan row() biar object
+
+        if ($result) {
+            $nilai_budaya = isset($result->nilai_budaya) ? json_decode($result->nilai_budaya, true) : [];
+            $rata_rata = isset($result->rata_rata) ? $result->rata_rata : 0;
+
+            return [
+                'nilai_budaya' => $nilai_budaya,
+                'rata_rata' => $rata_rata
+            ];
+        }
+
+        return [
+            'nilai_budaya' => [],
+            'rata_rata' => 0
+        ];
+    }
 }
