@@ -69,80 +69,102 @@
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Jika URL punya param awal/akhir (misal setelah klik 'Nilai'), set select sesuai
-        (function restoreSelectedPeriodFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            const awal = params.get('awal');
-            const akhir = params.get('akhir');
-            if (awal && akhir) {
-                const sel = document.getElementById('filter_periode');
-                const optionVal = awal + '|' + akhir;
-                for (let i = 0; i < sel.options.length; i++) {
-                    if (sel.options[i].value === optionVal) {
-                        sel.selectedIndex = i;
-                        break;
-                    }
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Jika URL punya param awal/akhir (misal setelah klik 'Nilai'), set select sesuai
+    (function restoreSelectedPeriodFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const awal = params.get('awal');
+        const akhir = params.get('akhir');
+        if (awal && akhir) {
+            const sel = document.getElementById('filter_periode');
+            const optionVal = awal + '|' + akhir;
+            for (let i = 0; i < sel.options.length; i++) {
+                if (sel.options[i].value === optionVal) {
+                    sel.selectedIndex = i;
+                    break;
                 }
             }
-        })();
+        }
+    })();
 
-        const table = $('#table-verifikasi').DataTable({
-            processing: true,
-            serverSide: false,
-                ajax: {
-                    url: '<?= site_url('Administrator/getVerifikasiData') ?>',
-                    data: function(d) {
-                        const v = document.getElementById('filter_periode').value || '';
-                        const parts = v.split('|');
-                        d.awal = parts[0] || '';
-                        d.akhir = parts[1] || '';
-                    }
-                },
-            columns: [
-                { data: 'nik' },
-                { data: 'nama' },
-                { data: 'jabatan' },
-                { 
-                    data: 'status_penilaian',
-                    render: function(data, type, row) {
-                        if (!data) return '';
-                        var cls = 'badge bg-secondary';
-                        if (data === 'Diverifikasi') cls = 'badge bg-success';
-                        else if (data === 'Ditolak') cls = 'badge bg-danger';
-                        else if (data === 'Dinilai') cls = 'badge bg-info text-white';
-                        return '<span class="' + cls + '">' + data + '</span>';
-                    }
-                },
-                {
-                    data: 'action',
-                    render: function(data, type, row) {
-                        // tambahkan periode yang sedang dipilih ke URL action
-                        const v = document.getElementById('filter_periode').value || '';
-                        const parts = v.split('|');
-                        const awal = encodeURIComponent(parts[0] || '');
-                        const akhir = encodeURIComponent(parts[1] || '');
-                        const sep = data.indexOf('?') === -1 ? '?' : '&';
-                        return '<a class="btn btn-sm btn-success" href="' + data + sep + 'awal=' + awal + '&akhir=' + akhir + '">Nilai</a>';
-                    },
-                    orderable: false,
-                    searchable: false
+    // Inisialisasi DataTable
+    const table = $('#table-verifikasi').DataTable({
+        processing: true,
+        serverSide: false,
+        ajax: {
+            url: '<?= site_url('Administrator/getVerifikasiData') ?>',
+            data: function(d) {
+                const v = document.getElementById('filter_periode').value || '';
+                const parts = v.split('|');
+                d.awal = parts[0] || '';
+                d.akhir = parts[1] || '';
+            }
+        },
+        columns: [
+            { data: 'nik' },
+            { data: 'nama' },
+            { data: 'jabatan' },
+            { 
+                data: 'status_penilaian',
+                render: function(data) {
+                    if (!data) return '';
+                    let cls = 'badge bg-secondary';
+                    if (data === 'Diverifikasi') cls = 'badge bg-success';
+                    else if (data === 'Ditolak') cls = 'badge bg-danger';
+                    else if (data === 'Dinilai') cls = 'badge bg-info text-white';
+                    return `<span class="${cls}">${data}</span>`;
                 }
-            ],
-            pageLength: 25,
-            lengthMenu: [10, 25, 50, 100]
-        });
+            },
+            {
+                data: 'action',
+                render: function(data) {
+                    const v = document.getElementById('filter_periode').value || '';
+                    const parts = v.split('|');
+                    const awal = encodeURIComponent(parts[0] || '');
+                    const akhir = encodeURIComponent(parts[1] || '');
+                    const sep = data.indexOf('?') === -1 ? '?' : '&';
+                    return `<a class="btn btn-sm btn-success" href="${data}${sep}awal=${awal}&akhir=${akhir}">Verif</a>`;
+                },
+                orderable: false,
+                searchable: false
+            }
+        ],
 
-        document.getElementById('btn_refresh').addEventListener('click', function() {
-            table.ajax.reload();
-        });
+        // 🔹 Tambahkan opsi "Semua"
+        pageLength: 25,
+        lengthMenu: [
+            [5, 10, 25, 50, 100, -1],
+            [5, 10, 25, 50, 100, "Semua"]
+        ],
 
-        // reload otomatis ketika periode berubah
-        var selFilter = document.getElementById('filter_periode');
-        if (selFilter) {
-            selFilter.addEventListener('change', function() {
-                table.ajax.reload();
-            });
+        // 🔹 Ubah teks DataTables ke bahasa Indonesia
+        language: {
+            search: "Cari:",
+            lengthMenu: "Tampilkan _MENU_ data per halaman",
+            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+            infoEmpty: "Tidak ada data tersedia",
+            infoFiltered: "(disaring dari total _MAX_ data)",
+            paginate: {
+                previous: "Sebelumnya",
+                next: "Selanjutnya"
+            },
+            zeroRecords: "Tidak ada hasil ditemukan"
         }
     });
+
+    // Tombol refresh
+    document.getElementById('btn_refresh').addEventListener('click', function() {
+        table.ajax.reload();
+    });
+
+    // Reload otomatis ketika periode berubah
+    const selFilter = document.getElementById('filter_periode');
+    if (selFilter) {
+        selFilter.addEventListener('change', function() {
+            table.ajax.reload();
+        });
+    }
+});
 </script>
+
