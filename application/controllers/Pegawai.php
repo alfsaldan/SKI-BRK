@@ -1209,17 +1209,7 @@ class Pegawai extends CI_Controller
             $row++;
         }
 
-        $endTable = $row - 1;
 
-        // Border tebal luar
-        $sheet->getStyle("B" . ($startTable - 1) . ":G{$endTable}")->applyFromArray([
-            'borders' => [
-                'outline' => [
-                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
-                    'color' => ['rgb' => '000000']
-                ]
-            ]
-        ]);
 
         // =======================
         // RATA-RATA NILAI BUDAYA
@@ -1236,11 +1226,22 @@ class Pegawai extends CI_Controller
             ],
             'alignment' => ['horizontal' => 'center', 'vertical' => 'center']
         ]);
-        $sheet->getStyle("B{$row}:E{$row}")
+        $sheet->getStyle("B{$row}:G{$row}")
             ->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
             ->getStartColor()->setRGB('2E7D32');
-        $sheet->getStyle("B{$row}:E{$row}")->getFont()->getColor()->setRGB('FFFFFF');
+        $sheet->getStyle("B{$row}:G{$row}")->getFont()->getColor()->setRGB('FFFFFF');
 
+        $endTable = $row;
+
+        // Border tebal luar
+        $sheet->getStyle("B" . ($startTable - 2) . ":G{$endTable}")->applyFromArray([
+            'borders' => [
+                'outline' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THICK,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ]);
         // ======================= 
         // SUMMARY NILAI AKHIR (q)
         // =======================
@@ -1281,8 +1282,8 @@ class Pegawai extends CI_Controller
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_GRADIENT_LINEAR,
                 'rotation' => 90,
-                'startColor' => ['rgb' => '215d01'], // Navy klasik
-                'endColor' => ['rgb' => '2E7D32'],   // Abu kebiruan elegan
+                'startColor' => ['rgb' => '215d01'], // hijau tua klasik
+                'endColor' => ['rgb' => '2E7D32'],   // hijau lembut elegan
             ],
             'borders' => [
                 'outline' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM]
@@ -1297,7 +1298,7 @@ class Pegawai extends CI_Controller
 
         // Hitung kontribusi dengan pembobot
         $kontribSasaran = round($nilaiSasaran * 0.95, 2); // 95%
-        $kontribBudaya  = round($nilaiBudaya * 0.05, 2);   // 5%
+        $kontribBudaya  = round($nilaiBudaya * 0.05, 2);  // 5%
 
         // 📋 Data tabel nilai
         $dataRows = [
@@ -1306,7 +1307,6 @@ class Pegawai extends CI_Controller
             ["Total Nilai", "", "", "", round($kontribSasaran + $kontribBudaya, 2)],
             ["Fraud (1 jika fraud, 0 jika tidak)", "", "", "", $nilai->fraud ?? 0],
         ];
-
 
         $warnaZebra1 = 'F9FAFB'; // abu muda
         $warnaZebra2 = 'FFFFFF'; // putih
@@ -1353,23 +1353,23 @@ class Pegawai extends CI_Controller
 
         switch (true) {
             case str_contains($predikat, 'EXCELLENT'):
-                $warnaPredikat = '348cd4'; // hijau klasik elegan
+                $warnaPredikat = '348cd4';
                 $emojiPredikat = '🏅';
                 break;
             case str_contains($predikat, 'VERY'):
-                $warnaPredikat = '62bce7'; // hijau olive lembut
+                $warnaPredikat = '62bce7';
                 $emojiPredikat = '🎖️';
                 break;
             case str_contains($predikat, 'GOOD'):
-                $warnaPredikat = '78c350'; // biru formal
+                $warnaPredikat = '78c350';
                 $emojiPredikat = '🥇';
                 break;
             case str_contains($predikat, 'FAIR'):
-                $warnaPredikat = 'f9982c'; // gold klasik
+                $warnaPredikat = 'f9982c';
                 $emojiPredikat = '🥈';
                 break;
             case str_contains($predikat, 'MINUS'):
-                $warnaPredikat = 'f92c2c'; // merah tua elegan
+                $warnaPredikat = 'f92c2c';
                 $emojiPredikat = '🥉';
                 break;
         }
@@ -1390,6 +1390,18 @@ class Pegawai extends CI_Controller
             ]
         ]);
         $sheet->getRowDimension($row)->setRowHeight(32);
+
+        // ✅ Tambahkan BORDER HITAM di seluruh blok (judul sampai total nilai akhir)
+        $endRow = $row; // baris terakhir total nilai akhir
+        $sheet->getStyle("B{$startRow}:F{$endRow}")->applyFromArray([
+            'borders' => [
+                'outline' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                    'color' => ['rgb' => '000000']
+                ]
+            ]
+        ]);
+
         $row++;
 
         // 🏅 PREDIKAT
