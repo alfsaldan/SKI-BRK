@@ -677,6 +677,28 @@
                                         value="<?= $nilai_akhir['fraud'] ?? 0 ?>">
                                 </td>
                             </tr>
+                            <tr>
+                                <th colspan="4" class="text-right">
+                                    Koefisien Nilai<br>
+                                </th>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input
+                                            type="number"
+                                            name="koefisien"
+                                            id="koefisien-input"
+                                            class="form-control text-center"
+                                            max="100"
+                                            min="70"
+                                            step="5"
+                                            value="<?= isset($nilai_akhir['koefisien']) ? htmlspecialchars($nilai_akhir['koefisien']) : 100 ?>"
+                                            readonly>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         </table>
 
                         <!-- Bagian Bawah: Kiri-Kanan -->
@@ -853,6 +875,7 @@
         const periodeAwal = document.getElementById('periode_awal');
         const periodeAkhir = document.getElementById('periode_akhir');
         const periodeHistory = document.getElementById('periode_history');
+        const koefInput = document.getElementById('koefisien-input');
 
         // Validasi periode
         periodeAwal.addEventListener('change', () => {
@@ -1041,6 +1064,7 @@
             const bobotBudaya = 0.05;
 
             const fraud = parseFloat(document.getElementById("fraud-input").value) || 0;
+            const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
 
             // Ambil nilai sasaran dari total-nilai-bobot
             const totalSasaran = parseFloat(document.getElementById("total-nilai-bobot").textContent) || 0;
@@ -1080,16 +1104,16 @@
             } else if (nilaiAkhir === 0) {
                 predikat = "Belum Ada Nilai";
                 predikatClass = "text-dark";
-            } else if (nilaiAkhir < 2) {
+            } else if (nilaiAkhir < 2 * koef) {
                 predikat = "Minus";
                 predikatClass = "text-danger"; // merah
-            } else if (nilaiAkhir < 3) {
+            } else if (nilaiAkhir < 3 * koef) {
                 predikat = "Fair";
                 predikatClass = "text-warning"; // jingga
-            } else if (nilaiAkhir < 3.5) {
+            } else if (nilaiAkhir < 3.5 * koef) {
                 predikat = "Good";
                 predikatClass = "text-primary"; // biru
-            } else if (nilaiAkhir < 4.5) {
+            } else if (nilaiAkhir < 4.5 * koef) {
                 predikat = "Very Good";
                 predikatClass = "text-success"; // hijau muda
             } else {
@@ -1102,11 +1126,11 @@
             if (nilaiAkhir !== "Tidak ada nilai") {
                 const v = parseFloat(nilaiAkhir) || 0;
                 if (v < 0) pencapaian = 0;
-                else if (v < 2) pencapaian = (v / 2) * 0.8 * 100;
-                else if (v < 3) pencapaian = 80 + ((v - 2) / 1) * 10;
-                else if (v < 3.5) pencapaian = 90 + ((v - 3) / 0.5) * 20;
-                else if (v < 4.5) pencapaian = 110 + ((v - 3.5) / 1) * 10;
-                else if (v < 5) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
+                else if (v < 2 * koef) pencapaian = (v / 2) * 0.8 * 100;
+                else if (v < 3 * koef) pencapaian = 80 + ((v - 2) / 1) * 10;
+                else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3) / 0.5) * 20;
+                else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5) / 1) * 10;
+                else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
                 else pencapaian = 130;
             } else {
                 pencapaian = 0;
@@ -1567,23 +1591,25 @@
 
                 // Simpan ke server
                 fetch("<?= base_url('Pegawai/updateStatus'); ?>", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                    body: `id=${id}&status=${encodeURIComponent(status)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}`
-                })
-                .then(res => res.json())
-                .then(data => {
-                    // Optional: tampilkan notifikasi kecil jika gagal
-                    if (!data.success) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal simpan',
-                            text: data.message || 'Gagal menyimpan data',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-                    }
-                });
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        body: `id=${id}&status=${encodeURIComponent(status)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}`
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        // Optional: tampilkan notifikasi kecil jika gagal
+                        if (!data.success) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal simpan',
+                                text: data.message || 'Gagal menyimpan data',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        }
+                    });
 
                 // Setelah simpan baris, auto-save nilai akhir juga
                 autoSaveNilaiAkhir();
@@ -1610,23 +1636,25 @@
             const pencapaian = document.getElementById('pencapaian-akhir').textContent;
 
             fetch('<?= base_url("Pegawai/simpanNilaiAkhir") ?>', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
-            })
-            .then(res => res.json())
-            .then(res => {
-                // Optional: tampilkan notifikasi kecil jika gagal
-                if (res.status !== 'success') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal simpan nilai akhir',
-                        text: res.message || 'Gagal menyimpan nilai akhir',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                }
-            });
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
+                })
+                .then(res => res.json())
+                .then(res => {
+                    // Optional: tampilkan notifikasi kecil jika gagal
+                    if (res.status !== 'success') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal simpan nilai akhir',
+                            text: res.message || 'Gagal menyimpan nilai akhir',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                });
         }
     });
 </script>

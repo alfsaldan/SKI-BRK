@@ -636,6 +636,28 @@
                                         value="<?= $nilai_akhir['fraud'] ?? 0 ?>" readonly>
                                 </td>
                             </tr>
+                            <tr>
+                                <th colspan="4" class="text-right">
+                                    Koefisien Nilai<br>
+                                </th>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input
+                                            type="number"
+                                            name="koefisien"
+                                            id="koefisien-input"
+                                            class="form-control text-center"
+                                            max="100"
+                                            min="70"
+                                            step="5"
+                                            value="<?= isset($nilai_akhir['koefisien']) ? htmlspecialchars($nilai_akhir['koefisien']) : 100 ?>"
+                                            readonly>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         </table>
 
                         <!-- Bagian Bawah: Kiri-Kanan -->
@@ -816,6 +838,7 @@
         const btnSesuaikan = document.getElementById('btn-sesuaikan-periode');
         const btnSimpanSemua = document.getElementById('btn-simpan-semua');
         const statusSemua = document.getElementById('status-semua');
+        const koefInput = document.getElementById('koefisien-input');
 
         // Utility: angka format
         function formatAngka(nilai) {
@@ -930,6 +953,7 @@
             const nilaiBudaya = rataBudaya * bobotBudaya;
             const totalNilai = nilaiSasaran + nilaiBudaya;
             const nilaiAkhir = fraud === 1 ? totalNilai - fraud : totalNilai;
+            const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
 
             // predikat simple mapping
             let predikat = "Belum Ada Nilai",
@@ -937,16 +961,16 @@
             if (nilaiAkhir === 0) {
                 predikat = "Belum Ada Nilai";
                 predikatClass = "text-dark";
-            } else if (nilaiAkhir < 2) {
+            } else if (nilaiAkhir < 2 * koef) {
                 predikat = "Minus";
                 predikatClass = "text-danger";
-            } else if (nilaiAkhir < 3) {
+            } else if (nilaiAkhir < 3 * koef) {
                 predikat = "Fair";
                 predikatClass = "text-warning";
-            } else if (nilaiAkhir < 3.5) {
+            } else if (nilaiAkhir < 3.5 * koef) {
                 predikat = "Good";
                 predikatClass = "text-primary";
-            } else if (nilaiAkhir < 4.5) {
+            } else if (nilaiAkhir < 4.5 * koef) {
                 predikat = "Very Good";
                 predikatClass = "text-success";
             } else {
@@ -973,11 +997,11 @@
             // pencapaian akhir (approx)
             let pencapaian = 0;
             const v = parseFloat(nilaiAkhir) || 0;
-            if (v < 2) pencapaian = (v / 2) * 0.8 * 100;
-            else if (v < 3) pencapaian = 80 + ((v - 2) / 1) * 10;
-            else if (v < 3.5) pencapaian = 90 + ((v - 3) / 0.5) * 20;
-            else if (v < 4.5) pencapaian = 110 + ((v - 3.5) / 1) * 10;
-            else if (v < 5) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
+            if (v < 2 * koef) pencapaian = (v / 2) * 0.8 * 100;
+            else if (v < 3 * koef) pencapaian = 80 + ((v - 2) / 1) * 10;
+            else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3) / 0.5) * 20;
+            else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5) / 1) * 10;
+            else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
             else pencapaian = 130;
 
             if (pencapaianAkhirEl) pencapaianAkhirEl.textContent = pencapaian.toFixed(2) + "%";

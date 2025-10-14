@@ -416,6 +416,7 @@
                 $pencapaian_pct  = floatval(str_replace('%', '', $nilai_akhir->pencapaian ?? 0));
                 $predikat        = $nilai_akhir->predikat ?? 'Minus (M)';
                 $fraud           = $nilai_akhir->fraud ?? 0;
+                $koefisien       = $nilai_akhir->koefisien ?? 100;
                 ?>
 
                 <!-- Bagian Atas: Perhitungan -->
@@ -445,6 +446,9 @@
                         </th>
                         <td class="text-center"><?= $fraud ?></td>
                     </tr>
+                    <tr>
+                        <th colspan="4" class="text-end">Koefisien Penilaian</th>
+                        <td class="text-center"><?= number_format($koefisien, 0) ?>%</td>
                 </table>
 
                 <?php
@@ -452,6 +456,7 @@
                 $nilai_akhir_value = $nilai_akhir->nilai_akhir ?? 0; // pastikan ada nilai
                 $predikat = "";
                 $predikatClass = "";
+                $koef = $koefisien ? $koefisien / 100 : 1; // default 1 jika koefisien tidak ada
 
                 if ($nilai_akhir_value === "Tidak ada nilai") {
                     $predikat = "Tidak ada yudisium/predikat";
@@ -459,16 +464,16 @@
                 } elseif ($nilai_akhir_value == 0) {
                     $predikat = "Belum Ada Nilai";
                     $predikatClass = "text-dark";
-                } elseif ($nilai_akhir_value < 2) {
+                } elseif ($nilai_akhir_value < 2 * $koef) {
                     $predikat = "Minus (M)";
                     $predikatClass = "text-danger"; // merah
-                } elseif ($nilai_akhir_value < 3) {
+                } elseif ($nilai_akhir_value < 3 * $koef) {
                     $predikat = "Fair (F)";
                     $predikatClass = "text-warning"; // jingga
-                } elseif ($nilai_akhir_value < 3.5) {
+                } elseif ($nilai_akhir_value < 3.5 * $koef) {
                     $predikat = "Good (G)";
                     $predikatClass = "text-primary"; // biru
-                } elseif ($nilai_akhir_value < 4.5) {
+                } elseif ($nilai_akhir_value < 4.5 * $koef) {
                     $predikat = "Very Good (VG)";
                     $predikatClass = "text-success"; // hijau muda
                 } else {

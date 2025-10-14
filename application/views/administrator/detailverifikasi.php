@@ -384,6 +384,7 @@
                     $pencapaian_pct = floatval(str_replace('%', '', $nilai_akhir['pencapaian'] ?? 0));
                     $predikat       = $nilai_akhir['predikat'] ?? 'Minus (M)';
                     $fraud          = $nilai_akhir['fraud'] ?? 0;
+                    $koefisien      = $nilai_akhir['koefisien'] ?? 100;
                     ?>
 
                     <div class="row">
@@ -417,6 +418,9 @@
                                     <td colspan="4" class="text-end fw-bold">Status Fraud</td>
                                     <td class="fw-bold text-danger" style="text-align:right;"><?= $fraud ?></td>
                                 </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end fw-bold">Koefisien Penilaian</td>
+                                    <td class="fw-bold" style="text-align:right;"><?= number_format($koefisien, 0) ?>%</td>
                             </table>
                         </div>
 

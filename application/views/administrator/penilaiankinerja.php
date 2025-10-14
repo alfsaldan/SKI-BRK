@@ -887,6 +887,7 @@
                 const fraud = fraudEl ? (parseFloat(fraudEl.value) || 0) : 0;
                 const totalSasaran = totalNilaiBobotEl ? (parseFloat(totalNilaiBobotEl.textContent) || 0) : 0;
                 const rataBudaya = rataBudayaEl ? (parseFloat(rataBudayaEl.textContent) || 0) : 0;
+                const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
 
                 const nilaiSasaran = totalSasaran * bobotSasaran;
                 const nilaiBudaya = rataBudaya * bobotBudaya;
@@ -898,16 +899,16 @@
                 if (nilaiAkhir === 0) {
                     predikat = "Belum Ada Nilai";
                     predikatClass = "text-dark";
-                } else if (nilaiAkhir < 2) {
+                } else if (nilaiAkhir < 2 * koef) {
                     predikat = "Minus";
                     predikatClass = "text-danger";
-                } else if (nilaiAkhir < 3) {
+                } else if (nilaiAkhir < 3 * koef) {
                     predikat = "Fair";
                     predikatClass = "text-warning";
-                } else if (nilaiAkhir < 3.5) {
+                } else if (nilaiAkhir < 3.5 * koef) {
                     predikat = "Good";
                     predikatClass = "text-primary";
-                } else if (nilaiAkhir < 4.5) {
+                } else if (nilaiAkhir < 4.5 * koef) {
                     predikat = "Very Good";
                     predikatClass = "text-success";
                 } else {
@@ -936,11 +937,11 @@
                     let pencapaian = 0;
                     const v = parseFloat(nilaiAkhir) || 0;
                     if (v < 0) pencapaian = 0;
-                    else if (v < 2) pencapaian = (v / 2) * 0.8 * 100;
-                    else if (v < 3) pencapaian = 80 + ((v - 2) / 1) * 10;
-                    else if (v < 3.5) pencapaian = 90 + ((v - 3) / 0.5) * 20;
-                    else if (v < 4.5) pencapaian = 110 + ((v - 3.5) / 1) * 10;
-                    else if (v < 5) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
+                    else if (v < 2 * koef) pencapaian = (v / 2) * 0.8 * 100;
+                    else if (v < 3 * koef) pencapaian = 80 + ((v - 2) / 1) * 10;
+                    else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3) / 0.5) * 20;
+                    else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5) / 1) * 10;
+                    else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
                     else pencapaian = 130;
                     elPencapaianAkhir.textContent = isNaN(pencapaian) ? '' : pencapaian.toFixed(2) + '%';
                 }
