@@ -1000,22 +1000,47 @@
         }
         initStatusSemuaFromRows();
 
-        // ===== DataTable catatan =====
-        const tableCatatan = $('#tabel-catatan').DataTable({
+        // ===== Custom sorting format dd-mm-yy HH:mm =====
+        $.extend($.fn.dataTableExt.oSort, {
+            "date-uk-pre": function(a) {
+                if (!a) return 0;
+                // Format: dd-mm-yy HH:mm
+                const parts = a.trim().split(' ');
+                const dateParts = parts[0].split('-');
+                const timeParts = parts[1] ? parts[1].split(':') : ["00", "00"];
+                const day = parseInt(dateParts[0], 10);
+                const month = parseInt(dateParts[1], 10) - 1; // bulan mulai dari 0
+                const year = parseInt('20' + dateParts[2], 10); // asumsi '25' artinya 2025
+                const hour = parseInt(timeParts[0], 10);
+                const minute = parseInt(timeParts[1], 10);
+                return new Date(year, month, day, hour, minute).getTime();
+            },
+            "date-uk-asc": function(a, b) {
+                return a - b;
+            },
+            "date-uk-desc": function(a, b) {
+                return b - a;
+            }
+        });
+
+        // ==== DataTables Catatan ====
+        var tableCatatan = $('#tabel-catatan').DataTable({
             responsive: false,
             paging: true,
             searching: true,
             ordering: true,
             order: [
                 [3, 'desc']
-            ],
+            ], // kolom tanggal
             columnDefs: [{
-                orderable: false,
-                targets: [2]
-            }, {
-                type: 'date-uk',
-                targets: 3
-            }],
+                    orderable: false,
+                    targets: [2]
+                }, // kolom catatan
+                {
+                    type: 'date-uk',
+                    targets: 3
+                } // kolom tanggal pakai custom sorting
+            ],
             language: {
                 search: "Cari:",
                 lengthMenu: "Tampilkan _MENU_ baris",
@@ -1031,7 +1056,8 @@
             },
             dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
             drawCallback: function(settings) {
-                this.api().column(0, {
+                var api = this.api();
+                api.column(0, {
                     order: 'applied'
                 }).nodes().each(function(cell, i) {
                     cell.innerHTML = i + 1;
@@ -1411,22 +1437,6 @@
             });
         }
 
-        // ===== Custom DataTable date sort (keep) =====
-        $.extend($.fn.dataTableExt.oSort, {
-            "date-uk-pre": function(a) {
-                if (!a) return 0;
-                const parts = a.split(' ');
-                const dateParts = parts[0].split('-');
-                const timeParts = parts[1] ? parts[1].split(':') : ["00", "00"];
-                return (dateParts[2] + dateParts[1] + dateParts[0] + timeParts[0] + timeParts[1]) * 1;
-            },
-            "date-uk-asc": function(a, b) {
-                return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-            },
-            "date-uk-desc": function(a, b) {
-                return ((a < b) ? 1 : ((a > b) ? -1 : 0));
-            }
-        });
 
     }); // end DOMContentLoaded
 </script>
