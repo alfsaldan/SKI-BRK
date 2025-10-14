@@ -106,7 +106,7 @@
                                                     <td><?= $p->jabatan; ?></td>
                                                     <td><?= $p->unit_kerja; ?></td>
                                                     <td class="text-center">
-                                                        <a href="<?= base_url('Pegawai/nilaiPegawaiDetail/' . $p->nik) ?>" class="btn btn-sm btn-success">Nilai</a>
+                                                        <a href="<?= base_url('Pegawai/nilaiPegawaiDetail2/' . $p->nik) ?>" class="btn btn-sm btn-success">Nilai</a>
                                                     </td>
                                                 </tr>
                                             <?php } ?>

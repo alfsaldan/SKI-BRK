@@ -268,6 +268,61 @@ class Pegawai extends CI_Controller
         $this->load->view('layoutpegawai/footer');
     }
 
+    public function nilaiPegawaiDetail2($nik)
+    {
+        $awal = $this->input->get('awal');
+        $akhir = $this->input->get('akhir');
+
+        if (!$awal || !$akhir) {
+            $awal = date('Y-01-01');
+            $akhir = date('Y-12-31');
+            redirect("Pegawai/nilaiPegawaiDetail2/$nik?awal=$awal&akhir=$akhir");
+        }
+
+        $this->load->model('pegawai/Nilai_model');
+        $this->load->model('Pegawai_model');
+
+        $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik);
+        $indikator = $this->Nilai_model->getIndikatorPegawai($nik, $awal, $akhir);
+
+        // daftar periode
+        $this->db->select('periode_awal, periode_akhir');
+        $this->db->from('penilaian');
+        $this->db->where('nik', $nik);
+        $this->db->group_by(['periode_awal', 'periode_akhir']);
+        $this->db->order_by('periode_awal', 'ASC');
+        $periode_list = $this->db->get()->result();
+
+        $nilai_akhir = $this->Pegawai_model->getNilaiAkhir($nik, $awal, $akhir);
+        $is_locked   = $this->Nilai_model->getLockStatus($nik, $awal, $akhir);
+        $budaya      = $this->Nilai_model->getAllBudaya();
+        $nilaiBudayaDB = $this->Nilai_model->getNilaiBudayaByPegawai($nik, $awal, $akhir);
+
+        $budaya_nilai = [];
+        if (!empty($nilaiBudayaDB) && !empty($nilaiBudayaDB->nilai_budaya)) {
+            $budaya_nilai = json_decode($nilaiBudayaDB->nilai_budaya, true);
+        }
+
+        $data = [
+            'judul' => "Form Penilaian Pegawai (Penilai 2)",
+            'pegawai_detail' => $pegawai,
+            'indikator_by_jabatan' => $indikator,
+            'periode_awal' => $awal,
+            'periode_akhir' => $akhir,
+            'periode_list' => $periode_list,
+            'nilai_akhir' => $nilai_akhir,
+            'is_locked' => $is_locked,
+            'budaya' => $budaya,
+            'budaya_nilai' => $budaya_nilai,
+            'rata_rata_budaya' => $nilaiBudayaDB->rata_rata ?? 0
+        ];
+
+        $this->load->view('layoutpegawai/header', $data);
+        $this->load->view('pegawai/nilaipegawai_detail2', $data); // load view penilai2
+        $this->load->view('layoutpegawai/footer');
+    }
+
+
 
     public function simpanNilaiBudaya()
     {
@@ -1776,5 +1831,39 @@ class Pegawai extends CI_Controller
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $writer->save('php://output');
         exit;
+    }
+
+    public function updateStatusAllPenilai2()
+    {
+        header('Content-Type: application/json; charset=utf-8');
+
+        $ids = $this->input->post('ids');
+        $status = $this->input->post('status');
+
+        if (empty($ids) || $status === null) {
+            echo json_encode(['success' => false, 'message' => 'Data tidak lengkap']);
+            return;
+        }
+
+        $ids_array = array_filter(array_map('trim', explode(',', $ids)));
+        if (empty($ids_array)) {
+            echo json_encode(['success' => false, 'message' => 'Tidak ada id valid']);
+            return;
+        }
+
+        $this->load->model('pegawai/Nilai_model');
+
+        $penilai2_nik = $this->session->userdata('nik') ?? null;
+
+        $ok = $this->Nilai_model->updateStatusAllPenilai2($ids_array, $status, $penilai2_nik);
+
+        if ($ok) {
+            echo json_encode(['success' => true, 'message' => 'Semua status2 berhasil diupdate']);
+        } else {
+            $dbErr = $this->db->error();
+            $msg = 'Gagal update status2';
+            if (!empty($dbErr['message'])) $msg .= ': ' . $dbErr['message'];
+            echo json_encode(['success' => false, 'message' => $msg, 'db' => $dbErr]);
+        }
     }
 }

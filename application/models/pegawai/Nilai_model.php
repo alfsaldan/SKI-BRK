@@ -226,4 +226,24 @@ class Nilai_model extends CI_Model
             ]);
         }
     }
+
+     public function updateStatusAllPenilai2(array $ids_array, $status, $penilai2_nik = null)
+    {
+        if (empty($ids_array) || $status === null) {
+            return false;
+        }
+
+        $updateData = ['status2' => $status];
+
+        // jika ada kolom untuk mencatat siapa yang mengubah status2
+        if ($penilai2_nik && $this->db->field_exists('penilai2_nik', 'penilaian')) {
+            $updateData['penilai2_nik'] = $penilai2_nik;
+        }
+        if ($this->db->field_exists('penilai2_updated_at', 'penilaian')) {
+            $updateData['penilai2_updated_at'] = date('Y-m-d H:i:s');
+        }
+
+        $this->db->where_in('id', $ids_array);
+        return (bool) $this->db->update('penilaian', $updateData);
+    }
 }
