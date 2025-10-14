@@ -260,7 +260,7 @@
                                 <!-- Penilai I & Penilai II -->
                                 <div class="row">
                                     <!-- Penilai I -->
-                                    <div class="col-md-6 mb-3">
+                                    <!-- <div class="col-md-6 mb-3">
                                         <h5 class="<?= $warna_header_penilai1 ?> mb-3 font-weight-bold">
                                             <i class="mdi mdi-account-check-outline mr-2"></i>Penilai I
                                         </h5>
@@ -278,10 +278,10 @@
                                                 <span class="<?= $warna_text_penilai1 ?>"><?= $pegawai_detail->penilai1_jabatan_detail ?? '-'; ?></span>
                                             </li>
                                         </ul>
-                                    </div>
+                                    </div> -->
 
                                     <!-- Penilai II -->
-                                    <div class="col-md-6 mb-3">
+                                    <!-- <div class="col-md-6 mb-3">
                                         <h5 class="<?= $warna_header_penilai2 ?> mb-3 font-weight-bold">
                                             <i class="mdi mdi-account-check-outline mr-2"></i>Penilai II
                                         </h5>
@@ -299,7 +299,7 @@
                                                 <span class="<?= $warna_text_penilai2 ?>"><?= $pegawai_detail->penilai2_jabatan_detail ?? '-'; ?></span>
                                             </li>
                                         </ul>
-                                    </div>
+                                    </div> -->
                                 </div>
 
 
@@ -1549,6 +1549,84 @@
 
             // 🔹 Rehitung Nilai Akhir biar langsung update total
             hitungNilaiAkhir();
+        }
+
+        // 1. Auto-save saat input realisasi diubah
+        document.querySelectorAll('.realisasi-input').forEach(input => {
+            input.addEventListener('input', function() {
+                hitungTotal();
+
+                // Ambil data baris
+                const row = this.closest('tr');
+                const id = row.dataset.id;
+                const realisasi = this.value;
+                const pencapaian = row.querySelector('.pencapaian-output')?.value || '';
+                const nilai = row.querySelector('.nilai-output')?.value || '';
+                const nilai_dibobot = row.querySelector('.nilai-bobot-output')?.value || '';
+                const status = row.querySelector('.status-select')?.value || '';
+
+                // Simpan ke server
+                fetch("<?= base_url('Pegawai/updateStatus'); ?>", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: `id=${id}&status=${encodeURIComponent(status)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    // Optional: tampilkan notifikasi kecil jika gagal
+                    if (!data.success) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal simpan',
+                            text: data.message || 'Gagal menyimpan data',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                });
+
+                // Setelah simpan baris, auto-save nilai akhir juga
+                autoSaveNilaiAkhir();
+            });
+        });
+
+        // 2. Auto-save saat input fraud diubah
+        document.getElementById('fraud-input').addEventListener('input', function() {
+            hitungNilaiAkhir();
+            autoSaveNilaiAkhir();
+        });
+
+        // 3. Fungsi auto-save nilai akhir
+        function autoSaveNilaiAkhir() {
+            const nik = document.getElementById('nik').value;
+            const periode_awal = document.getElementById('periode_awal').value;
+            const periode_akhir = document.getElementById('periode_akhir').value;
+            const nilai_sasaran = document.getElementById('total-sasaran').textContent;
+            const nilai_budaya = document.getElementById('ratarata-budaya').textContent;
+            const total_nilai = document.getElementById('total-nilai').textContent;
+            const fraud = document.getElementById('fraud-input').value;
+            const nilai_akhir = document.getElementById('nilai-akhir').textContent;
+            const predikat = document.getElementById('predikat').textContent;
+            const pencapaian = document.getElementById('pencapaian-akhir').textContent;
+
+            fetch('<?= base_url("Pegawai/simpanNilaiAkhir") ?>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
+            })
+            .then(res => res.json())
+            .then(res => {
+                // Optional: tampilkan notifikasi kecil jika gagal
+                if (res.status !== 'success') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal simpan nilai akhir',
+                        text: res.message || 'Gagal menyimpan nilai akhir',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+            });
         }
     });
 </script>

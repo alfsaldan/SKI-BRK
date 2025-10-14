@@ -1335,6 +1335,85 @@
         // ---------------------------
         hitungTotal();
 
+        // Fungsi autosave per baris indikator
+        function autoSaveBaris(row) {
+            const indikator_id = row.dataset.id || '';
+            const target = (row.querySelector('.target-input') || {}).value || '';
+            const batas_waktu = (row.querySelector('input[type="date"]') || {}).value || '';
+            const realisasi = (row.querySelector('.realisasi-input') || {}).value || '';
+            const pencapaian = (row.querySelector('.pencapaian-output') || {}).value || '';
+            const nilai = (row.querySelector('.nilai-output') || {}).value || '';
+            const nilai_dibobot = (row.querySelector('.nilai-bobot-output') || {}).value || '';
+            const periode_awal = document.getElementById('periode_awal')?.value || '';
+            const periode_akhir = document.getElementById('periode_akhir')?.value || '';
+            const nik = document.getElementById('nik')?.value || '';
+
+            // Jangan simpan jika target/realisasi kosong
+            if (target.trim() === '' && realisasi.trim() === '') return;
+
+            fetch('<?= base_url("Administrator/simpanPenilaianBaris") ?>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `nik=${encodeURIComponent(nik)}&indikator_id=${encodeURIComponent(indikator_id)}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
+            });
+        }
+
+        // Fungsi autosave nilai akhir
+        function autoSaveNilaiAkhir() {
+            const nik = document.getElementById('nik')?.value || '';
+            const periode_awal = document.getElementById('periode_awal')?.value || '';
+            const periode_akhir = document.getElementById('periode_akhir')?.value || '';
+            const nilai_sasaran = document.getElementById('total-sasaran')?.textContent || '';
+            const nilai_budaya = document.getElementById('rata-budaya')?.textContent || '';
+            const total_nilai = document.getElementById('total-nilai')?.textContent || '';
+            const fraud = document.getElementById('fraud-input')?.value || '';
+            const nilai_akhir = document.getElementById('nilai-akhir')?.textContent || '';
+            const predikat = document.getElementById('predikat')?.textContent || '';
+            const pencapaian = document.getElementById('pencapaian-akhir')?.textContent || '';
+            const koefisien = document.getElementById('koefisien-input')?.value || 100;
+
+            fetch('<?= base_url("Administrator/simpanNilaiAkhir") ?>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}&koefisien=${encodeURIComponent(koefisien)}`
+            });
+        }
+
+        // Event autosave untuk input target, batas waktu, realisasi
+        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
+            ['.target-input', '.realisasi-input', 'input[type="date"]'].forEach(selector => {
+                const input = row.querySelector(selector);
+                if (input) {
+                    input.addEventListener('change', function() {
+                        hitungTotal();
+                        autoSaveBaris(row);
+                        autoSaveNilaiAkhir();
+                    });
+                    // Untuk realisasi, juga autosave saat input (biar responsif)
+                    if (selector === '.realisasi-input') {
+                        input.addEventListener('input', function() {
+                            hitungTotal();
+                            autoSaveBaris(row);
+                            autoSaveNilaiAkhir();
+                        });
+                    }
+                }
+            });
+        });
+
+        // Event autosave untuk fraud dan koefisien
+        if (fraudInput) {
+            fraudInput.addEventListener('input', function() {
+                hitungNilaiAkhir();
+                autoSaveNilaiAkhir();
+            });
+        }
+        if (koefInput) {
+            koefInput.addEventListener('input', function() {
+                updatePredikatDanPencapaian();
+                autoSaveNilaiAkhir();
+            });
+        }
         // Debug kecil (bisa dihapus nanti)
         console.log('Script KPI terpasang. nik=', getNik(), 'rows=', document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').length);
     });
