@@ -1013,10 +1013,10 @@ class Pegawai extends CI_Controller
 
         // $headers = ["Realisasi (%)", "< 80%", "80% sd < 90%", "90% sd < 110%", "110% sd < 120%", "120% sd ≤ 130%"];
         // $col = 'B';
-        foreach ($headers as $h) {
-            $sheet->setCellValue("{$col}{$row}", $h);
-            $col++;
-        }
+        // foreach ($headers as $h) {
+        //     $sheet->setCellValue("{$col}{$row}", $h);
+        //     $col++;
+        // }
         $sheet->getStyle("B{$row}:G{$row}")->applyFromArray([
             'font' => ['bold' => true],
             'alignment' => ['horizontal' => 'center', 'vertical' => 'center'],
@@ -1241,12 +1241,6 @@ class Pegawai extends CI_Controller
             ->getStartColor()->setRGB('2E7D32');
         $sheet->getStyle("B{$row}:E{$row}")->getFont()->getColor()->setRGB('FFFFFF');
 
-
-        // ======================= 
-        // NILAI BUDAYA (0)
-        // =======================
-
-
         // ======================= 
         // SUMMARY NILAI AKHIR (q)
         // =======================
@@ -1297,11 +1291,19 @@ class Pegawai extends CI_Controller
         $sheet->getRowDimension($row)->setRowHeight(36);
         $row++;
 
+        // Ambil nilai awal, pastikan ada default 0
+        $nilaiSasaran = round($nilai->nilai_sasaran ?? 0, 2);
+        $nilaiBudaya  = round($nilai->nilai_budaya ?? 0, 2);
+
+        // Hitung kontribusi dengan pembobot
+        $kontribSasaran = round($nilaiSasaran * 0.95, 2); // 95%
+        $kontribBudaya  = round($nilaiBudaya * 0.05, 2);   // 5%
+
         // 📋 Data tabel nilai
         $dataRows = [
-            ["Total Nilai Sasaran Kerja", $nilai->nilai_sasaran ?? 0, "x Bobot % Sasaran Kerja", "95%", $nilai->total_nilai ?? 0],
-            ["Rata-rata Nilai Internalisasi Budaya", $nilai->nilai_budaya ?? 0, "x Bobot % Budaya Perusahaan", "5%", $nilai->nilai_budaya ?? 0],
-            ["Total Nilai", "", "", "", $nilai->total_nilai ?? 0],
+            ["Total Nilai Sasaran Kerja", $nilaiSasaran, "x Bobot % Sasaran Kerja", "95%", $kontribSasaran],
+            ["Rata-rata Nilai Internalisasi Budaya", $nilaiBudaya, "x Bobot % Budaya Perusahaan", "5%", $kontribBudaya],
+            ["Total Nilai", "", "", "", round($kontribSasaran + $kontribBudaya, 2)],
             ["Fraud (1 jika fraud, 0 jika tidak)", "", "", "", $nilai->fraud ?? 0],
         ];
 
@@ -1493,9 +1495,9 @@ class Pegawai extends CI_Controller
 
 
         // Tentukan posisi baris awal sejajar nilai akhir
-        $row = 93; // mulai di samping bagian "NILAI AKHIR"
-        $colStart = 'B';
-        $colEnd   = 'E';
+        $row = 72; // mulai di samping bagian "NILAI AKHIR"
+        $colStart = 'H';
+        $colEnd   = 'K';
 
         // Judul Bagian
         $sheet->setCellValue("{$colStart}{$row}", "III. KOMENTAR PEGAWAI DAN PENILAI");
@@ -1609,7 +1611,7 @@ class Pegawai extends CI_Controller
 
 
         // Tambahkan footer
-        $row = $current + 3;
+        $row = $current + 4;
         $sheet->setCellValue("B{$row}", "📄 Laporan ini dihasilkan otomatis oleh Sistem Penilaian Kinerja");
         $sheet->mergeCells("B{$row}:F{$row}");
         $sheet->getStyle("B{$row}:F{$row}")->applyFromArray([
