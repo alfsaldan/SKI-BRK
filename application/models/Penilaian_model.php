@@ -495,4 +495,40 @@ class Penilaian_model extends CI_Model
             'rata_rata' => 0
         ];
     }
+
+    public function getLockStatus2($periode_awal, $periode_akhir)
+    {
+        $row = $this->db
+            ->select('lock_input2')
+            ->where('periode_awal', $periode_awal)
+            ->where('periode_akhir', $periode_akhir)
+            ->limit(1)
+            ->get('penilaian')
+            ->row();
+
+        return $row ? (bool)$row->lock_input2 : false;
+    }
+
+    public function setLockStatus2($periode_awal, $periode_akhir, $lock)
+    {
+        $exists = $this->db
+            ->where('periode_awal', $periode_awal)
+            ->where('periode_akhir', $periode_akhir)
+            ->get('penilaian')
+            ->num_rows() > 0;
+
+        if ($exists) {
+            $this->db->where('periode_awal', $periode_awal)
+                ->where('periode_akhir', $periode_akhir)
+                ->update('penilaian', ['lock_input2' => $lock]);
+        } else {
+            $this->db->insert('penilaian', [
+                'periode_awal' => $periode_awal,
+                'periode_akhir' => $periode_akhir,
+                'lock_input2' => $lock
+            ]);
+        }
+
+        return $this->db->affected_rows() > 0;
+    }
 }

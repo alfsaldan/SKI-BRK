@@ -429,11 +429,12 @@
 
                                                             <td class="text-center align-middle" style="min-width:120px;">
                                                                 <input type="text" class="form-control text-center align-middle target-input"
-                                                                    value="<?= $i->target ?? ''; ?>" readonly
+                                                                    value="<?= $i->target ?? ''; ?>"
                                                                     style="min-width:100px;">
                                                             </td>
-                                                            <td class="text-center align-middle" style="min-width:120px;">
-                                                                <?= $i->batas_waktu ? date('d-m-Y', strtotime($i->batas_waktu)) : '-'; ?>
+                                                            <td class="text-center align-middle">
+                                                                <input type="date" class="form-control batas-waktu" style="min-width:120px;"
+                                                                    value="<?= $i->batas_waktu ?? ''; ?>">
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <?php if (!$is_locked): ?>
@@ -1393,7 +1394,7 @@ if ($message): ?>
 
 
         // 2. Ganti event input pada .realisasi-input:
-        document.querySelectorAll('.realisasi-input').forEach(input => {
+        document.querySelectorAll('.realisasi-input, .target-input, input[type="date"]').forEach(input => {
             input.addEventListener('input', function() {
                 hitungTotal();
 
@@ -1401,6 +1402,8 @@ if ($message): ?>
                 const row = this.closest('tr');
                 const indikator_id = row.dataset.id;
                 const realisasi = row.querySelector('.realisasi-input').value;
+                const target = row.querySelector('.target-input').value;
+                const batas_waktu = row.querySelector('input[type="date"]').value;
                 const pencapaian = row.querySelector('.pencapaian-output').value;
                 const nilai = row.querySelector('.nilai-output').value;
                 const nilai_dibobot = row.querySelector('.nilai-bobot-output').value;
@@ -1412,7 +1415,7 @@ if ($message): ?>
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
-                        body: `indikator_id=${indikator_id}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
+                        body: `indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
                     })
                     .then(res => res.json())
                     .then(res => {
@@ -1468,7 +1471,6 @@ if ($message): ?>
             const nik = document.getElementById('nik').value;
             const periode_awal = document.getElementById('periode_awal').value;
             const periode_akhir = document.getElementById('periode_akhir').value;
-
             const nilai_sasaran = document.getElementById('total-sasaran').textContent;
             const nilai_budaya = document.getElementById('rata-budaya').textContent;
             const total_nilai = document.getElementById('total-nilai').textContent;
@@ -1610,13 +1612,32 @@ if ($message): ?>
     document.addEventListener('DOMContentLoaded', function() {
         const isLocked = <?= $is_locked ? 'true' : 'false' ?>;
         if (isLocked) {
-            document.querySelectorAll('.target-input, .realisasi-input, .simpan-penilaian, #btn-simpan-nilai-akhir')
+            document.querySelectorAll('.target-input, .batas-waktu, .realisasi-input, .simpan-penilaian, #btn-simpan-nilai-akhir')
                 .forEach(el => el.disabled = true);
 
             Swal.fire({
                 icon: 'info',
                 title: 'Periode Dikunci',
                 text: 'Anda tidak dapat mengubah data karena periode ini sudah dikunci oleh admin.',
+                timer: 2500,
+                showConfirmButton: false
+            });
+        }
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const isLocked2 = <?= $is_locked2 ? 'true' : 'false' ?>;
+
+        if (isLocked2) {
+            document.querySelectorAll('.target-input, .batas-waktu')
+                .forEach(el => el.disabled = true);
+
+            Swal.fire({
+                icon: 'info',
+                title: 'Target Dikunci',
+                text: 'Kolom Target dan Batas Waktu dikunci oleh admin.',
                 timer: 2500,
                 showConfirmButton: false
             });

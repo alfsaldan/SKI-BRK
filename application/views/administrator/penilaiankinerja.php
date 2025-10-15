@@ -58,17 +58,25 @@
                             </div>
 
                             <!-- 🔒 LOCK INPUT GLOBAL -->
-                            <div class="d-flex align-items-center mb-3">
+                            <div class="mb-3">
                                 <input type="hidden" id="hidden_periode_awal" value="<?= $periode_awal ?>">
                                 <input type="hidden" id="hidden_periode_akhir" value="<?= $periode_akhir ?>">
 
-                                <div class="form-check">
+                                <div class="form-check mb-2">
                                     <input class="form-check-input" type="checkbox" id="lock_input_checkbox">
                                     <label class="form-check-label font-weight-medium ms-2" for="lock_input_checkbox">
                                         🔐 Kunci Input Penilaian
                                     </label>
                                 </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="lock_input2_checkbox">
+                                    <label class="form-check-label font-weight-medium ms-2" for="lock_input2_checkbox">
+                                        🔐 Kunci Target & Batas Waktu
+                                    </label>
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -727,6 +735,7 @@
         const periodeManual = document.getElementById('periode_manual');
         const infoPeriode = document.getElementById('info_periode');
         const lockCheckbox = document.getElementById('lock_input_checkbox');
+        const lockCheckbox2 = document.getElementById('lock_input2_checkbox');
         const hiddenAwal = document.getElementById('hidden_periode_awal');
         const hiddenAkhir = document.getElementById('hidden_periode_akhir');
         const btnSimpanNilaiAkhir = document.getElementById('btn-simpan-nilai-akhir');
@@ -1331,6 +1340,65 @@
             });
         }
 
+        if (lockCheckbox2) {
+            fetch(`<?= base_url("Administrator/getLockStatus2") ?>?awal=${encodeURIComponent(lockAwalVal)}&akhir=${encodeURIComponent(lockAkhirVal)}`)
+                .then(r => r.json())
+                .then(data => {
+                    const locked = data && (data.locked === true || data.locked === "1" || data.locked === 1);
+                    lockCheckbox2.checked = !!locked;
+                    toggleTargetLock(locked);
+                })
+                .catch(err => console.error('getLockStatus2 error', err));
+
+            lockCheckbox2.addEventListener('change', function() {
+                const isLocked = this.checked ? 1 : 0;
+                fetch('<?= base_url("Administrator/setLockStatus2") ?>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `periode_awal=${encodeURIComponent(lockAwalVal)}&periode_akhir=${encodeURIComponent(lockAkhirVal)}&lock_input2=${isLocked}`
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && data.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: isLocked ? 'Target & Batas Waktu dikunci.' : 'Kunci Target & Batas Waktu dibuka.',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            toggleTargetLock(isLocked);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Gagal',
+                                text: 'Tidak dapat mengubah status kunci.'
+                            });
+                            lockCheckbox2.checked = !this.checked;
+                        }
+                    })
+                    .catch(err => {
+                        console.error('setLockStatus2 error', err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Terjadi kesalahan koneksi ke server.'
+                        });
+                        lockCheckbox2.checked = !this.checked;
+                    });
+            });
+        }
+
+        function toggleTargetLock(lock) {
+            document.querySelectorAll('.nilai-input').forEach(el => {
+                el.disabled = !!lock;
+                el.classList.toggle('locked-style', !!lock);
+            });
+        }
+
+
         // ---------------------------
         // Trigger awal perhitungan
         // ---------------------------
@@ -1354,7 +1422,9 @@
 
             fetch('<?= base_url("Administrator/simpanPenilaianBaris") ?>', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
                 body: `nik=${encodeURIComponent(nik)}&indikator_id=${encodeURIComponent(indikator_id)}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
             });
         }
@@ -1375,7 +1445,9 @@
 
             fetch('<?= base_url("Administrator/simpanNilaiAkhir") ?>', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
                 body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}&koefisien=${encodeURIComponent(koefisien)}`
             });
         }

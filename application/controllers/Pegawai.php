@@ -66,7 +66,7 @@ class Pegawai extends CI_Controller
 
         // 🔹 Ambil status lock dari kolom lock_input
         $lock_status = $this->Pegawai_model->getLockStatus($periode_awal, $periode_akhir);
-
+        $lock_status2 = $this->Pegawai_model->getLockStatus2($periode_awal, $periode_akhir);
         // 🔹 Ambil indikator kerja
         $indikator = $this->Pegawai_model->get_indikator_by_jabatan_dan_unit(
             $pegawai->jabatan,
@@ -102,6 +102,7 @@ class Pegawai extends CI_Controller
             'periode_list' => $periode_list,
             'nilai_akhir' => $nilai_akhir,
             'is_locked' => $lock_status,
+            'is_locked2' => $lock_status2, // 🔒 Tambahan
             'budaya' => $budaya, // dari tabel budaya (perilaku + panduan)
             'budaya_nilai' => $budaya_nilai, // dari tabel budaya_nilai (hasil penilaian pegawai)
             'rata_rata_budaya' => $rata_rata_budaya
@@ -237,6 +238,7 @@ class Pegawai extends CI_Controller
 
         // 🔹 Ambil status lock
         $is_locked = $this->Nilai_model->getLockStatus($nik, $awal, $akhir);
+
 
         // 🔹 Ambil data budaya dari tabel master
         $budaya = $this->Nilai_model->getAllBudaya();

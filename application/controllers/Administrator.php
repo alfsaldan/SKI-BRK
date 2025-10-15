@@ -316,6 +316,32 @@ class Administrator extends CI_Controller
         ]);
     }
 
+    public function getLockStatus2()
+    {
+        $awal = $this->input->get('awal');
+        $akhir = $this->input->get('akhir');
+
+        $this->load->model('Penilaian_model');
+        $locked = $this->Penilaian_model->getLockStatus2($awal, $akhir);
+
+        echo json_encode(['locked' => (bool)$locked]);
+    }
+
+    public function setLockStatus2()
+    {
+        $awal = $this->input->post('periode_awal');
+        $akhir = $this->input->post('periode_akhir');
+        $lock = $this->input->post('lock_input2');
+
+        $this->load->model('Penilaian_model');
+        $updated = $this->Penilaian_model->setLockStatus2($awal, $akhir, $lock);
+
+        echo json_encode([
+            'status' => $updated ? 'success' : 'error'
+        ]);
+    }
+
+
     public function cariPenilaian()
     {
         $nik = $this->input->post('nik') ?: $this->input->get('nik');
