@@ -358,7 +358,7 @@
                         </li>
 
                         <li class="menu-title mt-2">Halaman Penilai</li>
-                        <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['nilaipegawai', 'nilaipegawaidetail'])) ? 'active' : '' ?>">
+                        <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['nilaipegawai', 'nilaipegawaidetail','nilaipegawaidetail2'])) ? 'active' : '' ?>">
                             <a href="<?= base_url('pegawai/nilaipegawai') ?>">
                                 <i class="mdi mdi-account-edit"></i>
                                 <span> Nilai Pegawai </span>
