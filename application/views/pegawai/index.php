@@ -135,6 +135,15 @@
             </div>
             <!-- end page title -->
 
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="text-success font-weight-bold mb-3">
+                        <i class="mdi mdi-chart-line mr-2"></i> Grafik Pencapaian Nilai Akhir
+                    </h5>
+                    <canvas id="grafikPencapaian" height="100"></canvas>
+                </div>
+            </div>
+
             <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>
 
                 <?php
@@ -1641,6 +1650,55 @@ if ($message): ?>
                 timer: 2500,
                 showConfirmButton: false
             });
+        }
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('grafikPencapaian').getContext('2d');
+    const dataPeriode = <?= json_encode(array_map(function ($g) {
+                            return date('d M', strtotime($g['periode_awal'])) . ' - ' . date('d M', strtotime($g['periode_akhir']));
+                        }, $grafik_pencapaian)) ?>;
+    const dataPencapaian = <?= json_encode(array_column($grafik_pencapaian, 'pencapaian')) ?>;
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dataPeriode,
+            datasets: [{
+                label: 'Pencapaian (%)',
+                data: dataPencapaian,
+                borderColor: 'rgba(40, 167, 69, 1)',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3,
+                pointRadius: 5,
+                pointBackgroundColor: 'rgba(40, 167, 69, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.parsed.y + '%'
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Pencapaian (%)'
+                    }
+                }
+            }
         }
     });
 </script>

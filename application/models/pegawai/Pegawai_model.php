@@ -256,4 +256,18 @@ class Pegawai_model extends CI_Model
         // Jika semua baris bernilai 1 → terkunci
         return true;
     }
+
+    public function getGrafikPencapaian($nik)
+    {
+        $this->db->select('periode_awal, periode_akhir, pencapaian');
+        $this->db->from('nilai_akhir');
+        $this->db->where('nik', $nik);
+        $this->db->order_by('periode_awal', 'ASC');
+        $result = $this->db->get()->result_array();
+
+        foreach ($result as &$row) {
+            $row['pencapaian'] = floatval(str_replace('%', '', $row['pencapaian']));
+        }
+        return $result;
+    }
 }

@@ -67,6 +67,7 @@ class Pegawai extends CI_Controller
         // 🔹 Ambil status lock dari kolom lock_input
         $lock_status = $this->Pegawai_model->getLockStatus($periode_awal, $periode_akhir);
         $lock_status2 = $this->Pegawai_model->getLockStatus2($periode_awal, $periode_akhir);
+
         // 🔹 Ambil indikator kerja
         $indikator = $this->Pegawai_model->get_indikator_by_jabatan_dan_unit(
             $pegawai->jabatan,
@@ -93,6 +94,10 @@ class Pegawai extends CI_Controller
         $periode_list = $this->Pegawai_model->getPeriodePegawai($nik);
         $nilai_akhir  = $this->Pegawai_model->getNilaiAkhir($nik, $periode_awal, $periode_akhir);
 
+        // 🔹 Ambil data grafik pencapaian dari tabel nilai_akhir
+        $grafik_pencapaian = $this->Pegawai_model->getGrafikPencapaian($nik);
+
+        // 🔹 Kirim semua data ke view
         $data = [
             'judul' => "Dashboard Pegawai",
             'pegawai_detail' => $pegawai,
@@ -105,13 +110,16 @@ class Pegawai extends CI_Controller
             'is_locked2' => $lock_status2, // 🔒 Tambahan
             'budaya' => $budaya, // dari tabel budaya (perilaku + panduan)
             'budaya_nilai' => $budaya_nilai, // dari tabel budaya_nilai (hasil penilaian pegawai)
-            'rata_rata_budaya' => $rata_rata_budaya
+            'rata_rata_budaya' => $rata_rata_budaya,
+            'grafik_pencapaian' => $grafik_pencapaian // 🔹 untuk line chart
         ];
 
+        // 🔹 Load view
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/index', $data);
         $this->load->view('layoutpegawai/footer');
     }
+
 
 
     public function simpanPenilaianBaris()
