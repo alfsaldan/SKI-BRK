@@ -259,17 +259,23 @@ class Pegawai_model extends CI_Model
         return true;
     }
 
-    public function getGrafikPencapaian($nik)
-    {
-        $this->db->select('periode_awal, periode_akhir, pencapaian');
-        $this->db->from('nilai_akhir');
-        $this->db->where('nik', $nik);
-        $this->db->order_by('periode_awal', 'ASC');
-        $result = $this->db->get()->result_array();
+public function getGrafikPencapaian($nik)
+{
+    $this->db->select('periode_awal, periode_akhir, pencapaian, nilai_akhir, predikat');
+    $this->db->from('nilai_akhir');
+    $this->db->where('nik', $nik);
+    $this->db->order_by('periode_awal', 'ASC');
+    $result = $this->db->get()->result_array();
 
-        foreach ($result as &$row) {
-            $row['pencapaian'] = floatval(str_replace('%', '', $row['pencapaian']));
-        }
-        return $result;
+    foreach ($result as &$row) {
+        // pencapaian: "109.36%" -> 109.36 (float)
+        $row['pencapaian'] = floatval(str_replace('%', '', $row['pencapaian']));
+        // nilai_akhir: kalau string gunakan float
+        $row['nilai_akhir'] = isset($row['nilai_akhir']) ? floatval($row['nilai_akhir']) : null;
+        // predikat: biarkan apa adanya (string) atau null
+        $row['predikat'] = isset($row['predikat']) ? $row['predikat'] : null;
     }
+    return $result;
+}
+
 }
