@@ -104,7 +104,7 @@ class Pegawai_model extends CI_Model
 
         return $this->db->get()->result();
     }
-    public function save_penilaian($nik, $indikator_id, $realisasi, $periode_awal = null, $periode_akhir = null)
+    public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $periode_awal = null, $periode_akhir = null)
     {
         if (!$periode_awal) $periode_awal = date('Y') . '-01-01';
         if (!$periode_akhir) $periode_akhir = date('Y') . '-12-31';
@@ -112,6 +112,8 @@ class Pegawai_model extends CI_Model
         $data = [
             'nik' => $nik,
             'indikator_id' => $indikator_id,
+            'target' => $target,
+            'batas_waktu' => $batas_waktu,
             'realisasi' => $realisasi,
             'periode_awal' => $periode_awal,
             'periode_akhir' => $periode_akhir

@@ -1186,6 +1186,8 @@ if ($message): ?>
             btn.addEventListener('click', function() {
                 const row = this.closest('tr');
                 const indikator_id = row.dataset.id;
+                const target = row.querySelector('.target-input').value;
+                const batas_waktu = row.querySelector('input[type="date"]').value;
                 const realisasi = row.querySelector('.realisasi-input').value;
                 const pencapaian = row.querySelector('.pencapaian-output').value;
                 const nilai = row.querySelector('.nilai-output').value;
@@ -1201,7 +1203,7 @@ if ($message): ?>
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded'
                         },
-                        body: `indikator_id=${indikator_id}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
+                        body: `indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
                     })
                     .then(res => res.json())
                     .then(res => {

@@ -122,39 +122,78 @@ class Pegawai extends CI_Controller
 
 
 
-    public function simpanPenilaianBaris()
-    {
-        $nik = $this->session->userdata('nik');
+public function simpanPenilaianBaris()
+{
+    $nik = $this->session->userdata('nik');
 
-        $indikator_id = $this->input->post('indikator_id') ?? $this->input->post('id');
-        $realisasi = $this->input->post('realisasi') ?? null;
+    // Ambil semua input dari fetch()
+    $indikator_id = $this->input->post('indikator_id');
+    $target = $this->input->post('target');
+    $batas_waktu = $this->input->post('batas_waktu');
+    $realisasi = $this->input->post('realisasi');
+    $pencapaian = $this->input->post('pencapaian');
+    $nilai = $this->input->post('nilai');
+    $nilai_dibobot = $this->input->post('nilai_dibobot');
+    $periode_awal = $this->input->post('periode_awal') ?? date('Y') . "-01-01";
+    $periode_akhir = $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
 
-        $periode_awal = $this->input->post('periode_awal') ?? date('Y') . "-01-01";
-        $periode_akhir = $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
-
-        $save = $this->Pegawai_model->save_penilaian(
-            $nik,
-            $indikator_id,
-            $realisasi,
-            $periode_awal,
-            $periode_akhir
-        );
-
-        if ($save) {
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'Penilaian berhasil disimpan!',
-                'data' => compact('indikator_id', 'realisasi', 'periode_awal', 'periode_akhir')
-            ]);
-        } else {
-            $error = $this->db->error();
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Gagal menyimpan data.',
-                'debug' => $error
-            ]);
-        }
+    // Pastikan variabel utama tidak kosong
+    if (empty($indikator_id) || empty($nik)) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Data tidak lengkap (indikator_id atau nik kosong).'
+        ]);
+        return;
     }
+
+    // Simpan atau update penilaian
+    $save = $this->Pegawai_model->save_penilaian(
+        $nik,
+        $indikator_id,
+        $target,
+        $batas_waktu,
+        $realisasi,
+        $periode_awal,
+        $periode_akhir
+    );
+
+    if ($save) {
+        // Opsional: update kolom tambahan (pencapaian, nilai, nilai_dibobot) jika memang ada di tabel penilaian
+        $this->db->where('nik', $nik)
+                 ->where('indikator_id', $indikator_id)
+                 ->where('periode_awal', $periode_awal)
+                 ->where('periode_akhir', $periode_akhir)
+                 ->update('penilaian', [
+                     'pencapaian' => $pencapaian,
+                     'nilai' => $nilai,
+                     'nilai_dibobot' => $nilai_dibobot
+                 ]);
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Penilaian berhasil disimpan!',
+            'data' => compact(
+                'indikator_id',
+                'target',
+                'batas_waktu',
+                'realisasi',
+                'pencapaian',
+                'nilai',
+                'nilai_dibobot',
+                'periode_awal',
+                'periode_akhir'
+            )
+        ]);
+    } else {
+        $error = $this->db->error();
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Gagal menyimpan data.',
+            'debug' => $error
+        ]);
+    }
+}
+
 
     public function simpanNilaiAkhir()
     {
