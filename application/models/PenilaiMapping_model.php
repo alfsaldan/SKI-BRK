@@ -5,36 +5,161 @@ class PenilaiMapping_model extends CI_Model
 {
     private $table = 'penilai_mapping';
 
-    // Ambil semua data, urut berdasarkan ID ASC
-    public function getAll()
+    /* ===============================
+       PENILAI MAPPING
+    =============================== */
+
+    // Ambil semua cabang unik
+    public function getAllKodeCabang()
     {
-        return $this->db->order_by('id', 'ASC')->get($this->table)->result();
+        $this->db->select('kode_cabang');
+        $this->db->group_by('kode_cabang');
+        $this->db->order_by('kode_cabang');
+        return $this->db->get('penilai_mapping')->result();
     }
 
-    // Ambil data berdasarkan ID
-    public function getById($id)
+    public function getCabangWithUnitKantor()
     {
-        return $this->db->get_where($this->table, ['id' => $id])->row();
+        $this->db->select('pm.kode_cabang, pm.unit_kantor, pm.kode_unit');
+        $this->db->from('penilai_mapping pm');
+
+        // Ambil normal: kode_unit = kode_cabang OR cabang 100 ambil unit 1A
+        $this->db->group_start();
+        $this->db->where('pm.kode_unit = pm.kode_cabang');
+        $this->db->or_where('pm.kode_unit', '1A');
+        $this->db->group_end();
+
+        $this->db->group_by('pm.kode_cabang, pm.unit_kantor, pm.kode_unit');
+        $this->db->order_by('pm.kode_cabang');
+
+        $result = $this->db->get()->result();
+
+        // Override kode_unit jadi 1A jika kode_cabang 100
+        foreach ($result as $r) {
+            if ($r->kode_cabang == '100') {
+                $r->kode_unit = '1A';
+            }
+        }
+
+        return $result;
     }
 
-    // Tambah data baru
-    public function insert($data)
+
+    // Ambil daftar unit per cabang
+    public function getKodeUnitByCabang($kode_cabang)
     {
-        $data['created_at'] = date('Y-m-d H:i:s');
-        $data['updated_at'] = date('Y-m-d H:i:s');
-        return $this->db->insert($this->table, $data);
+        $this->db->select('kode_unit, unit_kantor, unit_kerja');
+        $this->db->where('kode_cabang', $kode_cabang);
+        $this->db->group_by('kode_unit, unit_kantor, unit_kerja');
+        $this->db->order_by('kode_unit');
+        return $this->db->get('penilai_mapping')->result();
     }
 
-    // Update data berdasarkan ID
-    public function update($id, $data)
+    // Ambil semua mapping jabatan berdasarkan unit
+    public function getMappingByKodeUnit($kode_unit)
     {
-        $data['updated_at'] = date('Y-m-d H:i:s');
-        return $this->db->where('id', $id)->update($this->table, $data);
+        $list = $this->db->where('kode_unit', $kode_unit)
+            ->get('penilai_mapping')
+            ->result();
+
+        // Loop untuk ubah penilai1_jabatan & penilai2_jabatan dari key ke nama jabatan
+        foreach ($list as $item) {
+            if ($item->penilai1_jabatan) {
+                $item->penilai1_jabatan = $this->getJabatanByKey($item->penilai1_jabatan);
+            }
+            if ($item->penilai2_jabatan) {
+                $item->penilai2_jabatan = $this->getJabatanByKey($item->penilai2_jabatan);
+            }
+        }
+
+        return $list;
     }
 
-    // Hapus data berdasarkan ID
-    public function delete($id)
+
+    // Ambil mapping lengkap (bisa dipakai untuk ekspor atau debugging)
+    public function getAllMapping()
     {
-        return $this->db->where('id', $id)->delete($this->table);
+        $this->db->order_by('kode_cabang, kode_unit, jabatan');
+        return $this->db->get('penilai_mapping')->result();
+    }
+
+    // Ambil nama jabatan dari key
+    public function getJabatanByKey($key)
+    {
+        $row = $this->db->select('jabatan')
+            ->from('penilai_mapping')
+            ->where('key', $key)
+            ->get()
+            ->row();
+        return $row ? $row->jabatan : null;
+    }
+
+
+    // Tambah atau update mapping jabatan
+    public function saveMapping($data, $id = null)
+    {
+        if ($id) {
+            // update berdasarkan ID
+            $this->db->where('id', $id);
+            return $this->db->update('penilai_mapping', $data);
+        } else {
+            // insert baru jika belum ada
+            $exists = $this->db->get_where('penilai_mapping', [
+                'kode_cabang' => $data['kode_cabang'],
+                'kode_unit'   => $data['kode_unit'],
+                'jabatan'     => $data['jabatan']
+            ])->row();
+
+            if ($exists) {
+                $this->db->where('id', $exists->id);
+                return $this->db->update('penilai_mapping', $data);
+            } else {
+                return $this->db->insert('penilai_mapping', $data);
+            }
+        }
+    }
+
+
+    public function getKeyByJabatanAndUnit($jabatan, $kode_unit)
+    {
+        $row = $this->db->select('key')
+            ->from('penilai_mapping')
+            ->where('jabatan', $jabatan)
+            ->where('kode_unit', $kode_unit)
+            ->get()
+            ->row();
+
+        return $row ? $row->key : null;
+    }
+
+    // Ambil unit_kantor berdasarkan kode_unit
+    public function getUnitKantorByKodeUnit($kode_unit)
+    {
+        $row = $this->db
+            ->select('unit_kantor')
+            ->where('kode_unit', $kode_unit)
+            ->limit(1)
+            ->get('penilai_mapping')
+            ->row();
+
+        return $row ? $row->unit_kantor : null;
+    }
+
+    public function getUnitKerjaByKode($kode_cabang, $kode_unit)
+    {
+        $row = $this->db
+            ->select('unit_kerja')
+            ->where('kode_cabang', $kode_cabang)
+            ->where('kode_unit', $kode_unit)
+            ->get('penilai_mapping')
+            ->row();
+
+        return $row ? $row->unit_kerja : 'Kantor Pusat'; // fallback
+    }
+
+    // Hapus mapping berdasarkan ID
+    public function deleteMapping($id)
+    {
+        return $this->db->delete('penilai_mapping', ['id' => $id]);
     }
 }

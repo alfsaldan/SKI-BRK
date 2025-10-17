@@ -9,67 +9,126 @@ class Nilai_model extends CI_Model
     }
 
     /**
-     * Ambil daftar pegawai yang bisa dinilai oleh penilai tertentu
+     * Ambil daftar pegawai yang dinilai oleh penilai tertentu (Penilai I)
      */
     public function getPegawaiSebagaiPenilai1($nik_penilai)
     {
-        $row = $this->db->select('jabatan, unit_kerja')->get_where('pegawai', ['nik' => $nik_penilai])->row();
-        if (!$row || empty($row->jabatan)) {
-            return [];
-        }
+        // Ambil jabatan penilai
+        $penilai = $this->db->select('jabatan')->get_where('pegawai', ['nik' => $nik_penilai])->row();
+        if (!$penilai) return [];
 
-        $jabatan_penilai = $row->jabatan;
-        $unit_penilai    = $row->unit_kerja;
+        $jabatan_penilai = $penilai->jabatan;
 
-        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja');
+        $this->db->select('
+        p.nik,
+        p.nama,
+        p.jabatan,
+        p.unit_kerja,
+        p.unit_kantor,
+        MAX(pen1_peg.nik) AS penilai1_nik,
+        MAX(pen1_peg.nama) AS penilai1_nama,
+        MAX(pen1_peg.jabatan) AS penilai1_jabatan_detail,
+        MAX(pen2_peg.nik) AS penilai2_nik,
+        MAX(pen2_peg.nama) AS penilai2_nama,
+        MAX(pen2_peg.jabatan) AS penilai2_jabatan_detail
+    ');
         $this->db->from('pegawai p');
-        $this->db->join('penilai_mapping pm', 'p.jabatan = pm.jabatan AND p.unit_kerja = pm.unit_kerja');
-        $this->db->where('pm.penilai1_jabatan', $jabatan_penilai);
-        $this->db->where('p.unit_kerja', $unit_penilai);
+        $this->db->join('penilai_mapping m', 'm.jabatan = p.jabatan AND m.unit_kerja = p.unit_kerja', 'left');
+        $this->db->join(
+            'pegawai pen1_peg',
+            'pen1_peg.jabatan = (SELECT jabatan FROM penilai_mapping WHERE `key` = m.penilai1_jabatan LIMIT 1)',
+            'left'
+        );
+        $this->db->join(
+            'pegawai pen2_peg',
+            'pen2_peg.jabatan = (SELECT jabatan FROM penilai_mapping WHERE `key` = m.penilai2_jabatan LIMIT 1)',
+            'left'
+        );
+        $this->db->where('pen1_peg.nik', $nik_penilai);
         $this->db->group_by('p.nik');
+
         return $this->db->get()->result();
     }
 
+    /**
+     * Ambil daftar pegawai yang dinilai oleh penilai tertentu (Penilai II)
+     */
     public function getPegawaiSebagaiPenilai2($nik_penilai)
     {
-        $row = $this->db->select('jabatan, unit_kerja')->get_where('pegawai', ['nik' => $nik_penilai])->row();
-        if (!$row || empty($row->jabatan)) {
-            return [];
-        }
+        // Ambil jabatan penilai
+        $penilai = $this->db->select('jabatan')->get_where('pegawai', ['nik' => $nik_penilai])->row();
+        if (!$penilai) return [];
 
-        $jabatan_penilai = $row->jabatan;
-        $unit_penilai    = $row->unit_kerja;
+        $jabatan_penilai = $penilai->jabatan;
 
-        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja');
+        $this->db->select('
+        p.nik,
+        p.nama,
+        p.jabatan,
+        p.unit_kerja,
+        p.unit_kantor,
+        MAX(pen1_peg.nik) AS penilai1_nik,
+        MAX(pen1_peg.nama) AS penilai1_nama,
+        MAX(pen1_peg.jabatan) AS penilai1_jabatan_detail,
+        MAX(pen2_peg.nik) AS penilai2_nik,
+        MAX(pen2_peg.nama) AS penilai2_nama,
+        MAX(pen2_peg.jabatan) AS penilai2_jabatan_detail
+    ');
         $this->db->from('pegawai p');
-        $this->db->join('penilai_mapping pm', 'p.jabatan = pm.jabatan AND p.unit_kerja = pm.unit_kerja');
-        $this->db->where('pm.penilai2_jabatan', $jabatan_penilai);
-        $this->db->where('p.unit_kerja', $unit_penilai);
+        $this->db->join('penilai_mapping m', 'm.jabatan = p.jabatan AND m.unit_kerja = p.unit_kerja', 'left');
+        $this->db->join(
+            'pegawai pen1_peg',
+            'pen1_peg.jabatan = (SELECT jabatan FROM penilai_mapping WHERE `key` = m.penilai1_jabatan LIMIT 1)',
+            'left'
+        );
+        $this->db->join(
+            'pegawai pen2_peg',
+            'pen2_peg.jabatan = (SELECT jabatan FROM penilai_mapping WHERE `key` = m.penilai2_jabatan LIMIT 1)',
+            'left'
+        );
+        $this->db->where('pen2_peg.nik', $nik_penilai);
         $this->db->group_by('p.nik');
+
         return $this->db->get()->result();
     }
-
 
     /**
      * Ambil detail pegawai + penilai1 & penilai2 (mirip Pegawai_model::getPegawaiWithPenilai)
      */
     public function getPegawaiWithPenilai($nik)
     {
-        $this->db->select("
-        p.*,
-        pm.penilai1_jabatan,
-        pm.penilai2_jabatan,
-        pen1.nik AS penilai1_nik,
-        pen1.nama AS penilai1_nama,
-        pen1.jabatan AS penilai1_jabatan_detail,
-        pen2.nik AS penilai2_nik,
-        pen2.nama AS penilai2_nama,
-        pen2.jabatan AS penilai2_jabatan_detail
-    ");
+        $this->db->select('
+        p.nik,
+        p.nama,
+        p.jabatan,
+        p.unit_kerja,
+        p.unit_kantor,
+        pen1_peg.nik AS penilai1_nik,
+        pen1_peg.nama AS penilai1_nama,
+        pen1_peg.jabatan AS penilai1_jabatan_detail,
+        pen2_peg.nik AS penilai2_nik,
+        pen2_peg.nama AS penilai2_nama,
+        pen2_peg.jabatan AS penilai2_jabatan_detail
+    ');
         $this->db->from('pegawai p');
-        $this->db->join('penilai_mapping pm', 'p.jabatan = pm.jabatan AND p.unit_kerja = pm.unit_kerja', 'left');
-        $this->db->join('pegawai pen1', 'pm.penilai1_jabatan = pen1.jabatan AND p.unit_kerja = pen1.unit_kerja', 'left');
-        $this->db->join('pegawai pen2', 'pm.penilai2_jabatan = pen2.jabatan AND p.unit_kerja = pen2.unit_kerja', 'left');
+
+        // mapping pegawai sesuai jabatan & unit
+        $this->db->join('penilai_mapping m', 'm.jabatan = p.jabatan AND m.unit_kerja = p.unit_kerja', 'left');
+
+        // Penilai 1
+        $this->db->join(
+            'pegawai pen1_peg',
+            'pen1_peg.jabatan = (SELECT jabatan FROM penilai_mapping WHERE `key` = m.penilai1_jabatan LIMIT 1)',
+            'left'
+        );
+
+        // Penilai 2
+        $this->db->join(
+            'pegawai pen2_peg',
+            'pen2_peg.jabatan = (SELECT jabatan FROM penilai_mapping WHERE `key` = m.penilai2_jabatan LIMIT 1)',
+            'left'
+        );
+
         $this->db->where('p.nik', $nik);
 
         return $this->db->get()->row();
@@ -227,7 +286,7 @@ class Nilai_model extends CI_Model
         }
     }
 
-     public function updateStatusAllPenilai2(array $ids_array, $status, $penilai2_nik = null)
+    public function updateStatusAllPenilai2(array $ids_array, $status, $penilai2_nik = null)
     {
         if (empty($ids_array) || $status === null) {
             return false;

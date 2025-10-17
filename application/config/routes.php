@@ -15,6 +15,8 @@ $route['logout']             = 'Auth/logout';      // Logout
 $route['pegawai']            = 'Pegawai/index';    
 $route['administrator_renstra/kpi_indikatorkinerja'] = 'Administrator_Renstra/kpi_indikatorKinerja';
 $route['administrator_renstra/kpi_penilaiankinerja'] = 'Administrator_Renstra/kpi_penilaianKinerja';
+$route['superadmin/getKodeUnit/(:any)'] = 'superadmin/getKodeUnit/$1';
+$route['superadmin/getMappingJabatan/(:any)'] = 'superadmin/getMappingJabatan/$1';
 
 
 $route['404_override'] = '';

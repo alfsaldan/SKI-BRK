@@ -30,26 +30,42 @@ class Pegawai_model extends CI_Model
      */
     public function getPegawaiWithPenilai($nik)
     {
-        $this->db->select("
-            p.*,
-            pm.penilai1_jabatan,
-            pm.penilai2_jabatan,
-            pen1.nik AS penilai1_nik,
-            pen1.nama AS penilai1_nama,
-            pen1.jabatan AS penilai1_jabatan_detail,
-            pen2.nik AS penilai2_nik,
-            pen2.nama AS penilai2_nama,
-            pen2.jabatan AS penilai2_jabatan_detail
-        ");
+        $this->db->select('
+        p.nik,
+        p.nama,
+        p.jabatan,
+        p.unit_kerja,
+        p.unit_kantor,
+        pen1_peg.nik AS penilai1_nik,
+        pen1_peg.nama AS penilai1_nama,
+        pen1_peg.jabatan AS penilai1_jabatan_detail,
+        pen2_peg.nik AS penilai2_nik,
+        pen2_peg.nama AS penilai2_nama,
+        pen2_peg.jabatan AS penilai2_jabatan_detail
+    ');
         $this->db->from('pegawai p');
-        $this->db->join('penilai_mapping pm', 'p.jabatan = pm.jabatan AND p.unit_kerja = pm.unit_kerja', 'left');
-        $this->db->join('pegawai pen1', 'pm.penilai1_jabatan = pen1.jabatan AND p.unit_kerja = pen1.unit_kerja', 'left');
-        $this->db->join('pegawai pen2', 'pm.penilai2_jabatan = pen2.jabatan AND p.unit_kerja = pen2.unit_kerja', 'left');
+
+        // mapping pegawai sesuai jabatan & unit
+        $this->db->join('penilai_mapping m', 'm.jabatan = p.jabatan AND m.unit_kerja = p.unit_kerja', 'left');
+
+        // Penilai 1
+        $this->db->join(
+            'pegawai pen1_peg',
+            'pen1_peg.jabatan = (SELECT jabatan FROM penilai_mapping WHERE `key` = m.penilai1_jabatan LIMIT 1)',
+            'left'
+        );
+
+        // Penilai 2
+        $this->db->join(
+            'pegawai pen2_peg',
+            'pen2_peg.jabatan = (SELECT jabatan FROM penilai_mapping WHERE `key` = m.penilai2_jabatan LIMIT 1)',
+            'left'
+        );
+
         $this->db->where('p.nik', $nik);
 
         return $this->db->get()->row();
     }
-
 
     /**
      * Update realisasi + nilai indikator
@@ -259,23 +275,22 @@ class Pegawai_model extends CI_Model
         return true;
     }
 
-public function getGrafikPencapaian($nik)
-{
-    $this->db->select('periode_awal, periode_akhir, pencapaian, nilai_akhir, predikat');
-    $this->db->from('nilai_akhir');
-    $this->db->where('nik', $nik);
-    $this->db->order_by('periode_awal', 'ASC');
-    $result = $this->db->get()->result_array();
+    public function getGrafikPencapaian($nik)
+    {
+        $this->db->select('periode_awal, periode_akhir, pencapaian, nilai_akhir, predikat');
+        $this->db->from('nilai_akhir');
+        $this->db->where('nik', $nik);
+        $this->db->order_by('periode_awal', 'ASC');
+        $result = $this->db->get()->result_array();
 
-    foreach ($result as &$row) {
-        // pencapaian: "109.36%" -> 109.36 (float)
-        $row['pencapaian'] = floatval(str_replace('%', '', $row['pencapaian']));
-        // nilai_akhir: kalau string gunakan float
-        $row['nilai_akhir'] = isset($row['nilai_akhir']) ? floatval($row['nilai_akhir']) : null;
-        // predikat: biarkan apa adanya (string) atau null
-        $row['predikat'] = isset($row['predikat']) ? $row['predikat'] : null;
+        foreach ($result as &$row) {
+            // pencapaian: "109.36%" -> 109.36 (float)
+            $row['pencapaian'] = floatval(str_replace('%', '', $row['pencapaian']));
+            // nilai_akhir: kalau string gunakan float
+            $row['nilai_akhir'] = isset($row['nilai_akhir']) ? floatval($row['nilai_akhir']) : null;
+            // predikat: biarkan apa adanya (string) atau null
+            $row['predikat'] = isset($row['predikat']) ? $row['predikat'] : null;
+        }
+        return $result;
     }
-    return $result;
-}
-
 }

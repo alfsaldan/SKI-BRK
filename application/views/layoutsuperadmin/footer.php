@@ -117,10 +117,9 @@
 
 <script>
     $(document).ready(function() {
-        console.log("✅ DataTables Init Started...");
-
-        // pastikan tabel ditemukan
+        // only log when running on pages that have datatable-users
         if ($('#datatable-users').length) {
+            console.log("✅ DataTables Init Started...");
             $('#datatable-users').DataTable({
                 responsive: true,
                 pageLength: 5,
@@ -148,7 +147,8 @@
             });
             console.log("✅ DataTables berhasil diinisialisasi");
         } else {
-            console.error("❌ Tabel dengan ID #datatable-users tidak ditemukan!");
+            // no need to warn on pages without that table
+            // console.debug("halaman ini tidak punya #datatable-users");
         }
     });
 </script>

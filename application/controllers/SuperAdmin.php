@@ -5,6 +5,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
  * @property SuperAdmin_model $SuperAdmin_model
  * @property CI_Input $input
  * @property CI_Session $session
+ * @property CI_Output $output
+ * @property CI_DB_query_builder $db
  * @property CI_Form_validation $form_validation
  * @property PenilaiMapping_model $PenilaiMapping_model
  */
@@ -121,56 +123,139 @@ class SuperAdmin extends CI_Controller
     public function kelolatingkatanjabatan_kpi()
     {
         $data['judul'] = 'Kelola Tingkatan Jabatan KPI';
-        $data['list'] = $this->PenilaiMapping_model->getAll();
+        $data['kode_cabang'] = $this->SuperAdmin_model->getCabangWithUnitKantor();
 
         $this->load->view('layoutsuperadmin/header', $data);
         $this->load->view('superadmin/kelolatingkatanjabatan_kpi', $data);
         $this->load->view('layoutsuperadmin/footer');
     }
 
-    // Tambah data
+    // ========== CRUD PENILAI MAPPING ==========
+
+    // Tambah data mapping
     public function tambahPenilaiMapping()
     {
-        if ($this->input->post()) {
-            $insert = [
-                'jabatan'          => $this->input->post('jabatan'),
-                'jenis_penilaian'  => $this->input->post('jenis_penilaian'), // ✅ baru ditambahkan
-                'unit_kerja'       => $this->input->post('unit_kerja'),
-                'penilai1_jabatan' => $this->input->post('penilai1_jabatan'),
-                'penilai2_jabatan' => $this->input->post('penilai2_jabatan'),
-            ];
-
-            $this->PenilaiMapping_model->insert($insert);
-            $this->session->set_flashdata('success', 'Data mapping berhasil ditambahkan.');
-            redirect('superadmin/kelolatingkatanjabatan_kpi');
+        if (!$this->input->post()) {
+            show_error('Metode tidak diizinkan', 405);
+            return;
         }
+
+        $kode_cabang = $this->input->post('kode_cabang');
+        $kode_unit   = $this->input->post('kode_unit');
+        $jabatan     = $this->input->post('jabatan');
+        $jenis_penilaian = $this->input->post('jenis_penilaian');
+
+        // ======================
+        // Set unit_kantor & unit_kerja
+        // ======================
+        $unit_kantor = $this->SuperAdmin_model->getUnitKantorByKodeUnit($kode_unit) ?? 'Kantor Pusat';
+        $unit_kerja = $this->SuperAdmin_model->getUnitKerjaByKode($kode_cabang, $kode_unit);
+
+        // ======================
+        // Generate key unik baru
+        // ======================
+        $last = $this->db->order_by('id', 'DESC')->limit(1)->get('penilai_mapping')->row();
+        $newKey = $last ? ((int)$last->key + 1) : 1;
+
+        // ======================
+        // Ambil key dari penilai1 & penilai2 berdasarkan nama jabatan
+        // ======================
+        $penilai1_nama = $this->input->post('penilai1_jabatan');
+        $penilai2_nama = $this->input->post('penilai2_jabatan');
+
+        $penilai1_key = $penilai1_nama ? $this->SuperAdmin_model->getKeyByJabatanAndUnit($penilai1_nama, $kode_unit) : null;
+        $penilai2_key = $penilai2_nama ? $this->SuperAdmin_model->getKeyByJabatanAndUnit($penilai2_nama, $kode_unit) : null;
+
+        // ======================
+        // Siapkan data insert
+        // ======================
+        $insert = [
+            'kode_cabang'      => $kode_cabang,
+            'kode_unit'        => $kode_unit,
+            'unit_kantor'      => $unit_kantor,
+            'unit_kerja'       => $unit_kerja,
+            'jabatan'          => $jabatan,
+            'jenis_penilaian'  => $jenis_penilaian,
+            'penilai1_jabatan' => $penilai1_key,
+            'penilai2_jabatan' => $penilai2_key,
+            'key'              => $newKey,
+        ];
+
+        if ($this->SuperAdmin_model->saveMapping($insert)) {
+            $this->session->set_flashdata('success', 'Data mapping berhasil ditambahkan.');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal menambahkan data mapping.');
+        }
+
+        redirect('superadmin/kelolatingkatanjabatan_kpi');
     }
 
-    // Edit data
+
+    // Edit data mapping
     public function editPenilaiMapping($id)
     {
         if ($this->input->post()) {
+            $kode_unit   = $this->input->post('kode_unit');
+
+            $penilai1_nama = $this->input->post('penilai1_jabatan');
+            $penilai2_nama = $this->input->post('penilai2_jabatan');
+
+            $penilai1_key = $penilai1_nama ? $this->SuperAdmin_model->getKeyByJabatanAndUnit($penilai1_nama, $kode_unit) : null;
+            $penilai2_key = $penilai2_nama ? $this->SuperAdmin_model->getKeyByJabatanAndUnit($penilai2_nama, $kode_unit) : null;
+
             $update = [
+                'kode_cabang'      => $this->input->post('kode_cabang'),
+                'kode_unit'        => $kode_unit,
                 'jabatan'          => $this->input->post('jabatan'),
-                'jenis_penilaian'  => $this->input->post('jenis_penilaian'), // ✅ baru ditambahkan
+                'jenis_penilaian'  => $this->input->post('jenis_penilaian'),
                 'unit_kerja'       => $this->input->post('unit_kerja'),
-                'penilai1_jabatan' => $this->input->post('penilai1_jabatan'),
-                'penilai2_jabatan' => $this->input->post('penilai2_jabatan'),
+                'penilai1_jabatan' => $penilai1_key,
+                'penilai2_jabatan' => $penilai2_key,
+                // key tetap dari database, tidak diubah
             ];
 
-            $this->PenilaiMapping_model->update($id, $update);
-            $this->session->set_flashdata('success', 'Data mapping berhasil diubah.');
+            if ($this->SuperAdmin_model->saveMapping($update, $id)) {
+                $this->session->set_flashdata('success', 'Data mapping berhasil diubah.');
+            } else {
+                $this->session->set_flashdata('error', 'Gagal mengubah data mapping.');
+            }
+
             redirect('superadmin/kelolatingkatanjabatan_kpi');
+        } else {
+            show_error('Metode tidak diizinkan', 405);
         }
     }
 
-    // Hapus data
+    // Hapus data mapping
     public function hapusPenilaiMapping($id)
     {
-        if ($this->PenilaiMapping_model->delete($id)) {
-            $this->session->set_flashdata('success', 'Data berhasil dihapus');
+        if ($this->SuperAdmin_model->deleteMapping($id)) {
+            $this->session->set_flashdata('success', 'Data mapping berhasil dihapus.');
+        } else {
+            $this->session->set_flashdata('error', 'Gagal menghapus data mapping.');
         }
+
         redirect('superadmin/kelolatingkatanjabatan_kpi');
+    }
+
+    // ========== AJAX: ambil data cabang / unit / mapping ==========
+
+    // Ambil kode_unit berdasarkan kode_cabang
+    public function getKodeUnit($kode_cabang)
+    {
+        $units = $this->SuperAdmin_model->getKodeUnitByCabang($kode_cabang);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($units));
+    }
+
+    // Ambil mapping jabatan berdasarkan kode_unit
+    public function getMappingJabatan($kode_unit)
+    {
+        $list = $this->SuperAdmin_model->getMappingByKodeUnit($kode_unit);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($list));
     }
 
     //Kelola Rumus
