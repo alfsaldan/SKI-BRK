@@ -233,9 +233,9 @@
                                                 <th>Sasaran Kerja</th>
                                                 <th class="text-center" style="width: 80px;">Bobot (%)</th>
                                                 <th>Indikator</th>
-                                                <th class="text-center" style="width: 120px;">Target</th>
+                                                <th class="text-center" style="width: 150px;">Target</th>
                                                 <th class="text-center" style="width: 80px;">Batas Waktu</th>
-                                                <th class="text-center" style="width: 120px;">Realisasi</th>
+                                                <th class="text-center" style="width: 150px;">Realisasi</th>
                                                 <th class="text-center" style="width: 120px;">Pencapaian (%)</th>
                                                 <th class="text-center" style="width: 120px;">Nilai</th>
                                                 <th class="text-center" style="width: 120px;">Nilai Dibobot</th>
@@ -300,12 +300,40 @@
                                                             </td>
                                                             <td><?= $indik; ?></td>
 
+                                                            <style>
+                                                                .currency-wrapper {
+                                                                    position: relative;
+                                                                    display: inline-block;
+                                                                    width: 100%;
+                                                                }
+                                                                .currency-wrapper .format-currency {
+                                                                    position: absolute;
+                                                                    top: 0;
+                                                                    left: 0;
+                                                                    width: 100%;
+                                                                    height: 100%;
+                                                                    display: flex;
+                                                                    justify-content: center;
+                                                                    align-items: center;
+                                                                    color: #000;
+                                                                    font-weight: 550;
+                                                                    pointer-events: none;
+                                                                }
+                                                                .currency-wrapper input.hide-text {
+                                                                    color: transparent;
+                                                                    caret-color: black;
+                                                                }
+                                                            </style>
+
                                                             <!-- Target -->
                                                             <td class="text-center align-middle">
-                                                                <input type="text"
-                                                                    class="form-control target-input text-center"
-                                                                    style="min-width:120px;"
-                                                                    value="<?= $i->target ?? ''; ?>">
+                                                                <div class="currency-wrapper">
+                                                                    <input type="text"
+                                                                        class="form-control target-input text-center"
+                                                                        style="min-width:150px;"
+                                                                        value="<?= $i->target ?? ''; ?>">
+                                                                    <div class="format-currency text-muted small"></div>
+                                                                </div>
                                                             </td>
 
                                                             <td class="text-center align-middle">
@@ -314,10 +342,13 @@
                                                             </td>
 
                                                             <td class="text-center align-middle">
-                                                                <input type="text"
-                                                                    class="form-control realisasi-input text-center"
-                                                                    style="min-width:120px;"
-                                                                    value="<?= $i->realisasi ?? ''; ?>">
+                                                                <div class="currency-wrapper">
+                                                                    <input type="text"
+                                                                        class="form-control realisasi-input text-center"
+                                                                        style="min-width:150px;"
+                                                                        value="<?= $i->realisasi ?? ''; ?>">
+                                                                    <div class="format-currency text-muted small"></div>
+                                                                </div>
                                                             </td>
 
                                                             <td class="text-center align-middle"><input type="text" style="min-width:60px;"
@@ -1489,5 +1520,46 @@
         }
         // Debug kecil (bisa dihapus nanti)
         console.log('Script KPI terpasang. nik=', getNik(), 'rows=', document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').length);
+
+        function formatRp(num) {
+            if (num === null || num === undefined || num === '') return '';
+            var n = ('' + num).replace(/[^0-9]/g, '');
+            if (n === '') return '';
+            return 'Rp. ' + n.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function updateFormatDisplayForInput(input, show) {
+            const display = input.parentElement.querySelector('.format-currency');
+            if (!display) return;
+            const val = input.value.replace(/[^0-9]/g, '');
+            if (!val) {
+                display.textContent = '';
+                input.classList.remove('hide-text');
+                return;
+            }
+
+            if (show && parseFloat(val) >= 1000) {
+                display.textContent = formatRp(val);
+                input.classList.add('hide-text');
+            } else {
+                display.textContent = '';
+                input.classList.remove('hide-text');
+            }
+        }
+
+        // apply to all
+        document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
+            // awal halaman, tampilkan format
+            updateFormatDisplayForInput(input, true);
+
+            input.addEventListener('focus', () => {
+                // saat edit, tampil angka mentah
+                updateFormatDisplayForInput(input, false);
+            });
+            input.addEventListener('blur', () => {
+                // saat selesai edit, tampil Rp.
+                updateFormatDisplayForInput(input, true);
+            });
+        });
     });
 </script>
