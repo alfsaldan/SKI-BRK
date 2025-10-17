@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     let cls = 'badge bg-secondary';
                     if (data === 'Diverifikasi') cls = 'badge bg-success';
                     else if (data === 'Ditolak') cls = 'badge bg-danger';
-                    else if (data === 'Dinilai') cls = 'badge bg-info text-white';
+                    else if (data === 'Belum Diverifikasi') cls = 'badge bg-secondary text-white';
                     return `<span class="${cls}">${data}</span>`;
                 }
             },

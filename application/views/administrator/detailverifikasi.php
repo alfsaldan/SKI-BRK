@@ -21,7 +21,6 @@
                 </div>
             </div>
 
-
             <!-- Pilih Periode (untuk menyesuaikan periode yang dilihat) -->
             <div class="row mb-3">
                 <div class="col-12">
@@ -119,6 +118,7 @@
                     </h5>
                 </div>
                 <div class="card-body table-responsive">
+
                     <?php
                     // ======================
                     // Group data by Perspektif & Sasaran
@@ -168,6 +168,24 @@
                     // bulatkan total akhir
                     $global_bobot_sum = round($global_bobot_sum, 2);
                     $global_nilai_dibobot = round($global_nilai_dibobot, 2);
+
+
+                    // fungsi helper kecil untuk menentukan kelas warna status
+                    if (!function_exists('statusColor')) {
+                        function statusColor($s)
+                        {
+                            $s = strtolower(trim((string)$s));
+                            if ($s === 'disetujui') {
+                                return 'text-success';
+                            } elseif ($s === 'ada catatan' || $s === 'catatan') {
+                                return 'text-warning';
+                            } elseif ($s === 'belum dinilai' || $s === '' || $s === 'pending') {
+                                return 'text-danger';
+                            } else {
+                                return 'text-muted';
+                            }
+                        }
+                    }
                     ?>
 
                     <table class="table table-bordered table-hover align-middle text-center">
@@ -176,14 +194,16 @@
                                 <th width="5%">No</th>
                                 <th>Perspektif</th>
                                 <th>Sasaran Kerja</th>
-                                <th>Indikator</th>
                                 <th>Bobot (%)</th>
+                                <th>Indikator</th>
                                 <th>Target</th>
                                 <th>Batas Waktu</th>
                                 <th>Realisasi</th>
                                 <th>Pencapaian (%)</th>
                                 <th>Nilai</th>
                                 <th>Nilai Dibobot</th>
+                                <th>Status</th>
+                                <th>Status 2</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -201,46 +221,59 @@
                                             <tr>
                                                 <td><?= $no++ ?></td>
                                                 <?php if ($firstPers): ?>
-                                                    <td rowspan="<?= $pers_rowspan ?>" class="text-start align-middle" style="background-color:#eaf6ea; color:#0a6b2b; font-weight:600;"><?= htmlspecialchars($pers) ?></td>
+                                                    <td rowspan="<?= $pers_rowspan ?>" class="text-start align-middle" style="background-color:#eaf6ea; color:#0a6b2b; font-weight:600;">
+                                                        <?= htmlspecialchars($pers) ?>
+                                                    </td>
                                                     <?php $firstPers = false; ?>
                                                 <?php endif; ?>
 
                                                 <?php if ($firstSas): ?>
-                                                    <td rowspan="<?= $sas_rowspan ?>" class="text-start align-middle" style="background-color:#eef8ff;"><?= htmlspecialchars($sas) ?></td>
+                                                    <td rowspan="<?= $sas_rowspan ?>" class="text-start align-middle" style="background-color:#eef8ff;">
+                                                        <?= htmlspecialchars($sas) ?>
+                                                    </td>
                                                     <?php $firstSas = false; ?>
                                                 <?php endif; ?>
 
-                                                <td class="text-start"><?= htmlspecialchars($it->indikator ?? '-') ?></td>
                                                 <td><?= number_format($it->bobot ?? 0, 2) ?></td>
+                                                <td class="text-start"><?= htmlspecialchars($it->indikator ?? '-') ?></td>
                                                 <td><?= htmlspecialchars($it->target ?? '-') ?></td>
                                                 <td><?= htmlspecialchars($it->batas_waktu ?? '-') ?></td>
                                                 <td><?= htmlspecialchars($it->realisasi ?? '-') ?></td>
                                                 <td><?= number_format($it->pencapaian ?? 0, 2) ?></td>
                                                 <td><?= number_format($it->nilai ?? 0, 2) ?></td>
                                                 <td><?= number_format($it->nilai_dibobot ?? 0, 2) ?></td>
+
+                                                <td class="<?= statusColor($it->status ?? '') ?>">
+                                                    <?= htmlspecialchars(($it->status ?? 'Belum Dinilai')) ?>
+                                                </td>
+                                                <td class="<?= statusColor($it->status2 ?? '') ?>">
+                                                    <?= htmlspecialchars(($it->status2 ?? 'Belum Dinilai')) ?>
+                                                </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php endforeach; ?>
 
                                     <!-- subtotal per perspektif -->
                                     <tr class="fw-bold" style="background-color:#f3f8f3;">
-                                        <td colspan="4" class="text-end">Sub Total <?= htmlspecialchars($pers) ?></td>
+                                        <td colspan="3" class="text-end">Sub Total <?= htmlspecialchars($pers) ?></td>
                                         <td><?= number_format($pers_totals[$pers]['bobot'], 2) ?></td>
-                                        <td colspan="5" class="text-end">Sub Total Nilai Dibobot</td>
+                                        <td colspan="6" class="text-end">Sub Total Nilai Dibobot</td>
                                         <td><?= number_format($pers_totals[$pers]['nilai_dibobot'], 2) ?></td>
+                                        <td colspan="2" class="text-end"></td>
                                     </tr>
                                 <?php endforeach; ?>
 
                                 <!-- total akhir -->
                                 <tr class="fw-bold" style="background-color:#1b722a; color:#fff;">
-                                    <td colspan="4" class="text-center">Total</td>
+                                    <td colspan="3" class="text-center">Total</td>
                                     <td><?= number_format($global_bobot_sum, 2) ?></td>
-                                    <td colspan="5" class="text-end">Total Nilai Dibobot</td>
+                                    <td colspan="6" class="text-end">Total Nilai Dibobot</td>
                                     <td><?= number_format($global_nilai_dibobot, 2) ?></td>
+                                    <td colspan="2" class="text-end"></td>
                                 </tr>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="11" class="text-muted">Belum ada data penilaian.</td>
+                                    <td colspan="13" class="text-muted">Belum ada data penilaian.</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>

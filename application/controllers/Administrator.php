@@ -2244,7 +2244,7 @@ class Administrator extends CI_Controller
 
             // default status
             if ($penilaian_count == 0) {
-                $statusLabel = 'Belum Dinilai';
+                $statusLabel = 'Belum Diverifikasi';
             } else {
                 // Ambil status penilaian dari tabel penilaian untuk periode ini (db value: pending/disetujui/ditolak)
                 $dbStatus = $this->Penilaian_model->getStatusPenilaian($p->nik, $periode_awal, $periode_akhir);
@@ -2258,7 +2258,7 @@ class Administrator extends CI_Controller
                     case 'pending':
                     default:
                         // ada penilaian tapi belum diverifikasi
-                        $statusLabel = 'Dinilai';
+                        $statusLabel = 'Belum Diverifikasi';
                         break;
                 }
             }
@@ -2338,38 +2338,50 @@ class Administrator extends CI_Controller
     // ✅ AKSI VERIFIKASI PENILAIAN (AJAX)
     // ===============================================================
     public function verifikasiPenilaian()
-    {
-        $nik = $this->input->post('nik');
-        $status = $this->input->post('status');
+{
+    $nik = $this->input->post('nik');
+    $status = $this->input->post('status');
+    $awal = $this->input->post('awal') ?? date('Y') . "-01-01";
+    $akhir = $this->input->post('akhir') ?? date('Y') . "-12-31";
 
-        // periode yang dikirimkan dari halaman detail (opsional)
-        $awal = $this->input->post('awal') ?? $this->input->post('awal') ?? $this->input->get('awal') ?? date('Y-01-01');
-        $akhir = $this->input->post('akhir') ?? $this->input->post('akhir') ?? $this->input->get('akhir') ?? date('Y-12-31');
-
-        if (!$nik || !$status) {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Data tidak lengkap.'
-            ]);
-            return;
-        }
-
-        $this->load->model('Penilaian_model');
-        $update = $this->Penilaian_model->updateStatusPenilaian($nik, $status, $awal, $akhir);
-
-        if ($update) {
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'Status penilaian berhasil diperbarui!',
-                'new_status' => $status
-            ]);
-        } else {
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Gagal memperbarui status penilaian.'
-            ]);
-        }
+    if (!$nik || !$status) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Data tidak lengkap.'
+        ]);
+        return;
     }
+
+    $this->load->model('Penilaian_model');
+
+    // 🔹 Cek apakah semua status & status2 sudah disetujui
+    $cek = $this->Penilaian_model->cekSemuaDisetujui($nik, $awal, $akhir);
+
+    if (!$cek) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Belum semua penilai menyetujui (status atau status2 masih belum disetujui).'
+        ]);
+        return;
+    }
+
+    // 🔹 Lanjut verifikasi jika sudah disetujui semua
+    $update = $this->Penilaian_model->updateStatusPenilaian($nik, $status, $awal, $akhir);
+
+    if ($update) {
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Status penilaian berhasil diverifikasi!',
+            'new_status' => $status
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Gagal memperbarui status penilaian.'
+        ]);
+    }
+}
+
 
     // ==================== KELOLA BUDAYA (AJAX) ====================
 

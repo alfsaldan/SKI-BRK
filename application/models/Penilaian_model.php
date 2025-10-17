@@ -446,6 +446,26 @@ class Penilaian_model extends CI_Model
             ->get()->result();
     }
 
+    public function cekSemuaDisetujui($nik, $awal, $akhir)
+    {
+        $this->db->from('penilaian');
+        $this->db->where('nik', $nik);
+        $this->db->where('periode_awal', $awal);
+        $this->db->where('periode_akhir', $akhir);
+
+        // jika ada status atau status2 yang belum disetujui
+        $this->db->group_start();
+        $this->db->where('status !=', 'disetujui');
+        $this->db->or_where('status2 !=', 'disetujui');
+        $this->db->group_end();
+
+        $count = $this->db->count_all_results();
+
+        // jika masih ada yang belum disetujui -> false
+        return $count === 0;
+    }
+
+
     public function getPegawaiDetail($nik)
     {
         return $this->db->select('pg.*, a.nama_pegawai AS penilai1_nama, b.nama_pegawai AS penilai2_nama')
@@ -458,9 +478,20 @@ class Penilaian_model extends CI_Model
 
     public function getPenilaianDetail($nik, $awal, $akhir)
     {
-        return $this->db->select('sk.perspektif, sk.sasaran_kerja, i.indikator, i.bobot, 
-                              p.target, p.batas_waktu, p.realisasi, p.pencapaian, 
-                              p.nilai, p.nilai_dibobot')
+        return $this->db->select('
+            sk.perspektif, 
+            sk.sasaran_kerja, 
+            i.indikator, 
+            i.bobot, 
+            p.target, 
+            p.batas_waktu, 
+            p.realisasi, 
+            p.pencapaian, 
+            p.nilai, 
+            p.nilai_dibobot,
+            p.status,
+            p.status2
+        ')
             ->from('penilaian p')
             ->join('indikator i', 'i.id = p.indikator_id', 'left')
             ->join('sasaran_kerja sk', 'sk.id = i.sasaran_id', 'left')
@@ -468,8 +499,10 @@ class Penilaian_model extends CI_Model
             ->where('p.periode_awal', $awal)
             ->where('p.periode_akhir', $akhir)
             ->order_by('sk.perspektif, sk.id, i.id')
-            ->get()->result();
+            ->get()
+            ->result();
     }
+
 
     // 🔹 Ambil semua budaya dari tabel budaya
     public function getAllBudaya()

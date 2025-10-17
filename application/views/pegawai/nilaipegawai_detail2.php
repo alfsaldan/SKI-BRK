@@ -1165,6 +1165,23 @@
                     });
                     return;
                 }
+
+                // 🔍 CEK apakah masih ada status penilai1 selain "Disetujui"
+                const masihBelumDisetujui = rows.some(row => {
+                    const selectPenilai1 = row.querySelector('.status-select');
+                    return selectPenilai1 && selectPenilai1.value !== 'Disetujui';
+                });
+
+                if (masihBelumDisetujui && status === 'Disetujui') {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Tidak Dapat Menyetujui',
+                        text: 'Tidak dapat menyetujui karena penilai 1 masih ada yang belum setuju.',
+                        confirmButtonText: 'Mengerti'
+                    });
+                    return; // hentikan proses simpan
+                }
+
                 const ids = rows.map(r => r.dataset.id).filter(Boolean);
 
                 const confirmation = await Swal.fire({
@@ -1178,7 +1195,6 @@
                 if (!confirmation.isConfirmed) return;
 
                 if (status === 'Ada Catatan') {
-                    // show modal to collect catatan first
                     bulkIds = ids.slice();
                     bulkMode = true;
                     document.getElementById('indikator_id').value = '';
@@ -1191,7 +1207,7 @@
                     return;
                 }
 
-                // direct save (no catatan)
+                // jalankan proses simpan seperti biasa
                 try {
                     const res = await performBulkSave(ids, status, '');
                     if (!res.ok) {
@@ -1228,6 +1244,7 @@
                 }
             });
         }
+
 
         // ===== Form Catatan submit (handles bulkMode and per-indikator) =====
         $('#form-catatan').off('submit').on('submit', function(e) {
