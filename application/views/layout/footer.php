@@ -208,30 +208,6 @@
     chartTargetRealisasi.render();
 </script>
 
-<script>
-    var optionsDonut = {
-        chart: {
-            type: 'donut',
-            height: 350
-        },
-        series: [40, 35, 25], // contoh data jumlah pegawai
-        labels: ['Selesai', 'Proses', 'Belum'],
-        colors: ['#039be5', '#f9a825', '#d32f2f', ],
-        legend: {
-            position: 'bottom'
-        },
-        dataLabels: {
-            enabled: true,
-            formatter: function(val) {
-                return val.toFixed(1) + "%";
-            }
-        }
-    };
-
-    var chartDonut = new ApexCharts(document.querySelector("#donut-charts"), optionsDonut);
-    chartDonut.render();
-</script>
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>

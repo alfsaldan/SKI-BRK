@@ -27,6 +27,43 @@
             </div>
             <!-- end page title -->
 
+            <!-- Filter Periode (Popup Floating) -->
+            <div class="d-flex justify-content-end mb-3">
+                <button id="btn_show_filter" class="btn btn-outline-secondary btn-sm">
+                    <i class="mdi mdi-tune"></i> Filter Periode
+                </button>
+            </div>
+
+            <!-- Popup Filter -->
+            <div id="filter_popup" class="card shadow p-3"
+                style="position:absolute; top:120px; right:40px; width:380px; display:none; z-index:999;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="mb-0"><i class="mdi mdi-calendar-range"></i> Pilih Periode</h6>
+                    <button id="btn_close_filter" class="btn btn-sm btn-light">
+                        <i class="mdi mdi-close"></i>
+                    </button>
+                </div>
+                <select id="filter_periode" class="form-control mb-3">
+                    <?php if (!empty($periode_list)): ?>
+                        <option value="">Keseluruhan</option>
+                        <?php foreach ($periode_list as $p):
+                            $label = date('d M Y', strtotime($p->periode_awal)) . ' - ' . date('d M Y', strtotime($p->periode_akhir));
+                            $val = $p->periode_awal . '|' . $p->periode_akhir;
+                            $sel = ((isset($selected_awal) && isset($selected_akhir)) && $selected_awal == $p->periode_awal && $selected_akhir == $p->periode_akhir) ? 'selected' : '';
+                        ?>
+                            <option value="<?= $val ?>" <?= $sel ?>><?= $label ?></option>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <?php $def_awal = $selected_awal ?? date('Y-01-01');
+                        $def_akhir = $selected_akhir ?? date('Y-12-31'); ?>
+                        <option value="<?= $def_awal . '|' . $def_akhir ?>">Default (<?= $def_awal ?> - <?= $def_akhir ?>)</option>
+                    <?php endif; ?>
+                </select>
+                <button id="btn_refresh" class="btn btn-primary w-100">
+                    <i class="mdi mdi-refresh"></i> Terapkan
+                </button>
+            </div>
+
             <!-- Statistik ringkas -->
             <div class="row">
 
@@ -38,7 +75,7 @@
                             </div>
                             <div class="wigdet-two-content">
                                 <p class="m-0 text-uppercase text-white">Total Pegawai</p>
-                                <h2 class="text-white"><span data-plugin="counterup">256</span></h2>
+                                <h2 class="text-white"><span data-plugin="counterup"><?= $total_pegawai ?? 0 ?></span></h2>
                             </div>
                         </div>
                     </div>
@@ -52,7 +89,7 @@
                             </div>
                             <div class="wigdet-two-content">
                                 <p class="m-0 text-white text-uppercase">Selesai Dinilai</p>
-                                <h2 class="text-white"><span data-plugin="counterup">184</span></h2>
+                                <h2 class="text-white"><span data-plugin="counterup"><?= $selesai ?? 0 ?></span></h2>
                             </div>
                         </div>
                     </div>
@@ -66,7 +103,7 @@
                             </div>
                             <div class="wigdet-two-content">
                                 <p class="m-0 text-uppercase text-white">Masih Proses</p>
-                                <h2 class="text-white"><span data-plugin="counterup">142</span></h2>
+                                <h2 class="text-white"><span data-plugin="counterup"><?= $proses ?? 0 ?></span></h2>
                             </div>
                         </div>
                     </div>
@@ -80,7 +117,7 @@
                             </div>
                             <div class="wigdet-two-content">
                                 <p class="m-0 text-uppercase text-white">Belum Dinilai</p>
-                                <h2 class="text-white"><span data-plugin="counterup">42</span></h2>
+                                <h2 class="text-white"><span data-plugin="counterup"><?= $belum ?? 0 ?></span></h2>
                             </div>
                         </div>
                     </div>
@@ -132,6 +169,64 @@
 <!-- ============================================================== -->
 <!-- End Page Content here -->
 <!-- ============================================================== -->
+<!-- DataTables JS/CSS harus sudah tersedia di template -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Restore periode dari URL
+        (function restoreSelectedPeriodFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const awal = params.get('awal');
+            const akhir = params.get('akhir');
+            if (awal && akhir) {
+                const sel = document.getElementById('filter_periode');
+                const optionVal = awal + '|' + akhir;
+                for (let i = 0; i < sel.options.length; i++) {
+                    if (sel.options[i].value === optionVal) {
+                        sel.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        })();
+
+        // Tombol Refresh untuk reload dengan parameter awal|akhir
+        document.getElementById('btn_refresh').addEventListener('click', function() {
+            const val = document.getElementById('filter_periode').value;
+            if (val) {
+                const parts = val.split('|');
+                window.location.href = `?awal=${parts[0]}&akhir=${parts[1]}`;
+            } else {
+                window.location.href = `?`;
+            }
+        });
+
+        // Donut Chart
+        var optionsDonut = {
+            chart: {
+                type: 'donut',
+                height: 350
+            },
+            series: [<?= $selesai ?? 0 ?>, <?= $proses ?? 0 ?>, <?= $belum ?? 0 ?>],
+            labels: ['Selesai', 'Proses', 'Belum'],
+            colors: ['#039be5', '#f9a825', '#d32f2f'],
+            legend: {
+                position: 'bottom'
+            },
+            dataLabels: {
+                enabled: true,
+                formatter: function(val) {
+                    return val.toFixed(1) + "%";
+                }
+            }
+        };
+        var chartDonut = new ApexCharts(document.querySelector("#donut-charts"), optionsDonut);
+        chartDonut.render();
+    });
+</script>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.categories.min.js"></script>
@@ -272,4 +367,38 @@
             renderChart(unit, kantor);
         });
     });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnShow = document.getElementById('btn_show_filter');
+    const btnClose = document.getElementById('btn_close_filter');
+    const popup = document.getElementById('filter_popup');
+
+    // tampil/sembunyikan popup
+    btnShow.addEventListener('click', () => {
+        popup.style.display = (popup.style.display === 'none' ? 'block' : 'none');
+    });
+    btnClose.addEventListener('click', () => {
+        popup.style.display = 'none';
+    });
+
+    // klik di luar popup = tutup
+    document.addEventListener('click', function(e) {
+        if (!popup.contains(e.target) && !btnShow.contains(e.target)) {
+            popup.style.display = 'none';
+        }
+    });
+
+    // Tombol Refresh
+    document.getElementById('btn_refresh').addEventListener('click', function() {
+        const val = document.getElementById('filter_periode').value;
+        if (val) {
+            const parts = val.split('|');
+            window.location.href = `?awal=${parts[0]}&akhir=${parts[1]}`;
+        } else {
+            window.location.href = `?`;
+        }
+    });
+});
 </script>

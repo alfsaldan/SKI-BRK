@@ -23,6 +23,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
  * @property Coaching_model $Coaching_model
  * @property CI_Form_validation $form_validation
  * @property Budaya_model $Budaya_model
+ * @property Administrator_model $Administrator_model
  * @property CI_Input $input
  * @property CI_Output $output
  * @property CI_Session $session
@@ -51,11 +52,29 @@ class Administrator extends CI_Controller
 
     public function index()
     {
+        $this->load->model('Administrator_model');
+
+        $awal = $this->input->get('awal');
+        $akhir = $this->input->get('akhir');
+
+        $data['periode_list'] = $this->Administrator_model->getPeriodeList();
+        $data['selected_awal'] = $awal;
+        $data['selected_akhir'] = $akhir;
+
+        $data['total_pegawai'] = $this->Administrator_model->getTotalPegawai();
+        $stats = $this->Administrator_model->getDashboardStats($awal, $akhir);
+
+        $data['selesai'] = $stats['selesai'];
+        $data['proses'] = $stats['proses'];
+        $data['belum'] = $stats['belum'];
+
         $data['judul'] = "Halaman Dashboard Administrator";
+
         $this->load->view("layout/header");
         $this->load->view("administrator/index", $data);
         $this->load->view("layout/footer");
     }
+
 
     public function indikatorKinerja()
     {
