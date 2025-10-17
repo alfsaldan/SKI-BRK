@@ -965,9 +965,15 @@ class Pegawai extends CI_Controller
 
                     $sheet->setCellValue("D{$row}", $noIndikator . ". " . $i->indikator);
                     $sheet->setCellValue("E{$row}", $i->bobot);
-                    $sheet->setCellValue("F{$row}", $i->target);
+                    $sheet->setCellValue(
+                        "F{$row}",
+                        ($i->target >= 1000) ? 'Rp. ' . number_format($i->target, 0, ',', '.') : $i->target
+                    );
                     $sheet->setCellValue("G{$row}", $i->batas_waktu);
-                    $sheet->setCellValue("H{$row}", $i->realisasi);
+                    $sheet->setCellValue(
+                        "H{$row}",
+                        ($i->realisasi >= 1000) ? 'Rp. ' . number_format($i->realisasi, 0, ',', '.') : $i->realisasi
+                    );
                     $sheet->setCellValue("I{$row}", $i->pencapaian ?? '-');
                     $sheet->setCellValue("J{$row}", $i->nilai ?? '-');
                     $sheet->setCellValue("K{$row}", $i->nilai_dibobot ?? '-');

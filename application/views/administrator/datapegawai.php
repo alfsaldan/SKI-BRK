@@ -236,9 +236,18 @@
 
                                                         <td><?= $i->indikator; ?></td>
                                                         <td class="text-center"><?= $i->bobot; ?></td>
-                                                        <td><?= $i->target; ?></td>
-                                                        <td><?= $i->batas_waktu; ?></td>
-                                                        <td><?= $i->realisasi; ?></td>
+                                                        <td class="text-center align-middle" style="min-width:150px;">
+                                                            <?= ($i->target >= 1000) ? 'Rp. ' . number_format($i->target, 0, ',', '.') : $i->target; ?>
+                                                        </td>
+
+                                                        <td class="text-center align-middle" style="min-width:110px;">
+                                                            <?= $i->batas_waktu; ?>
+                                                        </td>
+
+                                                        <td class="text-center align-middle" style="min-width:150px;">
+                                                            <?= ($i->realisasi >= 1000) ? 'Rp. ' . number_format($i->realisasi, 0, ',', '.') : $i->realisasi; ?>
+                                                        </td>
+
                                                         <td class="text-center"><?= $i->pencapaian ?? '-'; ?></td>
                                                         <td class="text-center"><?= $i->nilai ?? '-'; ?></td>
                                                         <td class="text-center"><?= $i->nilai_dibobot ?? '-'; ?></td>

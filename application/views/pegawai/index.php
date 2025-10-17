@@ -135,7 +135,7 @@
             </div>
             <!-- end page title -->
 
-             <!-- Grafik Pencapaian Nilai Akhir -->
+            <!-- Grafik Pencapaian Nilai Akhir -->
             <div class="card mt-4 shadow-sm border-0">
                 <div class="card-body">
                     <h5 class="text-success font-weight-bold mb-3">
@@ -155,7 +155,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>
 
                 <?php
@@ -448,25 +448,59 @@
                                                             </td>
                                                             <td><?= $indik; ?></td>
 
-                                                            <td class="text-center align-middle" style="min-width:120px;">
-                                                                <input type="text" class="form-control text-center align-middle target-input"
-                                                                    value="<?= $i->target ?? ''; ?>"
-                                                                    style="min-width:100px;">
+                                                            <style>
+                                                                .currency-wrapper {
+                                                                    position: relative;
+                                                                    display: inline-block;
+                                                                    width: 100%;
+                                                                }
+
+                                                                .currency-wrapper .format-currency {
+                                                                    position: absolute;
+                                                                    top: 0;
+                                                                    left: 0;
+                                                                    width: 100%;
+                                                                    height: 100%;
+                                                                    display: flex;
+                                                                    justify-content: center;
+                                                                    align-items: center;
+                                                                    color: #000;
+                                                                    font-weight: 550;
+                                                                    pointer-events: none;
+                                                                }
+
+                                                                .currency-wrapper input.hide-text {
+                                                                    color: transparent;
+                                                                    caret-color: black;
+                                                                }
+                                                            </style>
+                                                            <!-- Target -->
+                                                            <td class="text-center align-middle">
+                                                                <div class="currency-wrapper">
+                                                                    <input type="text"
+                                                                        class="form-control target-input text-center"
+                                                                        style="min-width:150px;"
+                                                                        value="<?= $i->target ?? ''; ?>">
+                                                                    <div class="format-currency text-muted small"></div>
+                                                                </div>
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <input type="date" class="form-control batas-waktu" style="min-width:120px;"
                                                                     value="<?= $i->batas_waktu ?? ''; ?>">
                                                             </td>
                                                             <td class="text-center align-middle">
-                                                                <?php if (!$is_locked): ?>
-                                                                    <input type="text" class="form-control text-center realisasi-input"
-                                                                        value="<?= $i->realisasi ?? ''; ?>"
-                                                                        style="min-width:100px;">
-                                                                <?php else: ?>
-                                                                    <input type="text" class="form-control text-center realisasi-input"
-                                                                        value="<?= $i->realisasi ?? ''; ?>"
-                                                                        style="min-width:100px;" readonly>
-                                                                <?php endif; ?>
+                                                                <div class="currency-wrapper">
+                                                                    <?php if (!$is_locked): ?>
+                                                                        <input type="text" class="form-control text-center realisasi-input"
+                                                                            value="<?= $i->realisasi ?? ''; ?>"
+                                                                            style="min-width:150px;">
+                                                                    <?php else: ?>
+                                                                        <input type="text" class="form-control text-center realisasi-input"
+                                                                            value="<?= $i->realisasi ?? ''; ?>"
+                                                                            style="min-width:150px;" readonly>
+                                                                    <?php endif; ?>
+                                                                    <div class="format-currency text-muted small"></div>
+                                                                </div>
                                                             </td>
 
                                                             <td class="text-center align-middle">
@@ -1538,6 +1572,47 @@ if ($message): ?>
                     });
                 });
         });
+        // ================ Format Rupiah ===================
+        function formatRp(num) {
+            if (num === null || num === undefined || num === '') return '';
+            var n = ('' + num).replace(/[^0-9]/g, '');
+            if (n === '') return '';
+            return 'Rp. ' + n.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function updateFormatDisplayForInput(input, show) {
+            const display = input.parentElement.querySelector('.format-currency');
+            if (!display) return;
+            const val = input.value.replace(/[^0-9]/g, '');
+            if (!val) {
+                display.textContent = '';
+                input.classList.remove('hide-text');
+                return;
+            }
+
+            if (show && parseFloat(val) >= 1000) {
+                display.textContent = formatRp(val);
+                input.classList.add('hide-text');
+            } else {
+                display.textContent = '';
+                input.classList.remove('hide-text');
+            }
+        }
+
+        // apply to all
+        document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
+            // awal halaman, tampilkan format
+            updateFormatDisplayForInput(input, true);
+
+            input.addEventListener('focus', () => {
+                // saat edit, tampil angka mentah
+                updateFormatDisplayForInput(input, false);
+            });
+            input.addEventListener('blur', () => {
+                // saat selesai edit, tampil Rp.
+                updateFormatDisplayForInput(input, true);
+            });
+        });
     });
 </script>
 
@@ -1673,9 +1748,17 @@ if ($message): ?>
     .animate-fade-delay {
         animation: fadeIn 0.8s ease-in-out;
     }
+
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* Insight Box */
@@ -1704,9 +1787,17 @@ if ($message): ?>
     }
 
     /* Ikon Dinamis */
-    .insight-danger .icon { color: #dc3545; }
-    .insight-success .icon { color: #28a745; }
-    .insight-info .icon { color: #007bff; }
+    .insight-danger .icon {
+        color: #dc3545;
+    }
+
+    .insight-success .icon {
+        color: #28a745;
+    }
+
+    .insight-info .icon {
+        color: #007bff;
+    }
 </style>
 
 <!-- ======================= -->
@@ -1717,9 +1808,15 @@ if ($message): ?>
     const grafikData = <?= json_encode($grafik_pencapaian, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
 
     const dataPeriode = grafikData.map(g => {
-        return (new Date(g.periode_awal)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) +
+        return (new Date(g.periode_awal)).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short'
+            }) +
             ' - ' +
-            (new Date(g.periode_akhir)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+            (new Date(g.periode_akhir)).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short'
+            });
     });
 
     const dataPencapaian = grafikData.map(g => g.pencapaian);
@@ -1758,13 +1855,22 @@ if ($message): ?>
         options: {
             responsive: true,
             plugins: {
-                legend: { position: 'top' },
-                tooltip: { callbacks: { label: ctx => ctx.parsed.y + '%' } }
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.parsed.y + '%'
+                    }
+                }
             },
             scales: {
                 y: {
                     beginAtZero: true,
-                    title: { display: true, text: 'Pencapaian (%)' }
+                    title: {
+                        display: true,
+                        text: 'Pencapaian (%)'
+                    }
                 }
             }
         }

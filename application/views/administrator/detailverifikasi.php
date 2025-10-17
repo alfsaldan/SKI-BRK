@@ -234,19 +234,38 @@
                                                     <?php $firstSas = false; ?>
                                                 <?php endif; ?>
 
-                                                <td><?= number_format($it->bobot ?? 0, 2) ?></td>
+                                                <td class="text-center align-middle"><?= number_format($it->bobot ?? 0, 2) ?></td>
                                                 <td class="text-start"><?= htmlspecialchars($it->indikator ?? '-') ?></td>
-                                                <td><?= htmlspecialchars($it->target ?? '-') ?></td>
-                                                <td><?= htmlspecialchars($it->batas_waktu ?? '-') ?></td>
-                                                <td><?= htmlspecialchars($it->realisasi ?? '-') ?></td>
-                                                <td><?= number_format($it->pencapaian ?? 0, 2) ?></td>
-                                                <td><?= number_format($it->nilai ?? 0, 2) ?></td>
-                                                <td><?= number_format($it->nilai_dibobot ?? 0, 2) ?></td>
+                                                <td class="text-center align-middle" style="min-width: 150px;">
+                                                    <?php
+                                                    $target = $it->target ?? '-';
+                                                    echo ($target !== '-' && is_numeric($target) && $target >= 1000)
+                                                        ? 'Rp. ' . number_format($target, 0, ',', '.')
+                                                        : htmlspecialchars($target);
+                                                    ?>
+                                                </td>
 
-                                                <td class="<?= statusColor($it->status ?? '') ?>">
+                                                <td class="text-center align-middle" style="min-width: 110px;">
+                                                    <?= htmlspecialchars($it->batas_waktu ?? '-') ?>
+                                                </td>
+
+                                                <td class="text-center align-middle" style="min-width: 150px;">
+                                                    <?php
+                                                    $realisasi = $it->realisasi ?? '-';
+                                                    echo ($realisasi !== '-' && is_numeric($realisasi) && $realisasi >= 1000)
+                                                        ? 'Rp. ' . number_format($realisasi, 0, ',', '.')
+                                                        : htmlspecialchars($realisasi);
+                                                    ?>
+                                                </td>
+
+                                                <td class="text-center align-middle"><?= number_format($it->pencapaian ?? 0, 2) ?></td>
+                                                <td class="text-center align-middle"><?= number_format($it->nilai ?? 0, 2) ?></td>
+                                                <td class="text-center align-middle"><?= number_format($it->nilai_dibobot ?? 0, 2) ?></td>
+
+                                                <td class="<?= statusColor($it->status ?? '') ?> text-center align-middle">
                                                     <?= htmlspecialchars(($it->status ?? 'Belum Dinilai')) ?>
                                                 </td>
-                                                <td class="<?= statusColor($it->status2 ?? '') ?>">
+                                                <td class="<?= statusColor($it->status2 ?? '') ?> text-center align-middle">
                                                     <?= htmlspecialchars(($it->status2 ?? 'Belum Dinilai')) ?>
                                                 </td>
                                             </tr>

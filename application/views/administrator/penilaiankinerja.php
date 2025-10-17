@@ -1521,6 +1521,7 @@
         // Debug kecil (bisa dihapus nanti)
         console.log('Script KPI terpasang. nik=', getNik(), 'rows=', document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').length);
 
+        // ================ Format Rupiah ===================
         function formatRp(num) {
             if (num === null || num === undefined || num === '') return '';
             var n = ('' + num).replace(/[^0-9]/g, '');

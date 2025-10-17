@@ -354,19 +354,53 @@
                                                             </td>
                                                             <td><?= $indik; ?></td>
 
+                                                            <style>
+                                                                .currency-wrapper {
+                                                                    position: relative;
+                                                                    display: inline-block;
+                                                                    width: 100%;
+                                                                }
+
+                                                                .currency-wrapper .format-currency {
+                                                                    position: absolute;
+                                                                    top: 0;
+                                                                    left: 0;
+                                                                    width: 100%;
+                                                                    height: 100%;
+                                                                    display: flex;
+                                                                    justify-content: center;
+                                                                    align-items: center;
+                                                                    color: #000;
+                                                                    font-weight: 550;
+                                                                    pointer-events: none;
+                                                                }
+
+                                                                .currency-wrapper input.hide-text {
+                                                                    color: transparent;
+                                                                    caret-color: black;
+                                                                }
+                                                            </style>
+                                                            <!-- Target -->
                                                             <td class="text-center align-middle">
-                                                                <input type="text" class="form-control text-center target-input"
-                                                                    value="<?= $i->target ?? ''; ?>" readonly
-                                                                    style="min-width:100px;">
+                                                                <div class="currency-wrapper">
+                                                                    <input type="text"
+                                                                        class="form-control target-input text-center"
+                                                                        style="min-width:150px;"
+                                                                        value="<?= $i->target ?? ''; ?>"
+                                                                        readonly>
+                                                                    <div class="format-currency text-muted small"></div>
+                                                                </div>
                                                             </td>
                                                             <td class="text-center align-middle" style="min-width:120px;">
                                                                 <?= $i->batas_waktu ? date('d-m-Y', strtotime($i->batas_waktu)) : '-'; ?>
                                                             </td>
                                                             <td class="text-center align-middle">
-                                                                <!-- READONLY untuk penilai2 -->
-                                                                <input type="text" class="form-control text-center realisasi-input"
-                                                                    value="<?= $i->realisasi ?? ''; ?>"
-                                                                    style="min-width:100px;" readonly>
+                                                                <div class="currency-wrapper">
+                                                                    <input type="text" class="form-control text-center realisasi-input"
+                                                                        value="<?= $i->realisasi ?? ''; ?>"
+                                                                        style="min-width:150px;" readonly>
+                                                                    <div class="format-currency text-muted small"></div>
+                                                                </div>
                                                             </td>
 
                                                             <td class="text-center align-middle">
@@ -1478,6 +1512,47 @@
             });
         }
 
+        // ================ Format Rupiah ===================
+        function formatRp(num) {
+            if (num === null || num === undefined || num === '') return '';
+            var n = ('' + num).replace(/[^0-9]/g, '');
+            if (n === '') return '';
+            return 'Rp. ' + n.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function updateFormatDisplayForInput(input, show) {
+            const display = input.parentElement.querySelector('.format-currency');
+            if (!display) return;
+            const val = input.value.replace(/[^0-9]/g, '');
+            if (!val) {
+                display.textContent = '';
+                input.classList.remove('hide-text');
+                return;
+            }
+
+            if (show && parseFloat(val) >= 1000) {
+                display.textContent = formatRp(val);
+                input.classList.add('hide-text');
+            } else {
+                display.textContent = '';
+                input.classList.remove('hide-text');
+            }
+        }
+
+        // apply to all
+        document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
+            // awal halaman, tampilkan format
+            updateFormatDisplayForInput(input, true);
+
+            input.addEventListener('focus', () => {
+                // saat edit, tampil angka mentah
+                updateFormatDisplayForInput(input, false);
+            });
+            input.addEventListener('blur', () => {
+                // saat selesai edit, tampil Rp.
+                updateFormatDisplayForInput(input, true);
+            });
+        });
 
     }); // end DOMContentLoaded
 </script>

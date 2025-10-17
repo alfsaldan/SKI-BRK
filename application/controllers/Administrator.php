@@ -1247,9 +1247,15 @@ class Administrator extends CI_Controller
 
                     $sheet->setCellValue("D{$row}", $noIndikator . ". " . $i->indikator);
                     $sheet->setCellValue("E{$row}", $i->bobot);
-                    $sheet->setCellValue("F{$row}", $i->target);
+                    $sheet->setCellValue(
+                        "F{$row}",
+                        ($i->target >= 1000) ? 'Rp. ' . number_format($i->target, 0, ',', '.') : $i->target
+                    );
                     $sheet->setCellValue("G{$row}", $i->batas_waktu);
-                    $sheet->setCellValue("H{$row}", $i->realisasi);
+                    $sheet->setCellValue(
+                        "H{$row}",
+                        ($i->realisasi >= 1000) ? 'Rp. ' . number_format($i->realisasi, 0, ',', '.') : $i->realisasi
+                    );
                     $sheet->setCellValue("I{$row}", $i->pencapaian ?? '-');
                     $sheet->setCellValue("J{$row}", $i->nilai ?? '-');
                     $sheet->setCellValue("K{$row}", $i->nilai_dibobot ?? '-');
@@ -2338,49 +2344,49 @@ class Administrator extends CI_Controller
     // ✅ AKSI VERIFIKASI PENILAIAN (AJAX)
     // ===============================================================
     public function verifikasiPenilaian()
-{
-    $nik = $this->input->post('nik');
-    $status = $this->input->post('status');
-    $awal = $this->input->post('awal') ?? date('Y') . "-01-01";
-    $akhir = $this->input->post('akhir') ?? date('Y') . "-12-31";
+    {
+        $nik = $this->input->post('nik');
+        $status = $this->input->post('status');
+        $awal = $this->input->post('awal') ?? date('Y') . "-01-01";
+        $akhir = $this->input->post('akhir') ?? date('Y') . "-12-31";
 
-    if (!$nik || !$status) {
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Data tidak lengkap.'
-        ]);
-        return;
+        if (!$nik || !$status) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Data tidak lengkap.'
+            ]);
+            return;
+        }
+
+        $this->load->model('Penilaian_model');
+
+        // 🔹 Cek apakah semua status & status2 sudah disetujui
+        $cek = $this->Penilaian_model->cekSemuaDisetujui($nik, $awal, $akhir);
+
+        if (!$cek) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Belum semua penilai menyetujui (status atau status2 masih belum disetujui).'
+            ]);
+            return;
+        }
+
+        // 🔹 Lanjut verifikasi jika sudah disetujui semua
+        $update = $this->Penilaian_model->updateStatusPenilaian($nik, $status, $awal, $akhir);
+
+        if ($update) {
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Status penilaian berhasil diverifikasi!',
+                'new_status' => $status
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Gagal memperbarui status penilaian.'
+            ]);
+        }
     }
-
-    $this->load->model('Penilaian_model');
-
-    // 🔹 Cek apakah semua status & status2 sudah disetujui
-    $cek = $this->Penilaian_model->cekSemuaDisetujui($nik, $awal, $akhir);
-
-    if (!$cek) {
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Belum semua penilai menyetujui (status atau status2 masih belum disetujui).'
-        ]);
-        return;
-    }
-
-    // 🔹 Lanjut verifikasi jika sudah disetujui semua
-    $update = $this->Penilaian_model->updateStatusPenilaian($nik, $status, $awal, $akhir);
-
-    if ($update) {
-        echo json_encode([
-            'status' => 'success',
-            'message' => 'Status penilaian berhasil diverifikasi!',
-            'new_status' => $status
-        ]);
-    } else {
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Gagal memperbarui status penilaian.'
-        ]);
-    }
-}
 
 
     // ==================== KELOLA BUDAYA (AJAX) ====================
