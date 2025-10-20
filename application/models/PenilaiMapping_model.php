@@ -75,6 +75,35 @@ class PenilaiMapping_model extends CI_Model
         return $list;
     }
 
+    // Ambil semua mapping jabatan berdasarkan unit
+    public function getMappingByKodeUnitEdit($kode_unit)
+    {
+        // Ambil data utama berdasarkan kode_unit
+        $list = $this->db->where('kode_unit', $kode_unit)
+            ->get('penilai_mapping')
+            ->result();
+
+        // Ambil tambahan jabatan dengan key tertentu
+        $tambahan = $this->db->where_in('`key`', ['3', '3a', '3b', '3c', '3d', '15'])
+            ->get('penilai_mapping')
+            ->result();
+
+        // Gabungkan hasilnya
+        $list = array_merge($tambahan, $list);
+
+        // Loop untuk ubah penilai1_jabatan & penilai2_jabatan dari key ke nama jabatan
+        foreach ($list as $item) {
+            if ($item->penilai1_jabatan) {
+                $item->penilai1_jabatan = $this->getJabatanByKey($item->penilai1_jabatan);
+            }
+            if ($item->penilai2_jabatan) {
+                $item->penilai2_jabatan = $this->getJabatanByKey($item->penilai2_jabatan);
+            }
+        }
+
+        return $list;
+    }
+
 
     // Ambil mapping lengkap (bisa dipakai untuk ekspor atau debugging)
     public function getAllMapping()
@@ -122,12 +151,23 @@ class PenilaiMapping_model extends CI_Model
 
     public function getKeyByJabatanAndUnit($jabatan, $kode_unit)
     {
-        $row = $this->db->select('key')
+        // Coba cari jabatan di unit yang sama dulu
+        $row = $this->db->select('`key`')
             ->from('penilai_mapping')
             ->where('jabatan', $jabatan)
             ->where('kode_unit', $kode_unit)
             ->get()
             ->row();
+
+        // Jika tidak ketemu di unit tersebut, ambil dari daftar global (3–15)
+        if (!$row) {
+            $row = $this->db->select('`key`')
+                ->from('penilai_mapping')
+                ->where('jabatan', $jabatan)
+                ->where_in('`key`', ['3', '3a', '3b', '3c', '3d', '15'])
+                ->get()
+                ->row();
+        }
 
         return $row ? $row->key : null;
     }

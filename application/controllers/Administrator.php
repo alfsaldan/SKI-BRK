@@ -2116,6 +2116,14 @@ class Administrator extends CI_Controller
             ->set_output(json_encode($list));
     }
 
+    public function getMappingJabatanEdit($kode_unit)
+    {
+        $list = $this->PenilaiMapping_model->getMappingByKodeUnitEdit($kode_unit);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($list));
+    }
+
 
     // Catatan Penilai
     public function getCatatanPenilai()

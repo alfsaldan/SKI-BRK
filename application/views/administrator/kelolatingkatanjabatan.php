@@ -415,7 +415,7 @@
 
                     // Load penilai dari unit yang sama
                     var kode_unit = $('#kodeUnit').val();
-                    $.getJSON('<?= base_url("administrator/getMappingJabatan/") ?>' + kode_unit, function(data) {
+                    $.getJSON('<?= base_url("administrator/getMappingJabatanEdit/") ?>' + kode_unit, function(data) {
                         var options = '<option value="">-- Pilih Penilai --</option>';
                         data.forEach(function(row) {
                             options += `<option value="${row.jabatan}">${row.jabatan}</option>`;
@@ -448,7 +448,7 @@
                     $('#jenis_penilaian').val(jenis);
 
                     // Load semua penilai untuk select
-                    $.getJSON('<?= base_url("administrator/getMappingJabatan/") ?>' + kode_unit, function(data) {
+                    $.getJSON('<?= base_url("administrator/getMappingJabatanEdit/") ?>' + kode_unit, function(data) {
                         var options1 = '<option value="">-- Pilih Penilai I --</option>';
                         var options2 = '<option value="">-- Pilih Penilai II --</option>';
 
