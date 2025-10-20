@@ -268,7 +268,7 @@
 
             <!-- LOGO -->
             <div class="logo-box">
-                <a href="<?= base_url('Administrator'); ?>" class="logo text-center">
+                <a href="<?= base_url('pegawai'); ?>" class="logo text-center">
                     <span class="logo-lg">
                         <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png') ?>" alt="Logo BRK Syariah"
                             height="20">
