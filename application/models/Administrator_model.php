@@ -85,4 +85,69 @@ class Administrator_model extends CI_Model
             ->get()
             ->result();
     }
+
+    // --- Tambahan untuk data grafik per cabang & unit kantor --- //
+
+    public function getCabangList()
+    {
+        // Ambil hanya 1 baris paling atas untuk setiap kode_cabang (id terkecil)
+        $subquery = $this->db->select('kode_cabang, MIN(id) as min_id')
+            ->from('penilai_mapping')
+            ->where('kode_cabang IS NOT NULL')
+            ->group_by('kode_cabang')
+            ->get_compiled_select();
+
+        return $this->db->select('pm.kode_cabang, pm.unit_kantor')
+            ->from('penilai_mapping pm')
+            ->join("($subquery) as uniq", 'pm.id = uniq.min_id')
+            ->order_by('pm.kode_cabang', 'ASC')
+            ->get()
+            ->result(); // ubah dari result_array() ke result()
+    }
+
+    public function getUnitByCabang($kode_cabang)
+    {
+        return $this->db->query("
+        SELECT DISTINCT kode_unit, unit_kantor
+        FROM penilai_mapping
+        WHERE kode_cabang = ?
+        ORDER BY unit_kantor ASC
+    ", [$kode_cabang])->result();
+    }
+
+    public function getGrafikByUnit($kode_unit)
+    {
+        // Contoh dummy data untuk grafik (nanti bisa disesuaikan dari tabel penilaian)
+        return [
+            ["Minus", rand(0, 5)],
+            ["Fair", rand(5, 15)],
+            ["Good", rand(10, 25)],
+            ["Very Good", rand(15, 30)],
+            ["Excellent", rand(20, 40)],
+        ];
+    }
+
+    // Grafik semua data (default saat pertama buka)
+    public function getGrafikAll()
+    {
+        return [
+            ["Minus", rand(10, 20)],
+            ["Fair", rand(15, 25)],
+            ["Good", rand(20, 35)],
+            ["Very Good", rand(25, 40)],
+            ["Excellent", rand(30, 50)],
+        ];
+    }
+
+    // Grafik per cabang (semua unit dalam cabang)
+    public function getGrafikByCabang($kode_cabang)
+    {
+        return [
+            ["Minus", rand(5, 15)],
+            ["Fair", rand(10, 25)],
+            ["Good", rand(15, 30)],
+            ["Very Good", rand(20, 40)],
+            ["Excellent", rand(25, 45)],
+        ];
+    }
 }

@@ -68,6 +68,19 @@ class Administrator extends CI_Controller
         $data['proses'] = $stats['proses'];
         $data['belum'] = $stats['belum'];
 
+        // 🔹 Tambahan baru
+        $kode_cabang = $this->input->get('kode_cabang');
+        $kode_unit = $this->input->get('kode_unit');
+        $data['cabang_list'] = $this->Administrator_model->getCabangList();
+
+        if ($kode_unit) {
+            $data['grafik_data'] = $this->Administrator_model->getGrafikByUnit($kode_unit);
+        } elseif ($kode_cabang) {
+            $data['grafik_data'] = $this->Administrator_model->getGrafikByCabang($kode_cabang);
+        } else {
+            $data['grafik_data'] = $this->Administrator_model->getGrafikAll();
+        }
+
         $data['judul'] = "Halaman Dashboard Administrator";
 
         $this->load->view("layout/header");
@@ -75,6 +88,36 @@ class Administrator extends CI_Controller
         $this->load->view("layout/footer");
     }
 
+    // --- Tambahan untuk dropdown cabang, unit, dan grafik --- //
+
+    public function get_grafik_all()
+    {
+        $this->load->model('Administrator_model');
+        $data = $this->Administrator_model->getGrafikAll();
+        echo json_encode($data);
+    }
+
+    public function get_grafik_cabang($kode_cabang)
+    {
+        $this->load->model('Administrator_model');
+        $data = $this->Administrator_model->getGrafikByCabang($kode_cabang);
+        echo json_encode($data);
+    }
+
+
+    public function get_unit_kantor($kode_cabang)
+    {
+        $this->load->model('Administrator_model');
+        $data = $this->Administrator_model->getUnitByCabang($kode_cabang);
+        echo json_encode($data);
+    }
+
+    public function get_grafik_unit($kode_unit)
+    {
+        $this->load->model('Administrator_model');
+        $data = $this->Administrator_model->getGrafikByUnit($kode_unit);
+        echo json_encode($data);
+    }
 
     public function indikatorKinerja()
     {

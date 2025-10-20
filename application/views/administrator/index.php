@@ -145,17 +145,23 @@
                             <div class="d-flex justify-content-between mb-3">
                                 <h4 class="header-title">Grafik Nilai Pegawai</h4>
                                 <div class="d-flex w-65">
-                                    <select id="filter-unit" class="form-control mb-2">
-                                        <option value="cabang">Cabang</option>
-                                        <option value="cabang_utama">Cabang Utama</option>
-                                        <option value="cabang_pembantu">Cabang Pembantu</option>
-                                        <option value="kedai">Kedai</option>
+                                    <!-- Dropdown Cabang -->
+                                    <select id="filter-unit" class="form-control mb-2 me-2">
+                                        <option value="">Pilih Cabang</option>
+                                        <?php foreach ($this->Administrator_model->getCabangList() as $cb) : ?>
+                                            <option value="<?= $cb->kode_cabang ?>">
+                                                <?= $cb->unit_kantor ?> (<?= $cb->kode_cabang ?>)
+                                            </option>
+                                        <?php endforeach; ?>
                                     </select>
+
+                                    <!-- Dropdown Unit Kantor -->
                                     <select id="filter-unitkantor" class="form-control">
-                                        <!-- otomatis terisi -->
+                                        <option value="">Pilih Unit Kantor</option>
                                     </select>
                                 </div>
                             </div>
+
                             <div id="grafik-nilai-pegawai" style="height: 332px;"></div>
                         </div>
                     </div>
@@ -242,41 +248,15 @@
             [4, "Excellent"]
         ];
 
-        // dummy data per unit + kantor
-        var dataUnit = {
-            "cabang": {
-                "Pekanbaru Sudirman": [1, 12, 28, 22, 10],
-                "Pekanbaru Tangkerang": [0, 10, 25, 20, 12]
-            },
-            "cabang_utama": {
-                "Pekanbaru": [2, 5, 20, 15, 10]
-            },
-            "cabang_pembantu": {
-                "Pekanbaru Harapan Raya": [3, 8, 22, 18, 14]
-            },
-            "kedai": {
-                "Ramayana": [1, 7, 18, 12, 9]
-            }
-        };
-
         var colors = ["#ff4d4d", "#ff9900", "#1e90ff", "#32cd32", "#186c18"];
 
-        function populateKantor(unit) {
-            var $kantor = $("#filter-unitkantor");
-            $kantor.empty();
-            $.each(dataUnit[unit], function(namaKantor, nilai) {
-                $kantor.append(`<option value="${namaKantor}">${namaKantor}</option>`);
-            });
-        }
-
-        function renderChart(unit, kantor) {
-            var values = dataUnit[unit][kantor];
-
-            var barSeries = values.map(function(v, i) {
+        // 🟢 Fungsi render chart reusable
+        function renderChart(data) {
+            var barSeries = data.map(function(item, i) {
                 return {
-                    label: ticks[i][1],
+                    label: item[0],
                     data: [
-                        [i, v]
+                        [i, item[1]]
                     ],
                     bars: {
                         show: true,
@@ -289,8 +269,8 @@
 
             var lineSeries = {
                 label: "Trend",
-                data: values.map(function(v, i) {
-                    return [i, v];
+                data: data.map(function(item, i) {
+                    return [i, item[1]];
                 }),
                 lines: {
                     show: true,
@@ -319,7 +299,63 @@
             });
         }
 
-        // tooltip
+        // 🟢 1️⃣ Tampilkan grafik awal (semua data)
+        $.getJSON("<?= base_url('administrator/get_grafik_all') ?>", function(data) {
+            renderChart(data);
+        });
+
+        // 🟢 2️⃣ Load daftar cabang
+        $.getJSON("<?= base_url('administrator/get_unit_kantor_list') ?>", function(data) {
+            var $cabang = $("#filter-unit");
+            $.each(data, function(i, item) {
+                $cabang.append(`<option value="${item.kode_cabang}">${item.unit_kantor}</option>`);
+            });
+        });
+
+        // 🟢 3️⃣ Saat cabang dipilih
+        $("#filter-unit").on("change", function() {
+            var kode_cabang = $(this).val();
+            var $unit = $("#filter-unitkantor");
+            $unit.empty().append('<option value="">Pilih Unit Kantor</option>');
+            $("#grafik-nilai-pegawai").empty();
+
+            if (!kode_cabang) {
+                // Jika kosong, tampilkan semua data lagi
+                $.getJSON("<?= base_url('administrator/get_grafik_all') ?>", renderChart);
+                return;
+            }
+
+            // Ambil daftar unit kantor berdasarkan cabang
+            $.getJSON("<?= base_url('administrator/get_unit_kantor/') ?>" + kode_cabang, function(data) {
+                $.each(data, function(i, item) {
+                    $unit.append(`<option value="${item.kode_unit}">${item.unit_kantor}</option>`);
+                });
+            });
+
+            // 🔹 Langsung tampilkan grafik total cabang yang dipilih
+            $.getJSON("<?= base_url('administrator/get_grafik_cabang/') ?>" + kode_cabang, renderChart);
+        });
+
+        // 🟢 4️⃣ Saat unit kantor dipilih → tampil grafik spesifik unit
+        $("#filter-unitkantor").on("change", function() {
+            var kode_unit = $(this).val();
+            var kode_cabang = $("#filter-unit").val();
+
+            if (!kode_unit && kode_cabang) {
+                // Jika unit dikosongkan tapi cabang masih ada
+                $.getJSON("<?= base_url('administrator/get_grafik_cabang/') ?>" + kode_cabang, renderChart);
+                return;
+            } else if (!kode_unit) {
+                // Jika dua-duanya kosong → tampil semua
+                $.getJSON("<?= base_url('administrator/get_grafik_all') ?>", renderChart);
+                return;
+            }
+
+            // Ambil grafik khusus unit
+            $.getJSON("<?= base_url('administrator/get_grafik_unit/') ?>" + kode_unit, renderChart);
+        });
+
+        // 🟢 5️⃣ Tooltip
         $("<div id='tooltip-nilai'></div>").css({
             position: "absolute",
             display: "none",
@@ -345,60 +381,39 @@
                 $("#tooltip-nilai").hide();
             }
         });
-
-        // render pertama kali
-        var defaultUnit = "cabang";
-        populateKantor(defaultUnit);
-        var defaultKantor = $("#filter-unitkantor").val();
-        renderChart(defaultUnit, defaultKantor);
-
-        // ketika ganti unit
-        $("#filter-unit").on("change", function() {
-            var unit = $(this).val();
-            populateKantor(unit);
-            var kantor = $("#filter-unitkantor").val();
-            renderChart(unit, kantor);
-        });
-
-        // ketika ganti kantor
-        $("#filter-unitkantor").on("change", function() {
-            var unit = $("#filter-unit").val();
-            var kantor = $(this).val();
-            renderChart(unit, kantor);
-        });
     });
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const btnShow = document.getElementById('btn_show_filter');
-    const btnClose = document.getElementById('btn_close_filter');
-    const popup = document.getElementById('filter_popup');
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnShow = document.getElementById('btn_show_filter');
+        const btnClose = document.getElementById('btn_close_filter');
+        const popup = document.getElementById('filter_popup');
 
-    // tampil/sembunyikan popup
-    btnShow.addEventListener('click', () => {
-        popup.style.display = (popup.style.display === 'none' ? 'block' : 'none');
-    });
-    btnClose.addEventListener('click', () => {
-        popup.style.display = 'none';
-    });
-
-    // klik di luar popup = tutup
-    document.addEventListener('click', function(e) {
-        if (!popup.contains(e.target) && !btnShow.contains(e.target)) {
+        // tampil/sembunyikan popup
+        btnShow.addEventListener('click', () => {
+            popup.style.display = (popup.style.display === 'none' ? 'block' : 'none');
+        });
+        btnClose.addEventListener('click', () => {
             popup.style.display = 'none';
-        }
-    });
+        });
 
-    // Tombol Refresh
-    document.getElementById('btn_refresh').addEventListener('click', function() {
-        const val = document.getElementById('filter_periode').value;
-        if (val) {
-            const parts = val.split('|');
-            window.location.href = `?awal=${parts[0]}&akhir=${parts[1]}`;
-        } else {
-            window.location.href = `?`;
-        }
+        // klik di luar popup = tutup
+        document.addEventListener('click', function(e) {
+            if (!popup.contains(e.target) && !btnShow.contains(e.target)) {
+                popup.style.display = 'none';
+            }
+        });
+
+        // Tombol Refresh
+        document.getElementById('btn_refresh').addEventListener('click', function() {
+            const val = document.getElementById('filter_periode').value;
+            if (val) {
+                const parts = val.split('|');
+                window.location.href = `?awal=${parts[0]}&akhir=${parts[1]}`;
+            } else {
+                window.location.href = `?`;
+            }
+        });
     });
-});
 </script>
