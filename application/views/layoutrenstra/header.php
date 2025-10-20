@@ -44,6 +44,65 @@
 
     <!-- Custom CSS Navbar & Sidebar -->
     <style>
+        /* Sidebar container */
+        #sidebar-menu {
+            background: #ffffff;
+            color: #94a3b8;
+        }
+
+        #sidebar-menu ul li a {
+            display: flex;
+            align-items: center;
+            padding: 8px 14px;
+            border-radius: 10px;
+            color: #6b7280;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 4px 8px;
+        }
+
+        #sidebar-menu ul li a i {
+            margin-right: 10px;
+            font-size: 18px;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        /* Hover efek — gradasi hijau lembut */
+        #sidebar-menu ul li a:hover {
+            background: linear-gradient(90deg, #16a34a, #22c55e);
+            color: #ffffff !important;
+            box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+            transform: translateX(3px);
+        }
+
+        #sidebar-menu ul li a:hover i {
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        /* Aktif — hijau gradasi tetap nyala */
+        #sidebar-menu ul li.active>a {
+            background: linear-gradient(90deg, #15803d, #22c55e);
+            color: #fff !important;
+            font-weight: 600;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+        }
+
+        #sidebar-menu ul li.active>a i {
+            color: #fff !important;
+            transform: scale(1.05);
+        }
+
+        /* Section title */
+        .menu-title {
+            padding: 10px 16px 4px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: #9ca3af;
+            margin-top: 10px;
+        }
+
         /* Navbar putih dengan shadow ringan */
         .navbar-custom {
             background-color: #ffffff !important;
@@ -72,7 +131,6 @@
             right: 5px;
         }
 
-        /* Logo */
         .logo-box {
             background-color: transparent;
             text-align: center;
@@ -82,7 +140,6 @@
             max-height: 32px;
         }
 
-        /* Sidebar putih minimalis */
         .left-side-menu {
             background-color: #ffffff;
             border-right: 1px solid #e5e5e5;
@@ -100,25 +157,19 @@
             border-radius: 0.25rem;
         }
 
-        /* Tombol hamburger mobile */
         .button-menu-mobile {
             background-color: transparent;
-            /* biar tidak mengganggu tampilan navbar */
             border: none;
             padding: 6px 10px;
         }
 
-        /* Warna ikon hamburger selalu terlihat */
         .button-menu-mobile i.fe-menu {
             color: #333333;
-            /* warna gelap agar terlihat di navbar putih */
             font-size: 18px;
         }
 
-        /* Hover efek (opsional) */
         .button-menu-mobile:hover i.fe-menu {
             color: #277caeff;
-            /* hijau saat hover */
         }
     </style>
 

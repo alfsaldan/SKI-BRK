@@ -47,35 +47,121 @@
 
     <!-- Custom CSS Navbar & Sidebar -->
     <style>
-        /* Navbar putih dengan shadow ringan */
+        /* === Sidebar Styling === */
+        #sidebar-menu {
+            background: #ffffff;
+            color: #64748b;
+        }
+
+        #sidebar-menu ul li {
+            list-style: none;
+        }
+
+        #sidebar-menu ul li a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            margin: 4px 10px;
+            border-radius: 10px;
+            color: #475569 !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: transparent !important;
+        }
+
+        #sidebar-menu ul li a i {
+            font-size: 18px;
+            transition: transform 0.3s ease, color 0.3s ease;
+            color: #475569 !important;
+        }
+
+        /* === Hover efek — gradasi hijau lembut === */
+        #sidebar-menu ul li a:hover {
+            background: linear-gradient(90deg, #16a34a, #22c55e) !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+            transform: translateX(3px);
+        }
+
+        #sidebar-menu ul li a:hover i {
+            color: #ffffff !important;
+            transform: scale(1.05);
+        }
+
+        /* === Aktif — tetap nyala hijau di halaman aktif === */
+        #sidebar-menu ul li.active>a,
+        #sidebar-menu ul li.mm-active>a,
+        #sidebar-menu ul li.active>a:focus,
+        #sidebar-menu ul li.active>a:active {
+            background: linear-gradient(90deg, #15803d, #22c55e) !important;
+            color: #ffffff !important;
+            font-weight: 600;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+
+        #sidebar-menu ul li.active>a i,
+        #sidebar-menu ul li.mm-active>a i {
+            color: #ffffff !important;
+            transform: scale(1.05);
+        }
+
+        /* === Hilangkan gaya bawaan metismenu / app.min.css yang menimpa === */
+        .metismenu a:hover,
+        .metismenu li.active>a,
+        .metismenu li.mm-active>a {
+            background: unset !important;
+            color: unset !important;
+        }
+
+        /* === Section title === */
+        .menu-title {
+            padding: 10px 16px 4px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: #9ca3af;
+            margin-top: 10px;
+        }
+
+        /* === Sidebar container === */
+        .left-side-menu {
+            background-color: #ffffff;
+            border-right: 1px solid #e5e5e5;
+        }
+
+        /* === Navbar putih bersih === */
         .navbar-custom {
             background-color: #ffffff !important;
             border-bottom: 1px solid #e5e5e5;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .topnav-menu>li>a {
-            color: #333333;
+            color: #334155;
             font-weight: 500;
         }
 
         .topnav-menu>li>a:hover {
-            color: #27AE60;
+            color: #22c55e;
         }
 
-        .noti-icon {
-            color: #333333;
+        .button-menu-mobile {
+            background: transparent;
+            border: none;
+            padding: 6px 10px;
         }
 
-        .noti-icon-badge {
-            background-color: #E74C3C;
-            color: #ffffff;
-            font-size: 0.65rem;
-            top: 5px;
-            right: 5px;
+        .button-menu-mobile i.fe-menu {
+            color: #334155;
+            font-size: 18px;
         }
 
-        /* Logo */
+        .button-menu-mobile:hover i.fe-menu {
+            color: #22c55e;
+        }
+
         .logo-box {
             background-color: transparent;
             text-align: center;
@@ -83,45 +169,6 @@
 
         .logo-box img {
             max-height: 32px;
-        }
-
-        /* Sidebar putih minimalis */
-        .left-side-menu {
-            background-color: #ffffff;
-            border-right: 1px solid #e5e5e5;
-        }
-
-        .metismenu a {
-            color: #495057;
-            font-weight: 500;
-        }
-
-        .metismenu a:hover,
-        .metismenu li.active>a {
-            color: #277caeff;
-            background-color: rgba(39, 174, 96, 0.05);
-            border-radius: 0.25rem;
-        }
-
-        /* Tombol hamburger mobile */
-        .button-menu-mobile {
-            background-color: transparent;
-            /* biar tidak mengganggu tampilan navbar */
-            border: none;
-            padding: 6px 10px;
-        }
-
-        /* Warna ikon hamburger selalu terlihat */
-        .button-menu-mobile i.fe-menu {
-            color: #333333;
-            /* warna gelap agar terlihat di navbar putih */
-            font-size: 18px;
-        }
-
-        /* Hover efek (opsional) */
-        .button-menu-mobile:hover i.fe-menu {
-            color: #277caeff;
-            /* hijau saat hover */
         }
     </style>
 
