@@ -1921,4 +1921,27 @@ class Pegawai extends CI_Controller
             echo json_encode(['success' => false, 'message' => $msg, 'db' => $dbErr]);
         }
     }
+
+    // ==== Halaman Rekap Nilai Pegawai per Tahun ====
+    public function rekapNilaiPegawai()
+    {
+        $nik = $this->session->userdata('nik');
+
+        if (!$nik) {
+            show_error('Anda belum login sebagai pegawai.', 401);
+        }
+
+        // Ambil data rekap per tahun dari model Pegawai_model
+        $rekap = $this->Pegawai_model->getRekapNilaiTahunan($nik);
+
+        $data = [
+            'judul' => 'Rekap Nilai Pegawai',
+            'rekap' => $rekap
+        ];
+
+        // Load layout view
+        $this->load->view('layoutpegawai/header', $data);
+        $this->load->view('pegawai/rekap_nilai', $data);
+        $this->load->view('layoutpegawai/footer');
+    }
 }

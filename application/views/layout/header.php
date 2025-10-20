@@ -295,6 +295,12 @@
                                 <span> Kinerja Individu </span>
                             </a>
                         </li>
+                        <li class="<?= ($activeController == 'pegawai' && $activeMethod == '') ? 'active' : '' ?>">
+                            <a href="<?= base_url('pegawai/rekapnilaipegawai') ?>">
+                                <i class="mdi mdi-account"></i>
+                                <span> Rekap SKI </span>
+                            </a>
+                        </li>
 
                         <li class="menu-title mt-2">Halaman Penilai</li>
                         <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['nilaipegawai', 'nilaipegawaidetail','nilaipegawaidetail2'])) ? 'active' : '' ?>">
