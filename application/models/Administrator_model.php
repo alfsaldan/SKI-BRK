@@ -115,27 +115,15 @@ class Administrator_model extends CI_Model
     ", [$kode_cabang])->result();
     }
 
-    public function getGrafikByUnit($kode_unit)
-    {
-        // Contoh dummy data untuk grafik (nanti bisa disesuaikan dari tabel penilaian)
-        return [
-            ["Minus", rand(0, 5)],
-            ["Fair", rand(5, 15)],
-            ["Good", rand(10, 25)],
-            ["Very Good", rand(15, 30)],
-            ["Excellent", rand(20, 40)],
-        ];
-    }
-
     // Grafik semua data (default saat pertama buka)
     public function getGrafikAll()
     {
         return [
-            ["Minus", rand(10, 20)],
-            ["Fair", rand(15, 25)],
-            ["Good", rand(20, 35)],
-            ["Very Good", rand(25, 40)],
-            ["Excellent", rand(30, 50)],
+            ["Minus", rand(1, 3)],
+            ["Fair", rand(5, 15)],
+            ["Good", rand(25, 40)],
+            ["Very Good", rand(15, 25)],
+            ["Excellent", rand(5, 10)],
         ];
     }
 
@@ -143,11 +131,22 @@ class Administrator_model extends CI_Model
     public function getGrafikByCabang($kode_cabang)
     {
         return [
-            ["Minus", rand(5, 15)],
-            ["Fair", rand(10, 25)],
-            ["Good", rand(15, 30)],
-            ["Very Good", rand(20, 40)],
-            ["Excellent", rand(25, 45)],
+            ["Minus", rand(1, 3)],
+            ["Fair", rand(5, 15)],
+            ["Good", rand(25, 40)],
+            ["Very Good", rand(15, 25)],
+            ["Excellent", rand(5, 10)],
+        ];
+    }
+    public function getGrafikByUnit($kode_unit)
+    {
+        // Contoh dummy data untuk grafik (nanti bisa disesuaikan dari tabel penilaian)
+        return [
+            ["Minus", rand(0, 3)],
+            ["Fair", rand(5, 15)],
+            ["Good", rand(25, 40)],
+            ["Very Good", rand(15, 25)],
+            ["Excellent", rand(5, 10)],
         ];
     }
 }
