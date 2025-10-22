@@ -136,16 +136,23 @@
                                             <i class="mdi mdi-file-document-outline mr-2"></i>Informasi Penilaian
                                         </h5>
 
-                                        <div class="form-group">
-                                            <label class="text-dark font-weight-medium">Periode Penilaian:</label>
-                                            <!-- Text yang berubah -->
-                                            <p id="info_periode" class="text-dark font-weight-medium">
-                                                <?= date('d M Y', strtotime($periode_awal)) . " s/d " . date('d M Y', strtotime($periode_akhir)); ?>
-                                            </p>
-                                        </div>
+                                        <ul class="list-group list-group-flush">
+                                            <!-- Periode Penilaian -->
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Periode Penilaian</span>
+                                                <span class="text-dark font-weight-medium" id="info_periode">
+                                                    <?= date('d M Y', strtotime($periode_awal)) . " s/d " . date('d M Y', strtotime($periode_akhir)); ?>
+                                                </span>
+                                            </li>
 
-
-                                        <p class="text-dark font-weight-medium"><b>Unit Kantor Penilai:</b> <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span></p>
+                                            <!-- Unit Kantor Penilai -->
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Unit Kantor Penilai</span>
+                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
                                 <hr>
@@ -306,6 +313,7 @@
                                                                     display: inline-block;
                                                                     width: 100%;
                                                                 }
+
                                                                 .currency-wrapper .format-currency {
                                                                     position: absolute;
                                                                     top: 0;
@@ -319,6 +327,7 @@
                                                                     font-weight: 550;
                                                                     pointer-events: none;
                                                                 }
+
                                                                 .currency-wrapper input.hide-text {
                                                                     color: transparent;
                                                                     caret-color: black;

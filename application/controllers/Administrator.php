@@ -19,6 +19,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
  * @property DataPegawai_model $DataPegawai_model
  * @property RiwayatJabatan_model $RiwayatJabatan_model
  * @property PenilaiMapping_model $PenilaiMapping_model
+ * @property Monitoring_model $Monitoring_model
  * @property DataDiri_model $DataDiri_model
  * @property Coaching_model $Coaching_model
  * @property CI_Form_validation $form_validation
@@ -2498,5 +2499,150 @@ class Administrator extends CI_Controller
         } else {
             echo json_encode(['status' => 'error', 'title' => 'Gagal', 'message' => 'Data gagal dihapus!']);
         }
+    }
+
+    // ==================== Halaman Monitoring Kinerja Pegawai ====================
+    public function monitoringKinerja()
+    {
+        $this->load->model('Penilaian_model');
+        $data['judul'] = "Monitoring Kinerja Bulanan";
+        $data['pegawai_detail'] = null;
+        $data['penilaian_pegawai'] = [];
+        $data['periode_list'] = $this->Penilaian_model->getPeriodeList();
+
+        // Default periode Januari 2025
+        $data['periode_awal'] = '2025-01-01';
+        $data['periode_akhir'] = '2025-01-31';
+
+        $this->load->view("layout/header");
+        $this->load->view('administrator/monitoringkinerja', $data);
+        $this->load->view("layout/footer");
+    }
+
+
+    public function cariPenilaianBulanan()
+    {
+        $nik   = $this->input->post('nik') ?? $this->input->get('nik');
+        $periode = $this->input->post('periode') ?? $this->input->get('periode');
+
+        // Kalau belum isi nik, balik ke halaman awal saja tanpa hasil
+        if (empty($nik)) {
+            $this->monitoringKinerja();
+            return;
+        }
+
+        // Default ke Januari 2025 kalau belum pilih periode
+        if ($periode) {
+            list($periode_awal, $periode_akhir) = explode('|', $periode);
+        } else {
+            $periode_awal = '2025-01-01';
+            $periode_akhir = '2025-01-31';
+        }
+
+        $tahun = 2025;
+        $awal_tahun = "$tahun-01-01";
+        $akhir_tahun = "$tahun-12-31";
+
+        $this->load->model('Monitoring_model');
+        $this->load->model('Penilaian_model');
+
+        $this->load->model('Monitoring_model');
+        $this->load->model('Penilaian_model');
+
+        // Ambil data pegawai
+        $pegawai = $this->Monitoring_model->getPegawaiWithPenilai($nik);
+
+        if ($pegawai) {
+            // Ambil penilaian tahunan
+            $penilaian_tahunan = $this->Monitoring_model->get_indikator_by_jabatan_dan_unit(
+                $pegawai->jabatan,
+                $pegawai->unit_kerja,
+                $nik,
+                $awal_tahun,
+                $akhir_tahun
+            );
+
+            // Bagi nilai target & realisasi menjadi per bulan
+            $penilaian_bulanan = [];
+            foreach ($penilaian_tahunan as $p) {
+                $p->target = $p->target ? round($p->target / 12, 2) : 0;
+                $p->realisasi = $p->realisasi ? round($p->realisasi / 12, 2) : 0;
+                $penilaian_bulanan[] = $p;
+            }
+
+            $nilai_akhir = $this->Monitoring_model->getNilaiAkhir($nik, $awal_tahun, $akhir_tahun);
+            if ($nilai_akhir && isset($nilai_akhir->total_nilai)) {
+                $nilai_akhir->total_nilai = round($nilai_akhir->total_nilai, 2);
+            }
+
+
+            // Buat list bulan untuk dropdown
+            $bulanList = [
+                '01' => 'Januari',
+                '02' => 'Februari',
+                '03' => 'Maret',
+                '04' => 'April',
+                '05' => 'Mei',
+                '06' => 'Juni',
+                '07' => 'Juli',
+                '08' => 'Agustus',
+                '09' => 'September',
+                '10' => 'Oktober',
+                '11' => 'November',
+                '12' => 'Desember'
+            ];
+
+            // Ambil nilai budaya per tahun
+
+            $awal  = $this->input->get('awal') ?? $this->input->post('periode_awal');
+            $akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir');
+
+            // Default periode jika kosong
+            if (!$awal || !$akhir) {
+                $tahun = date('Y');
+                $awal  = $tahun . '-01-01';
+                $akhir = $tahun . '-12-31';
+            }
+
+            $budayaData = $this->Monitoring_model->getBudayaNilaiByNik($nik, $awal, $akhir);
+            $budaya_nilai = $budayaData['nilai_budaya'] ?? [];
+            $rata_rata_budaya = $budayaData['rata_rata'] ?? 0;
+
+            $data = [
+                'judul'              => "Monitoring Kinerja Bulanan",
+                'pegawai_detail'     => $pegawai,
+                'penilaian_pegawai'  => $penilaian_bulanan,
+                'nilai_akhir'        => $nilai_akhir,
+                'periode_awal'       => $periode_awal,
+                'periode_akhir'      => $periode_akhir,
+                'budaya_nilai'        => $budaya_nilai,
+                'rata_rata_budaya'    => $rata_rata_budaya,
+                'budaya'              => $this->Monitoring_model->getAllBudaya(),
+                'periode_list'       => $bulanList,
+                'message'            => [
+                    'type' => 'success',
+                    'text' => 'Data penilaian bulanan pegawai ditemukan!'
+                ]
+            ];
+        } else {
+            $data = [
+                'judul'              => "Monitoring Kinerja Bulanan",
+                'pegawai_detail'     => null,
+                'penilaian_pegawai'  => [],
+                'nilai_akhir'        => null,
+                'periode_awal'       => date('Y-m-01'),
+                'periode_akhir'      => date('Y-m-t'),
+                'periode_list'       => [],
+                'message'            => [
+                    'type' => 'error',
+                    'text' => 'Pegawai dengan NIK tersebut tidak ditemukan.'
+                ]
+            ];
+        }
+
+        // Load view
+        $this->load->view("layout/header");
+        $this->load->view("administrator/monitoringkinerja", $data);
+        $this->load->view("layout/footer");
     }
 }

@@ -278,6 +278,13 @@
                                 </a>
                             </li>
 
+                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['monitoringkinerja', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator/monitoringkinerja') ?>">
+                                    <i class="mdi mdi-clipboard-pulse"></i>
+                                    <span> Monitoring Kinerja </span>
+                                </a>
+                            </li>
+
                             <li class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolatingkatanjabatan') ? 'active' : '' ?>">
                                 <a href="<?= base_url('administrator/kelolatingkatanjabatan') ?>">
                                     <i class="mdi mdi-briefcase"></i>

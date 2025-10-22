@@ -67,33 +67,41 @@
 
                                     <!-- Informasi Penilaian -->
                                     <div class="col-md-6 mb-3">
-                                        <h5 class="text-success mb-3 font-weight-bold"><i class="mdi mdi-file-document-outline mr-2"></i>Informasi Penilaian</h5>
-                                        <div class="form-group">
-                                            <label class="text-dark font-weight-medium"><b>Periode Penilaian:</b></label>
-                                            <div class="input-group">
-                                                <select id="periode_select" class="form-control text-dark">
-                                                    <?php if (!empty($periode_list)): ?>
-                                                        <?php foreach ($periode_list as $p): ?>
-                                                            <?php
-                                                            $label = date('d M Y', strtotime($p->periode_awal)) . " s/d " . date('d M Y', strtotime($p->periode_akhir));
-                                                            $selected = ($periode_awal == $p->periode_awal && $periode_akhir == $p->periode_akhir) ? 'selected' : '';
-                                                            ?>
-                                                            <option value="<?= $p->periode_awal ?>|<?= $p->periode_akhir ?>" <?= $selected ?>>
-                                                                <?= $label ?>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    <?php else: ?>
-                                                        <option disabled>Belum ada periode penilaian</option>
-                                                    <?php endif; ?>
-                                                </select>
-                                                <div class="input-group-append">
-                                                    <button type="button" id="btn-sesuaikan-periode" class="btn btn-success">
-                                                        Terapkan
-                                                    </button>
+                                        <h5 class="text-success mb-3 font-weight-bold">
+                                            <i class="mdi mdi-file-document-outline mr-2"></i>Informasi Penilaian
+                                        </h5>
+                                        <ul class="list-group list-group-flush">
+                                            <!-- Periode Penilaian -->
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Periode Penilaian</span>
+                                                <div class="d-flex">
+                                                    <select id="periode_select" class="form-control text-dark mr-2">
+                                                        <?php if (!empty($periode_list)): ?>
+                                                            <?php foreach ($periode_list as $p): ?>
+                                                                <?php
+                                                                $label = date('d M Y', strtotime($p->periode_awal)) . " s/d " . date('d M Y', strtotime($p->periode_akhir));
+                                                                $selected = ($periode_awal == $p->periode_awal && $periode_akhir == $p->periode_akhir) ? 'selected' : '';
+                                                                ?>
+                                                                <option value="<?= $p->periode_awal ?>|<?= $p->periode_akhir ?>" <?= $selected ?>>
+                                                                    <?= $label ?>
+                                                                </option>
+                                                            <?php endforeach; ?>
+                                                        <?php else: ?>
+                                                            <option disabled>Belum ada periode penilaian</option>
+                                                        <?php endif; ?>
+                                                    </select>
+                                                    <button type="button" id="btn-sesuaikan-periode" class="btn btn-success">Terapkan</button>
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <p class="mt-3 text-dark font-weight-medium"><b>Unit Kantor Penilai:</b> <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span></p>
+                                            </li>
+
+                                            <!-- Unit Kantor Penilai -->
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                <span class="text-dark font-weight-medium">Unit Kantor Penilai</span>
+                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                            </li>
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            </li>
+                                        </ul>
                                     </div>
                                 </div>
 
@@ -235,7 +243,7 @@
                                                         <?php endif; ?>
 
                                                         <td><?= $i->indikator; ?></td>
-                                                        <td class="text-center"><?= $i->bobot; ?></td>
+                                                        <td class="text-center align-middle"><?= $i->bobot; ?></td>
                                                         <td class="text-center align-middle" style="min-width:150px;">
                                                             <?= ($i->target >= 1000) ? 'Rp. ' . number_format($i->target, 0, ',', '.') : $i->target; ?>
                                                         </td>
@@ -248,9 +256,9 @@
                                                             <?= ($i->realisasi >= 1000) ? 'Rp. ' . number_format($i->realisasi, 0, ',', '.') : $i->realisasi; ?>
                                                         </td>
 
-                                                        <td class="text-center"><?= $i->pencapaian ?? '-'; ?></td>
-                                                        <td class="text-center"><?= $i->nilai ?? '-'; ?></td>
-                                                        <td class="text-center"><?= $i->nilai_dibobot ?? '-'; ?></td>
+                                                        <td class="text-center align-middle"><?= $i->pencapaian ?? '-'; ?></td>
+                                                        <td class="text-center align-middle"><?= $i->nilai ?? '-'; ?></td>
+                                                        <td class="text-center align-middle"><?= $i->nilai_dibobot ?? '-'; ?></td>
                                                     </tr>
                                                 <?php endforeach; ?>
                                             <?php endforeach; ?>
