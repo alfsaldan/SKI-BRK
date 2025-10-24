@@ -413,13 +413,13 @@
 
                         <?php
                         // 🔹 Pastikan data aman
-                        $total_skor      = $nilai_akhir->nilai_sasaran ?? 0;
+                        $total_skor      = number_format(round(floatval($total_nilai ?? 0), 2), 2);
                         $avg_budaya      = $rata_rata_budaya ?? 0;
                         $kontrib_sasaran = $total_skor * 0.95;
                         $kontrib_budaya  = $avg_budaya * 0.05;
-                        $total_nilai     = $nilai_akhir->total_nilai ?? 0;
+                        $total_nilai     = number_format($kontrib_sasaran + $kontrib_budaya, 2);
                         $nilai           = $nilai_akhir->nilai_akhir ?? 0;
-                        $pencapaian_pct  = floatval(str_replace('%', '', $nilai_akhir->pencapaian ?? 0));
+                        $pencapaian_pct  = floatval(str_replace('%', '', $monitoring_bulanan->pencapaian_akhir ?? 0));
                         $predikat        = $nilai_akhir->predikat ?? 'Minus (M)';
                         $fraud           = $nilai_akhir->fraud ?? 0;
                         $koefisien       = $nilai_akhir->koefisien ?? 100;
@@ -459,7 +459,7 @@
 
                         <?php
                         // Tentukan predikat & warna berdasarkan nilai akhir
-                        $nilai_akhir_value = $nilai_akhir->nilai_akhir ?? 0; // pastikan ada nilai
+                        $nilai_akhir_value = $monitoring_bulanan->nilai_akhir ?? 0; // pastikan ada nilai
                         $predikat = "";
                         $predikatClass = "";
                         $koef = $koefisien ? $koefisien / 100 : 1; // default 1 jika koefisien tidak ada
@@ -700,6 +700,22 @@
             });
         }
 
+        // read-only view: format currency display for any displayed inputs (no autosave)
+        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(function(row) {
+            const display = row.querySelector('.format-currency');
+            const input = row.querySelector('.realisasi-input');
+            if (input && display) {
+                const raw = (input.value || '').toString();
+                if (raw && Math.abs(parseFloat(raw.replace(/[^0-9\.\-]/g, ''))) >= 1000) {
+                    display.textContent = formatRpDisplay(raw);
+                    input.classList.add('hide-text');
+                } else {
+                    display.textContent = '';
+                    input.classList.remove('hide-text');
+                }
+            }
+        });
+
         <?php if (isset($message) && !empty($message)) : ?>
             Swal.fire({
                 icon: '<?= $message['type'] === 'success' ? 'success' : 'error' ?>',
@@ -711,15 +727,26 @@
             });
         <?php endif; ?>
 
-        // ======= GRAFIK LINE CHART =======
+        // ======= GRAFIK LINE CHART (warna garis dinamis + titik hijau semua) =======
         <?php
         $bulanList = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-        // Ambil nilai tahunan (pencapaian akhir)
-        $nilaiTahunan = floatval($nilai_akhir->pencapaian ?? 0);
+        // default 12 bulan = 0
+        $pencapaian_bulanan = array_fill(0, 12, 0);
 
-        // Setiap bulan sama dengan nilai tahunan
-        $pencapaian_bulanan = array_fill(0, 12, round($nilaiTahunan, 2));
+        if (!empty($monitoring_bulanan_tahun)) {
+            foreach ($monitoring_bulanan_tahun as $mb) {
+                $idx = intval($mb->bulan) - 1;
+                if ($idx >= 0 && $idx <= 11) {
+                    $pencapaian_bulanan[$idx] = floatval($mb->pencapaian_akhir ?? 0);
+                }
+            }
+        } else {
+            $nilaiTahunan = floatval($nilai_akhir->pencapaian ?? 0);
+            if ($nilaiTahunan) {
+                $pencapaian_bulanan = array_fill(0, 12, round($nilaiTahunan, 2));
+            }
+        }
         ?>
 
         const labelsBulan = <?= json_encode($bulanList) ?>;
@@ -727,19 +754,33 @@
 
         const ctx = document.getElementById('grafikKinerja')?.getContext('2d');
         if (ctx) {
-            // Gradient
+            // Warna segmen berdasarkan arah perubahan DARI titik ini KE titik berikutnya
+            const segmentColors = dataPencapaian.map((val, i) => {
+                const next = dataPencapaian[i + 1];
+                if (next === undefined) return '#43A047'; // terakhir tetap hijau
+                if (next > val) return '#43A047'; // naik → hijau
+                if (next < val) return '#e53935'; // turun → merah
+                return '#fbc02d'; // datar → kuning
+            });
+
+            // Gradient area bawah grafik
             const gradient = ctx.createLinearGradient(0, 0, 0, 400);
             gradient.addColorStop(0, 'rgba(67,160,71,0.4)');
             gradient.addColorStop(1, 'rgba(67,160,71,0)');
 
-            // Highlight bulan aktif
+            // Cari index bulan aktif (berdasarkan $periode_awal)
             const bulanAktifIndex = labelsBulan.findIndex((_, i) => {
                 const selectedPeriode = '<?= $periode_awal ?? '' ?>';
                 if (!selectedPeriode) return false;
                 return i === parseInt(selectedPeriode.split('-')[1], 10) - 1;
             });
-            const pointColors = dataPencapaian.map((_, i) => i === bulanAktifIndex ? '#b6f5b9ff' : '#43A047');
 
+            // Semua titik hijau, kecuali bulan aktif
+            const pointColors = dataPencapaian.map((_, i) =>
+                i === bulanAktifIndex ? '#b6f5b9ff' : '#43A047'
+            );
+
+            // Buat chart
             new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -748,14 +789,20 @@
                         label: 'Pencapaian (%)',
                         data: dataPencapaian,
                         borderColor: '#43A047',
-                        backgroundColor: gradient,
                         borderWidth: 3,
                         tension: 0.3,
                         spanGaps: true,
+                        backgroundColor: gradient,
                         pointBackgroundColor: pointColors,
                         pointRadius: 8,
                         pointHoverRadius: 10,
-                        pointHoverBorderWidth: 3
+                        pointHoverBorderWidth: 3,
+                        segment: {
+                            borderColor: ctx => {
+                                const i = ctx.p0DataIndex;
+                                return segmentColors[i] || '#43A047';
+                            }
+                        }
                     }]
                 },
                 options: {
@@ -777,9 +824,7 @@
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ' + (context.parsed.y ?? 0) + '%';
-                                }
+                                label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y ?? 0}%`
                             }
                         }
                     },

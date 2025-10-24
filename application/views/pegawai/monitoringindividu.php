@@ -25,7 +25,7 @@
                             <h5 class="text-primary font-weight-bold mb-3">
                                 <i class="mdi mdi-chart-line mr-2"></i> Grafik Pencapaian Bulanan
                             </h5>
-                            <canvas id="grafikKinerja" height="100"></canvas>
+                            <canvas id="grafikKinerja" height="80"></canvas>
                         </div>
                     </div>
                 </div>
@@ -248,22 +248,52 @@
                                                                 <td class="text-center align-middle" style="min-width:110px;">
                                                                     <?= htmlspecialchars($i->batas_waktu ?? '-') ?>
                                                                 </td>
+
+                                                                <style>
+                                                                    .currency-wrapper {
+                                                                        position: relative;
+                                                                        display: inline-block;
+                                                                        width: 100%;
+                                                                    }
+
+                                                                    .currency-wrapper .format-currency {
+                                                                        position: absolute;
+                                                                        top: 0;
+                                                                        left: 0;
+                                                                        width: 100%;
+                                                                        height: 100%;
+                                                                        display: flex;
+                                                                        justify-content: center;
+                                                                        align-items: center;
+                                                                        color: #000;
+                                                                        font-weight: 550;
+                                                                        pointer-events: none;
+                                                                    }
+
+                                                                    .currency-wrapper input.hide-text {
+                                                                        color: transparent;
+                                                                        caret-color: black;
+                                                                    }
+                                                                </style>
+
                                                                 <td class="text-center align-middle" style="min-width:150px;">
-                                                                    <input type="number"
-                                                                        class="form-control form-control-sm text-center realisasi-input"
-                                                                        value="<?= htmlspecialchars($i->realisasi ?? 0) ?>"
-                                                                        data-target="<?= htmlspecialchars($i->target ?? 0) ?>"
-                                                                        data-bobot="<?= htmlspecialchars($i->bobot ?? 0) ?>"
-                                                                        data-indikator="<?= htmlspecialchars($i->indikator ?? '') ?>"
-                                                                        step="any" min="0">
+                                                                    <div class="currency-wrapper">
+                                                                        <input type="number"
+                                                                            class="form-control form-control-sm text-center realisasi-input"
+                                                                            value="<?= htmlspecialchars($i->realisasi ?? 0) ?>"
+                                                                            data-target="<?= htmlspecialchars($i->target ?? 0) ?>"
+                                                                            data-bobot="<?= htmlspecialchars($i->bobot ?? 0) ?>"
+                                                                            data-indikator="<?= htmlspecialchars($i->indikator ?? '') ?>">
+                                                                        <div class="format-currency text-muted small"></div>
+                                                                    </div>
                                                                 </td>
-                                                                <td class="text-center align-middle">
+                                                                <td class="text-center align-middle" style="min-width:80px;">
                                                                     <input type="text" class="form-control form-control-sm text-center pencapaian-output" readonly>
                                                                 </td>
-                                                                <td class="text-center align-middle">
+                                                                <td class="text-center align-middle" style="min-width:80px;">
                                                                     <input type="text" class="form-control form-control-sm text-center nilai-output" readonly>
                                                                 </td>
-                                                                <td class="text-center align-middle">
+                                                                <td class="text-center align-middle" style="min-width:80px;">
                                                                     <input type="text" class="form-control form-control-sm text-center nilai-bobot-output" readonly>
                                                                 </td>
                                                             </tr>
@@ -434,7 +464,7 @@
 
                         <?php
                         // 🔹 Pastikan data aman
-                        $total_skor      = number_format(round($total_nilai, 2), 2);
+                        $total_skor      = number_format(round(floatval($total_nilai ?? 0), 2), 2);
                         $avg_budaya      = $rata_rata_budaya ?? 0;
                         $kontrib_sasaran = $total_skor * 0.95;
                         $kontrib_budaya  = $avg_budaya * 0.05;
@@ -615,8 +645,10 @@
             let penc = 0;
             if (target <= 999) penc = target == 0 ? 0 : (real / target) * 100;
             else {
-                if (contains(rumus1, indikator)) penc = target == 0 ? 0 : ((target + (target - real)) / target) * 100;
-                else if (contains(rumus3, indikator)) penc = target == 0 ? 0 : ((real - target) / Math.abs(target) + 1) * 100;
+                if (contains(rumus1, indikator)) {
+                    if (target == 0 || real == 0) penc = 0; // ✅ biar nggak langsung 130 kalau real 0
+                    else penc = ((target + (target - real)) / target) * 100;
+                } else if (contains(rumus3, indikator)) penc = target == 0 ? 0 : ((real - target) / Math.abs(target) + 1) * 100;
                 else penc = target == 0 ? 0 : (real / target) * 100;
             }
             return Math.min(penc, 130);
@@ -688,27 +720,50 @@
             });
 
             // Update total akhir di UI
+            const elTotalBobot = document.getElementById('total-bobot');
+            const elTotalNilaiDibobot = document.getElementById('total-nilai-dibobot');
+            const elNilaiAkhir = document.getElementById('nilai-akhir');
+            const elPencapaianAkhir = document.getElementById('pencapaian-akhir');
+            const elPredikat = document.getElementById('predikat');
             const koef = parseFloat(document.getElementById('koefisien')?.textContent || 100) / 100;
+
             const nilaiAkhir = totalNilaiDibobot * koef;
-            const pencAkhir = Math.min((nilaiAkhir / 5) * 100, 100);
+
+            // 🔹 Hitung pencapaian akhir (persentase) — rumus versi lama
+            let pencAkhir = 0;
+            const v = parseFloat(nilaiAkhir) || 0;
+
+            if (v < 0) pencAkhir = 0;
+            else if (v < 2 * koef) pencAkhir = (v / 2) * 0.8 * 100;
+            else if (v < 3 * koef) pencAkhir = 80 + ((v - 2) / 1) * 10;
+            else if (v < 3.5 * koef) pencAkhir = 90 + ((v - 3) / 0.5) * 20;
+            else if (v < 4.5 * koef) pencAkhir = 110 + ((v - 3.5) / 1) * 10;
+            else if (v < 5 * koef) pencAkhir = 120 + ((v - 4.5) / 0.5) * 10;
+            else pencAkhir = 130;
+
+            // 🔹 Tentukan predikat
             const predObj = tentukanPredikat(nilaiAkhir, koef);
 
-            document.getElementById('total-bobot') && (document.getElementById('total-bobot').textContent = totalBobot.toFixed(2));
-            document.getElementById('total-nilai-dibobot') && (document.getElementById('total-nilai-dibobot').textContent = totalNilaiDibobot.toFixed(2));
-            document.getElementById('nilai-akhir') && (document.getElementById('nilai-akhir').textContent = nilaiAkhir.toFixed(2));
-            document.getElementById('pencapaian-akhir') && (document.getElementById('pencapaian-akhir').textContent = pencAkhir.toFixed(2) + '%');
-            const predEl = document.getElementById('predikat');
-            if (predEl) {
-                predEl.textContent = predObj.text;
-                predEl.className = predObj.class;
+            // 🔹 Tampilkan ke elemen UI
+            if (elTotalBobot) elTotalBobot.textContent = totalBobot.toFixed(2);
+            if (elTotalNilaiDibobot) elTotalNilaiDibobot.textContent = totalNilaiDibobot.toFixed(2);
+            if (elNilaiAkhir) elNilaiAkhir.textContent = nilaiAkhir.toFixed(2);
+            if (elPencapaianAkhir)
+                elPencapaianAkhir.textContent = isNaN(pencAkhir) ? '' : pencAkhir.toFixed(2) + '%';
+            if (elPredikat) {
+                elPredikat.textContent = predObj.text;
+                elPredikat.className = predObj.class;
             }
 
+            // 🔹 Return untuk autosave & keperluan lain
             return {
+                totalNilaiDibobot,
                 nilaiAkhir,
                 pencAkhir,
                 predObj
             };
         }
+
 
         function autosaveRow(row) {
             const indikatorId = row.dataset.id || '';
@@ -796,7 +851,6 @@
 
         // ========= Chart Grafik =========
         <?php
-        // Labels bulan
         $labelsBulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
         // Siapkan 12 bulan default 0
@@ -807,7 +861,6 @@
             foreach ($monitoring_bulanan_tahun as $row) {
                 $blnIndex = intval($row->bulan) - 1;
                 if ($blnIndex >= 0 && $blnIndex <= 11) {
-                    // Pastikan numeric
                     $pencapaian_bulanan[$blnIndex] = floatval($row->pencapaian_akhir ?? 0);
                 }
             }
@@ -816,16 +869,74 @@
         $labelsBulanJson = json_encode($labelsBulan);
         $dataPencapaianJson = json_encode($pencapaian_bulanan);
         ?>
-
         const labelsBulan = <?= $labelsBulanJson ?>;
         const dataPencapaian = <?= $dataPencapaianJson ?>;
 
         const ctx = document.getElementById('grafikKinerja').getContext('2d');
 
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        gradient.addColorStop(0, 'rgba(67,160,71,0.4)');
-        gradient.addColorStop(1, 'rgba(67,160,71,0)');
+        // Gradasi area bawah tetap hijau lembut
+        const gradientArea = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientArea.addColorStop(0, 'rgba(76,175,80,0.25)');
+        gradientArea.addColorStop(1, 'rgba(76,175,80,0)');
 
+        // Warna titik mengikuti arah perubahan
+        const pointColors = dataPencapaian.map((val, i, arr) => {
+            if (i === 0) return '#4CAF50';
+            if (val > arr[i - 1]) return '#4CAF50'; // naik
+            if (val < arr[i - 1]) return '#F44336'; // turun
+            return '#F9A825'; // sama
+        });
+
+        // Plugin custom buat warna antar segmen
+        const segmentColorPlugin = {
+            id: 'segmentColor',
+            beforeDatasetsDraw(chart) {
+                const {
+                    ctx,
+                    chartArea: {
+                        top,
+                        bottom
+                    },
+                    scales: {
+                        x,
+                        y
+                    }
+                } = chart;
+                const data = chart.data.datasets[0].data;
+                ctx.save();
+                ctx.lineWidth = 3;
+
+                for (let i = 1; i < data.length; i++) {
+                    const prev = data[i - 1];
+                    const curr = data[i];
+                    if (prev == null || curr == null) continue;
+
+                    const x1 = x.getPixelForValue(i - 1);
+                    const y1 = y.getPixelForValue(prev);
+                    const x2 = x.getPixelForValue(i);
+                    const y2 = y.getPixelForValue(curr);
+
+                    const diff = curr - prev;
+                    const color = diff > 0 ? '#4CAF50' : diff < 0 ? '#F44336' : '#F9A825';
+
+                    // buat kurva halus antar titik
+                    const cp1x = x1 + (x2 - x1) / 2;
+                    const cp1y = y1;
+                    const cp2x = x1 + (x2 - x1) / 2;
+                    const cp2y = y2;
+
+                    ctx.strokeStyle = color;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x2, y2);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        };
+
+        // Chart utama
         new Chart(ctx, {
             type: 'line',
             data: {
@@ -833,19 +944,18 @@
                 datasets: [{
                     label: 'Pencapaian (%)',
                     data: dataPencapaian,
-                    borderColor: '#43A047',
-                    backgroundColor: gradient,
-                    borderWidth: 3,
-                    tension: 0.3,
-                    spanGaps: true,
-                    pointBackgroundColor: '#43A047',
+                    borderColor: 'transparent',
+                    backgroundColor: gradientArea,
+                    fill: true,
+                    tension: 0.4,
                     pointRadius: 6,
-                    pointHoverRadius: 9,
-                    pointHoverBorderWidth: 3
+                    pointBackgroundColor: pointColors,
+                    pointHoverRadius: 8
                 }]
             },
             options: {
                 responsive: true,
+                animation: false,
                 plugins: {
                     title: {
                         display: true,
@@ -855,11 +965,11 @@
                         }
                     },
                     legend: {
-                        position: 'top'
+                        display: false
                     },
                     tooltip: {
                         callbacks: {
-                            label: c => `${c.dataset.label}: ${c.parsed.y ?? 0}%`
+                            label: c => `Pencapaian: ${c.parsed.y ?? 0}%`
                         }
                     }
                 },
@@ -875,8 +985,50 @@
                         }
                     }
                 }
-            }
+            },
+            plugins: [segmentColorPlugin]
         });
 
+        // ================ Format Rupiah ===================
+        function formatRp(num) {
+            if (num === null || num === undefined || num === '') return '';
+            var n = ('' + num).replace(/[^0-9]/g, '');
+            if (n === '') return '';
+            return 'Rp. ' + n.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function updateFormatDisplayForInput(input, show) {
+            const display = input.parentElement.querySelector('.format-currency');
+            if (!display) return;
+            const val = input.value.replace(/[^0-9]/g, '');
+            if (!val) {
+                display.textContent = '';
+                input.classList.remove('hide-text');
+                return;
+            }
+
+            if (show && parseFloat(val) >= 1000) {
+                display.textContent = formatRp(val);
+                input.classList.add('hide-text');
+            } else {
+                display.textContent = '';
+                input.classList.remove('hide-text');
+            }
+        }
+
+        // apply to all
+        document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
+            // awal halaman, tampilkan format
+            updateFormatDisplayForInput(input, true);
+
+            input.addEventListener('focus', () => {
+                // saat edit, tampil angka mentah
+                updateFormatDisplayForInput(input, false);
+            });
+            input.addEventListener('blur', () => {
+                // saat selesai edit, tampil Rp.
+                updateFormatDisplayForInput(input, true);
+            });
+        });
     });
 </script>
