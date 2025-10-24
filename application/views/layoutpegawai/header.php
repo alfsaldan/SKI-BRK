@@ -353,6 +353,12 @@
                                     <span> Cek Kinerja Pegawai </span>
                                 </a>
                             </li>
+                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['monitoringkinerja', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator/monitoringkinerja') ?>">
+                                    <i class="mdi mdi-clipboard-pulse"></i>
+                                    <span> Monitoring Kinerja </span>
+                                </a>
+                            </li>
 
                             <li class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolatingkatanjabatan') ? 'active' : '' ?>">
                                 <a href="<?= base_url('administrator/kelolatingkatanjabatan') ?>">
@@ -411,6 +417,12 @@
                             <a href="<?= base_url('pegawai/rekapnilaipegawai') ?>">
                                 <i class="mdi mdi-file-chart"></i>
                                 <span> Rekap SKI </span>
+                            </a>
+                        </li>
+                        <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['monitoringindividu', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
+                            <a href="<?= base_url('pegawai/monitoringindividu') ?>">
+                                <i class="mdi mdi-clipboard-pulse"></i>
+                                <span> Monitoring Individu </span>
                             </a>
                         </li>
 
