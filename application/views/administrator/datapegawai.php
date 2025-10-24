@@ -38,7 +38,7 @@
                 <!-- Detail Pegawai -->
                 <div class="row">
                     <div class="col-12">
-                        <div class="card mt-3 shadow-sm border-0">
+                        <div class="card mt-0 shadow-sm border-0">
                             <div class="card-body">
                                 <div class="row">
                                     <!-- Detail Pegawai -->

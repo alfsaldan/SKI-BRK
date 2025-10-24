@@ -315,7 +315,7 @@
                         </li>
                         <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['monitoringindividu', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
                             <a href="<?= base_url('pegawai/monitoringindividu') ?>">
-                                <i class="mdi mdi-clipboard-pulse"></i>
+                                <i class="mdi mdi-clipboard-pulse-outline"></i>
                                 <span> Monitoring Individu </span>
                             </a>
                         </li>

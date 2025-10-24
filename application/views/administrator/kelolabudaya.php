@@ -27,7 +27,7 @@
             <!-- Card Tabel -->
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="mdi mdi-format-list-bulleted"></i> Data Budaya</h5>
+                    <h5 class="mb-0 text-white"><i class="mdi mdi-format-list-bulleted"></i> Data Budaya</h5>
                 </div>
                 <div class="card-body bg-light">
                     <div class="table-responsive">

@@ -99,7 +99,7 @@
             <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>
                 <div class="row">
                     <div class="col-12">
-                        <div class="card shadow-sm border-0 mt-3">
+                        <div class="card shadow-sm border-0 mt-0">
                             <div class="card-body">
 
                                 <!-- Detail Pegawai & Informasi Penilaian -->

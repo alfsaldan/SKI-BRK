@@ -12,7 +12,7 @@
                                 <li class="breadcrumb-item active">Monitoring Kinerja Bulanan</li>
                             </ol>
                         </div>
-                        <h4 class="page-title"><i class="mdi mdi-account-edit mr-2 text-primary"></i> Monitoring Kinerja Bulanan</h4>
+                        <h4 class="page-title"><i class="mdi mdi-clipboard-pulse-outline mr-2 text-primary"></i> Monitoring Kinerja Bulanan</h4>
                     </div>
                 </div>
             </div>
@@ -82,14 +82,14 @@
             <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>
 
                 <!-- GRAFIK LINE CHART -->
-                <div class="row mt-4">
+                <div class="row mt-0">
                     <div class="col-12">
                         <div class="card shadow-sm border-0">
                             <div class="card-body">
                                 <h5 class="text-primary font-weight-bold mb-3">
                                     <i class="mdi mdi-chart-line mr-2"></i> Grafik Pencapaian Bulanan
                                 </h5>
-                                <canvas id="grafikKinerja" height="100"></canvas>
+                                <canvas id="grafikKinerja" height="70"></canvas>
                             </div>
                         </div>
                     </div>
@@ -727,12 +727,12 @@
             });
         <?php endif; ?>
 
-        // ======= GRAFIK LINE CHART (warna garis dinamis + titik hijau semua) =======
+        // =================================================================
+        // GRAFIK LINE CHART (dengan warna gradasi dinamis)
+        // =================================================================
         <?php
         $bulanList = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-
-        // default 12 bulan = 0
-        $pencapaian_bulanan = array_fill(0, 12, 0);
+        $pencapaian_bulanan = array_fill(0, 12, 0); // Gunakan null untuk data kosong
 
         if (!empty($monitoring_bulanan_tahun)) {
             foreach ($monitoring_bulanan_tahun as $mb) {
@@ -741,11 +741,6 @@
                     $pencapaian_bulanan[$idx] = floatval($mb->pencapaian_akhir ?? 0);
                 }
             }
-        } else {
-            $nilaiTahunan = floatval($nilai_akhir->pencapaian ?? 0);
-            if ($nilaiTahunan) {
-                $pencapaian_bulanan = array_fill(0, 12, round($nilaiTahunan, 2));
-            }
         }
         ?>
 
@@ -753,34 +748,44 @@
         const dataPencapaian = <?= json_encode($pencapaian_bulanan) ?>;
 
         const ctx = document.getElementById('grafikKinerja')?.getContext('2d');
+
         if (ctx) {
-            // Warna segmen berdasarkan arah perubahan DARI titik ini KE titik berikutnya
-            const segmentColors = dataPencapaian.map((val, i) => {
-                const next = dataPencapaian[i + 1];
-                if (next === undefined) return '#43A047'; // terakhir tetap hijau
-                if (next > val) return '#43A047'; // naik → hijau
-                if (next < val) return '#e53935'; // turun → merah
-                return '#fbc02d'; // datar → kuning
+            // 1. Tentukan warna untuk setiap segmen garis
+            const segmentColors = dataPencapaian.map((current, i, arr) => {
+                if (i === 0) return '#43A047'; // Titik awal selalu hijau
+                const prev = arr[i - 1];
+                if (prev === null || current === null) return '#cccccc'; // Abu-abu jika ada data kosong
+
+                const diff = current - prev;
+                if (diff > 0) return '#43A047'; // Naik -> Hijau
+                if (diff < 0) return '#e53935'; // Turun -> Merah
+                return '#fbc02d'; // Datar -> Kuning
             });
 
-            // Gradient area bawah grafik
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(67,160,71,0.4)');
-            gradient.addColorStop(1, 'rgba(67,160,71,0)');
-
-            // Cari index bulan aktif (berdasarkan $periode_awal)
+            // 2. Tentukan warna untuk setiap titik
             const bulanAktifIndex = labelsBulan.findIndex((_, i) => {
                 const selectedPeriode = '<?= $periode_awal ?? '' ?>';
                 if (!selectedPeriode) return false;
                 return i === parseInt(selectedPeriode.split('-')[1], 10) - 1;
             });
 
-            // Semua titik hijau, kecuali bulan aktif
-            const pointColors = dataPencapaian.map((_, i) =>
-                i === bulanAktifIndex ? '#b6f5b9ff' : '#43A047'
-            );
+            const pointColors = dataPencapaian.map((val, i) => {
+                if (val === null) return 'transparent'; // Sembunyikan titik jika data kosong
+                if (i === bulanAktifIndex) return '#005f29'; // Sorot bulan aktif
+                return segmentColors[i]; // Warna titik sama dengan warna segmen
+            });
 
-            // Buat chart
+            const pointBorderColors = dataPencapaian.map((val, i) => {
+                if (val === null) return 'transparent';
+                return i === bulanAktifIndex ? '#fff' : segmentColors[i];
+            });
+
+            // 3. Buat gradasi untuk area di bawah garis
+            const areaGradient = ctx.createLinearGradient(0, 0, 0, 350);
+            areaGradient.addColorStop(0, 'rgba(67, 160, 71, 0.3)');
+            areaGradient.addColorStop(1, 'rgba(67, 160, 71, 0)');
+
+            // 4. Inisialisasi Chart
             new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -788,28 +793,43 @@
                     datasets: [{
                         label: 'Pencapaian (%)',
                         data: dataPencapaian,
-                        borderColor: '#43A047',
+                        // Buat gradasi warna garis
+                        borderColor: (chartContext) => {
+                            const chart = chartContext.chart;
+                            const {
+                                ctx,
+                                chartArea
+                            } = chart;
+                            if (!chartArea) return null;
+
+                            const gradient = ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
+                            const totalPoints = dataPencapaian.length - 1;
+                            if (totalPoints <= 0) return segmentColors[0] || '#43A047';
+
+                            segmentColors.forEach((color, i) => {
+                                gradient.addColorStop(i / totalPoints, color);
+                            });
+
+                            return gradient;
+                        },
                         borderWidth: 3,
                         tension: 0.3,
                         spanGaps: true,
-                        backgroundColor: gradient,
+                        fill: true,
+                        backgroundColor: areaGradient,
                         pointBackgroundColor: pointColors,
-                        pointRadius: 8,
+                        pointBorderColor: pointBorderColors,
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
                         pointHoverRadius: 10,
-                        pointHoverBorderWidth: 3,
-                        segment: {
-                            borderColor: ctx => {
-                                const i = ctx.p0DataIndex;
-                                return segmentColors[i] || '#43A047';
-                            }
-                        }
+                        pointHoverBackgroundColor: '#fff',
                     }]
                 },
                 options: {
                     responsive: true,
                     interaction: {
                         mode: 'index',
-                        intersect: false
+                        intersect: false,
                     },
                     plugins: {
                         title: {
@@ -824,19 +844,24 @@
                         },
                         tooltip: {
                             callbacks: {
-                                label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y ?? 0}%`
+                                label: (context) => {
+                                    const label = context.dataset.label || '';
+                                    const value = context.parsed.y;
+                                    return value !== null ? `${label}: ${value.toFixed(2)}%` : `${label}: (Data Kosong)`;
+                                }
                             }
                         }
                     },
                     scales: {
                         y: {
-                            beginAtZero: false,
+                            beginAtZero: true, // Mulai dari 0 agar lebih mudah dibaca
+                            max: 130, // Batas atas
                             title: {
                                 display: true,
                                 text: 'Pencapaian (%)'
                             },
                             ticks: {
-                                stepSize: 5
+                                stepSize: 25
                             }
                         }
                     }
