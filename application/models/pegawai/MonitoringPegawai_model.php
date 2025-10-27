@@ -66,6 +66,17 @@ class MonitoringPegawai_model extends CI_Model
             ->row();
     }
 
+    public function getFraudDanKoefisien($nik, $periode_awal, $periode_akhir)
+    {
+        return $this->db->select('nilai_budaya, fraud, koefisien')
+            ->from('nilai_akhir')
+            ->where('nik', $nik)
+            ->where('periode_awal', $periode_awal)
+            ->where('periode_akhir', $periode_akhir)
+            ->get()
+            ->row();
+    }
+
     public function getPegawaiWithPenilai($nik)
     {
         $this->db->select('

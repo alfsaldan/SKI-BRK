@@ -1962,7 +1962,7 @@ class Pegawai extends CI_Controller
         // 🔹 Ambil data untuk chart: seluruh bulan
         $monitoring_bulanan_tahun = $this->MonitoringPegawai_model->getMonitoringBulananTahun($nik, $tahun);
 
-        // 🔹 Fix pencapaian_akhir jika 0, hitung dari data_json
+        // 🔹 Hitung ulang pencapaian_akhir jika kosong atau 0
         foreach ($monitoring_bulanan_tahun as $mb) {
             if (empty($mb->pencapaian_akhir) || $mb->pencapaian_akhir == 0) {
                 $json = json_decode($mb->data_json, true) ?: [];
@@ -1970,7 +1970,6 @@ class Pegawai extends CI_Controller
                 $totalNilaiDibobot = 0;
                 foreach ($json as $item) {
                     $totalBobot += floatval($item['bobot'] ?? 0);
-                    // pakai nilai_dibobot kalau ada, kalau tidak pakai nilai
                     $totalNilaiDibobot += floatval($item['nilai_dibobot'] ?? $item['nilai'] ?? 0);
                 }
                 $mb->pencapaian_akhir = $totalBobot ? round($totalNilaiDibobot / $totalBobot, 2) : 0;
@@ -1990,11 +1989,11 @@ class Pegawai extends CI_Controller
             $pegawai = $this->MonitoringPegawai_model->getPegawaiWithPenilai($nik);
 
             if ($pegawai) {
-                // 🔹 Ambil data bulan berjalan
                 $monitoring_bulanan = $this->MonitoringPegawai_model->getMonitoringBulanan($nik, $bulan, $tahun);
 
                 $awal_tahun = "$tahun-01-01";
                 $akhir_tahun = "$tahun-12-31";
+                $bulanSekarang = (int)$bulan;
 
                 if ($monitoring_bulanan) {
                     $stored = json_decode($monitoring_bulanan->data_json, true) ?: [];
@@ -2021,10 +2020,13 @@ class Pegawai extends CI_Controller
                         $row->perspektif = $ind->perspektif ?? '';
                         $row->sasaran_kerja = $ind->sasaran_kerja ?? '';
                         $row->bobot = isset($ind->bobot) ? floatval($ind->bobot) : 0;
-                        $monthlyTarget = isset($ind->target) ? (float)$ind->target : 0;
-                        $row->target = $monthlyTarget ? round($monthlyTarget / 12, 2) : 0;
 
-                        if (isset($storedMap[$idKey]) && isset($storedMap[$idKey]['target'])) {
+                        // ✅ Target akumulatif
+                        $targetTahunan = isset($ind->target) ? (float)$ind->target : 0;
+                        $row->target = $targetTahunan > 0 ? round(($targetTahunan / 12) * $bulanSekarang, 2) : 0;
+
+                        // Override target jika ada di stored data
+                        if (isset($storedMap[$idKey]['target'])) {
                             $row->target = floatval($storedMap[$idKey]['target']);
                         }
 
@@ -2032,13 +2034,16 @@ class Pegawai extends CI_Controller
                         $row->realisasi = isset($storedMap[$idKey]['realisasi']) ? floatval($storedMap[$idKey]['realisasi']) : 0;
                         $row->pencapaian = isset($storedMap[$idKey]['pencapaian']) ? floatval($storedMap[$idKey]['pencapaian']) : 0;
                         $row->nilai = isset($storedMap[$idKey]['nilai']) ? floatval($storedMap[$idKey]['nilai']) : 0;
-                        $row->nilai_dibobot = isset($storedMap[$idKey]['nilai_dibobot']) ? floatval($storedMap[$idKey]['nilai_dibobot']) : $row->nilai;
+                        $row->nilai_dibobot = isset($storedMap[$idKey]['nilai_dibobot'])
+                            ? floatval($storedMap[$idKey]['nilai_dibobot'])
+                            : $row->nilai;
+
                         $penilaian_bulanan[] = $row;
                     }
 
                     $nilai_akhir = $monitoring_bulanan->nilai_akhir;
                 } else {
-                    // kalau bulan berjalan kosong, buat default 0
+                    // 🔹 Jika bulan berjalan kosong, tetap gunakan target akumulatif
                     $penilaian_tahunan = $this->MonitoringPegawai_model->get_indikator_by_jabatan_dan_unit(
                         $pegawai->jabatan,
                         $pegawai->unit_kerja,
@@ -2049,7 +2054,8 @@ class Pegawai extends CI_Controller
 
                     $penilaian_bulanan = [];
                     foreach ($penilaian_tahunan as $p) {
-                        $p->target = $p->target ? round($p->target / 12, 2) : 0;
+                        $targetTahunan = $p->target ? (float)$p->target : 0;
+                        $p->target = $targetTahunan > 0 ? round(($targetTahunan / 12) * $bulanSekarang, 2) : 0;
                         $p->realisasi = 0;
                         $p->pencapaian = 0;
                         $p->nilai = 0;
@@ -2061,10 +2067,20 @@ class Pegawai extends CI_Controller
 
                 $budayaData = $this->MonitoringPegawai_model->getBudayaNilaiByNik($nik, $awal_tahun, $akhir_tahun);
 
+                // ✅ Ambil data fraud & koefisien dari tabel nilai_akhir
+                $tahun = date('Y', strtotime($awal_tahun));
+                $nilaiAkhirData = $this->MonitoringPegawai_model->getNilaiAkhir($nik, "$tahun-01-01", "$tahun-12-31");
+                $nilai_budaya = $nilaiAkhirData->nilai_budaya ?? 0;
+                $fraud = $nilaiAkhirData->fraud ?? 0;
+                $koefisien = $nilaiAkhirData->koefisien ?? 100;
+
                 $data += [
                     'pegawai_detail' => $pegawai,
                     'penilaian_pegawai' => $penilaian_bulanan,
                     'nilai_akhir' => $nilai_akhir,
+                    'nilai_budaya' => $nilai_budaya,
+                    'fraud' => $fraud,
+                    'koefisien' => $koefisien,
                     'budaya_nilai' => $budayaData['nilai_budaya'],
                     'rata_rata_budaya' => $budayaData['rata_rata'],
                     'budaya' => $this->MonitoringPegawai_model->getAllBudaya(),
@@ -2077,9 +2093,6 @@ class Pegawai extends CI_Controller
         $this->load->view('pegawai/monitoringindividu', $data);
         $this->load->view("layout/footer");
     }
-
-
-
 
     /**
      * Ajax: ambil penilaian berdasarkan periode yang dipilih
@@ -2097,6 +2110,7 @@ class Pegawai extends CI_Controller
 
         $tahun = date('Y', strtotime($periode_awal));
         $bulan = date('m', strtotime($periode_awal));
+        $bulanSekarang = (int)$bulan;
 
         $pegawai = $this->MonitoringPegawai_model->getPegawaiWithPenilai($nik);
 
@@ -2104,7 +2118,6 @@ class Pegawai extends CI_Controller
             $monitoring_bulanan = $this->MonitoringPegawai_model->getMonitoringBulanan($nik, $bulan, $tahun);
 
             if ($monitoring_bulanan) {
-                // decode stored monitoring data (array)
                 $stored = json_decode($monitoring_bulanan->data_json, true) ?: [];
                 $storedMap = [];
                 foreach ($stored as $s) {
@@ -2112,7 +2125,6 @@ class Pegawai extends CI_Controller
                     if ($key !== null) $storedMap[$key] = $s;
                 }
 
-                // ambil metadata indikator (full) lalu gabungkan nilai dari storedMap
                 $awal_tahun  = "$tahun-01-01";
                 $akhir_tahun = "$tahun-12-31";
                 $indicators = $this->MonitoringPegawai_model->get_indikator_by_jabatan_dan_unit(
@@ -2123,36 +2135,48 @@ class Pegawai extends CI_Controller
                     $akhir_tahun
                 );
 
+                // ✅ Ambil data fraud & koefisien dari tabel nilai_akhir
+                $tahun = date('Y', strtotime($periode_awal));
+                $nilaiAkhirData = $this->MonitoringPegawai_model->getNilaiAkhir($nik, "$tahun-01-01", "$tahun-12-31");
+                $nilai_budaya = $nilaiAkhirData->nilai_budaya ?? 0;
+                $fraud = $nilaiAkhirData->fraud ?? 0;
+                $koefisien = $nilaiAkhirData->koefisien ?? 100;
+
+
                 $penilaian_bulanan = [];
                 foreach ($indicators as $ind) {
                     $idKey = (string)($ind->id ?? $ind->indikator_id ?? '');
                     $row = new stdClass();
-                    // metadata (ensure fields used by the view exist)
                     $row->id = $ind->id ?? $ind->indikator_id ?? null;
                     $row->indikator = $ind->indikator ?? '';
                     $row->perspektif = $ind->perspektif ?? '';
                     $row->sasaran_kerja = $ind->sasaran_kerja ?? '';
                     $row->bobot = isset($ind->bobot) ? floatval($ind->bobot) : 0;
-                    // monthly target: if stored has target use it, otherwise divide annual target by 12
-                    $monthlyTarget = isset($ind->target) ? (float)$ind->target : 0;
-                    $row->target = $monthlyTarget ? round($monthlyTarget / 12, 2) : 0;
-                    if (isset($storedMap[$idKey]) && isset($storedMap[$idKey]['target'])) {
+
+                    // ✅ Target akumulatif
+                    $targetTahunan = isset($ind->target) ? (float)$ind->target : 0;
+                    $row->target = $targetTahunan > 0 ? round(($targetTahunan / 12) * $bulanSekarang, 2) : 0;
+
+                    if (isset($storedMap[$idKey]['target'])) {
                         $row->target = floatval($storedMap[$idKey]['target']);
                     }
+
                     $row->batas_waktu = $ind->batas_waktu ?? '';
                     $row->realisasi = isset($storedMap[$idKey]['realisasi']) ? floatval($storedMap[$idKey]['realisasi']) : 0;
                     $row->pencapaian = isset($storedMap[$idKey]['pencapaian']) ? floatval($storedMap[$idKey]['pencapaian']) : 0;
                     $row->nilai = isset($storedMap[$idKey]['nilai']) ? floatval($storedMap[$idKey]['nilai']) : 0;
-                    $row->nilai_dibobot = isset($storedMap[$idKey]['nilai_dibobot']) ? floatval($storedMap[$idKey]['nilai_dibobot']) : 0;
+                    $row->nilai_dibobot = isset($storedMap[$idKey]['nilai_dibobot'])
+                        ? floatval($storedMap[$idKey]['nilai_dibobot'])
+                        : $row->nilai;
 
                     $penilaian_bulanan[] = $row;
                 }
 
                 $nilai_akhir = $monitoring_bulanan->nilai_akhir;
             } else {
+                // Jika belum ada data bulan itu, buat default 0 tapi tetap akumulatif
                 $awal_tahun = "$tahun-01-01";
                 $akhir_tahun = "$tahun-12-31";
-
                 $penilaian_tahunan = $this->MonitoringPegawai_model->get_indikator_by_jabatan_dan_unit(
                     $pegawai->jabatan,
                     $pegawai->unit_kerja,
@@ -2163,7 +2187,8 @@ class Pegawai extends CI_Controller
 
                 $penilaian_bulanan = [];
                 foreach ($penilaian_tahunan as $p) {
-                    $p->target = $p->target ? round($p->target / 12, 2) : 0;
+                    $targetTahunan = $p->target ? (float)$p->target : 0;
+                    $p->target = $targetTahunan > 0 ? round(($targetTahunan / 12) * $bulanSekarang, 2) : 0;
                     $p->realisasi = 0;
                     $p->pencapaian = 0;
                     $p->nilai = 0;
@@ -2173,7 +2198,29 @@ class Pegawai extends CI_Controller
                 $nilai_akhir = 0;
             }
 
-            $budayaData = $this->MonitoringPegawai_model->getBudayaNilaiByNik($nik, $awal_tahun, $akhir_tahun);
+            $budayaData = $this->MonitoringPegawai_model->getBudayaNilaiByNik($nik, "$tahun-01-01", "$tahun-12-31");
+            $monitoring_bulanan_tahun = $this->MonitoringPegawai_model->getMonitoringBulananTahun($nik, $tahun);
+
+            foreach ($monitoring_bulanan_tahun as $mb) {
+                if (empty($mb->pencapaian_akhir) || $mb->pencapaian_akhir == 0) {
+                    $json = json_decode($mb->data_json, true) ?: [];
+                    $totalBobot = 0;
+                    $totalNilaiDibobot = 0;
+                    foreach ($json as $item) {
+                        $totalBobot += floatval($item['bobot'] ?? 0);
+                        $totalNilaiDibobot += floatval($item['nilai_dibobot'] ?? $item['nilai'] ?? 0);
+                    }
+                    $mb->pencapaian_akhir = $totalBobot ? round($totalNilaiDibobot / $totalBobot, 2) : 0;
+                }
+            }
+
+            // ✅ Ambil data fraud & koefisien dari tabel nilai_akhir
+            $tahun = date('Y', strtotime($periode_awal));
+            $nilaiAkhirData = $this->MonitoringPegawai_model->getNilaiAkhir($nik, "$tahun-01-01", "$tahun-12-31");
+            $nilai_budaya = $nilaiAkhirData->nilai_budaya ?? 0;
+            $fraud = $nilaiAkhirData->fraud ?? 0;
+            $koefisien = $nilaiAkhirData->koefisien ?? 100;
+
             $data = [
                 'judul' => 'Monitoring Kinerja Bulanan',
                 'pegawai_detail' => $pegawai,
@@ -2182,9 +2229,13 @@ class Pegawai extends CI_Controller
                 'budaya_nilai' => $budayaData['nilai_budaya'],
                 'rata_rata_budaya' => $budayaData['rata_rata'],
                 'budaya' => $this->MonitoringPegawai_model->getAllBudaya(),
+                'nilai_budaya' => $nilai_budaya,
+                'fraud' => $fraud,
+                'koefisien' => $koefisien,
                 'periode_awal' => $periode_awal,
                 'periode_akhir' => $periode_akhir,
-                'message' => ['type' => 'success', 'text' => 'Data monitoring bulan ' . $bulan . ' berhasil ditampilkan!']
+                'monitoring_bulanan_tahun' => $monitoring_bulanan_tahun,
+                'message' => ['type' => 'success', 'text' => "Data monitoring bulan {$bulan} berhasil ditampilkan!"]
             ];
         } else {
             $data = [
@@ -2195,26 +2246,6 @@ class Pegawai extends CI_Controller
                 'message' => ['type' => 'error', 'text' => 'Data pegawai tidak ditemukan.']
             ];
         }
-
-        // Tambahkan setelah ambil $pegawai
-        $tahun_sekarang = date('Y');
-        $monitoring_bulanan_tahun = $this->MonitoringPegawai_model->getMonitoringBulananTahun($nik, $tahun_sekarang);
-
-        // Hitung ulang jika nilai pencapaian kosong
-        foreach ($monitoring_bulanan_tahun as $mb) {
-            if (empty($mb->pencapaian_akhir) || $mb->pencapaian_akhir == 0) {
-                $json = json_decode($mb->data_json, true) ?: [];
-                $totalBobot = 0;
-                $totalNilaiDibobot = 0;
-                foreach ($json as $item) {
-                    $totalBobot += floatval($item['bobot'] ?? 0);
-                    $totalNilaiDibobot += floatval($item['nilai_dibobot'] ?? $item['nilai'] ?? 0);
-                }
-                $mb->pencapaian_akhir = $totalBobot ? round($totalNilaiDibobot / $totalBobot, 2) : 0;
-            }
-        }
-        $data['monitoring_bulanan_tahun'] = $monitoring_bulanan_tahun;
-
 
         $this->load->view("layout/header");
         $this->load->view('pegawai/monitoringindividu', $data);

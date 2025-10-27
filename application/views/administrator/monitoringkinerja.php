@@ -414,15 +414,15 @@
                         <?php
                         // 🔹 Pastikan data aman
                         $total_skor      = number_format(round(floatval($total_nilai ?? 0), 2), 2);
-                        $avg_budaya      = $rata_rata_budaya ?? 0;
+                        $avg_budaya      = $nilai_budaya ?? 0;
                         $kontrib_sasaran = $total_skor * 0.95;
                         $kontrib_budaya  = $avg_budaya * 0.05;
                         $total_nilai     = number_format($kontrib_sasaran + $kontrib_budaya, 2);
                         $nilai           = $nilai_akhir->nilai_akhir ?? 0;
                         $pencapaian_pct  = floatval(str_replace('%', '', $monitoring_bulanan->pencapaian_akhir ?? 0));
                         $predikat        = $nilai_akhir->predikat ?? 'Minus (M)';
-                        $fraud           = $nilai_akhir->fraud ?? 0;
-                        $koefisien       = $nilai_akhir->koefisien ?? 100;
+                        $fraud           = $fraud ?? 0;
+                        $koefisien       = $koefisien ?? 100;
                         ?>
 
                         <!-- Bagian Atas: Perhitungan -->

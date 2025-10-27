@@ -2544,6 +2544,7 @@ class Administrator extends CI_Controller
 
         $tahun = date('Y', strtotime($periode_awal));
         $bulan = date('m', strtotime($periode_awal));
+        $bulanSekarang = (int) $bulan;
 
         $pegawai = $this->Monitoring_model->getPegawaiWithPenilai($nik);
 
@@ -2581,16 +2582,28 @@ class Administrator extends CI_Controller
                     $row->perspektif = $ind->perspektif ?? '';
                     $row->sasaran_kerja = $ind->sasaran_kerja ?? '';
                     $row->bobot = isset($ind->bobot) ? floatval($ind->bobot) : 0;
+
+                    // ✅ Target akumulatif
                     $monthlyTarget = isset($ind->target) ? (float)$ind->target : 0;
-                    $row->target = $monthlyTarget ? round($monthlyTarget / 12, 2) : 0;
+                    if ($monthlyTarget > 0) {
+                        $row->target = round(($monthlyTarget / 12) * $bulanSekarang, 2);
+                    } else {
+                        $row->target = 0;
+                    }
+
+                    // ✅ Override jika ada data tersimpan
                     if (isset($storedMap[$idKey]['target'])) {
                         $row->target = floatval($storedMap[$idKey]['target']);
                     }
+
                     $row->batas_waktu = $ind->batas_waktu ?? '';
                     $row->realisasi = isset($storedMap[$idKey]['realisasi']) ? floatval($storedMap[$idKey]['realisasi']) : 0;
                     $row->pencapaian = isset($storedMap[$idKey]['pencapaian']) ? floatval($storedMap[$idKey]['pencapaian']) : 0;
                     $row->nilai = isset($storedMap[$idKey]['nilai']) ? floatval($storedMap[$idKey]['nilai']) : 0;
-                    $row->nilai_dibobot = isset($storedMap[$idKey]['nilai_dibobot']) ? floatval($storedMap[$idKey]['nilai_dibobot']) : $row->nilai;
+                    $row->nilai_dibobot = isset($storedMap[$idKey]['nilai_dibobot'])
+                        ? floatval($storedMap[$idKey]['nilai_dibobot'])
+                        : $row->nilai;
+
                     $penilaian_bulanan[] = $row;
                 }
 
@@ -2607,7 +2620,8 @@ class Administrator extends CI_Controller
 
                 $penilaian_bulanan = [];
                 foreach ($penilaian_tahunan as $p) {
-                    $p->target = $p->target ? round($p->target / 12, 2) : 0;
+                    // ✅ Target akumulatif untuk bulan saat ini
+                    $p->target = $p->target ? round(($p->target / 12) * $bulanSekarang, 2) : 0;
                     $p->realisasi = 0;
                     $p->pencapaian = 0;
                     $p->nilai = 0;
@@ -2619,6 +2633,13 @@ class Administrator extends CI_Controller
 
             // nilai budaya
             $budayaData = $this->Monitoring_model->getBudayaNilaiByNik($nik, $awal_tahun, $akhir_tahun);
+
+            // ✅ Ambil data fraud & koefisien dari tabel nilai_akhir
+            $tahun = date('Y', strtotime($periode_awal));
+            $nilaiAkhirData = $this->Monitoring_model->getNilaiAkhir($nik, "$tahun-01-01", "$tahun-12-31");
+            $nilai_budaya = $nilaiAkhirData->nilai_budaya ?? 0;
+            $fraud = $nilaiAkhirData->fraud ?? 0;
+            $koefisien = $nilaiAkhirData->koefisien ?? 100;
 
             // data untuk grafik tahunan
             $monitoring_bulanan_tahun = $this->Monitoring_model->getMonitoringBulananTahun($nik, $tahun);
@@ -2643,6 +2664,9 @@ class Administrator extends CI_Controller
                 'budaya_nilai' => $budayaData['nilai_budaya'],
                 'rata_rata_budaya' => $budayaData['rata_rata'],
                 'budaya' => $this->Monitoring_model->getAllBudaya(),
+                'nilai_budaya' => $nilai_budaya,
+                'fraud' => $fraud,
+                'koefisien' => $koefisien,
                 'periode_awal' => $periode_awal,
                 'periode_akhir' => $periode_akhir,
                 'monitoring_bulanan' => $monitoring_bulanan,

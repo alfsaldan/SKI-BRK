@@ -278,12 +278,13 @@
 
                                                                 <td class="text-center align-middle" style="min-width:150px;">
                                                                     <div class="currency-wrapper">
-                                                                        <input type="number"
+                                                                        <input type="text"
                                                                             class="form-control form-control-sm text-center realisasi-input"
                                                                             value="<?= htmlspecialchars($i->realisasi ?? 0) ?>"
                                                                             data-target="<?= htmlspecialchars($i->target ?? 0) ?>"
                                                                             data-bobot="<?= htmlspecialchars($i->bobot ?? 0) ?>"
-                                                                            data-indikator="<?= htmlspecialchars($i->indikator ?? '') ?>">
+                                                                            data-indikator="<?= htmlspecialchars($i->indikator ?? '') ?>"
+                                                                            oninput="this.value = this.value.replace(/[^0-9.]/g, '');">
                                                                         <div class="format-currency text-muted small"></div>
                                                                     </div>
                                                                 </td>
@@ -465,15 +466,15 @@
                         <?php
                         // 🔹 Pastikan data aman
                         $total_skor      = number_format(round(floatval($total_nilai ?? 0), 2), 2);
-                        $avg_budaya      = $rata_rata_budaya ?? 0;
+                        $avg_budaya      = $nilai_budaya ?? 0;
                         $kontrib_sasaran = $total_skor * 0.95;
                         $kontrib_budaya  = $avg_budaya * 0.05;
                         $total_nilai     = number_format($kontrib_sasaran + $kontrib_budaya, 2);
                         $nilai           = $nilai_akhir->nilai_akhir ?? 0;
                         $pencapaian_pct  = floatval(str_replace('%', '', $nilai_akhir->pencapaian ?? 0));
                         $predikat        = $nilai_akhir->predikat ?? 'Minus (M)';
-                        $fraud           = $nilai_akhir->fraud ?? 0;
-                        $koefisien       = $nilai_akhir->koefisien ?? 100;
+                        $fraud           = $fraud ?? 0;
+                        $koefisien       = $koefisien ?? 100;
                         ?>
 
                         <!-- Bagian Atas: Perhitungan -->
