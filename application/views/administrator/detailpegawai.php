@@ -80,39 +80,41 @@
                 <div class="card-body">
                     <form method="post" action="<?= base_url('Administrator/updateJabatan') ?>">
                         <input type="hidden" name="nik" value="<?= $pegawai->nik ?>">
+
                         <div class="form-row">
+                            <!-- UNIT KERJA -->
                             <div class="form-group col-md-4">
                                 <label>Jenis Unit</label>
                                 <select name="unit_kerja" id="unitKerjaSelect" class="form-control select2" required>
-                                    <option value="">Pilih atau ketik Jenis Unit</option>
+                                    <option value="">Pilih Jenis Unit</option>
                                     <?php foreach ($unitkerja_list as $u): ?>
                                         <option value="<?= $u->unit_kerja ?>"><?= $u->unit_kerja ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
+
+                            <!-- UNIT KANTOR -->
                             <div class="form-group col-md-4">
                                 <label>Unit Kantor</label>
-                                <select name="unit_kantor" id="unitKantorSelect" class="form-control select2" required>
-                                    <option value="">Pilih atau ketik Unit Kantor</option>
-                                    <?php foreach ($unitkantor_list as $uk): ?>
-                                        <option value="<?= $uk->unit_kantor ?>"><?= $uk->unit_kantor ?></option>
-                                    <?php endforeach; ?>
+                                <select name="unit_kantor" id="unitKantorSelect" class="form-control select2" required disabled>
+                                    <option value="">Pilih Unit Kantor</option>
                                 </select>
                             </div>
+
+                            <!-- JABATAN -->
                             <div class="form-group col-md-4">
                                 <label>Jabatan Baru</label>
-                                <select name="jabatan" id="jabatanSelect" class="form-control select2" required>
-                                    <option value="">Pilih atau ketik Jabatan</option>
-                                    <?php foreach ($jabatan_list as $j): ?>
-                                        <option value="<?= $j->jabatan ?>"><?= $j->jabatan ?></option>
-                                    <?php endforeach; ?>
+                                <select name="jabatan" id="jabatanSelect" class="form-control select2" required disabled>
+                                    <option value="">Pilih Jabatan</option>
                                 </select>
                             </div>
                         </div>
+
                         <div class="form-group">
                             <label>Tanggal Mulai</label>
                             <input type="date" name="tgl_mulai" class="form-control" required>
                         </div>
+
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Simpan Jabatan
                         </button>
@@ -156,25 +158,47 @@
 
 <script>
     $(document).ready(function() {
-        $('#jabatanSelect').select2({
-            placeholder: "Pilih atau ketik Jabatan",
-            tags: true,
-            allowClear: true,
-            width: '100%'
+        // ketika unit kerja dipilih
+        $('#unitKerjaSelect').change(function() {
+            const unitKerja = $(this).val();
+            $('#unitKantorSelect').prop('disabled', true).html('<option value="">Loading...</option>');
+            $('#jabatanSelect').prop('disabled', true).html('<option value="">Pilih Jabatan</option>');
+
+            if (unitKerja) {
+                $.post('<?= base_url("Administrator/getUnitKantorByUnitKerja") ?>', {
+                    unit_kerja: unitKerja
+                }, function(data) {
+                    let options = '<option value="">Pilih Unit Kantor</option>';
+                    data = JSON.parse(data);
+                    data.forEach(function(item) {
+                        options += `<option value="${item.unit_kantor}">${item.unit_kantor}</option>`;
+                    });
+                    $('#unitKantorSelect').html(options).prop('disabled', false);
+                });
+            } else {
+                $('#unitKantorSelect').html('<option value="">Pilih Unit Kantor</option>').prop('disabled', true);
+            }
         });
 
-        $('#unitKerjaSelect').select2({
-            placeholder: "Pilih atau ketik Jenis Unit",
-            tags: true,
-            allowClear: true,
-            width: '100%'
-        });
+        // ketika unit kantor dipilih
+        $('#unitKantorSelect').change(function() {
+            const unitKantor = $(this).val();
+            $('#jabatanSelect').prop('disabled', true).html('<option value="">Loading...</option>');
 
-        $('#unitKantorSelect').select2({
-            placeholder: "Pilih atau ketik Unit Kantor",
-            tags: true,
-            allowClear: true,
-            width: '100%'
+            if (unitKantor) {
+                $.post('<?= base_url("Administrator/getJabatanByUnitKantor") ?>', {
+                    unit_kantor: unitKantor
+                }, function(data) {
+                    let options = '<option value="">Pilih Jabatan</option>';
+                    data = JSON.parse(data);
+                    data.forEach(function(item) {
+                        options += `<option value="${item.jabatan}">${item.jabatan}</option>`;
+                    });
+                    $('#jabatanSelect').html(options).prop('disabled', false);
+                });
+            } else {
+                $('#jabatanSelect').html('<option value="">Pilih Jabatan</option>').prop('disabled', true);
+            }
         });
     });
 </script>

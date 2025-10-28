@@ -153,6 +153,25 @@ class DataPegawai_model extends CI_Model
         return $query->result();
     }
 
+    // Ambil unit kantor berdasarkan unit kerja
+    public function getUnitKantorByUnitKerja($unit_kerja)
+    {
+        $this->db->select('DISTINCT(unit_kantor) as unit_kantor');
+        $this->db->where('unit_kerja', $unit_kerja);
+        $query = $this->db->get('penilai_mapping');
+        return $query->result();
+    }
+
+    // Ambil jabatan berdasarkan unit kantor
+    public function getJabatanByUnitKantor($unit_kantor)
+    {
+        $this->db->select('DISTINCT(jabatan) as jabatan');
+        $this->db->where('unit_kantor', $unit_kantor);
+        $query = $this->db->get('penilai_mapping');
+        return $query->result();
+    }
+
+
     public function getAllUnitKerja()
     {
         $this->db->select('DISTINCT(unit_kerja) as unit_kerja');
