@@ -136,7 +136,7 @@
             <!-- end page title -->
 
             <!-- Grafik Pencapaian Nilai Akhir -->
-            <div class="card mt-4 shadow-sm border-0">
+            <div class="card mt-0 shadow-sm border-0">
                 <div class="card-body">
                     <h5 class="text-success font-weight-bold mb-3">
                         <i class="mdi mdi-chart-line mr-2"></i> Grafik Pencapaian Nilai Akhir
@@ -233,41 +233,47 @@
                                             <input type="hidden" id="periode_akhir" class="form-control mr-2" value="<?= $periode_akhir ?? date('Y-12-31'); ?>">
 
                                             <!-- Dropdown periode history -->
-
                                             <div class="form-inline mb-2">
                                                 <select id="periode_history" class="form-control w-auto ml-2">
                                                     <option value="">Pilih Periode</option>
-                                                    <?php
-                                                    $yearly_options = [];
-                                                    foreach ($periode_list as $p):
-                                                        $is_yearly = (
+                                                    <?php foreach ($periode_list as $p): ?>
+                                                        <?php
+                                                        $is_rekap_otomatis = isset($p->is_rekap_otomatis) && $p->is_rekap_otomatis;
+                                                        $is_penilaian_manual_tahunan = (
                                                             date('m-d', strtotime($p->periode_awal)) == '01-01' &&
-                                                            date('m-d', strtotime($p->periode_akhir)) == '12-31'
+                                                            date('m-d', strtotime($p->periode_akhir)) == '12-31' &&
+                                                            !$is_rekap_otomatis
                                                         );
 
-                                                        $label = formatTanggalIndonesia($p->periode_awal, $bulan_indonesia) . ' s/d ' . formatTanggalIndonesia($p->periode_akhir, $bulan_indonesia);
-                                                        if ($is_yearly) {
-                                                            $label = 'Rekap Tahun ' . date('Y', strtotime($p->periode_awal));
-                                                            // Simpan tahunan dulu (nanti kita tampilkan paling bawah)
-                                                            $yearly_options[] = [
-                                                                'value' => "YEARLY|" . $p->periode_awal . "|" . $p->periode_akhir,
-                                                                'label' => $label
-                                                            ];
-                                                            continue;
-                                                        }
-                                                    ?>
-                                                        <option value="<?= $p->periode_awal . '|' . $p->periode_akhir ?>"
-                                                            <?= ($periode_awal == $p->periode_awal && $periode_akhir == $p->periode_akhir) ? 'selected' : '' ?>>
-                                                            <?= $label ?>
-                                                        </option>
-                                                    <?php endforeach; ?>
+                                                        $value = $p->periode_awal . '|' . $p->periode_akhir;
+                                                        $label = '';
+                                                        $is_rekap_aktif = ($this->input->get('tahunan') === '1');
+                                                        $selected = '';
 
-                                                    <!-- tampilkan tahunan paling bawah -->
-                                                    <?php foreach ($yearly_options as $y): ?>
-                                                        <option value="<?= $y['value'] ?>"
-                                                            style="font-weight:bold; background-color:#e9f5ff;"
-                                                            <?= ($periode_awal . '|' . $periode_akhir == explode('|', $y['value'])[1] . '|' . explode('|', $y['value'])[2]) ? 'selected' : '' ?>>
-                                                            <?= $y['label'] ?>
+                                                        if ($is_rekap_otomatis) {
+                                                            $label = 'Rekap Tahunan ' . date('Y', strtotime($p->periode_awal)) . ' (Otomatis)';
+                                                            // Khusus untuk rekap otomatis, tambahkan parameter 'tahunan=1'
+                                                            $value .= '|tahunan';
+                                                            // HANYA pilih ini jika mode rekap aktif DAN tahunnya cocok
+                                                            if ($is_rekap_aktif && date('Y', strtotime($periode_awal)) === date('Y', strtotime($p->periode_awal))) {
+                                                                $selected = 'selected';
+                                                            }
+                                                        } elseif ($is_penilaian_manual_tahunan) {
+                                                            $label = 'Rekap Tahun ' . date('Y', strtotime($p->periode_awal));
+                                                            // HANYA pilih ini jika BUKAN mode rekap DAN tanggalnya cocok
+                                                            if (!$is_rekap_aktif && $periode_awal === $p->periode_awal && $periode_akhir === $p->periode_akhir) {
+                                                                $selected = 'selected';
+                                                            }
+                                                        } else {
+                                                            $label = formatTanggalIndonesia($p->periode_awal, $bulan_indonesia) . ' s/d ' . formatTanggalIndonesia($p->periode_akhir, $bulan_indonesia);
+                                                            // HANYA pilih ini jika BUKAN mode rekap DAN tanggalnya cocok
+                                                            if (!$is_rekap_aktif && $periode_awal === $p->periode_awal && $periode_akhir === $p->periode_akhir) {
+                                                                $selected = 'selected';
+                                                            }
+                                                        }
+                                                        ?>
+                                                        <option value="<?= $value ?>" <?= $selected ?>>
+                                                            <?= $label; ?>
                                                         </option>
                                                     <?php endforeach; ?>
                                                 </select>
@@ -1010,17 +1016,18 @@ if ($message): ?>
         periodeHistory.addEventListener('change', function() {
             if (!this.value) return;
             let val = this.value;
+            const nik = "<?= $pegawai_detail->nik ?? '' ?>";
 
             // Jika opsi tahunan (value diawali "YEARLY|")
             if (val.startsWith("YEARLY|")) {
                 const [, awal, akhir] = val.split('|');
-                window.location.href = `<?= base_url("Pegawai") ?>?awal=${awal}&akhir=${akhir}&tahunan=1`;
+                window.location.href = `<?= base_url("Pegawai/index") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}&tahunan=1`;
                 return;
             }
 
             // Jika bukan tahunan (normal triwulan)
             const [awal, akhir] = val.split('|');
-            window.location.href = `<?= base_url("Pegawai") ?>?awal=${awal}&akhir=${akhir}`;
+            window.location.href = `<?= base_url("Pegawai/index") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
         });
 
 

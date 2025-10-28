@@ -69,28 +69,14 @@ class Pegawai extends CI_Controller
         $lock_status = $this->Pegawai_model->getLockStatus($periode_awal, $periode_akhir);
         $lock_status2 = $this->Pegawai_model->getLockStatus2($periode_awal, $periode_akhir);
 
-        // 🔹 Cek apakah ini adalah filter tahunan
-        $is_yearly_filter = (date('m-d', strtotime($periode_awal)) == '01-01' && date('m-d', strtotime($periode_akhir)) == '12-31');
-        $tahun_filter = date('Y', strtotime($periode_awal));
-
-        if ($is_yearly_filter) {
-            // Panggil fungsi agregasi tahunan
-            $indikator = $this->Pegawai_model->get_indikator_yearly_aggregated(
-                $pegawai->jabatan,
-                $pegawai->unit_kerja,
-                $nik,
-                $tahun_filter
-            );
-        } else {
-            // Panggil fungsi biasa untuk periode spesifik
-            $indikator = $this->Pegawai_model->get_indikator_by_jabatan_dan_unit(
-                $pegawai->jabatan,
-                $pegawai->unit_kerja,
-                $nik,
-                $periode_awal,
-                $periode_akhir
-            );
-        }
+        // Logika rekap otomatis dihapus. Selalu panggil fungsi standar.
+        $indikator = $this->Pegawai_model->get_indikator_by_jabatan_dan_unit(
+            $pegawai->jabatan,
+            $pegawai->unit_kerja,
+            $nik,
+            $periode_awal,
+            $periode_akhir
+        );
 
         // 🔹 Ambil daftar budaya utama & panduan dari tabel `budaya`
         $budaya = $this->Nilai_model->getAllBudaya();
