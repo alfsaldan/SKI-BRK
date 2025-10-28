@@ -821,7 +821,20 @@
                         },
                         body: JSON.stringify(payload)
                     }).then(r => r.json())
-                    .then(j => console.log('autosave', j))
+                    .then(j => {
+                        console.log('autosave', j);
+                        // Cek jika save berhasil dan update chart
+                        // Asumsi server merespon dengan { status: 'success' }
+                        if (j && j.status === 'success') {
+                            const bulanIndex = bulan - 1;
+                            if (bulanIndex >= 0 && bulanIndex < 12) {
+                                // Update array data utama
+                                dataPencapaian[bulanIndex] = parseFloat(totals.pencAkhir.toFixed(2));
+                                // Re-render chart dengan data baru
+                                initOrUpdateChart();
+                            }
+                        }
+                    })
                     .catch(err => console.error('autosave error', err));
             }, 300);
         }
@@ -872,127 +885,137 @@
 
         const labelsBulan = <?= $labelsBulanJson ?>;
         const dataPencapaian = <?= $dataPencapaianJson ?>;
-
         const ctx = document.getElementById('grafikKinerja').getContext('2d');
+        let kinerjaChart = null;
 
-        if (ctx) {
-            // 1. Tentukan warna untuk setiap segmen garis
-            const segmentColors = dataPencapaian.map((current, i, arr) => {
-                if (i === 0) return '#43A047'; // Titik awal selalu hijau
-                const prev = arr[i - 1];
-                if (prev === null || current === null) return '#cccccc'; // Abu-abu jika ada data kosong
+        function initOrUpdateChart() {
+            if (kinerjaChart) {
+                kinerjaChart.destroy();
+            }
 
-                const diff = current - prev;
-                if (diff > 0) return '#43A047'; // Naik -> Hijau
-                if (diff < 0) return '#e53935'; // Turun -> Merah
-                return '#fbc02d'; // Datar -> Kuning
-            });
+            if (ctx) {
+                // 1. Tentukan warna untuk setiap segmen garis
+                const segmentColors = dataPencapaian.map((current, i, arr) => {
+                    if (i === 0) return '#43A047'; // Titik awal selalu hijau
+                    const prev = arr[i - 1];
+                    if (prev === null || current === null) return '#cccccc'; // Abu-abu jika ada data kosong
 
-            // 2. Tentukan warna untuk setiap titik
-            const bulanAktifIndex = labelsBulan.findIndex((_, i) => {
-                const selectedPeriode = '<?= $periode_awal ?? '' ?>';
-                if (!selectedPeriode) return false;
-                return i === parseInt(selectedPeriode.split('-')[1], 10) - 1;
-            });
+                    const diff = current - prev;
+                    if (diff > 0) return '#43A047'; // Naik -> Hijau
+                    if (diff < 0) return '#e53935'; // Turun -> Merah
+                    return '#fbc02d'; // Datar -> Kuning
+                });
 
-            const pointColors = dataPencapaian.map((val, i) => {
-                if (val === null) return 'transparent'; // Sembunyikan titik jika data kosong
-                if (i === bulanAktifIndex) return '#005f29'; // Sorot bulan aktif
-                return segmentColors[i]; // Warna titik sama dengan warna segmen
-            });
+                // 2. Tentukan warna untuk setiap titik
+                const bulanAktifIndex = labelsBulan.findIndex((_, i) => {
+                    const selectedPeriode = '<?= $periode_awal ?? '' ?>';
+                    if (!selectedPeriode) return false;
+                    return i === parseInt(selectedPeriode.split('-')[1], 10) - 1;
+                });
 
-            const pointBorderColors = dataPencapaian.map((val, i) => {
-                if (val === null) return 'transparent';
-                return i === bulanAktifIndex ? '#fff' : segmentColors[i];
-            });
+                const pointColors = dataPencapaian.map((val, i) => {
+                    if (val === null) return 'transparent'; // Sembunyikan titik jika data kosong
+                    if (i === bulanAktifIndex) return '#005f29'; // Sorot bulan aktif
+                    return segmentColors[i]; // Warna titik sama dengan warna segmen
+                });
 
-            // 3. Buat gradasi untuk area di bawah garis
-            const areaGradient = ctx.createLinearGradient(0, 0, 0, 350);
-            areaGradient.addColorStop(0, 'rgba(67, 160, 71, 0.3)');
-            areaGradient.addColorStop(1, 'rgba(67, 160, 71, 0)');
+                const pointBorderColors = dataPencapaian.map((val, i) => {
+                    if (val === null) return 'transparent';
+                    return i === bulanAktifIndex ? '#fff' : segmentColors[i];
+                });
 
-            // 4. Inisialisasi Chart
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labelsBulan,
-                    datasets: [{
-                        label: 'Pencapaian (%)',
-                        data: dataPencapaian,
-                        borderColor: (chartContext) => {
-                            const chart = chartContext.chart;
-                            const {
-                                ctx,
-                                chartArea
-                            } = chart;
-                            if (!chartArea) return null;
+                // 3. Buat gradasi untuk area di bawah garis
+                const areaGradient = ctx.createLinearGradient(0, 0, 0, 350);
+                areaGradient.addColorStop(0, 'rgba(67, 160, 71, 0.3)');
+                areaGradient.addColorStop(1, 'rgba(67, 160, 71, 0)');
 
-                            const gradient = ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
-                            const totalPoints = dataPencapaian.length - 1;
-                            if (totalPoints <= 0) return segmentColors[0] || '#43A047';
+                // 4. Inisialisasi Chart
+                kinerjaChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labelsBulan,
+                        datasets: [{
+                            label: 'Pencapaian (%)',
+                            data: dataPencapaian,
+                            borderColor: (chartContext) => {
+                                const chart = chartContext.chart;
+                                const {
+                                    ctx,
+                                    chartArea
+                                } = chart;
+                                if (!chartArea) return null;
 
-                            segmentColors.forEach((color, i) => {
-                                gradient.addColorStop(i / totalPoints, color);
-                            });
+                                const gradient = ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
+                                const totalPoints = dataPencapaian.length - 1;
+                                if (totalPoints <= 0) return segmentColors[0] || '#43A047';
 
-                            return gradient;
-                        },
-                        borderWidth: 3,
-                        tension: 0.3,
-                        spanGaps: true,
-                        fill: true,
-                        backgroundColor: areaGradient,
-                        pointBackgroundColor: pointColors,
-                        pointBorderColor: pointBorderColors,
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                        pointHoverRadius: 10,
-                        pointHoverBackgroundColor: '#fff',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
+                                segmentColors.forEach((color, i) => {
+                                    gradient.addColorStop(i / totalPoints, color);
+                                });
+
+                                return gradient;
+                            },
+                            borderWidth: 3,
+                            tension: 0.3,
+                            spanGaps: true,
+                            fill: true,
+                            backgroundColor: areaGradient,
+                            pointBackgroundColor: pointColors,
+                            pointBorderColor: pointBorderColors,
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 10,
+                            pointHoverBackgroundColor: '#fff',
+                        }]
                     },
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Pencapaian (%) per Bulan',
-                            font: {
-                                size: 15
+                    options: {
+                        responsive: true,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Pencapaian (%) per Bulan',
+                                font: {
+                                    size: 15
+                                }
+                            },
+                            legend: {
+                                position: 'top'
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        const label = context.dataset.label || '';
+                                        const value = context.parsed.y;
+                                        return value !== null ? `${label}: ${value.toFixed(2)}%` : `${label}: (Data Kosong)`;
+                                    }
+                                }
                             }
                         },
-                        legend: {
-                            position: 'top'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => {
-                                    const label = context.dataset.label || '';
-                                    const value = context.parsed.y;
-                                    return value !== null ? `${label}: ${value.toFixed(2)}%` : `${label}: (Data Kosong)`;
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 130,
+                                title: {
+                                    display: true,
+                                    text: 'Pencapaian (%)'
+                                },
+                                ticks: {
+                                    stepSize: 25
                                 }
                             }
                         }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 130,
-                            title: {
-                                display: true,
-                                text: 'Pencapaian (%)'
-                            },
-                            ticks: {
-                                stepSize: 25
-                            }
-                        }
                     }
-                }
-            });
+                });
+            }
         }
+
+        // Render chart awal
+        initOrUpdateChart();
+
 
         // ================ Format Rupiah ===================
         function formatRp(num) {
