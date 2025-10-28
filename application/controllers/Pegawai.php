@@ -2039,10 +2039,10 @@ class Pegawai extends CI_Controller
                         $targetTahunan = isset($ind->target) ? (float)$ind->target : 0;
                         $row->target = $targetTahunan > 0 ? round(($targetTahunan / 12) * $bulanSekarang, 2) : 0;
 
-                        // Override target jika ada di stored data
-                        if (isset($storedMap[$idKey]['target'])) {
-                            $row->target = floatval($storedMap[$idKey]['target']);
-                        }
+                        // // Override target jika ada di stored data
+                        // if (isset($storedMap[$idKey]['target'])) {
+                        //     $row->target = floatval($storedMap[$idKey]['target']);
+                        // }
 
                         $row->batas_waktu = $ind->batas_waktu ?? '';
                         $row->realisasi = isset($storedMap[$idKey]['realisasi']) ? floatval($storedMap[$idKey]['realisasi']) : 0;
@@ -2174,9 +2174,9 @@ class Pegawai extends CI_Controller
                     $targetTahunan = isset($ind->target) ? (float)$ind->target : 0;
                     $row->target = $targetTahunan > 0 ? round(($targetTahunan / 12) * $bulanSekarang, 2) : 0;
 
-                    if (isset($storedMap[$idKey]['target'])) {
-                        $row->target = floatval($storedMap[$idKey]['target']);
-                    }
+                    // if (isset($storedMap[$idKey]['target'])) {
+                    //     $row->target = floatval($storedMap[$idKey]['target']);
+                    // }
 
                     $row->batas_waktu = $ind->batas_waktu ?? '';
                     $row->realisasi = isset($storedMap[$idKey]['realisasi']) ? floatval($storedMap[$idKey]['realisasi']) : 0;
