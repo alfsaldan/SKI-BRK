@@ -237,19 +237,46 @@
                                             <div class="form-inline mb-2">
                                                 <select id="periode_history" class="form-control w-auto ml-2">
                                                     <option value="">Pilih Periode</option>
-                                                    <?php foreach ($periode_list as $p): ?>
+                                                    <?php
+                                                    $yearly_options = [];
+                                                    foreach ($periode_list as $p):
+                                                        $is_yearly = (
+                                                            date('m-d', strtotime($p->periode_awal)) == '01-01' &&
+                                                            date('m-d', strtotime($p->periode_akhir)) == '12-31'
+                                                        );
+
+                                                        $label = formatTanggalIndonesia($p->periode_awal, $bulan_indonesia) . ' s/d ' . formatTanggalIndonesia($p->periode_akhir, $bulan_indonesia);
+                                                        if ($is_yearly) {
+                                                            $label = 'Rekap Tahun ' . date('Y', strtotime($p->periode_awal));
+                                                            // Simpan tahunan dulu (nanti kita tampilkan paling bawah)
+                                                            $yearly_options[] = [
+                                                                'value' => "YEARLY|" . $p->periode_awal . "|" . $p->periode_akhir,
+                                                                'label' => $label
+                                                            ];
+                                                            continue;
+                                                        }
+                                                    ?>
                                                         <option value="<?= $p->periode_awal . '|' . $p->periode_akhir ?>"
-                                                            <?= (isset($periode_awal) && $periode_awal == $p->periode_awal) ? 'selected' : '' ?>>
-                                                            <?= formatTanggalIndonesia($p->periode_awal, $bulan_indonesia) ?> s/d <?= formatTanggalIndonesia($p->periode_akhir, $bulan_indonesia) ?>
+                                                            <?= ($periode_awal == $p->periode_awal && $periode_akhir == $p->periode_akhir) ? 'selected' : '' ?>>
+                                                            <?= $label ?>
+                                                        </option>
+                                                    <?php endforeach; ?>
+
+                                                    <!-- tampilkan tahunan paling bawah -->
+                                                    <?php foreach ($yearly_options as $y): ?>
+                                                        <option value="<?= $y['value'] ?>"
+                                                            style="font-weight:bold; background-color:#e9f5ff;"
+                                                            <?= ($periode_awal . '|' . $periode_akhir == explode('|', $y['value'])[1] . '|' . explode('|', $y['value'])[2]) ? 'selected' : '' ?>>
+                                                            <?= $y['label'] ?>
                                                         </option>
                                                     <?php endforeach; ?>
                                                 </select>
 
-                                                <!-- Tombol sesuaikan -->
                                                 <button type="button" id="btn-sesuaikan-periode" class="btn btn-primary btn-sm ml-2">
                                                     Sesuaikan Periode
                                                 </button>
                                             </div>
+
                                         </div>
 
                                         <p class="mt-2 text-dark font-weight-medium">
@@ -982,10 +1009,20 @@ if ($message): ?>
         // ===== Dropdown Periode History =====
         periodeHistory.addEventListener('change', function() {
             if (!this.value) return;
-            const [awal, akhir] = this.value.split('|');
-            periodeAwal.value = awal;
-            periodeAkhir.value = akhir;
+            let val = this.value;
+
+            // Jika opsi tahunan (value diawali "YEARLY|")
+            if (val.startsWith("YEARLY|")) {
+                const [, awal, akhir] = val.split('|');
+                window.location.href = `<?= base_url("Pegawai") ?>?awal=${awal}&akhir=${akhir}&tahunan=1`;
+                return;
+            }
+
+            // Jika bukan tahunan (normal triwulan)
+            const [awal, akhir] = val.split('|');
+            window.location.href = `<?= base_url("Pegawai") ?>?awal=${awal}&akhir=${akhir}`;
         });
+
 
         // Reset dropdown jika user ubah tanggal manual
         periodeAwal.addEventListener('input', () => periodeHistory.value = '');

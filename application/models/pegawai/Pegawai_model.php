@@ -120,6 +120,62 @@ class Pegawai_model extends CI_Model
 
         return $this->db->get()->result();
     }
+
+    /**
+     * Ambil indikator dengan data penilaian yang diagregasi (SUM) selama satu tahun.
+     */
+    public function get_indikator_yearly_aggregated($jabatan, $unit_kerja, $nik, $tahun)
+    {
+        $periode_awal_tahun = $tahun . '-01-01';
+        $periode_akhir_tahun = $tahun . '-12-31';
+
+        $this->db->select('
+            i.id,
+            i.indikator,
+            i.bobot,
+            sk.perspektif,
+            sk.sasaran_kerja,
+            SUM(p.target) as target,
+            MAX(p.batas_waktu) as batas_waktu,
+            SUM(p.realisasi) as realisasi,
+            "Rekap Tahunan" as status,
+            "' . $periode_awal_tahun . '" as periode_awal,
+            "' . $periode_akhir_tahun . '" as periode_akhir
+        ', false); // false untuk mencegah escaping pada string periode
+
+        $this->db->from('indikator i');
+        $this->db->join('sasaran_kerja sk', 'i.sasaran_id = sk.id');
+
+        // Join ke penilaian untuk mendapatkan data yang akan diagregasi
+        $this->db->join(
+            'penilaian p',
+            "p.indikator_id = i.id AND p.nik = " . $this->db->escape($nik) .
+            " AND YEAR(p.periode_awal) = " . $this->db->escape($tahun),
+            'left'
+        );
+
+        $this->db->where('sk.jabatan', $jabatan);
+        $this->db->where('sk.unit_kerja', $unit_kerja);
+
+        // Group berdasarkan indikator untuk SUM()
+        $this->db->group_by('i.id, i.indikator, i.bobot, sk.perspektif, sk.sasaran_kerja');
+
+        $this->db->order_by('sk.perspektif', 'ASC');
+        $this->db->order_by('sk.sasaran_kerja', 'ASC');
+
+        $result = $this->db->get()->result();
+
+        // Karena nilai, pencapaian, dll tidak bisa di-SUM, kita akan hitung di PHP setelah query
+        // Ini memberikan fleksibilitas jika rumus berubah.
+        foreach ($result as $row) {
+            $row->pencapaian = null;
+            $row->nilai = null;
+            $row->nilai_dibobot = null;
+        }
+
+        return $result;
+    }
+
     public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $periode_awal = null, $periode_akhir = null)
     {
         if (!$periode_awal) $periode_awal = date('Y') . '-01-01';
@@ -168,14 +224,55 @@ class Pegawai_model extends CI_Model
     }
 
     public function getPeriodePegawai($nik)
-    {
-        $this->db->distinct(); // pastikan hasil unik
-        $this->db->select('periode_awal, periode_akhir');
-        $this->db->from('penilaian');
-        $this->db->where('nik', $nik);
-        $this->db->order_by('periode_awal', 'DESC');
-        return $this->db->get()->result();
+{
+    $this->db->select('periode_awal, periode_akhir');
+    $this->db->from('penilaian');
+    $this->db->where('nik', $nik);
+    $this->db->group_by(['periode_awal', 'periode_akhir']);
+    $this->db->order_by('periode_awal', 'DESC');
+    $periods = $this->db->get()->result();
+
+    $yearly_periods = [];
+    $years_processed = [];
+
+    foreach ($periods as $p) {
+        $year = date('Y', strtotime($p->periode_awal));
+
+        if (!in_array($year, $years_processed)) {
+            $this->db->where('nik', $nik);
+            $this->db->where("YEAR(periode_awal)", $year);
+            $count = $this->db->get('penilaian')->num_rows();
+
+            if ($count > 1) {
+                // ✅ Cek apakah sudah ada periode tahunan di array
+                $already_exists = array_filter($periods, function($pr) use ($year) {
+                    return (
+                        date('Y', strtotime($pr->periode_awal)) == $year &&
+                        date('m-d', strtotime($pr->periode_awal)) == '01-01' &&
+                        date('m-d', strtotime($pr->periode_akhir)) == '12-31'
+                    );
+                });
+                if (empty($already_exists)) {
+                    $yearly_periods[] = (object)[
+                        'periode_awal' => $year . '-01-01',
+                        'periode_akhir' => $year . '-12-31'
+                    ];
+                }
+            }
+
+            $years_processed[] = $year;
+        }
     }
+
+    // Gabungkan, lalu urutkan agar Rekap Tahun muncul di bawah
+    $merged = array_merge($periods, $yearly_periods);
+    usort($merged, function ($a, $b) {
+        return strtotime($a->periode_awal) <=> strtotime($b->periode_awal);
+    });
+
+    return $merged;
+}
+
 
     public function getPegawaiByUnit($unit_kerja, $unit_kantor, $exclude_nik = null)
     {
