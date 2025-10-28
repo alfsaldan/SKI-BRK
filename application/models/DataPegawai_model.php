@@ -160,12 +160,12 @@ class DataPegawai_model extends CI_Model
         return $query->result();
     }
 
-    //   public function getAllUnitKantor()
-    // {
-    //     $this->db->select('DISTINCT(unit_kantor) as unit_kantor');
-    //     $query = $this->db->get('penilai_mapping');
-    //     return $query->result();
-    // }
+    public function getAllUnitKantor()
+    {
+        $this->db->select('DISTINCT(unit_kantor) as unit_kantor');
+        $query = $this->db->get('penilai_mapping');
+        return $query->result();
+    }
     public function getPegawaiWithPenilai($nik)
     {
         $this->db->select('

@@ -82,15 +82,6 @@
                         <input type="hidden" name="nik" value="<?= $pegawai->nik ?>">
                         <div class="form-row">
                             <div class="form-group col-md-4">
-                                <label>Jabatan Baru</label>
-                                <select name="jabatan" id="jabatanSelect" class="form-control select2" required>
-                                    <option value="">Pilih atau ketik Jabatan</option>
-                                    <?php foreach ($jabatan_list as $j): ?>
-                                        <option value="<?= $j->jabatan ?>"><?= $j->jabatan ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="form-group col-md-4">
                                 <label>Jenis Unit</label>
                                 <select name="unit_kerja" id="unitKerjaSelect" class="form-control select2" required>
                                     <option value="">Pilih atau ketik Jenis Unit</option>
@@ -101,8 +92,21 @@
                             </div>
                             <div class="form-group col-md-4">
                                 <label>Unit Kantor</label>
-                                <input type="text" name="unit_kantor" class="form-control" placeholder="Isi Unit Kantor"
-                                    required>
+                                <select name="unit_kantor" id="unitKantorSelect" class="form-control select2" required>
+                                    <option value="">Pilih atau ketik Unit Kantor</option>
+                                    <?php foreach ($unitkantor_list as $uk): ?>
+                                        <option value="<?= $uk->unit_kantor ?>"><?= $uk->unit_kantor ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label>Jabatan Baru</label>
+                                <select name="jabatan" id="jabatanSelect" class="form-control select2" required>
+                                    <option value="">Pilih atau ketik Jabatan</option>
+                                    <?php foreach ($jabatan_list as $j): ?>
+                                        <option value="<?= $j->jabatan ?>"><?= $j->jabatan ?></option>
+                                    <?php endforeach; ?>
+                                </select>
                             </div>
                         </div>
                         <div class="form-group">
@@ -161,6 +165,13 @@
 
         $('#unitKerjaSelect').select2({
             placeholder: "Pilih atau ketik Jenis Unit",
+            tags: true,
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('#unitKantorSelect').select2({
+            placeholder: "Pilih atau ketik Unit Kantor",
             tags: true,
             allowClear: true,
             width: '100%'

@@ -854,7 +854,7 @@ class Administrator extends CI_Controller
         // ambil semua jabatan & unit kerja unik dari tabel riwayat_jabatan
         $data['jabatan_list'] = $this->DataPegawai_model->getAllJabatan();
         $data['unitkerja_list'] = $this->DataPegawai_model->getAllUnitKerja();
-        // $data['unitkantor_list'] = $this->DataPegawai_model->getAllUnitKantor();
+        $data['unitkantor_list'] = $this->DataPegawai_model->getAllUnitKantor();
 
         $this->load->view("layout/header");
         $this->load->view("administrator/detailpegawai", $data);
@@ -2602,10 +2602,6 @@ public function cariPenilaianBulanan()
 
                 $monthlyTarget = isset($ind->target) ? (float)$ind->target : 0;
                 $row->target = $monthlyTarget > 0 ? round(($monthlyTarget / 12) * $bulanSekarang, 2) : 0;
-
-                if (isset($storedMap[$idKey]['target'])) {
-                    $row->target = floatval($storedMap[$idKey]['target']);
-                }
 
                 $row->batas_waktu = $ind->batas_waktu ?? '';
                 $row->realisasi = isset($storedMap[$idKey]['realisasi']) ? floatval($storedMap[$idKey]['realisasi']) : 0;
