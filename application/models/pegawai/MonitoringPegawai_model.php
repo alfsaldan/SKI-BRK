@@ -261,4 +261,17 @@ class MonitoringPegawai_model extends CI_Model
             ->get()
             ->result(); // harus result(), bukan row()
     }
+
+    /**
+     * 🔹 Ambil daftar tahun unik dari tabel penilaian
+     */
+    public function getTahunList()
+    {
+        return $this->db
+            ->distinct()
+            ->select('YEAR(periode_awal) as tahun')
+            ->from('penilaian')
+            ->order_by('tahun', 'DESC')
+            ->get()->result();
+    }
 }

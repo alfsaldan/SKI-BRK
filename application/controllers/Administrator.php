@@ -2501,198 +2501,191 @@ class Administrator extends CI_Controller
         }
     }
 
-    // ==================== Halaman Monitoring Kinerja Pegawai ====================
-    public function monitoringKinerja()
-    {
-        $this->load->model('Penilaian_model');
-        $data['judul'] = "Monitoring Kinerja Bulanan";
-        $data['pegawai_detail'] = null;
-        $data['penilaian_pegawai'] = [];
-        $data['periode_list'] = $this->Penilaian_model->getPeriodeList();
+// ==================== Halaman Monitoring Kinerja Pegawai ====================
+public function monitoringKinerja()
+{
+    $this->load->model('Penilaian_model');
+    $data['judul'] = "Monitoring Kinerja Bulanan";
+    $data['pegawai_detail'] = null;
+    $data['penilaian_pegawai'] = [];
+    $data['periode_list'] = $this->Penilaian_model->getPeriodeList();
 
-        // Default periode bulan berjalan
-        $data['periode_awal'] = date('Y-m-01');
-        $data['periode_akhir'] = date('Y-m-t');
+    // ======================
+    // 🔹 Ambil daftar tahun dari database
+    // ======================
+    $query = $this->db->query("
+        SELECT DISTINCT(YEAR(periode_awal)) AS tahun 
+        FROM penilaian 
+        ORDER BY tahun DESC
+    ");
+    $data['tahun_list'] = $query->result();
 
-        $this->load->view("layout/header");
-        $this->load->view('administrator/monitoringkinerja', $data);
-        $this->load->view("layout/footer");
+    // Default periode bulan berjalan
+    $data['periode_awal'] = date('Y-m-01');
+    $data['periode_akhir'] = date('Y-m-t');
+    $data['nik'] = ''; // default kosong
+
+    $this->load->view("layout/header");
+    $this->load->view('administrator/monitoringkinerja', $data);
+    $this->load->view("layout/footer");
+}
+
+
+// ==================== Cari Penilaian Bulanan Berdasarkan NIK ====================
+public function cariPenilaianBulanan()
+{
+    $this->load->model('Monitoring_model');
+    $this->load->model('Penilaian_model');
+
+    $nik = $this->input->post('nik') ?? $this->input->get('nik');
+    $periode = $this->input->post('periode') ?? $this->input->get('periode');
+    $tahun_dipilih = $this->input->post('tahun') ?? date('Y');
+
+    if (empty($nik)) {
+        $this->monitoringKinerja();
+        return;
     }
 
+    // Ambil periode
+    if ($periode) {
+        list($periode_awal, $periode_akhir) = explode('|', $periode);
+    } else {
+        $periode_awal = "$tahun_dipilih-" . date('m') . "-01";
+        $periode_akhir = date('Y-m-t', strtotime($periode_awal));
+    }
 
-    // ==================== Cari Penilaian Bulanan Berdasarkan NIK ====================
-    public function cariPenilaianBulanan()
-    {
-        $this->load->model('Monitoring_model');
-        $this->load->model('Penilaian_model');
+    $tahun = date('Y', strtotime($periode_awal));
+    $bulan = date('m', strtotime($periode_awal));
+    $bulanSekarang = (int) $bulan;
 
-        $nik = $this->input->post('nik') ?? $this->input->get('nik');
-        $periode = $this->input->post('periode') ?? $this->input->get('periode');
+    $pegawai = $this->Monitoring_model->getPegawaiWithPenilai($nik);
 
-        if (empty($nik)) {
-            $this->monitoringKinerja();
-            return;
-        }
+    // 🔹 Ambil daftar tahun (untuk dropdown)
+    $query = $this->db->query("
+        SELECT DISTINCT(YEAR(periode_awal)) AS tahun 
+        FROM penilaian 
+        ORDER BY tahun DESC
+    ");
+    $tahun_list = $query->result();
 
-        // Ambil periode
-        if ($periode) {
-            list($periode_awal, $periode_akhir) = explode('|', $periode);
-        } else {
-            $periode_awal = date('Y-m-01');
-            $periode_akhir = date('Y-m-t');
-        }
+    if ($pegawai) {
+        $monitoring_bulanan = $this->Monitoring_model->getMonitoringBulanan($nik, $bulan, $tahun);
 
-        $tahun = date('Y', strtotime($periode_awal));
-        $bulan = date('m', strtotime($periode_awal));
-        $bulanSekarang = (int) $bulan;
+        $awal_tahun = "$tahun-01-01";
+        $akhir_tahun = "$tahun-12-31";
 
-        $pegawai = $this->Monitoring_model->getPegawaiWithPenilai($nik);
-
-        if ($pegawai) {
-            // ambil data monitoring bulan berjalan
-            $monitoring_bulanan = $this->Monitoring_model->getMonitoringBulanan($nik, $bulan, $tahun);
-
-            $awal_tahun = "$tahun-01-01";
-            $akhir_tahun = "$tahun-12-31";
-
-            if ($monitoring_bulanan) {
-                // decode stored JSON
-                $stored = json_decode($monitoring_bulanan->data_json, true) ?: [];
-                $storedMap = [];
-                foreach ($stored as $s) {
-                    $key = isset($s['indikator_id']) ? (string)$s['indikator_id'] : (isset($s['id']) ? (string)$s['id'] : null);
-                    if ($key !== null) $storedMap[$key] = $s;
-                }
-
-                // ambil metadata indikator
-                $indicators = $this->Monitoring_model->get_indikator_by_jabatan_dan_unit(
-                    $pegawai->jabatan,
-                    $pegawai->unit_kerja,
-                    $nik,
-                    $awal_tahun,
-                    $akhir_tahun
-                );
-
-                $penilaian_bulanan = [];
-                foreach ($indicators as $ind) {
-                    $idKey = (string)($ind->id ?? $ind->indikator_id ?? '');
-                    $row = new stdClass();
-                    $row->id = $ind->id ?? $ind->indikator_id ?? null;
-                    $row->indikator = $ind->indikator ?? '';
-                    $row->perspektif = $ind->perspektif ?? '';
-                    $row->sasaran_kerja = $ind->sasaran_kerja ?? '';
-                    $row->bobot = isset($ind->bobot) ? floatval($ind->bobot) : 0;
-
-                    // ✅ Target akumulatif
-                    $monthlyTarget = isset($ind->target) ? (float)$ind->target : 0;
-                    if ($monthlyTarget > 0) {
-                        $row->target = round(($monthlyTarget / 12) * $bulanSekarang, 2);
-                    } else {
-                        $row->target = 0;
-                    }
-
-                    // ✅ Override jika ada data tersimpan
-                    if (isset($storedMap[$idKey]['target'])) {
-                        $row->target = floatval($storedMap[$idKey]['target']);
-                    }
-
-                    $row->batas_waktu = $ind->batas_waktu ?? '';
-                    $row->realisasi = isset($storedMap[$idKey]['realisasi']) ? floatval($storedMap[$idKey]['realisasi']) : 0;
-                    $row->pencapaian = isset($storedMap[$idKey]['pencapaian']) ? floatval($storedMap[$idKey]['pencapaian']) : 0;
-                    $row->nilai = isset($storedMap[$idKey]['nilai']) ? floatval($storedMap[$idKey]['nilai']) : 0;
-                    $row->nilai_dibobot = isset($storedMap[$idKey]['nilai_dibobot'])
-                        ? floatval($storedMap[$idKey]['nilai_dibobot'])
-                        : $row->nilai;
-
-                    $penilaian_bulanan[] = $row;
-                }
-
-                $nilai_akhir = $monitoring_bulanan->nilai_akhir;
-            } else {
-                // kalau belum ada data bulan tsb
-                $penilaian_tahunan = $this->Monitoring_model->get_indikator_by_jabatan_dan_unit(
-                    $pegawai->jabatan,
-                    $pegawai->unit_kerja,
-                    $nik,
-                    $awal_tahun,
-                    $akhir_tahun
-                );
-
-                $penilaian_bulanan = [];
-                foreach ($penilaian_tahunan as $p) {
-                    // ✅ Target akumulatif untuk bulan saat ini
-                    $p->target = $p->target ? round(($p->target / 12) * $bulanSekarang, 2) : 0;
-                    $p->realisasi = 0;
-                    $p->pencapaian = 0;
-                    $p->nilai = 0;
-                    $p->nilai_dibobot = 0;
-                    $penilaian_bulanan[] = $p;
-                }
-                $nilai_akhir = 0;
+        if ($monitoring_bulanan) {
+            $stored = json_decode($monitoring_bulanan->data_json, true) ?: [];
+            $storedMap = [];
+            foreach ($stored as $s) {
+                $key = isset($s['indikator_id']) ? (string)$s['indikator_id'] : (isset($s['id']) ? (string)$s['id'] : null);
+                if ($key !== null) $storedMap[$key] = $s;
             }
 
-            // nilai budaya
-            $budayaData = $this->Monitoring_model->getBudayaNilaiByNik($nik, $awal_tahun, $akhir_tahun);
+            $indicators = $this->Monitoring_model->get_indikator_by_jabatan_dan_unit(
+                $pegawai->jabatan,
+                $pegawai->unit_kerja,
+                $nik,
+                $awal_tahun,
+                $akhir_tahun
+            );
 
-            // ✅ Ambil data fraud & koefisien dari tabel nilai_akhir
-            $tahun = date('Y', strtotime($periode_awal));
-            $nilaiAkhirData = $this->Monitoring_model->getNilaiAkhir($nik, "$tahun-01-01", "$tahun-12-31");
-            $nilai_budaya = $nilaiAkhirData->nilai_budaya ?? 0;
-            $fraud = $nilaiAkhirData->fraud ?? 0;
-            $koefisien = $nilaiAkhirData->koefisien ?? 100;
+            $penilaian_bulanan = [];
+            foreach ($indicators as $ind) {
+                $idKey = (string)($ind->id ?? $ind->indikator_id ?? '');
+                $row = new stdClass();
+                $row->id = $ind->id ?? $ind->indikator_id ?? null;
+                $row->indikator = $ind->indikator ?? '';
+                $row->perspektif = $ind->perspektif ?? '';
+                $row->sasaran_kerja = $ind->sasaran_kerja ?? '';
+                $row->bobot = isset($ind->bobot) ? floatval($ind->bobot) : 0;
 
-            // data untuk grafik tahunan
-            $monitoring_bulanan_tahun = $this->Monitoring_model->getMonitoringBulananTahun($nik, $tahun);
-            foreach ($monitoring_bulanan_tahun as $mb) {
-                if (empty($mb->pencapaian_akhir) || $mb->pencapaian_akhir == 0) {
-                    $json = json_decode($mb->data_json, true) ?: [];
-                    $totalBobot = 0;
-                    $totalNilaiDibobot = 0;
-                    foreach ($json as $item) {
-                        $totalBobot += floatval($item['bobot'] ?? 0);
-                        $totalNilaiDibobot += floatval($item['nilai_dibobot'] ?? $item['nilai'] ?? 0);
-                    }
-                    $mb->pencapaian_akhir = $totalBobot ? round($totalNilaiDibobot / $totalBobot, 2) : 0;
+                $monthlyTarget = isset($ind->target) ? (float)$ind->target : 0;
+                $row->target = $monthlyTarget > 0 ? round(($monthlyTarget / 12) * $bulanSekarang, 2) : 0;
+
+                if (isset($storedMap[$idKey]['target'])) {
+                    $row->target = floatval($storedMap[$idKey]['target']);
                 }
+
+                $row->batas_waktu = $ind->batas_waktu ?? '';
+                $row->realisasi = isset($storedMap[$idKey]['realisasi']) ? floatval($storedMap[$idKey]['realisasi']) : 0;
+                $row->pencapaian = isset($storedMap[$idKey]['pencapaian']) ? floatval($storedMap[$idKey]['pencapaian']) : 0;
+                $row->nilai = isset($storedMap[$idKey]['nilai']) ? floatval($storedMap[$idKey]['nilai']) : 0;
+                $row->nilai_dibobot = isset($storedMap[$idKey]['nilai_dibobot'])
+                    ? floatval($storedMap[$idKey]['nilai_dibobot'])
+                    : $row->nilai;
+
+                $penilaian_bulanan[] = $row;
             }
 
-            $data = [
-                'judul' => 'Monitoring Kinerja Bulanan',
-                'pegawai_detail' => $pegawai,
-                'penilaian_pegawai' => $penilaian_bulanan,
-                'nilai_akhir' => $nilai_akhir,
-                'budaya_nilai' => $budayaData['nilai_budaya'],
-                'rata_rata_budaya' => $budayaData['rata_rata'],
-                'budaya' => $this->Monitoring_model->getAllBudaya(),
-                'nilai_budaya' => $nilai_budaya,
-                'fraud' => $fraud,
-                'koefisien' => $koefisien,
-                'periode_awal' => $periode_awal,
-                'periode_akhir' => $periode_akhir,
-                'monitoring_bulanan' => $monitoring_bulanan,
-                'monitoring_bulanan_tahun' => $monitoring_bulanan_tahun,
-                'periode_list' => $this->Penilaian_model->getPeriodeList(),
-                'message' => ['type' => 'success', 'text' => 'Data monitoring bulan ' . $bulan . ' berhasil ditampilkan!']
-            ];
+            $nilai_akhir = $monitoring_bulanan->nilai_akhir;
         } else {
-            $data = [
-                'judul' => 'Monitoring Kinerja Bulanan',
-                'pegawai_detail' => null,
-                'penilaian_pegawai' => [],
-                'nilai_akhir' => null,
-                'periode_list' => $this->Penilaian_model->getPeriodeList(),
-                'message' => ['type' => 'error', 'text' => 'Pegawai dengan NIK tersebut tidak ditemukan.']
-            ];
+            $penilaian_tahunan = $this->Monitoring_model->get_indikator_by_jabatan_dan_unit(
+                $pegawai->jabatan,
+                $pegawai->unit_kerja,
+                $nik,
+                $awal_tahun,
+                $akhir_tahun
+            );
+
+            $penilaian_bulanan = [];
+            foreach ($penilaian_tahunan as $p) {
+                $p->target = $p->target ? round(($p->target / 12) * $bulanSekarang, 2) : 0;
+                $p->realisasi = 0;
+                $p->pencapaian = 0;
+                $p->nilai = 0;
+                $p->nilai_dibobot = 0;
+                $penilaian_bulanan[] = $p;
+            }
+            $nilai_akhir = 0;
         }
 
-        // pastikan ambil juga data monitoring bulanan per tahun untuk chart
-        $tahun = date('Y', strtotime($periode_awal));
-        $this->load->model('Monitoring_model'); // pastikan model ter-load
+        $budayaData = $this->Monitoring_model->getBudayaNilaiByNik($nik, $awal_tahun, $akhir_tahun);
+        $nilaiAkhirData = $this->Monitoring_model->getNilaiAkhir($nik, "$tahun-01-01", "$tahun-12-31");
+        $nilai_budaya = $nilaiAkhirData->nilai_budaya ?? 0;
+        $fraud = $nilaiAkhirData->fraud ?? 0;
+        $koefisien = $nilaiAkhirData->koefisien ?? 100;
+
         $monitoring_bulanan_tahun = $this->Monitoring_model->getMonitoringBulananTahun($nik, $tahun);
-        $data['monitoring_bulanan_tahun'] = $monitoring_bulanan_tahun;
 
-        $this->load->view("layout/header");
-        $this->load->view('administrator/monitoringkinerja', $data);
-        $this->load->view("layout/footer");
+        $data = [
+            'judul' => 'Monitoring Kinerja Bulanan',
+            'pegawai_detail' => $pegawai,
+            'penilaian_pegawai' => $penilaian_bulanan,
+            'nilai_akhir' => $nilai_akhir,
+            'budaya_nilai' => $budayaData['nilai_budaya'],
+            'rata_rata_budaya' => $budayaData['rata_rata'],
+            'budaya' => $this->Monitoring_model->getAllBudaya(),
+            'nilai_budaya' => $nilai_budaya,
+            'fraud' => $fraud,
+            'koefisien' => $koefisien,
+            'periode_awal' => $periode_awal,
+            'periode_akhir' => $periode_akhir,
+            'monitoring_bulanan' => $monitoring_bulanan,
+            'monitoring_bulanan_tahun' => $monitoring_bulanan_tahun,
+            'periode_list' => $this->Penilaian_model->getPeriodeList(),
+            'tahun_list' => $tahun_list,
+            'nik' => $nik,
+            'tahun_dipilih' => $tahun_dipilih,
+            'message' => ['type' => 'success', 'text' => 'Data monitoring bulan ' . $bulan . ' berhasil ditampilkan!']
+        ];
+    } else {
+        $data = [
+            'judul' => 'Monitoring Kinerja Bulanan',
+            'pegawai_detail' => null,
+            'penilaian_pegawai' => [],
+            'nilai_akhir' => null,
+            'periode_list' => $this->Penilaian_model->getPeriodeList(),
+            'tahun_list' => [],
+            'nik' => $nik,
+            'tahun_dipilih' => $tahun_dipilih,
+            'message' => ['type' => 'error', 'text' => 'Pegawai dengan NIK tersebut tidak ditemukan.']
+        ];
     }
+
+    $this->load->view("layout/header");
+    $this->load->view('administrator/monitoringkinerja', $data);
+    $this->load->view("layout/footer");
+}
+
 }

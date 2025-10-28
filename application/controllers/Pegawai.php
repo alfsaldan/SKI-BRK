@@ -69,14 +69,28 @@ class Pegawai extends CI_Controller
         $lock_status = $this->Pegawai_model->getLockStatus($periode_awal, $periode_akhir);
         $lock_status2 = $this->Pegawai_model->getLockStatus2($periode_awal, $periode_akhir);
 
-        // Logika rekap otomatis dihapus. Selalu panggil fungsi standar.
-        $indikator = $this->Pegawai_model->get_indikator_by_jabatan_dan_unit(
-            $pegawai->jabatan,
-            $pegawai->unit_kerja,
-            $nik,
-            $periode_awal,
-            $periode_akhir
-        );
+        // 🔹 Cek apakah ini adalah filter tahunan
+        $is_yearly_filter = (date('m-d', strtotime($periode_awal)) == '01-01' && date('m-d', strtotime($periode_akhir)) == '12-31');
+        $tahun_filter = date('Y', strtotime($periode_awal));
+
+        if ($is_yearly_filter) {
+            // Panggil fungsi agregasi tahunan
+            $indikator = $this->Pegawai_model->get_indikator_yearly_aggregated(
+                $pegawai->jabatan,
+                $pegawai->unit_kerja,
+                $nik,
+                $tahun_filter
+            );
+        } else {
+            // Panggil fungsi biasa untuk periode spesifik
+            $indikator = $this->Pegawai_model->get_indikator_by_jabatan_dan_unit(
+                $pegawai->jabatan,
+                $pegawai->unit_kerja,
+                $nik,
+                $periode_awal,
+                $periode_akhir
+            );
+        }
 
         // 🔹 Ambil daftar budaya utama & panduan dari tabel `budaya`
         $budaya = $this->Nilai_model->getAllBudaya();
@@ -1948,14 +1962,16 @@ class Pegawai extends CI_Controller
     public function monitoringIndividu()
     {
         $data['judul'] = "Monitoring Kinerja Bulanan";
-        $data['periode_list'] = $this->Penilaian_model->getPeriodeList();
 
         $nik   = $this->session->userdata('nik');
-        $tahun = date('Y');
-        $bulan = date('m');
+        $tahun = $this->input->get('tahun') ?? $this->input->post('tahun') ?? date('Y');
+        $bulan = $this->input->get('bulan') ?? $this->input->post('bulan') ?? date('m');
 
-        $data['periode_awal']  = date('Y-m-01');
-        $data['periode_akhir'] = date('Y-m-t');
+        $data['periode_awal']  = "$tahun-$bulan-01";
+        $data['periode_akhir'] = date('Y-m-t', strtotime($data['periode_awal']));
+        $data['tahun_dipilih'] = $tahun;
+        $data['bulan_dipilih'] = $bulan;
+        $data['tahun_list'] = $this->MonitoringPegawai_model->getTahunList();
 
         // 🔹 Ambil data untuk chart: seluruh bulan
         $monitoring_bulanan_tahun = $this->MonitoringPegawai_model->getMonitoringBulananTahun($nik, $tahun);
@@ -2103,11 +2119,14 @@ class Pegawai extends CI_Controller
             return;
         }
 
-        $periode = $this->input->post('periode');
-        list($periode_awal, $periode_akhir) = explode('|', $periode);
+        $tahun = $this->input->post('tahun') ?? $this->input->get('tahun') ?? date('Y');
+        $bulan = $this->input->post('bulan') ?? $this->input->get('bulan') ?? date('m');
 
-        $tahun = date('Y', strtotime($periode_awal));
-        $bulan = date('m', strtotime($periode_awal));
+        $periode_awal = "$tahun-$bulan-01";
+        $periode_akhir = date('Y-m-t', strtotime($periode_awal));
+        $data['tahun_dipilih'] = $tahun;
+        $data['bulan_dipilih'] = $bulan;
+
         $bulanSekarang = (int)$bulan;
 
         $pegawai = $this->MonitoringPegawai_model->getPegawaiWithPenilai($nik);
@@ -2230,6 +2249,9 @@ class Pegawai extends CI_Controller
                 'nilai_budaya' => $nilai_budaya,
                 'fraud' => $fraud,
                 'koefisien' => $koefisien,
+                'tahun_dipilih' => $tahun,
+                'bulan_dipilih' => $bulan,
+                'tahun_list' => $this->MonitoringPegawai_model->getTahunList(),
                 'periode_awal' => $periode_awal,
                 'periode_akhir' => $periode_akhir,
                 'monitoring_bulanan_tahun' => $monitoring_bulanan_tahun,
@@ -2241,6 +2263,9 @@ class Pegawai extends CI_Controller
                 'pegawai_detail' => null,
                 'penilaian_pegawai' => [],
                 'nilai_akhir' => null,
+                'tahun_list' => $this->MonitoringPegawai_model->getTahunList(),
+                'bulan_dipilih' => $bulan,
+                'tahun_dipilih' => $tahun,
                 'message' => ['type' => 'error', 'text' => 'Data pegawai tidak ditemukan.']
             ];
         }

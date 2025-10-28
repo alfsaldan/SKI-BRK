@@ -18,7 +18,6 @@
             </div>
 
             <div class="row d-flex align-items-stretch">
-                <!-- Card Pilih Periode & NIK -->
                 <div class="col-12 mb-3 d-flex">
                     <div class="card w-100">
                         <div class="card-body">
@@ -26,13 +25,13 @@
                                 <i class="mdi mdi-calendar-month-outline mr-2"></i> Pilih Periode Bulanan & Pegawai
                             </h5>
                             <form id="formMonitoring" action="<?= base_url('Administrator/cariPenilaianBulanan'); ?>" method="post" class="row">
+
                                 <!-- Pilih Bulan -->
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
                                     <label class="text-dark font-weight-medium">Pilih Bulan:</label>
                                     <select id="periode_select" name="periode" class="form-control mb-2" required>
                                         <option value="">-- Pilih Bulan --</option>
                                         <?php
-                                        $tahun = date('Y');
                                         $bulanList = [
                                             '01' => 'Januari',
                                             '02' => 'Februari',
@@ -47,24 +46,39 @@
                                             '11' => 'November',
                                             '12' => 'Desember'
                                         ];
-
+                                        $tahunNow = isset($tahun_dipilih) ? $tahun_dipilih : date('Y');
                                         foreach ($bulanList as $bln => $namaBulan):
-                                            $awal = "$tahun-$bln-01";
+                                            $awal = "$tahunNow-$bln-01";
                                             $akhir = date('Y-m-t', strtotime($awal));
                                             $val = "$awal|$akhir";
                                             $selected = (isset($periode_awal) && isset($periode_akhir) && $periode_awal == $awal && $periode_akhir == $akhir) ? 'selected' : '';
                                         ?>
                                             <option value="<?= $val ?>" <?= $selected ?>>
-                                                <?= $namaBulan . " " . $tahun ?>
+                                                <?= $namaBulan ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+
+                                <!-- Pilih Tahun -->
+                                <div class="col-md-4 mb-3">
+                                    <label class="text-dark font-weight-medium">Pilih Tahun:</label>
+                                    <select name="tahun" class="form-control mb-2" required>
+                                        <option value="">-- Pilih Tahun --</option>
+                                        <?php foreach ($tahun_list as $t): ?>
+                                            <option value="<?= $t->tahun ?>" <?= (isset($tahun_dipilih) && $tahun_dipilih == $t->tahun) ? 'selected' : '' ?>>
+                                                <?= $t->tahun ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
 
                                 <!-- Input NIK -->
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-4 mb-3">
                                     <label class="text-dark font-weight-medium">Masukkan NIK Pegawai:</label>
-                                    <input type="text" id="nik_input" name="nik" class="form-control mb-2" placeholder="Masukkan NIK Pegawai" required>
+                                    <input type="text" id="nik_input" name="nik" class="form-control mb-2"
+                                        placeholder="Masukkan NIK Pegawai"
+                                        value="<?= isset($nik) ? htmlspecialchars($nik) : '' ?>" required>
                                 </div>
 
                                 <div class="col-12 text-right">
@@ -72,11 +86,13 @@
                                         <i class="mdi mdi-magnify"></i> Tampilkan
                                     </button>
                                 </div>
+
                             </form>
                         </div>
                     </div>
                 </div>
             </div>
+
 
             <!-- jika ada data pegawai, tampilkan sampai tabel penilaian (sama struktur tabel seperti penilaiankinerja) -->
             <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>

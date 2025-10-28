@@ -44,42 +44,39 @@
                                 action="<?= base_url('Pegawai/cariPenilaianBulanan'); ?>"
                                 method="post" class="row">
 
-                                <!-- Pilih Bulan -->
-                                <div class="col-12 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label class="text-dark font-weight-medium">Pilih Bulan:</label>
-                                    <select id="periode_select" name="periode" class="form-control mb-2" required>
+                                    <select id="bulan_select" name="bulan" class="form-control mb-2" required>
                                         <option value="">-- Pilih Bulan --</option>
-                                        <?php
-                                        $tahun = date('Y');
-                                        $bulanList = [
-                                            '01' => 'Januari',
-                                            '02' => 'Februari',
-                                            '03' => 'Maret',
-                                            '04' => 'April',
-                                            '05' => 'Mei',
-                                            '06' => 'Juni',
-                                            '07' => 'Juli',
-                                            '08' => 'Agustus',
-                                            '09' => 'September',
-                                            '10' => 'Oktober',
-                                            '11' => 'November',
-                                            '12' => 'Desember'
-                                        ];
-
-                                        foreach ($bulanList as $bln => $namaBulan):
-                                            $awal = "$tahun-$bln-01";
-                                            $akhir = date('Y-m-t', strtotime($awal));
-                                            $val = "$awal|$akhir";
-                                            $selected = (isset($periode_awal) && isset($periode_akhir)
-                                                && $periode_awal == $awal && $periode_akhir == $akhir)
-                                                ? 'selected' : '';
-                                        ?>
-                                            <option value="<?= $val ?>" <?= $selected ?>>
-                                                <?= $namaBulan . " " . $tahun ?>
+                                        <?php $bulanList = [
+                                            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+                                            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+                                            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+                                        ]; ?>
+                                        <?php foreach ($bulanList as $bln => $namaBulan): ?>
+                                            <option value="<?= $bln ?>" <?= (isset($bulan_dipilih) && $bulan_dipilih == $bln) ? 'selected' : '' ?>>
+                                                <?= $namaBulan ?>
                                             </option>
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-dark font-weight-medium">Pilih Tahun:</label>
+                                    <select id="tahun_select" name="tahun" class="form-control mb-2" required>
+                                        <option value="">-- Pilih Tahun --</option>
+                                        <?php if (!empty($tahun_list)): ?>
+                                            <?php foreach ($tahun_list as $t): ?>
+                                                <option value="<?= $t->tahun ?>" <?= (isset($tahun_dipilih) && $tahun_dipilih == $t->tahun) ? 'selected' : '' ?>>
+                                                    <?= $t->tahun ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <option value="<?= date('Y') ?>" selected><?= date('Y') ?></option>
+                                        <?php endif; ?>
+                                    </select>
+                                </div>
+
 
                                 <!-- Hidden input -->
                                 <input type="hidden" name="nik" value="<?= $this->session->userdata('nik'); ?>">
@@ -88,7 +85,7 @@
                                 <input type="hidden" id="periode_akhir" name="periode_akhir" value="<?= htmlspecialchars($periode_akhir ?? date('Y-m-t')) ?>">
 
                                 <!-- Tombol disembunyikan -->
-                                <div class="col-12 text-right" hidden>
+                                <div class="col-12 text-right">
                                     <button type="submit" class="btn btn-success">
                                         <i class="mdi mdi-magnify"></i> Tampilkan
                                     </button>
@@ -619,18 +616,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('periode_select').addEventListener('change', function() {
-            const val = this.value;
-            if (!val) return;
-
-            const [awal, akhir] = val.split('|');
-            document.getElementById('periode_awal').value = awal;
-            document.getElementById('periode_akhir').value = akhir;
-
-            // submit form untuk reload halaman
-            document.getElementById('formMonitoring').submit();
-        });
-
         const nik = document.getElementById('nik')?.value?.trim() || '';
         const periodeAwalEl = document.getElementById('periode_awal');
         const periodeAkhirEl = document.getElementById('periode_akhir');
