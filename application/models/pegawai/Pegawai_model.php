@@ -368,60 +368,54 @@ class Pegawai_model extends CI_Model
 
         if (!$query) return [];
 
-        // Kelompokkan berdasarkan tahun periode_awal
         $rekap = [];
+
+        // 1. Pisahkan data tahunan dan data periode
         foreach ($query as $row) {
             $tahun = date('Y', strtotime($row->periode_awal));
+            $start = new DateTime($row->periode_awal);
+            $end   = new DateTime($row->periode_akhir);
 
+            // Inisialisasi rekap tahunan jika belum ada
             if (!isset($rekap[$tahun])) {
                 $rekap[$tahun] = (object) [
                     'tahun' => $tahun,
                     'periode' => [],
-                    'rata_nilai_sasaran' => 0,
-                    'rata_nilai_budaya' => 0,
-                    'rata_total_nilai' => 0,
-                    'rata_nilai_akhir' => 0,
-                    'rata_pencapaian' => 0,
-                    'predikat_tahunan' => ''
+                    'rata_nilai_sasaran' => '-',
+                    'rata_nilai_budaya' => '-',
+                    'rata_total_nilai' => '-',
+                    'rata_nilai_akhir' => '-',
+                    'rata_pencapaian' => '-',
+                    'predikat_tahunan' => '-'
                 ];
             }
 
-            $rekap[$tahun]->periode[] = (object) [
-                'periode' => date('d M Y', strtotime($row->periode_awal)) . ' - ' . date('d M Y', strtotime($row->periode_akhir)),
-                'nilai_sasaran' => $row->nilai_sasaran,
-                'nilai_budaya' => $row->nilai_budaya,
-                'total_nilai' => $row->total_nilai,
-                'nilai_akhir' => $row->nilai_akhir,
-                'pencapaian' => $row->pencapaian,
-                'predikat' => $row->predikat
-            ];
-        }
-
-        // Hitung rata-rata per tahun
-        foreach ($rekap as $tahun => $r) {
-            $jumlah = count($r->periode);
-            $total_sasaran = $total_budaya = $total_total = $total_akhir = $total_pencapaian = 0;
-            $predikat_list = [];
-
-            foreach ($r->periode as $p) {
-                $total_sasaran += $p->nilai_sasaran;
-                $total_budaya += $p->nilai_budaya;
-                $total_total += $p->total_nilai;
-                $total_akhir += $p->nilai_akhir;
-                $total_pencapaian += floatval(str_replace('%', '', $p->pencapaian));
-                $predikat_list[] = $p->predikat;
+            // 2. Cek apakah ini adalah data tahunan
+            if ($start->format('m-d') == '01-01' && $end->format('m-d') == '12-31') {
+                // Jika ya, langsung gunakan sebagai data rekapitulasi
+                $rekap[$tahun]->rata_nilai_sasaran = round($row->nilai_sasaran, 2);
+                $rekap[$tahun]->rata_nilai_budaya   = round($row->nilai_budaya, 2);
+                $rekap[$tahun]->rata_total_nilai    = round($row->total_nilai, 2);
+                $rekap[$tahun]->rata_nilai_akhir    = round($row->nilai_akhir, 2);
+                $rekap[$tahun]->rata_pencapaian     = round(floatval(str_replace('%', '', $row->pencapaian)), 2) . '%';
+                $rekap[$tahun]->predikat_tahunan    = $row->predikat;
+            } else {
+                // Jika bukan, masukkan ke dalam rincian periode
+                $rekap[$tahun]->periode[] = (object) [
+                    'periode' => date('d M Y', strtotime($row->periode_awal)) . ' - ' . date('d M Y', strtotime($row->periode_akhir)),
+                    'nilai_sasaran' => round($row->nilai_sasaran, 2),
+                    'nilai_budaya'   => round($row->nilai_budaya, 2),
+                    'total_nilai'    => round($row->total_nilai, 2),
+                    'nilai_akhir'    => round($row->nilai_akhir, 2),
+                    'pencapaian'     => round(floatval(str_replace('%', '', $row->pencapaian)), 2),
+                    'predikat'       => $row->predikat
+                ];
             }
-
-            $r->rata_nilai_sasaran = round($total_sasaran / $jumlah, 2);
-            $r->rata_nilai_budaya = round($total_budaya / $jumlah, 2);
-            $r->rata_total_nilai = round($total_total / $jumlah, 2);
-            $r->rata_nilai_akhir = round($total_akhir / $jumlah, 2);
-            $r->rata_pencapaian = round($total_pencapaian / $jumlah, 2) . '%';
-            $r->predikat_tahunan = $this->getPredikatTahunan($predikat_list);
         }
 
         return array_values($rekap);
     }
+
 
     private function getPredikatTahunan($predikat_list)
     {
@@ -429,6 +423,7 @@ class Pegawai_model extends CI_Model
         arsort($count);
         return key($count);
     }
+
 
     // Ubah Penilai
     /**

@@ -1589,52 +1589,76 @@ if ($message): ?>
         }
 
         document.getElementById('btn-simpan-nilai-akhir').addEventListener('click', function() {
+            const btn = this;
             const nik = document.getElementById('nik').value;
             const periode_awal = document.getElementById('periode_awal').value;
             const periode_akhir = document.getElementById('periode_akhir').value;
-            const nilai_sasaran = document.getElementById('total-sasaran').textContent;
-            const nilai_budaya = document.getElementById('rata-budaya').textContent;
-            const total_nilai = document.getElementById('total-nilai').textContent;
-            const fraud = document.getElementById('fraud-input').value;
-            const nilai_akhir = document.getElementById('nilai-akhir').textContent;
-            const predikat = document.getElementById('predikat').textContent;
-            const pencapaian = document.getElementById('pencapaian-akhir').textContent;
 
-            fetch('<?= base_url("Pegawai/simpanNilaiAkhir") ?>', {
+            // Tampilkan loading
+            btn.disabled = true;
+            btn.innerHTML = '<i class="mdi mdi-spin mdi-loading"></i> Menyimpan...';
+
+            // 1. Kumpulkan semua promise untuk menyimpan setiap baris
+            const savePromises = [];
+            document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
+                const indikator_id = row.dataset.id;
+                const target = row.querySelector('.target-input').value;
+                const batas_waktu = row.querySelector('input[type="date"]').value;
+                const realisasi = row.querySelector('.realisasi-input').value;
+                const pencapaian = row.querySelector('.pencapaian-output').value;
+                const nilai = row.querySelector('.nilai-output').value;
+                const nilai_dibobot = row.querySelector('.nilai-bobot-output').value;
+
+                const body = `indikator_id=${indikator_id}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`;
+
+                const promise = fetch('<?= base_url("Pegawai/simpanPenilaianBaris") ?>', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
-                })
-                .then(res => res.json())
-                .then(res => {
-                    if (res.status === 'success') {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Berhasil',
-                            text: res.message,
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Gagal',
-                            text: res.message || 'Gagal menyimpan',
-                            confirmButtonColor: '#d33'
-                        });
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Terjadi kesalahan server',
-                        confirmButtonColor: '#d33'
-                    });
-                });
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: body
+                }).then(res => res.json());
+
+                savePromises.push(promise);
+            });
+
+            // 2. Tunggu semua baris selesai disimpan
+            Promise.all(savePromises).then(results => {
+                const isAllSuccess = results.every(res => res.status === 'success');
+
+                if (!isAllSuccess) {
+                    throw new Error('Beberapa data baris gagal disimpan. Silakan cek kembali.');
+                }
+
+                // 3. Jika semua baris sukses, simpan nilai akhir
+                const nilai_sasaran = document.getElementById('total-sasaran').textContent;
+                const nilai_budaya = document.getElementById('rata-budaya').textContent;
+                const total_nilai = document.getElementById('total-nilai').textContent;
+                const fraud = document.getElementById('fraud-input').value;
+                const nilai_akhir = document.getElementById('nilai-akhir').textContent;
+                const predikat = document.getElementById('predikat').textContent;
+                const pencapaian = document.getElementById('pencapaian-akhir').textContent;
+
+                const bodyNilaiAkhir = `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`;
+
+                return fetch('<?= base_url("Pegawai/simpanNilaiAkhir") ?>', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: bodyNilaiAkhir
+                }).then(res => res.json());
+
+            }).then(finalResult => {
+                if (finalResult.status === 'success') {
+                    Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Semua data penilaian dan nilai akhir berhasil disimpan!', timer: 2000, showConfirmButton: false });
+                } else {
+                    throw new Error(finalResult.message || 'Gagal menyimpan nilai akhir.');
+                }
+            }).catch(err => {
+                console.error(err);
+                Swal.fire({ icon: 'error', title: 'Gagal', text: err.message || 'Terjadi kesalahan server.', confirmButtonColor: '#d33' });
+            }).finally(() => {
+                // Kembalikan tombol ke state normal
+                btn.disabled = false;
+                btn.innerHTML = '<i class="mdi mdi-content-save"></i> Simpan Nilai Akhir';
+            });
         });
         // ================ Format Rupiah ===================
         function formatRp(num) {
