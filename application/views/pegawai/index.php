@@ -175,9 +175,35 @@
                     12 => 'Desember'
                 ];
 
-                // urutkan $periode_list berdasarkan periode_awal ascending
+                // urutkan $periode_list
                 usort($periode_list, function ($a, $b) {
-                    return strtotime($a->periode_awal) - strtotime($b->periode_awal);
+                    $year_a = date('Y', strtotime($a->periode_awal));
+                    $year_b = date('Y', strtotime($b->periode_awal));
+
+                    // 1. Urutkan berdasarkan tahun (terbaru di atas)
+                    if ($year_a !== $year_b) {
+                        return $year_b <=> $year_a;
+                    }
+
+                    // Cek apakah $a adalah rekap tahunan
+                    $a_is_rekap = (
+                        (isset($a->is_rekap_otomatis) && $a->is_rekap_otomatis) ||
+                        (date('m-d', strtotime($a->periode_awal)) == '01-01' && date('m-d', strtotime($a->periode_akhir)) == '12-31')
+                    );
+
+                    // Cek apakah $b adalah rekap tahunan
+                    $b_is_rekap = (
+                        (isset($b->is_rekap_otomatis) && $b->is_rekap_otomatis) ||
+                        (date('m-d', strtotime($b->periode_awal)) == '01-01' && date('m-d', strtotime($b->periode_akhir)) == '12-31')
+                    );
+
+                    // 2. Jika tahun sama, dahulukan yang rekap tahunan
+                    if ($a_is_rekap !== $b_is_rekap) {
+                        return $a_is_rekap ? -1 : 1;
+                    }
+
+                    // 3. Jika keduanya bukan rekap atau keduanya rekap, urutkan berdasarkan tanggal awal (terlama di atas)
+                    return strtotime($a->periode_awal) <=> strtotime($b->periode_awal);
                 });
 
                 function formatTanggalIndonesia($tanggal, $bulan_indonesia)
@@ -1006,6 +1032,25 @@ if ($message): ?>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Cek jika ada parameter periode_changed di URL untuk notifikasi
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('periode_changed')) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Periode berhasil diubah',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+
+            // Hapus parameter dari URL agar notifikasi tidak muncul lagi saat refresh manual
+            const url = new URL(window.location);
+            url.searchParams.delete('periode_changed');
+            history.replaceState(null, '', url.toString());
+        }
+
         const nik = document.getElementById('nik')?.value;
         const periodeAwal = document.getElementById('periode_awal');
         const periodeAkhir = document.getElementById('periode_akhir');
@@ -1033,21 +1078,64 @@ if ($message): ?>
         });
 
         // ===== Dropdown Periode History =====
-        periodeHistory.addEventListener('change', function() {
-            if (!this.value) return;
-            let val = this.value;
-            const nik = "<?= $pegawai_detail->nik ?? '' ?>";
+        // Simpan index terpilih saat halaman dimuat
+        let previousPeriodeIndex = periodeHistory.selectedIndex;
 
-            // Jika opsi tahunan (value diawali "YEARLY|")
-            if (val.startsWith("YEARLY|")) {
-                const [, awal, akhir] = val.split('|');
-                window.location.href = `<?= base_url("Pegawai/index") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}&tahunan=1`;
+        periodeHistory.addEventListener('change', function() {
+            const selectedIndex = this.selectedIndex;
+            const selectedOption = this.options[selectedIndex];
+            
+            // Jangan lakukan apa-apa jika memilih placeholder "Pilih Periode"
+            if (!this.value) {
+                previousPeriodeIndex = selectedIndex;
                 return;
             }
 
-            // Jika bukan tahunan (normal triwulan)
-            const [awal, akhir] = val.split('|');
-            window.location.href = `<?= base_url("Pegawai/index") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}`;
+            const periodeText = selectedOption.text;
+            const val = this.value;
+            const nik = "<?= $pegawai_detail->nik ?? '' ?>";
+
+            Swal.fire({
+                title: 'Ganti Periode Penilaian?',
+                html: `Anda akan mengubah periode ke:<br><b>${periodeText}</b><br><br>Perubahan akan memuat ulang halaman.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Ganti',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#2E7D32', // Warna hijau BRK
+                cancelButtonColor: '#d33'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Proses navigasi
+                    let url;
+                    const parts = val.split('|');
+                    const awal = parts[0];
+                    const akhir = parts[1];
+
+                    // Cek apakah ini rekap tahunan (ada flag 'tahunan' di bagian ketiga)
+                    if (parts.length === 3 && parts[2] === 'tahunan') {
+                        url = `<?= base_url("Pegawai/index") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}&tahunan=1&periode_changed=1`;
+                    } else {
+                        url = `<?= base_url("Pegawai/index") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}&periode_changed=1`;
+                    }
+                    
+                    // Tampilkan loading sebelum navigasi
+                    Swal.fire({
+                        title: 'Memuat data...',
+                        text: 'Mohon tunggu sebentar.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    window.location.href = url;
+
+                } else {
+                    // Jika batal, kembalikan dropdown ke pilihan sebelumnya
+                    this.selectedIndex = previousPeriodeIndex;
+                }
+            });
         });
 
 
@@ -1059,7 +1147,7 @@ if ($message): ?>
         document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
             const awal = periodeAwal.value;
             const akhir = periodeAkhir.value;
-            window.location.href = `<?= base_url("Pegawai") ?>?awal=${awal}&akhir=${akhir}`;
+            window.location.href = `<?= base_url("Pegawai") ?>?awal=${awal}&akhir=${akhir}&periode_changed=1`;
         });
 
         // format angka
