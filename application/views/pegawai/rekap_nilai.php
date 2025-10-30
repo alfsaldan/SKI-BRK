@@ -231,7 +231,6 @@ $(document).ready(function () {
   .text-predikat-minus { color: #dc3545 !important; }
   .text-predikat-fair { color: #856404 !important; }
   .text-predikat-good { color: #17a2b8 !important; }
-  .text-predikat-very-good { color: #155724 !important; }
   .text-predikat-very-good { color: #28a745 !important; }
   .text-predikat-excellent { color: #198754 !important; }
   .text-predikat-secondary { color: #383d41 !important; }
@@ -251,11 +250,9 @@ $(document).ready(function () {
   }
   .badge-predikat-very-good {
     background-color: #d4edda;
-    color: #155724;
     color: #28a745;
   }
   .badge-predikat-excellent {
-    background-color: #198754;
     background-color: #155724;
     color: #fff;
   }
