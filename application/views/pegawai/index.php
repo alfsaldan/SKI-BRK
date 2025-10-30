@@ -299,34 +299,49 @@
                                         <h5 class="text-info mb-3 font-weight-bold">
                                             <i class="mdi mdi-account-check-outline mr-2"></i>Penilai I
                                         </h5>
+
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">NIK</span>
-                                                <span class="badge badge-info badge-pill"><?= $pegawai_detail->penilai1_nik ?? '-'; ?></span>
+                                                <span class="badge badge-info badge-pill">
+                                                    <?= $pegawai_detail->penilai1_nik ?? '-' ?>
+                                                </span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Nama</span>
-                                                <span class="text-dark"><?= $pegawai_detail->penilai1_nama ?? '-'; ?></span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai1_nama ?? '-' ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Jabatan</span>
-                                                <span class="text-dark"><?= $pegawai_detail->penilai1_jabatan_detail ?? '-'; ?></span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai1_jabatan_detail ?? '-' ?></span>
                                             </li>
-                                            <!-- Tombol kanan -->
                                             <li class="list-group-item d-flex justify-content-end">
-                                                <button class="btn btn-sm btn-info" type="button" data-toggle="collapse" data-target="#ubahPenilai1">
-                                                    Ubah Penilai I
+                                                <button class="btn btn-sm btn-info" type="button" data-toggle="collapse" data-target="#formPenilai1">
+                                                    <i class="mdi mdi-pencil"></i> Ubah Penilai I
                                                 </button>
                                             </li>
-                                            <!-- Dropdown ubah penilai (default hidden) -->
-                                            <li class="list-group-item collapse" id="ubahPenilai1">
-                                                <label for="penilai1" class="text-dark font-weight-medium mb-1">Pilih Penilai I</label>
-                                                <select name="penilai1_nik" id="penilai1" class="form-control select2">
-                                                    <option value="">-- Pilih Penilai I --</option>
-                                                </select>
-                                            </li>
-
                                         </ul>
+
+                                        <!-- Form ubah penilai I -->
+                                        <div id="formPenilai1" class="collapse mt-2">
+                                            <form action="<?= base_url('pegawai/updatePenilai') ?>" method="post">
+                                                <input type="hidden" name="nik_pegawai" value="<?= $pegawai_detail->nik ?>">
+                                                <input type="hidden" name="tipe_penilai" value="1">
+
+                                                <div class="form-group">
+                                                    <label for="penilai1_select" class="text-dark font-weight-medium mb-1">
+                                                        Pilih Penilai I
+                                                    </label>
+                                                    <select name="penilai_nik" id="penilai1_select" class="form-control select2" required>
+                                                        <option value="">-- Memuat... --</option>
+                                                    </select>
+                                                </div>
+
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="mdi mdi-content-save"></i> Simpan Penilai I
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
 
                                     <!-- Penilai II -->
@@ -334,46 +349,51 @@
                                         <h5 class="text-warning mb-3 font-weight-bold">
                                             <i class="mdi mdi-account-check-outline mr-2"></i>Penilai II
                                         </h5>
+
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">NIK</span>
-                                                <span class="badge badge-warning badge-pill"><?= $pegawai_detail->penilai2_nik ?? '-'; ?></span>
+                                                <span class="badge badge-warning badge-pill">
+                                                    <?= $pegawai_detail->penilai2_nik ?? '-' ?>
+                                                </span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Nama</span>
-                                                <span class="text-dark"><?= $pegawai_detail->penilai2_nama ?? '-'; ?></span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai2_nama ?? '-' ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Jabatan</span>
-                                                <span class="text-dark"><?= $pegawai_detail->penilai2_jabatan_detail ?? '-'; ?></span>
+                                                <span class="text-dark"><?= $pegawai_detail->penilai2_jabatan_detail ?? '-' ?></span>
                                             </li>
-                                            <!-- Tombol kanan -->
                                             <li class="list-group-item d-flex justify-content-end">
-                                                <button class="btn btn-sm btn-warning" type="button" data-toggle="collapse" data-target="#ubahPenilai2">
-                                                    Ubah Penilai II
+                                                <button class="btn btn-sm btn-warning" type="button" data-toggle="collapse" data-target="#formPenilai2">
+                                                    <i class="mdi mdi-pencil"></i> Ubah Penilai II
                                                 </button>
                                             </li>
-                                            <!-- Dropdown ubah penilai (default hidden) -->
-                                            <li class="list-group-item collapse" id="ubahPenilai2">
-                                                <label for="penilai2" class="text-dark font-weight-medium mb-1">Pilih Penilai II</label>
-                                                <select name="penilai2_nik" id="penilai2" class="form-control select2">
-                                                    <option value="">-- Pilih Penilai II --</option>
-                                                    <?php foreach ($list_pegawai as $p): ?>
-                                                        <?php if ($p->unit_kerja == $pegawai_detail->unit_kerja && $p->unit_kantor == $pegawai_detail->unit_kantor): ?>
-                                                            <option value="<?= $p->nik; ?>"
-                                                                <?= isset($pegawai_detail->penilai2_nik) && $pegawai_detail->penilai2_nik == $p->nik ? 'selected' : ''; ?>>
-                                                                <?= $p->nama . " (" . $p->jabatan_detail . ")"; ?>
-                                                            </option>
-                                                        <?php endif; ?>
-                                                    <?php endforeach; ?>
-                                                </select>
-                                            </li>
                                         </ul>
+
+                                        <!-- Form ubah penilai II -->
+                                        <div id="formPenilai2" class="collapse mt-2">
+                                            <form action="<?= base_url('pegawai/updatePenilai') ?>" method="post">
+                                                <input type="hidden" name="nik_pegawai" value="<?= $pegawai_detail->nik ?>">
+                                                <input type="hidden" name="tipe_penilai" value="2">
+
+                                                <div class="form-group">
+                                                    <label for="penilai2_select" class="text-dark font-weight-medium mb-1">
+                                                        Pilih Penilai II
+                                                    </label>
+                                                    <select name="penilai_nik" id="penilai2_select" class="form-control select2" required>
+                                                        <option value="">-- Memuat... --</option>
+                                                    </select>
+                                                </div>
+
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="mdi mdi-content-save"></i> Simpan Penilai II
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
-
-
-
                             </div>
                         </div>
                     </div>
@@ -1657,6 +1677,9 @@ if ($message): ?>
                 updateFormatDisplayForInput(input, true);
             });
         });
+
+        // Ubah Penilai 1 dan 2
+        
     });
 </script>
 
@@ -1987,4 +2010,64 @@ if ($message): ?>
         insightText.innerHTML = 'Belum cukup data untuk membandingkan periode.';
         insightContainer.style.display = 'block';
     }
+</script>
+
+<script>
+    // AJAX helper untuk isi form Ubah Penilai I/II
+    (function() {
+        const nik = "<?= $pegawai_detail->nik ?? '' ?>";
+
+        if (!nik) return;
+
+        function loadPenilaiCandidates() {
+            $.ajax({
+                url: "<?= base_url('Pegawai/getPenilaiCandidates/') ?>" + encodeURIComponent(nik),
+                method: 'GET',
+                dataType: 'json'
+            }).done(function(res) {
+                if (!res || res.status !== 'ok') return;
+
+                // isi penilai1_select (formPenilai1)
+                if ($('#penilai1_select').length) {
+                    let opt1 = '<option value="">-- Pilih Penilai I --</option>';
+                    if (res.candidates1 && res.candidates1.length) {
+                        res.candidates1.forEach(function(p) {
+                            // value is mapping key (pm_key). Compare with mapping.penilai1_jabatan to mark selected
+                            const sel = (res.mapping && res.mapping.penilai1_jabatan && p.pm_key === res.mapping.penilai1_jabatan) ? 'selected' : '';
+                            // show name and jabatan; keep nik visible in label
+                            opt1 += `<option value="${p.pm_key}" data-nik="${p.nik}" ${sel}>${p.nama} (${p.jabatan}) — ${p.nik}</option>`;
+                        });
+                    } else {
+                        opt1 += '<option value="">(tidak ada kandidat)</option>';
+                    }
+                    $('#penilai1_select').html(opt1);
+                    if ($.fn.select2) try { $('#penilai1_select').select2({ width: '100%' }); } catch(e) {}
+                }
+
+                // isi penilai2_select (formPenilai2)
+                if ($('#penilai2_select').length) {
+                    let opt2 = '<option value="">-- Pilih Penilai II --</option>';
+                    if (res.candidates2 && res.candidates2.length) {
+                        res.candidates2.forEach(function(p) {
+                            const sel = (res.mapping && res.mapping.penilai2_jabatan && p.pm_key === res.mapping.penilai2_jabatan) ? 'selected' : '';
+                            opt2 += `<option value="${p.pm_key}" data-nik="${p.nik}" ${sel}>${p.nama} (${p.jabatan}) — ${p.nik}</option>`;
+                        });
+                    } else {
+                        opt2 += '<option value="">(tidak ada kandidat)</option>';
+                    }
+                    $('#penilai2_select').html(opt2);
+                    if ($.fn.select2) try { $('#penilai2_select').select2({ width: '100%' }); } catch(e) {}
+                }
+
+            }).fail(function() {
+                console.error('Gagal mengambil kandidat penilai');
+            });
+        }
+
+        // load once and also on collapse open
+        $(function() {
+            loadPenilaiCandidates();
+            $('#formPenilai1, #formPenilai2').on('show.bs.collapse', function() { loadPenilaiCandidates(); });
+        });
+    })();
 </script>

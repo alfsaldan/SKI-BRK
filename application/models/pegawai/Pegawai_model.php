@@ -152,8 +152,7 @@ class Pegawai_model extends CI_Model
             "p.indikator_id = i.id 
             AND p.nik = " . $this->db->escape($nik) . " 
             AND YEAR(p.periode_awal) = " . $this->db->escape($tahun) . "
-            AND NOT (DATE(p.periode_awal) = '" . $tahun . "-01-01' AND DATE(p.periode_akhir) = '" . $tahun . "-12-31')"
-            ,
+            AND NOT (DATE(p.periode_awal) = '" . $tahun . "-01-01' AND DATE(p.periode_akhir) = '" . $tahun . "-12-31')",
             // Kondisi di atas akan mengecualikan penilaian manual tahunan dari agregasi
             'left'
         );
@@ -228,7 +227,7 @@ class Pegawai_model extends CI_Model
     }
 
     public function getPeriodePegawai($nik)
-{
+    {
         // Mengembalikan ke versi sederhana: hanya mengambil periode yang ada di database.
         // Tidak ada lagi pembuatan rekap tahunan otomatis.
         $this->db->select('periode_awal, periode_akhir');
@@ -237,7 +236,7 @@ class Pegawai_model extends CI_Model
         $this->db->group_by(['periode_awal', 'periode_akhir']);
         $this->db->order_by('periode_awal', 'DESC');
         return $this->db->get()->result();
-}
+    }
 
 
     public function getPegawaiByUnit($unit_kerja, $unit_kantor, $exclude_nik = null)
@@ -429,5 +428,48 @@ class Pegawai_model extends CI_Model
         $count = array_count_values($predikat_list);
         arsort($count);
         return key($count);
+    }
+
+    // Ubah Penilai
+    /**
+     * Ambil daftar pegawai aktif berdasarkan jabatan dan unit (opsional unit_kantor)
+     */
+    public function getPegawaiByJabatanAndUnit($jabatan, $unit_kerja, $unit_kantor = null, $exclude_nik = null)
+    {
+        $this->db->select('nik, nama, jabatan, unit_kerja, unit_kantor');
+        $this->db->from('pegawai');
+        $this->db->where('jabatan', $jabatan);
+        $this->db->where('status', 'aktif');
+        $this->db->where('unit_kerja', $unit_kerja);
+        if ($unit_kantor !== null) $this->db->where('unit_kantor', $unit_kantor);
+        if ($exclude_nik) $this->db->where('nik !=', $exclude_nik);
+        $this->db->order_by('nama', 'ASC');
+        return $this->db->get()->result();
+    }
+
+    /**
+     * Update penilai (1 atau 2) untuk seorang pegawai
+     */
+    public function updatePenilaiForPegawai($nik_pegawai, $tipe_penilai, $penilai_nik)
+    {
+        if (empty($nik_pegawai) || empty($tipe_penilai)) return false;
+
+        // Ambil data penilai
+        $penilai = $this->db->get_where('pegawai', ['nik' => $penilai_nik])->row();
+        if (!$penilai) return false;
+
+        $data = [];
+        if ($tipe_penilai == '1' || $tipe_penilai === 1) {
+            $data['penilai1_nik'] = $penilai->nik;
+            $data['penilai1_nama'] = $penilai->nama;
+            $data['penilai1_jabatan_detail'] = $penilai->jabatan;
+        } else {
+            $data['penilai2_nik'] = $penilai->nik;
+            $data['penilai2_nama'] = $penilai->nama;
+            $data['penilai2_jabatan_detail'] = $penilai->jabatan;
+        }
+
+        $this->db->where('nik', $nik_pegawai);
+        return $this->db->update('pegawai', $data);
     }
 }

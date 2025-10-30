@@ -112,6 +112,14 @@ class PenilaiMapping_model extends CI_Model
         return $this->db->get('penilai_mapping')->result();
     }
 
+    /**
+     * Ambil mapping berdasarkan jabatan dan unit_kerja
+     */
+    public function getMappingByJabatanUnit($jabatan, $unit_kerja)
+    {
+        return $this->db->get_where('penilai_mapping', ['jabatan' => $jabatan, 'unit_kerja' => $unit_kerja])->row();
+    }
+
     // Ambil nama jabatan dari key
     public function getJabatanByKey($key)
     {
@@ -121,6 +129,21 @@ class PenilaiMapping_model extends CI_Model
             ->get()
             ->row();
         return $row ? $row->jabatan : null;
+    }
+
+    /**
+     * Ambil daftar pegawai aktif yang mempunyai jabatan tertentu dan berada di unit yang sama
+     */
+    public function getPegawaiByJabatanAndUnit($jabatan, $unit_kerja, $unit_kantor = null)
+    {
+        $this->db->select('nik, nama, jabatan, unit_kerja, unit_kantor');
+        $this->db->from('pegawai');
+        $this->db->where('jabatan', $jabatan);
+        $this->db->where('status', 'aktif');
+        $this->db->where('unit_kerja', $unit_kerja);
+        if ($unit_kantor !== null) $this->db->where('unit_kantor', $unit_kantor);
+        $this->db->order_by('nama', 'ASC');
+        return $this->db->get()->result();
     }
 
 
@@ -202,4 +225,24 @@ class PenilaiMapping_model extends CI_Model
     {
         return $this->db->delete('penilai_mapping', ['id' => $id]);
     }
+
+    /**
+     * Update kolom penilai1_jabatan / penilai2_jabatan untuk mapping tertentu
+     * berdasarkan jabatan dan unit_kerja. $tipe_penilai = '1' atau '2'.
+     */
+    public function updatePenilaiForJabatanUnit($jabatan, $unit_kerja, $tipe_penilai, $penilai_key)
+    {
+        if (empty($jabatan) || empty($unit_kerja) || empty($tipe_penilai)) return false;
+
+        $field = ($tipe_penilai == '1' || $tipe_penilai === 1) ? 'penilai1_jabatan' : 'penilai2_jabatan';
+
+        // Cari mapping row
+        $row = $this->db->get_where('penilai_mapping', ['jabatan' => $jabatan, 'unit_kerja' => $unit_kerja])->row();
+        if (!$row) return false;
+
+        $data = [ $field => $penilai_key, 'updated_at' => date('Y-m-d H:i:s') ];
+        $this->db->where('id', $row->id);
+        return $this->db->update('penilai_mapping', $data);
+    }
 }
+

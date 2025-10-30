@@ -25,6 +25,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
  * @property MonitoringPegawai_model $MonitoringPegawai_model
  * @property DataDiri_model $DataDiri_model
  * @property CI_Input $input
+ * @property CI_Loader $load
+ * @property CI_Output $output
  * @property CI_Session $session
  * @property CI_DB_query_builder $db
  */
@@ -248,6 +250,180 @@ class Pegawai extends CI_Controller
             ]);
         }
     }
+
+    // ============== Ubah Penilai ==============
+    /**
+     * AJAX endpoint: ambil kandidat penilai berdasarkan penilai_mapping untuk jabatan pegawai
+     * URL: /Pegawai/getPenilaiCandidates/{nik}
+     */
+    public function getPenilaiCandidates($nik)
+    {
+        header('Content-Type: application/json');
+
+        if (empty($nik)) {
+            echo json_encode(['status' => 'error', 'message' => 'NIK tidak diberikan']);
+            return;
+        }
+
+        $this->load->model('PenilaiMapping_model');
+        $this->load->model('pegawai/Pegawai_model');
+
+        $target = $this->Pegawai_model->getPegawaiByNIK($nik);
+        if (!$target) {
+            echo json_encode(['status' => 'error', 'message' => 'Pegawai tidak ditemukan']);
+            return;
+        }
+
+        $mapping = $this->PenilaiMapping_model->getMappingByJabatanUnit($target->jabatan, $target->unit_kerja);
+
+        $result = [
+            'status' => 'ok',
+            'target' => [
+                'nik' => $target->nik,
+                'nama' => $target->nama,
+                'jabatan' => $target->jabatan,
+                'unit_kerja' => $target->unit_kerja,
+                'unit_kantor' => $target->unit_kantor
+            ],
+            'mapping' => null,
+            'candidates1' => [],
+            'candidates2' => []
+        ];
+
+        if ($mapping) {
+            $result['mapping'] = $mapping;
+
+            // Jika mapping ada, ambil semua pegawai aktif yang jabatan-nya ada di penilai_mapping
+            // untuk kode_cabang yang sama dan unit_kerja yang sama. Sertakan pm.key.
+            $kode_cabang = $mapping->kode_cabang ?? null;
+
+            if ($kode_cabang) {
+                // Tampilkan kandidat dari dua sumber:
+                // 1) mapping yang sama kode_cabang + unit_kerja dan pm.key < key target
+                // 2) mapping dengan special keys (3,3a,3b,3c,3d,15) dari manapun (walaupun beda kode_cabang/kode_unit)
+                // Gunakan UNION untuk menggabungkan dan menghilangkan duplikat.
+                $special_keys = ['3', '3a', '3b', '3c', '3d', '15'];
+                $in_list = "'" . implode("','", $special_keys) . "'"; // select pm_key and helper columns pm_key_num (numeric prefix) and pm_key_len to allow numeric-aware ordering
+                $sql = "(
+                                                                        SELECT p.nik, p.nama, p.jabatan, p.unit_kerja, p.unit_kantor, pm.`key` as pm_key,
+                                                                                     CAST(pm.`key` AS UNSIGNED) AS pm_key_num, LENGTH(pm.`key`) AS pm_key_len
+                                                                        FROM pegawai p
+                                                                        INNER JOIN penilai_mapping pm
+                                                                                ON pm.unit_kerja = p.unit_kerja
+                                                                             AND pm.jabatan = p.jabatan
+                                                                        WHERE pm.kode_cabang = ?
+                                                                            AND pm.`key` < ?
+                                                                            AND p.status = 'aktif'
+                                                                            AND p.unit_kerja = ?
+                                                                )
+                                                                UNION
+                                                                (
+                                                                        SELECT p.nik, p.nama, p.jabatan, p.unit_kerja, p.unit_kantor, pm.`key` as pm_key,
+                                                                                     CAST(pm.`key` AS UNSIGNED) AS pm_key_num, LENGTH(pm.`key`) AS pm_key_len
+                                                                        FROM pegawai p
+                                                                        INNER JOIN penilai_mapping pm
+                                                                                ON pm.unit_kerja = p.unit_kerja
+                                                                             AND pm.jabatan = p.jabatan
+                                                                        WHERE pm.`key` IN ($in_list)
+                                                                            AND p.status = 'aktif'
+                                                                )
+                                                                ORDER BY pm_key_num ASC, pm_key_len ASC, pm_key ASC, jabatan, nama";
+
+                // Bind params for the first SELECT: kode_cabang, mapping->key, unit_kerja
+                $query = $this->db->query($sql, [$kode_cabang, $mapping->key, $target->unit_kerja]);
+                $candidates = $query->result();
+
+                // gunakan daftar kandidat yang sama untuk penilai1 & penilai2 (admin akan memilih siapa jadi 1/2)
+                $result['candidates1'] = $candidates;
+                $result['candidates2'] = $candidates;
+            } else {
+                // fallback: ambil semua pegawai di unit yang sama
+                $result['candidates1'] = $this->Pegawai_model->getPegawaiByUnit($target->unit_kerja, $target->unit_kantor, $target->nik);
+                $result['candidates2'] = $result['candidates1'];
+            }
+        } else {
+            // fallback: ambil semua pegawai di unit yang sama
+            $result['candidates1'] = $this->Pegawai_model->getPegawaiByUnit($target->unit_kerja, $target->unit_kantor, $target->nik);
+            $result['candidates2'] = $result['candidates1'];
+        }
+
+        echo json_encode($result);
+    }
+
+    /**
+     * Form post handler: update penilai 1 atau 2 untuk pegawai
+     */
+    public function updatePenilai()
+    {
+        $nik_pegawai = $this->input->post('nik_pegawai');
+        $tipe = $this->input->post('tipe_penilai'); // '1' atau '2'
+        // frontend may send either a mapping key (pm_key) or a pegawai.nik
+        $penilai_nik = $this->input->post('penilai_nik');
+
+        if (empty($nik_pegawai) || empty($tipe) || empty($penilai_nik)) {
+            $this->session->set_flashdata('message', ['type' => 'error', 'text' => 'Data tidak lengkap']);
+            redirect($_SERVER['HTTP_REFERER'] ?? base_url('Pegawai'));
+            return;
+        }
+
+        $this->load->model('pegawai/Pegawai_model');
+        $this->load->model('PenilaiMapping_model');
+
+        // Ambil data pegawai target
+        $target = $this->Pegawai_model->getPegawaiByNIK($nik_pegawai);
+        if (!$target) {
+            $this->session->set_flashdata('message', ['type' => 'error', 'text' => 'Pegawai target tidak ditemukan']);
+            redirect($_SERVER['HTTP_REFERER'] ?? base_url('Pegawai'));
+            return;
+        }
+
+        // Ambil mapping row untuk target pegawai
+        $mapping = $this->PenilaiMapping_model->getMappingByJabatanUnit($target->jabatan, $target->unit_kerja);
+        if (!$mapping) {
+            $this->session->set_flashdata('message', ['type' => 'error', 'text' => 'Mapping penilai untuk jabatan/unit tidak ditemukan']);
+            redirect($_SERVER['HTTP_REFERER'] ?? base_url('Pegawai'));
+            return;
+        }
+
+        $selected_key = $penilai_nik; // may be pm_key or nik
+
+        // Jika nilai yang dikirim adalah sebuah key yang valid di penilai_mapping, gunakan langsung
+        $exists_key = $this->PenilaiMapping_model->getJabatanByKey($selected_key);
+
+        if (!$exists_key) {
+            // Bisa jadi yang dikirim adalah NIK pegawai; coba resolve menjadi mapping.key
+            $sel_pegawai = $this->Pegawai_model->getPegawaiByNIK($penilai_nik);
+            if ($sel_pegawai) {
+                // Cari key berdasarkan jabatan pegawai yang dipilih dan kode_unit dari mapping target
+                $kode_unit = $mapping->kode_unit ?? null;
+                $resolved = $this->PenilaiMapping_model->getKeyByJabatanAndUnit($sel_pegawai->jabatan, $kode_unit);
+                if ($resolved) {
+                    $selected_key = $resolved;
+                } else {
+                    // fallback: tidak bisa resolve
+                    $this->session->set_flashdata('message', ['type' => 'error', 'text' => 'Gagal menentukan key mapping untuk penilai yang dipilih']);
+                    redirect($_SERVER['HTTP_REFERER'] ?? base_url('Pegawai'));
+                    return;
+                }
+            } else {
+                $this->session->set_flashdata('message', ['type' => 'error', 'text' => 'Data penilai tidak ditemukan']);
+                redirect($_SERVER['HTTP_REFERER'] ?? base_url('Pegawai'));
+                return;
+            }
+        }
+
+        // Update penilai di tabel penilai_mapping untuk jabatan/unit target
+        $ok = $this->PenilaiMapping_model->updatePenilaiForJabatanUnit($target->jabatan, $target->unit_kerja, $tipe, $selected_key);
+
+        if ($ok) {
+            $this->session->set_flashdata('message', ['type' => 'success', 'text' => 'Penilai mapping berhasil diupdate']);
+        } else {
+            $this->session->set_flashdata('message', ['type' => 'error', 'text' => 'Gagal mengupdate mapping penilai']);
+        }
+
+        redirect($_SERVER['HTTP_REFERER'] ?? base_url('Pegawai'));
+    }
+
     // ========== Halaman Penilaian (Nilai Pegawai) ==========
     public function nilaiPegawai()
     {
