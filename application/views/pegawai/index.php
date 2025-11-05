@@ -141,7 +141,34 @@
                     <h5 class="text-success font-weight-bold mb-3">
                         <i class="mdi mdi-chart-line mr-2"></i> Grafik Pencapaian Nilai Akhir
                     </h5>
-                    <canvas id="grafikPencapaian" height="100"></canvas>
+                    <canvas id="grafikPencapaian" height="80"></canvas>
+					
+					<!-- Keterangan Predikat & Skala (Horizontal) -->
+					<div class="mt-1 pt-3 border-top">
+						<div class="d-flex flex-wrap align-items-center justify-content-center" style="gap: 1rem; font-size: 0.8rem;">
+							<div class="d-flex align-items-center">
+								<span style="width: 12px; height: 12px; background-color: #dc3545; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+								<small><strong>Minus</strong> (&lt;80%)</small>
+							</div>
+							<div class="d-flex align-items-center">
+								<span style="width: 12px; height: 12px; background-color: #ffc107; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+								<small><strong>Fair</strong> (80% - &lt;90%)</small>
+							</div>
+							<div class="d-flex align-items-center">
+								<span style="width: 12px; height: 12px; background-color: #17a2b8; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+								<small><strong>Good</strong> (90% - &lt;110%)</small>
+							</div>
+							<div class="d-flex align-items-center">
+								<span style="width: 12px; height: 12px; background-color: #28a745; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+								<small><strong>Very Good</strong> (110% - &lt;120%)</small>
+							</div>
+							<div class="d-flex align-items-center">
+								<span style="width: 12px; height: 12px; background-color: #198754; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+								<small><strong>Excellent</strong> (120% - 130%)</small>
+							</div>
+						</div>
+					</div>
+
                 </div>
 
                 <!-- ========== INSIGHT OTOMATIS ========== -->
@@ -2005,13 +2032,29 @@ if ($message): ?>
         return value >= arr[index - 1] ? 'rgba(40, 167, 69, 1)' : 'rgba(220, 53, 69, 1)';
     });
 
+    // Fungsi untuk mendapatkan warna berdasarkan predikat
+    function getPredikatColor(predikat) {
+        if (!predikat) return '#9e9e9e'; // Abu-abu jika tidak ada predikat
+        const p = predikat.toLowerCase();
+        if (p.includes('excellent')) return '#198754'; // Hijau tua
+        if (p.includes('very good')) return '#28a745'; // Hijau
+        if (p.includes('good')) return '#17a2b8'; // Biru-hijau
+        if (p.includes('fair')) return '#ffc107'; // Kuning
+        if (p.includes('minus')) return '#dc3545'; // Merah
+        return '#6c757d'; // Default
+    }
+
+    // Buat array warna titik berdasarkan predikat dari data
+    const pointColors = grafikData.map(g => getPredikatColor(g.predikat));
+
+
     const ctx = document.getElementById('grafikPencapaian').getContext('2d');
     new Chart(ctx, {
         type: 'line',
         data: {
             labels: dataPeriode,
             datasets: [{
-                label: 'Pencapaian (%)',
+                label: 'Pencapaian SKI (%)',
                 data: dataPencapaian,
                 borderColor: ctx => {
                     const colors = segmentColors;
@@ -2023,13 +2066,30 @@ if ($message): ?>
                 },
                 backgroundColor: 'rgba(40, 167, 69, 0.08)',
                 borderWidth: 3,
+                borderWidth: 4,
                 fill: true,
                 tension: 0.3,
                 pointRadius: 5,
-                pointBackgroundColor: segmentColors,
-                pointBorderColor: '#fff',
+                pointBackgroundColor: pointColors, // Gunakan warna predikat untuk titik
+                pointBorderColor: 'rgba(40, 167, 69, 0.08)',
                 pointHoverRadius: 7
-            }]
+            }, {
+                label: 'Target SKI',
+                data: Array(dataPeriode.length).fill(100), // Array of 100s
+                borderColor: '#348cd4',
+                borderWidth: 2,
+                pointRadius: 0, // Hide points on target line
+                pointHoverRadius: 0,
+                borderWidth: 3,
+                pointRadius: 3, // Show points on target line
+                pointHoverRadius: 5,
+                pointBackgroundColor: '#348cd4',
+                fill: false,
+                tension: 0,
+                order: 1 // Ensure target line is behind
+            }
+
+            ]
         },
         options: {
             responsive: true,
@@ -2046,9 +2106,14 @@ if ($message): ?>
             scales: {
                 y: {
                     beginAtZero: true,
+                    max: 130,
                     title: {
                         display: true,
-                        text: 'Pencapaian (%)'
+                        text: 'Pencapaian (%)',
+                    },
+                    ticks: {
+                        callback: value => value + '%',
+                        stepSize: 10
                     }
                 }
             }

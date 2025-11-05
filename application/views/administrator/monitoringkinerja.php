@@ -105,7 +105,32 @@
                                 <h5 class="text-primary font-weight-bold mb-3">
                                     <i class="mdi mdi-chart-line mr-2"></i> Grafik Pencapaian Bulanan
                                 </h5>
-                                <canvas id="grafikKinerja" height="70"></canvas>
+                                <canvas id="grafikKinerja" height="90"></canvas>
+                                <!-- Keterangan Predikat & Skala (Horizontal) -->
+                                <div class="mt-1 pt-3 border-top">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-center" style="gap: 1rem; font-size: 0.8rem;">
+                                        <div class="d-flex align-items-center">
+                                            <span style="width: 12px; height: 12px; background-color: #dc3545; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                            <small><strong>Minus</strong> (&lt;80%)</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="width: 12px; height: 12px; background-color: #ffc107; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                            <small><strong>Fair</strong> (80% - &lt;90%)</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="width: 12px; height: 12px; background-color: #17a2b8; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                            <small><strong>Good</strong> (90% - &lt;110%)</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="width: 12px; height: 12px; background-color: #28a745; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                            <small><strong>Very Good</strong> (110% - &lt;120%)</small>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <span style="width: 12px; height: 12px; background-color: #198754; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                            <small><strong>Excellent</strong> (120% - 130%)</small>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -749,12 +774,14 @@
         <?php
         $bulanList = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
         $pencapaian_bulanan = array_fill(0, 12, 0); // Gunakan null untuk data kosong
+        $predikat_bulanan = array_fill(0, 12, null); // Gunakan null untuk data kosong
 
         if (!empty($monitoring_bulanan_tahun)) {
             foreach ($monitoring_bulanan_tahun as $mb) {
                 $idx = intval($mb->bulan) - 1;
                 if ($idx >= 0 && $idx <= 11) {
                     $pencapaian_bulanan[$idx] = floatval($mb->pencapaian_akhir ?? 0);
+                    $predikat_bulanan[$idx] = $mb->predikat ?? null;
                 }
             }
         }
@@ -762,8 +789,26 @@
 
         const labelsBulan = <?= json_encode($bulanList) ?>;
         const dataPencapaian = <?= json_encode($pencapaian_bulanan) ?>;
+        const dataPredikat = <?= json_encode($predikat_bulanan) ?>;
 
         const ctx = document.getElementById('grafikKinerja')?.getContext('2d');
+
+        function warnaPredikat(pred) {
+            switch (pred.text) {
+                case 'Minus (M)':
+                    return '#e53935'; // Merah
+                case 'Fair (F)':
+                    return '#fbc02d'; // Kuning
+                case 'Good (G)':
+                    return '#1e88e5'; // Biru
+                case 'Very Good (VG)':
+                    return '#43A047'; // Hijau muda
+                case 'Excellent (E)':
+                    return '#2e7d32'; // Hijau tua
+                default:
+                    return '#9e9e9e'; // Abu-abu
+            }
+        }
 
         if (ctx) {
             // 1. Tentukan warna untuk setiap segmen garis
@@ -786,14 +831,21 @@
             });
 
             const pointColors = dataPencapaian.map((val, i) => {
-                if (val === null) return 'transparent'; // Sembunyikan titik jika data kosong
+                if (val === null) return 'transparent';
                 if (i === bulanAktifIndex) return '#005f29'; // Sorot bulan aktif
-                return segmentColors[i]; // Warna titik sama dengan warna segmen
+
+                const predikat = dataPredikat[i];
+                if (!predikat) return '#9e9e9e'; // Abu-abu jika predikat kosong
+                return warnaPredikat({
+                    text: predikat
+                });
             });
 
             const pointBorderColors = dataPencapaian.map((val, i) => {
                 if (val === null) return 'transparent';
-                return i === bulanAktifIndex ? '#fff' : segmentColors[i];
+                return i === bulanAktifIndex ? '#fff' : warnaPredikat({
+                    text: dataPredikat[i] ?? ''
+                });
             });
 
             // 3. Buat gradasi untuk area di bawah garis
@@ -838,7 +890,18 @@
                         pointBorderWidth: 2,
                         pointRadius: 6,
                         pointHoverRadius: 10,
-                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBackgroundColor: '#fff'
+                    }, {
+                        label: 'Target',
+                        data: Array(12).fill(100), // Array dengan 12 data bernilai 100
+                        borderColor: '#348cd4',
+                        borderWidth: 2,
+                        pointRadius: 3, // Ukuran titik
+                        pointHoverRadius: 5, // Ukuran titik saat di-hover
+                        pointBackgroundColor: '#348cd4', // Warna titik
+                        fill: false,
+                        tension: 0,
+                        order: 1 // Pastikan garis target di belakang
                     }]
                 },
                 options: {
@@ -871,13 +934,16 @@
                     scales: {
                         y: {
                             beginAtZero: true, // Mulai dari 0 agar lebih mudah dibaca
-                            max: 130, // Batas atas
+                            suggestedmax: 130, // Batas atas
                             title: {
                                 display: true,
                                 text: 'Pencapaian (%)'
                             },
                             ticks: {
-                                stepSize: 25
+                                stepSize: 10,
+                                callback: function(value) {
+                                    return value + '%';
+                                }
                             }
                         }
                     }

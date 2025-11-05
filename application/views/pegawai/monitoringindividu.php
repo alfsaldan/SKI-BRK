@@ -25,7 +25,32 @@
                             <h5 class="text-primary font-weight-bold mb-3">
                                 <i class="mdi mdi-chart-line mr-2"></i> Grafik Pencapaian Bulanan
                             </h5>
-                            <canvas id="grafikKinerja" height="70"></canvas>
+                            <canvas id="grafikKinerja" height="90"></canvas>
+                            <!-- Keterangan Predikat & Skala (Horizontal) -->
+                            <div class="mt-0 pt-3 border-top">
+                                <div class="d-flex flex-wrap align-items-center justify-content-center" style="gap: 1rem; font-size: 0.8rem;">
+                                    <div class="d-flex align-items-center">
+                                        <span style="width: 12px; height: 12px; background-color: #dc3545; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                        <small><strong>Minus</strong> (&lt;80%)</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span style="width: 12px; height: 12px; background-color: #ffc107; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                        <small><strong>Fair</strong> (80% - &lt;90%)</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span style="width: 12px; height: 12px; background-color: #17a2b8; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                        <small><strong>Good</strong> (90% - &lt;110%)</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span style="width: 12px; height: 12px; background-color: #28a745; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                        <small><strong>Very Good</strong> (110% - &lt;120%)</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span style="width: 12px; height: 12px; background-color: #198754; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                        <small><strong>Excellent</strong> (120% - 130%)</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -49,9 +74,18 @@
                                     <select id="bulan_select" name="bulan" class="form-control mb-2" required>
                                         <option value="">-- Pilih Bulan --</option>
                                         <?php $bulanList = [
-                                            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-                                            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-                                            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
+                                            '01' => 'Januari',
+                                            '02' => 'Februari',
+                                            '03' => 'Maret',
+                                            '04' => 'April',
+                                            '05' => 'Mei',
+                                            '06' => 'Juni',
+                                            '07' => 'Juli',
+                                            '08' => 'Agustus',
+                                            '09' => 'September',
+                                            '10' => 'Oktober',
+                                            '11' => 'November',
+                                            '12' => 'Desember'
                                         ]; ?>
                                         <?php foreach ($bulanList as $bln => $namaBulan): ?>
                                             <option value="<?= $bln ?>" <?= (isset($bulan_dipilih) && $bulan_dipilih == $bln) ? 'selected' : '' ?>>
@@ -613,6 +647,7 @@
 <!-- load sweetalert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -873,6 +908,23 @@
         const ctx = document.getElementById('grafikKinerja').getContext('2d');
         let kinerjaChart = null;
 
+        function warnaPredikat(pred) {
+            switch (pred.text) {
+                case 'Minus (M)':
+                    return '#e53935'; // Merah
+                case 'Fair (F)':
+                    return '#fbc02d'; // Kuning
+                case 'Good (G)':
+                    return '#1e88e5'; // Biru
+                case 'Very Good (VG)':
+                    return '#43A047'; // Hijau muda
+                case 'Excellent (E)':
+                    return '#2e7d32'; // Hijau tua
+                default:
+                    return '#9e9e9e'; // Abu-abu
+            }
+        }
+
         function initOrUpdateChart() {
             if (kinerjaChart) {
                 kinerjaChart.destroy();
@@ -899,15 +951,20 @@
                 });
 
                 const pointColors = dataPencapaian.map((val, i) => {
-                    if (val === null) return 'transparent'; // Sembunyikan titik jika data kosong
-                    if (i === bulanAktifIndex) return '#005f29'; // Sorot bulan aktif
-                    return segmentColors[i]; // Warna titik sama dengan warna segmen
+                    if (val === null || val === 0) return '#9e9e9e'; // ✅ abu-abu kalau null atau 0
+                    const nilai = hitungNilai(val);
+                    const pred = tentukanPredikat(nilai, 1);
+                    return warnaPredikat(pred);
                 });
 
                 const pointBorderColors = dataPencapaian.map((val, i) => {
-                    if (val === null) return 'transparent';
-                    return i === bulanAktifIndex ? '#fff' : segmentColors[i];
+                    if (val === null || val === 0) return '#9e9e9e'; // ✅ abu-abu juga kalau null atau 0
+                    const nilai = hitungNilai(val);
+                    const pred = tentukanPredikat(nilai, 1);
+                    // kalau bulan aktif, kasih border putih biar menonjol
+                    return i === bulanAktifIndex ? '#4a8fc1ff' : warnaPredikat(pred);
                 });
+
 
                 // 3. Buat gradasi untuk area di bawah garis
                 const areaGradient = ctx.createLinearGradient(0, 0, 0, 350);
@@ -951,6 +1008,17 @@
                             pointRadius: 6,
                             pointHoverRadius: 10,
                             pointHoverBackgroundColor: '#fff',
+                        }, {
+                            label: 'Target Bulanan (%)',
+                            data: Array(12).fill(100), // Array dengan 12 data bernilai 100
+                            borderColor: '#348cd4',
+                            borderWidth: 2,
+                            pointRadius: 3, // Ukuran titik
+                            pointHoverRadius: 5, // Ukuran titik saat di-hover
+                            pointBackgroundColor: '#348cd4', // Warna titik
+                            fill: false,
+                            tension: 0,
+                            order: 1 // Pastikan garis target di belakang
                         }]
                     },
                     options: {
@@ -983,13 +1051,16 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                max: 130,
+                                suggestedmax: 130,
                                 title: {
                                     display: true,
                                     text: 'Pencapaian (%)'
                                 },
                                 ticks: {
-                                    stepSize: 25
+                                    stepSize: 10,
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
                                 }
                             }
                         }

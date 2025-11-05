@@ -322,7 +322,7 @@
         jq36("#filter-unit").on("change", function() {
             var kode_cabang = $(this).val();
             var $unit = $("#filter-unitkantor");
-            $unit.empty().append('<option value="">Pilih Unit Kantor</option>');
+            $unit.empty().append('<option value="">Konsolidasi</option>');
             $("#grafik-nilai-pegawai").empty();
 
             if (!kode_cabang) {
