@@ -298,7 +298,7 @@
                         </li>
 
 
-                        <?php
+                        <!-- <?php
                         $activeMenu = strtolower($this->uri->segment(2, ''));
                         ?>
 
@@ -320,7 +320,7 @@
                                 <i class="mdi mdi-square-root"></i>
                                 <span> Kelola Rumus </span>
                             </a>
-                        </li>
+                        </li> -->
 
                     </ul>
 

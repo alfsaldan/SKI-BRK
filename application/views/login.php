@@ -232,7 +232,7 @@
             <a href="<?= base_url(); ?>">
                 <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png'); ?>" alt="Logo" height="70">
             </a>
-            <h4 class="mt-3">Login Sistem SKI-BRKS</h4>
+            <h4 class="mt-3">Login Sistem KPI Online-BRKS</h4>
         </div>
 
         <?php if ($this->session->flashdata('error')): ?>
@@ -245,7 +245,7 @@
             <div class="form-group mb-3 text-left">
                 <label for="nik"><b>NIK</b></label>
                 <input type="text" class="form-control" id="nik" name="nik" required maxlength="16"
-                    placeholder="Masukkan NIK (16 Digit)" value="<?= isset($nik) ? $nik : ''; ?>">
+                    placeholder="Masukkan NIK" value="<?= isset($nik) ? $nik : ''; ?>">
             </div>
 
             <div class="form-group mb-4 position-relative">
