@@ -22,7 +22,8 @@
 
       <?php if (!empty($rekap)) { ?>
         <div class="accordion" id="rekapAccordion">
-          <?php $i = 1; foreach ($rekap as $r): ?>
+          <?php $i = 1;
+          foreach ($rekap as $r): ?>
             <div class="card shadow-sm mb-3 border-0 rounded-lg overflow-hidden">
 
               <!-- HEADER CARD -->
@@ -34,18 +35,18 @@
                 <h5 class="mb-0 font-weight-bold text-white d-flex align-items-center"><i class="mdi mdi-calendar-range mr-2 mdi-24px"></i> Tahun <?= $r->tahun ?></h5>
                 <div class="d-flex align-items-center">
                   <?php
-                    $predikat_tahunan_class = 'secondary';
-                    if (str_contains(strtolower($r->predikat_tahunan), 'excellent')) {
-                        $predikat_tahunan_class = 'excellent';
-                    } elseif (str_contains(strtolower($r->predikat_tahunan), 'very good')) {
-                        $predikat_tahunan_class = 'very-good';
-                    } elseif (str_contains(strtolower($r->predikat_tahunan), 'good')) {
-                        $predikat_tahunan_class = 'good';
-                    } elseif (str_contains(strtolower($r->predikat_tahunan), 'fair')) {
-                        $predikat_tahunan_class = 'fair';
-                    } elseif (str_contains(strtolower($r->predikat_tahunan), 'minus')) {
-                        $predikat_tahunan_class = 'minus';
-                    }
+                  $predikat_tahunan_class = 'secondary';
+                  if (str_contains(strtolower($r->predikat_tahunan), 'excellent')) {
+                    $predikat_tahunan_class = 'excellent';
+                  } elseif (str_contains(strtolower($r->predikat_tahunan), 'very good')) {
+                    $predikat_tahunan_class = 'very-good';
+                  } elseif (str_contains(strtolower($r->predikat_tahunan), 'good')) {
+                    $predikat_tahunan_class = 'good';
+                  } elseif (str_contains(strtolower($r->predikat_tahunan), 'fair')) {
+                    $predikat_tahunan_class = 'fair';
+                  } elseif (str_contains(strtolower($r->predikat_tahunan), 'minus')) {
+                    $predikat_tahunan_class = 'minus';
+                  }
                   ?>
                   <span class="text-predikat-<?= $predikat_tahunan_class ?> font-weight-bold mr-3" style="background-color: rgba(255,255,255,0.9); border-radius: 20px; padding: 6px 12px;">
                     🏅 Predikat Tahunan: <strong><?= strtoupper($r->predikat_tahunan) ?></strong>
@@ -59,24 +60,29 @@
                 <div class="card-body bg-white fade-in">
                   <div class="row justify-content-center">
                     <?php
-                      // Tentukan class kolom berdasarkan jumlah periode
-                      $periode_count = count($r->periode);
-                      $column_class = ($periode_count == 4) ? 'col-lg-3 col-md-6' : 'col-md-6 col-lg-4';
+                    // Tentukan class kolom berdasarkan jumlah periode
+                    $periode_count = count($r->periode);
+                    $column_class = ($periode_count == 4) ? 'col-lg-3 col-md-6' : 'col-md-6 col-lg-4';
 
-                      foreach ($r->periode as $p):
-                        $predikat_class = 'secondary';
-                        $icon = 'mdi-help-circle-outline';
-                        if (str_contains(strtolower($p->predikat), 'excellent')) {
-                            $predikat_class = 'excellent'; $icon = 'mdi-rocket-launch';
-                        } elseif (str_contains(strtolower($p->predikat), 'very good')) {
-                            $predikat_class = 'very-good'; $icon = 'mdi-trending-up';
-                        } elseif (str_contains(strtolower($p->predikat), 'good')) {
-                            $predikat_class = 'good'; $icon = 'mdi-thumb-up-outline';
-                        } elseif (str_contains(strtolower($p->predikat), 'fair')) {
-                            $predikat_class = 'fair'; $icon = 'mdi-alert-outline';
-                        } elseif (str_contains(strtolower($p->predikat), 'minus')) {
-                            $predikat_class = 'minus'; $icon = 'mdi-trending-down';
-                        }
+                    foreach ($r->periode as $p):
+                      $predikat_class = 'secondary';
+                      $icon = 'mdi-help-circle-outline';
+                      if (str_contains(strtolower($p->predikat), 'excellent')) {
+                        $predikat_class = 'excellent';
+                        $icon = 'mdi-rocket-launch';
+                      } elseif (str_contains(strtolower($p->predikat), 'very good')) {
+                        $predikat_class = 'very-good';
+                        $icon = 'mdi-trending-up';
+                      } elseif (str_contains(strtolower($p->predikat), 'good')) {
+                        $predikat_class = 'good';
+                        $icon = 'mdi-thumb-up-outline';
+                      } elseif (str_contains(strtolower($p->predikat), 'fair')) {
+                        $predikat_class = 'fair';
+                        $icon = 'mdi-alert-outline';
+                      } elseif (str_contains(strtolower($p->predikat), 'minus')) {
+                        $predikat_class = 'minus';
+                        $icon = 'mdi-trending-down';
+                      }
                     ?>
                       <div class="<?= $column_class ?> mb-4">
                         <div class="card card-rekap bg-white shadow-sm hover-card h-100">
@@ -87,26 +93,36 @@
                               <?= $p->periode ?>
                             </h6>
                             <ul class="list-unstyled small text-muted mb-3">
+                              <li class="d-flex justify-content-between">
+                                <span><strong>🎯 Nilai Sasaran:</strong></span>
+                                <span class="font-weight-bold text-dark"><?= $p->nilai_sasaran ?></span>
+                              </li>
+                              <li class="d-flex justify-content-between">
+                                <span><strong>🌱 Nilai Budaya:</strong></span>
+                                <span class="font-weight-bold text-dark"><?= $p->nilai_budaya ?></span>
+                              </li>
+                              <li class="d-flex justify-content-between">
+                                <span><strong>📊 Total Nilai:</strong></span>
+                                <span class="font-weight-bold text-dark"><?= $p->total_nilai ?></span>
+                              </li>
+                              <li class="d-flex justify-content-between">
+                                <span><strong>🏁 Nilai Akhir:</strong></span>
+                                <span class="font-weight-bold text-dark"><?= $p->nilai_akhir ?></span>
+                              </li>
+                              <li class="d-flex justify-content-between">
+                                <span><strong>🚀 Pencapaian:</strong></span>
+                                <span class="font-weight-bold text-dark"><?= $p->pencapaian ?></span>
+                              </li>
+                              <!-- <li class="d-flex justify-content-between">
+                                <span><strong>🚨 Fraud:</strong></span>
+                                <span class="font-weight-bold text-dark"><?= $p->fraud ?? '0' ?></span>
+                              </li> -->
+
+                              <?php if (isset($p->fraud) && $p->fraud == 1): ?>
                                 <li class="d-flex justify-content-between">
-                                    <span><strong>🎯 Nilai Sasaran:</strong></span>
-                                    <span class="font-weight-bold text-dark"><?= $p->nilai_sasaran ?></span>
+                                  <span class="font-weight-bold text-danger mt-2"><i class="mdi mdi-alert-octagon-outline mr-1"></i>FRAUD</span>
                                 </li>
-                                <li class="d-flex justify-content-between">
-                                    <span><strong>🌱 Nilai Budaya:</strong></span>
-                                    <span class="font-weight-bold text-dark"><?= $p->nilai_budaya ?></span>
-                                </li>
-                                <li class="d-flex justify-content-between">
-                                    <span><strong>📊 Total Nilai:</strong></span>
-                                    <span class="font-weight-bold text-dark"><?= $p->total_nilai ?></span>
-                                </li>
-                                <li class="d-flex justify-content-between">
-                                    <span><strong>🏁 Nilai Akhir:</strong></span>
-                                    <span class="font-weight-bold text-dark"><?= $p->nilai_akhir ?></span>
-                                </li>
-                                <li class="d-flex justify-content-between">
-                                    <span><strong>🚀 Pencapaian:</strong></span>
-                                    <span class="font-weight-bold text-dark"><?= $p->pencapaian ?></span>
-                                </li>
+                              <?php endif; ?>
                             </ul>
                             <span class="badge badge-predikat-<?= $predikat_class ?> px-3 py-2 font-weight-bold shadow-sm">
                               <?= strtoupper($p->predikat) ?>
@@ -157,7 +173,8 @@
               </div>
 
             </div>
-          <?php $i++; endforeach; ?>
+          <?php $i++;
+          endforeach; ?>
         </div>
       <?php } else { ?>
         <div class="alert alert-info mt-4 shadow-sm">
@@ -177,21 +194,21 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
 <script>
-$(document).ready(function () {
-  // semua collapse tertutup awalnya
-  $('.collapse').removeClass('show');
+  $(document).ready(function() {
+    // semua collapse tertutup awalnya
+    $('.collapse').removeClass('show');
 
-  // ubah icon saat show dan hide
-  $('#rekapAccordion .collapse').on('show.bs.collapse', function () {
-    const icon = $(this).prev('.card-header').find('.toggle-icon');
-    icon.removeClass('mdi-chevron-down').addClass('mdi-chevron-up');
-  });
+    // ubah icon saat show dan hide
+    $('#rekapAccordion .collapse').on('show.bs.collapse', function() {
+      const icon = $(this).prev('.card-header').find('.toggle-icon');
+      icon.removeClass('mdi-chevron-down').addClass('mdi-chevron-up');
+    });
 
-  $('#rekapAccordion .collapse').on('hide.bs.collapse', function () {
-    const icon = $(this).prev('.card-header').find('.toggle-icon');
-    icon.removeClass('mdi-chevron-up').addClass('mdi-chevron-down');
+    $('#rekapAccordion .collapse').on('hide.bs.collapse', function() {
+      const icon = $(this).prev('.card-header').find('.toggle-icon');
+      icon.removeClass('mdi-chevron-up').addClass('mdi-chevron-down');
+    });
   });
-});
 </script>
 
 <style>
@@ -218,44 +235,66 @@ $(document).ready(function () {
   .rekap-item {
     background-color: #ffffff;
     border: 1px solid #dee2e6;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     transition: all 0.2s ease-in-out;
   }
 
   .rekap-item:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   /* Warna Teks Predikat */
-  .text-predikat-minus { color: #dc3545 !important; }
-  .text-predikat-fair { color: #856404 !important; }
-  .text-predikat-good { color: #17a2b8 !important; }
-  .text-predikat-very-good { color: #28a745 !important; }
-  .text-predikat-excellent { color: #198754 !important; }
-  .text-predikat-secondary { color: #383d41 !important; }
+  .text-predikat-minus {
+    color: #dc3545 !important;
+  }
+
+  .text-predikat-fair {
+    color: #856404 !important;
+  }
+
+  .text-predikat-good {
+    color: #17a2b8 !important;
+  }
+
+  .text-predikat-very-good {
+    color: #28a745 !important;
+  }
+
+  .text-predikat-excellent {
+    color: #198754 !important;
+  }
+
+  .text-predikat-secondary {
+    color: #383d41 !important;
+  }
 
   /* Warna Badge Predikat */
   .badge-predikat-minus {
     background-color: #f8d7da;
     color: #dc3545;
   }
+
   .badge-predikat-fair {
     background-color: #fff3cd;
     color: #856404;
   }
+
   .badge-predikat-good {
     background-color: #d1ecf1;
     color: #17a2b8;
   }
+
   .badge-predikat-very-good {
     background-color: #d4edda;
     color: #28a745;
   }
+
   .badge-predikat-excellent {
     background-color: #155724;
     color: #fff;
   }
+
   .badge-predikat-secondary {
     background-color: #e2e3e5;
     color: #383d41;
@@ -278,7 +317,7 @@ $(document).ready(function () {
 
   .hover-card {
     transition: all 0.25s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
   }
 
   .hover-card:hover {
@@ -290,16 +329,42 @@ $(document).ready(function () {
   }
 
   @keyframes fadeIn {
-    from {opacity: 0; transform: translateY(-5px);}
-    to {opacity: 1; transform: translateY(0);}
+    from {
+      opacity: 0;
+      transform: translateY(-5px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  .border-left-success { border-left: 4px solid #28a745 !important; }
-  .border-left-info { border-left: 4px solid #17a2b8 !important; }
-  .border-left-warning { border-left: 4px solid #ffc107 !important; }
-  .border-left-danger { border-left: 4px solid #dc3545 !important; }
-  .border-left-secondary { border-left: 4px solid #6c757d !important; }
+  .border-left-success {
+    border-left: 4px solid #28a745 !important;
+  }
 
-  .badge { font-size: 0.85rem; }
-  .small { font-size: 0.9rem; }
+  .border-left-info {
+    border-left: 4px solid #17a2b8 !important;
+  }
+
+  .border-left-warning {
+    border-left: 4px solid #ffc107 !important;
+  }
+
+  .border-left-danger {
+    border-left: 4px solid #dc3545 !important;
+  }
+
+  .border-left-secondary {
+    border-left: 4px solid #6c757d !important;
+  }
+
+  .badge {
+    font-size: 0.85rem;
+  }
+
+  .small {
+    font-size: 0.9rem;
+  }
 </style>

@@ -402,13 +402,16 @@ class Pegawai_model extends CI_Model
             } else {
                 // Jika bukan, masukkan ke dalam rincian periode
                 $rekap[$tahun]->periode[] = (object) [
-                    'periode' => date('d M Y', strtotime($row->periode_awal)) . ' - ' . date('d M Y', strtotime($row->periode_akhir)),
+                    'periode'        => date('d M Y', strtotime($row->periode_awal)) . ' - ' . date('d M Y', strtotime($row->periode_akhir)),
+                    'periode_awal'   => $row->periode_awal,
+                    'periode_akhir'  => $row->periode_akhir,
                     'nilai_sasaran' => round($row->nilai_sasaran, 2),
                     'nilai_budaya'   => round($row->nilai_budaya, 2),
                     'total_nilai'    => round($row->total_nilai, 2),
                     'nilai_akhir'    => round($row->nilai_akhir, 2),
                     'pencapaian'     => round(floatval(str_replace('%', '', $row->pencapaian)), 2),
-                    'predikat'       => $row->predikat
+                    'predikat'       => $row->predikat,
+                    'fraud'          => $row->fraud ?? '0'
                 ];
             }
         }
