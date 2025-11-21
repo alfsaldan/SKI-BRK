@@ -407,7 +407,7 @@
 
                         <!-- MENU PEGAWAI (muncul untuk semua role) -->
                         <li class="menu-title">Halaman Pegawai</li>
-                        <li class="<?= ($activeController == 'pegawai' && $activeMethod == '') ? 'active' : '' ?>">
+                        <li class="<?= ($activeController == 'pegawai' && ($activeMethod == '' || $activeMethod == 'index')) ? 'active' : '' ?>">
                             <a href="<?= base_url('pegawai') ?>">
                                 <i class="mdi mdi-account"></i>
                                 <span> Kinerja Individu </span>

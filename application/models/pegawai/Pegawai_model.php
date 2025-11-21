@@ -232,7 +232,6 @@ class Pegawai_model extends CI_Model
         // Tidak ada lagi pembuatan rekap tahunan otomatis.
         $this->db->select('periode_awal, periode_akhir');
         $this->db->from('penilaian');
-        $this->db->where('nik', $nik);
         $this->db->group_by(['periode_awal', 'periode_akhir']);
         $this->db->order_by('periode_awal', 'DESC');
         return $this->db->get()->result();

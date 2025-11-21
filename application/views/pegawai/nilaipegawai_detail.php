@@ -1282,68 +1282,75 @@
         });
 
         // ==== DataTables Catatan ====
-        var tableCatatan = $('#tabel-catatan').DataTable({
-            responsive: false,
-            paging: true,
-            searching: true,
-            ordering: true,
-            order: [
-                [3, 'desc']
-            ], // kolom tanggal
-            columnDefs: [{
-                    orderable: false,
-                    targets: [2]
-                }, // kolom catatan
-                {
-                    type: 'date-uk',
-                    targets: 3
-                } // kolom tanggal pakai custom sorting
-            ],
-            language: {
-                search: "Cari:",
-                lengthMenu: "Tampilkan _MENU_ baris",
-                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
-                infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
-                zeroRecords: "Tidak ada catatan yang ditemukan",
-                paginate: {
-                    first: "Pertama",
-                    last: "Terakhir",
-                    next: "Berikut",
-                    previous: "Sebelumnya"
-                }
-            },
-            dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
-            drawCallback: function(settings) {
-                var api = this.api();
-                api.column(0, {
-                    order: 'applied'
-                }).nodes().each(function(cell, i) {
-                    cell.innerHTML = i + 1;
+        var tableCatatan = null;
+        var tableCatatanInitialized = false;
+        try {
+            if ($('#tabel-catatan').length && $.fn.DataTable) {
+                tableCatatan = $('#tabel-catatan').DataTable({
+                    responsive: false,
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    order: [
+                        [3, 'desc']
+                    ],
+                    columnDefs: [{
+                            orderable: false,
+                            targets: [2]
+                        },
+                        {
+                            type: 'date-uk',
+                            targets: 3
+                        }
+                    ],
+                    language: {
+                        search: "Cari:",
+                        lengthMenu: "Tampilkan _MENU_ baris",
+                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
+                        infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
+                        zeroRecords: "Tidak ada catatan yang ditemukan",
+                        paginate: {
+                            first: "Pertama",
+                            last: "Terakhir",
+                            next: "Berikut",
+                            previous: "Sebelumnya"
+                        }
+                    },
+                    dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+                    drawCallback: function(settings) {
+                        var api = this.api();
+                        api.column(0, { order: 'applied' }).nodes().each(function(cell, i) {
+                            cell.innerHTML = i + 1;
+                        });
+                    }
                 });
+                tableCatatanInitialized = true;
+            } else {
+                console.info('DataTable: #tabel-catatan tidak tersedia atau plugin DataTable belum ter-load. Menggunakan fallback DOM.');
             }
-        });
+        } catch (err) {
+            console.error('Gagal inisialisasi DataTable #tabel-catatan:', err);
+            tableCatatan = null;
+            tableCatatanInitialized = false;
+        }
 
         // ==== AJAX Form Catatan ====
-        $(document).ready(function() {
-            $('#form-catatan').on('submit', function(e) {
+        // pastikan binding hanya satu kali
+        (function bindFormCatatan() {
+            $('#form-catatan').off('submit').on('submit', function(e) {
                 e.preventDefault();
 
                 const catatan = $('#catatan').val().trim();
                 const indikator_id = $('#indikator_id').val();
 
                 if (catatan === '') {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Catatan kosong'
-                    });
+                    Swal.fire({ icon: 'warning', title: 'Catatan kosong' });
                     return;
                 }
 
                 fetch("<?= base_url('pegawai/simpan_catatan'); ?>", {
                         method: "POST",
-                        headers: {
-                            "Content-Type": "application/x-www-form-urlencoded"
-                        },
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
                         body: `indikator_id=${indikator_id}&nik_pegawai=${nik}&catatan=${encodeURIComponent(catatan)}`
                     })
                     .then(res => res.json())
@@ -1358,40 +1365,43 @@
                                 String(now.getHours()).padStart(2, '0') + ':' +
                                 String(now.getMinutes()).padStart(2, '0');
 
-                            // tambahkan row baru
-                            tableCatatan.row.add([
-                                '', // nomor otomatis
-                                data.nama_penilai, // nama penilai dari response
-                                catatan, // catatan
-                                tanggal // tanggal baru
-                            ]).draw();
+                            // jika DataTable terinisialisasi gunakan API, jika tidak gunakan fallback DOM append
+                            if (tableCatatanInitialized && tableCatatan) {
+                                try {
+                                    tableCatatan.row.add(['', data.nama_penilai, catatan, tanggal]).draw();
+                                    if (typeof tableCatatan.order === 'function') {
+                                        tableCatatan.order([3, 'desc']).draw();
+                                    }
+                                } catch (err) {
+                                    console.error('Error menambah row ke DataTable, fallback ke DOM:', err);
+                                    // fallback manual append
+                                    $('#tabel-catatan tbody').prepend(
+                                        `<tr><td></td><td>${data.nama_penilai}</td><td>${catatan}</td><td>${tanggal}</td></tr>`
+                                    );
+                                }
+                            } else {
+                                // fallback: langsung append ke tbody (tabel standar tanpa DataTable)
+                                $('#tabel-catatan tbody').prepend(
+                                    `<tr><td></td><td>${data.nama_penilai}</td><td>${catatan}</td><td>${tanggal}</td></tr>`
+                                );
+                            }
 
-                            // paksa sorting ulang setelah row baru ditambahkan
-                            tableCatatan.order([3, 'desc']).draw();
-
-                            // update status indikator jika ada
+                            // update status indikator jika ada (tanpa menunggu)
                             simpanStatus(indikator_id, "Ada Catatan", "", "", "", "");
 
                             // reset form & tutup modal
                             $('#form-catatan')[0].reset();
                             $('#modalCatatan').modal('hide');
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: data.message
-                            });
+                            Swal.fire({ icon: 'error', title: 'Gagal', text: data.message });
                         }
                     })
-                    .catch(err => Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Server error'
-                    }));
+                    .catch(err => {
+                        console.error('AJAX simpan_catatan error:', err);
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Server error' });
+                    });
             });
-        });
-
-
+        })();
 
         // ================== CHAT COACHING ==================
         $(document).ready(function() {

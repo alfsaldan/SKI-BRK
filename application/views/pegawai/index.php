@@ -142,32 +142,32 @@
                         <i class="mdi mdi-chart-line mr-2"></i> Grafik Pencapaian Nilai Akhir
                     </h5>
                     <canvas id="grafikPencapaian" height="80"></canvas>
-					
-					<!-- Keterangan Predikat & Skala (Horizontal) -->
-					<div class="mt-1 pt-3 border-top">
-						<div class="d-flex flex-wrap align-items-center justify-content-center" style="gap: 1rem; font-size: 0.8rem;">
-							<div class="d-flex align-items-center">
-								<span style="width: 12px; height: 12px; background-color: #dc3545; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
-								<small><strong>Minus</strong> (&lt;80%)</small>
-							</div>
-							<div class="d-flex align-items-center">
-								<span style="width: 12px; height: 12px; background-color: #ffc107; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
-								<small><strong>Fair</strong> (80% - &lt;90%)</small>
-							</div>
-							<div class="d-flex align-items-center">
-								<span style="width: 12px; height: 12px; background-color: #17a2b8; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
-								<small><strong>Good</strong> (90% - &lt;110%)</small>
-							</div>
-							<div class="d-flex align-items-center">
-								<span style="width: 12px; height: 12px; background-color: #28a745; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
-								<small><strong>Very Good</strong> (110% - &lt;120%)</small>
-							</div>
-							<div class="d-flex align-items-center">
-								<span style="width: 12px; height: 12px; background-color: #198754; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
-								<small><strong>Excellent</strong> (120% - 130%)</small>
-							</div>
-						</div>
-					</div>
+
+                    <!-- Keterangan Predikat & Skala (Horizontal) -->
+                    <div class="mt-1 pt-3 border-top">
+                        <div class="d-flex flex-wrap align-items-center justify-content-center" style="gap: 1rem; font-size: 0.8rem;">
+                            <div class="d-flex align-items-center">
+                                <span style="width: 12px; height: 12px; background-color: #dc3545; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                <small><strong>Minus</strong> (&lt;80%)</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span style="width: 12px; height: 12px; background-color: #ffc107; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                <small><strong>Fair</strong> (80% - &lt;90%)</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span style="width: 12px; height: 12px; background-color: #17a2b8; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                <small><strong>Good</strong> (90% - &lt;110%)</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span style="width: 12px; height: 12px; background-color: #28a745; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                <small><strong>Very Good</strong> (110% - &lt;120%)</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span style="width: 12px; height: 12px; background-color: #198754; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                <small><strong>Excellent</strong> (120% - 130%)</small>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
 
@@ -1111,7 +1111,7 @@ if ($message): ?>
         periodeHistory.addEventListener('change', function() {
             const selectedIndex = this.selectedIndex;
             const selectedOption = this.options[selectedIndex];
-            
+
             // Jangan lakukan apa-apa jika memilih placeholder "Pilih Periode"
             if (!this.value) {
                 previousPeriodeIndex = selectedIndex;
@@ -1145,7 +1145,7 @@ if ($message): ?>
                     } else {
                         url = `<?= base_url("Pegawai/index") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}&periode_changed=1`;
                     }
-                    
+
                     // Tampilkan loading sebelum navigasi
                     Swal.fire({
                         title: 'Memuat data...',
@@ -1486,47 +1486,55 @@ if ($message): ?>
             }
         });
 
-        // ==== DataTables Catatan Pegawai ====
-        var tableCatatanPegawai = $('#tabel-catatan-pegawai').DataTable({
-            responsive: false,
-            paging: true,
-            searching: true,
-            ordering: true,
-            order: [
-                [2, 'desc']
-            ], // kolom tanggal
-            columnDefs: [{
-                    orderable: false,
-                    targets: [0]
-                }, // kolom nomor
-                {
-                    type: 'date-uk',
-                    targets: 2
-                } // kolom tanggal pakai custom sorting
-            ],
-            language: {
-                search: "Cari:",
-                lengthMenu: "Tampilkan _MENU_ baris",
-                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
-                infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
-                zeroRecords: "Tidak ada catatan yang ditemukan",
-                paginate: {
-                    first: "Pertama",
-                    last: "Terakhir",
-                    next: "Berikut",
-                    previous: "Sebelumnya"
-                }
-            },
-            dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
-            drawCallback: function(settings) {
-                var api = this.api();
-                api.column(0, {
-                    order: 'applied'
-                }).nodes().each(function(cell, i) {
-                    cell.innerHTML = i + 1;
+        // ==== DataTables Catatan Pegawai (TANDAI)====
+        var tableCatatanPegawai = null;
+        if ($('#tabel-catatan-pegawai').length) {
+            try {
+                tableCatatanPegawai = $('#tabel-catatan-pegawai').DataTable({
+                    responsive: false,
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    order: [
+                        [2, 'desc']
+                    ], // kolom tanggal
+                    columnDefs: [{
+                            orderable: false,
+                            targets: [0]
+                        }, // kolom nomor
+                        {
+                            type: 'date-uk',
+                            targets: 2
+                        } // kolom tanggal pakai custom sorting
+                    ],
+                    language: {
+                        search: "Cari:",
+                        lengthMenu: "Tampilkan _MENU_ baris",
+                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
+                        infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
+                        zeroRecords: "Tidak ada catatan yang ditemukan",
+                        paginate: {
+                            first: "Pertama",
+                            last: "Terakhir",
+                            next: "Berikut",
+                            previous: "Sebelumnya"
+                        }
+                    },
+                    dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+                    drawCallback: function(settings) {
+                        var api = this.api();
+                        api.column(0, {
+                            order: 'applied'
+                        }).nodes().each(function(cell, i) {
+                            cell.innerHTML = i + 1;
+                        });
+                    }
                 });
+            } catch (err) {
+                console.error('DataTable init error (tabel-catatan-pegawai):', err);
+                tableCatatanPegawai = null;
             }
-        });
+        }
 
         // ==== AJAX Form Catatan Pegawai ====
         $('#form-catatan-pegawai').on('submit', function(e) {
@@ -1548,9 +1556,15 @@ if ($message): ?>
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded"
                     },
-                    body: `nik=${nik}&catatan=${encodeURIComponent(catatan)}`
+                    body: `nik=${encodeURIComponent(nik)}&catatan=${encodeURIComponent(catatan)}`
                 })
-                .then(res => res.json())
+                .then(res => {
+                    // jika server merespon non-JSON, jangan biarkan error menghentikan script
+                    return res.json().catch(() => ({
+                        success: false,
+                        message: 'Respon server tidak valid'
+                    }));
+                })
                 .then(data => {
                     if (data.success) {
                         Swal.fire({
@@ -1569,26 +1583,42 @@ if ($message): ?>
                             String(now.getHours()).padStart(2, '0') + ':' +
                             String(now.getMinutes()).padStart(2, '0');
 
-                        // tambahkan row baru
-                        tableCatatanPegawai.row.add([
-                            '', // nomor otomatis
-                            catatan, // catatan
-                            tanggal // tanggal
-                        ]).draw();
-
-                        // paksa sorting ulang agar row baru langsung diurutkan
-                        tableCatatanPegawai.order([2, 'desc']).draw();
+                        // tambahkan row baru — kalau DataTable tersedia gunakan API, kalau tidak append manual
+                        if (tableCatatanPegawai) {
+                            tableCatatanPegawai.row.add([
+                                '', // nomor otomatis
+                                $('<div>').text(catatan).html(), // sanitize text
+                                tanggal // tanggal
+                            ]).draw();
+                            tableCatatanPegawai.order([2, 'desc']).draw();
+                        } else {
+                            // fallback: append langsung ke tbody (pastikan elemen ada)
+                            const $tbody = $('#tabel-catatan-pegawai tbody');
+                            if ($tbody.length) {
+                                $tbody.prepend(
+                                    `<tr>
+                                        <td></td>
+                                        <td>${$('<div>').text(catatan).html()}</td>
+                                        <td>${tanggal}</td>
+                                    </tr>`
+                                );
+                            } else {
+                                // jika tabel memang tidak ada, tambahkan console log saja
+                                console.warn('Tabel catatan pegawai tidak ditemukan untuk ditambahkan row.');
+                            }
+                        }
 
                         $('#form-catatan-pegawai')[0].reset();
                     } else {
                         Swal.fire({
                             icon: 'error',
                             title: 'Gagal',
-                            text: data.message
+                            text: data.message || 'Gagal menyimpan'
                         });
                     }
                 })
-                .catch(() => {
+                .catch((err) => {
+                    console.error('Error simpan_catatan_pegawai:', err);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
@@ -1728,7 +1758,9 @@ if ($message): ?>
 
                 const promise = fetch('<?= base_url("Pegawai/simpanPenilaianBaris") ?>', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
                     body: body
                 }).then(res => res.json());
 
@@ -1756,19 +1788,32 @@ if ($message): ?>
 
                 return fetch('<?= base_url("Pegawai/simpanNilaiAkhir") ?>', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
                     body: bodyNilaiAkhir
                 }).then(res => res.json());
 
             }).then(finalResult => {
                 if (finalResult.status === 'success') {
-                    Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Semua data penilaian dan nilai akhir berhasil disimpan!', timer: 2000, showConfirmButton: false });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Semua data penilaian dan nilai akhir berhasil disimpan!',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 } else {
                     throw new Error(finalResult.message || 'Gagal menyimpan nilai akhir.');
                 }
             }).catch(err => {
                 console.error(err);
-                Swal.fire({ icon: 'error', title: 'Gagal', text: err.message || 'Terjadi kesalahan server.', confirmButtonColor: '#d33' });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    text: err.message || 'Terjadi kesalahan server.',
+                    confirmButtonColor: '#d33'
+                });
             }).finally(() => {
                 // Kembalikan tombol ke state normal
                 btn.disabled = false;
@@ -1818,7 +1863,7 @@ if ($message): ?>
         });
 
         // Ubah Penilai 1 dan 2
-        
+
     });
 </script>
 
@@ -2054,40 +2099,40 @@ if ($message): ?>
         data: {
             labels: dataPeriode,
             datasets: [{
-                label: 'Pencapaian SKI (%)',
-                data: dataPencapaian,
-                borderColor: ctx => {
-                    const colors = segmentColors;
-                    const gradient = ctx.chart.ctx.createLinearGradient(0, 0, ctx.chart.width, 0);
-                    for (let i = 0; i < colors.length; i++) {
-                        gradient.addColorStop(i / (colors.length - 1), colors[i]);
-                    }
-                    return gradient;
-                },
-                backgroundColor: 'rgba(40, 167, 69, 0.08)',
-                borderWidth: 3,
-                borderWidth: 4,
-                fill: true,
-                tension: 0.3,
-                pointRadius: 5,
-                pointBackgroundColor: pointColors, // Gunakan warna predikat untuk titik
-                pointBorderColor: 'rgba(40, 167, 69, 0.08)',
-                pointHoverRadius: 7
-            }, {
-                label: 'Target SKI',
-                data: Array(dataPeriode.length).fill(100), // Array of 100s
-                borderColor: '#348cd4',
-                borderWidth: 2,
-                pointRadius: 0, // Hide points on target line
-                pointHoverRadius: 0,
-                borderWidth: 3,
-                pointRadius: 3, // Show points on target line
-                pointHoverRadius: 5,
-                pointBackgroundColor: '#348cd4',
-                fill: false,
-                tension: 0,
-                order: 1 // Ensure target line is behind
-            }
+                    label: 'Pencapaian SKI (%)',
+                    data: dataPencapaian,
+                    borderColor: ctx => {
+                        const colors = segmentColors;
+                        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, ctx.chart.width, 0);
+                        for (let i = 0; i < colors.length; i++) {
+                            gradient.addColorStop(i / (colors.length - 1), colors[i]);
+                        }
+                        return gradient;
+                    },
+                    backgroundColor: 'rgba(40, 167, 69, 0.08)',
+                    borderWidth: 3,
+                    borderWidth: 4,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBackgroundColor: pointColors, // Gunakan warna predikat untuk titik
+                    pointBorderColor: 'rgba(40, 167, 69, 0.08)',
+                    pointHoverRadius: 7
+                }, {
+                    label: 'Target SKI',
+                    data: Array(dataPeriode.length).fill(100), // Array of 100s
+                    borderColor: '#348cd4',
+                    borderWidth: 2,
+                    pointRadius: 0, // Hide points on target line
+                    pointHoverRadius: 0,
+                    borderWidth: 3,
+                    pointRadius: 3, // Show points on target line
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: '#348cd4',
+                    fill: false,
+                    tension: 0,
+                    order: 1 // Ensure target line is behind
+                }
 
             ]
         },
@@ -2218,7 +2263,11 @@ if ($message): ?>
                         opt1 += '<option value="">(tidak ada kandidat)</option>';
                     }
                     $('#penilai1_select').html(opt1);
-                    if ($.fn.select2) try { $('#penilai1_select').select2({ width: '100%' }); } catch(e) {}
+                    if ($.fn.select2) try {
+                        $('#penilai1_select').select2({
+                            width: '100%'
+                        });
+                    } catch (e) {}
                 }
 
                 // isi penilai2_select (formPenilai2)
@@ -2233,7 +2282,11 @@ if ($message): ?>
                         opt2 += '<option value="">(tidak ada kandidat)</option>';
                     }
                     $('#penilai2_select').html(opt2);
-                    if ($.fn.select2) try { $('#penilai2_select').select2({ width: '100%' }); } catch(e) {}
+                    if ($.fn.select2) try {
+                        $('#penilai2_select').select2({
+                            width: '100%'
+                        });
+                    } catch (e) {}
                 }
 
             }).fail(function() {
@@ -2244,7 +2297,9 @@ if ($message): ?>
         // load once and also on collapse open
         $(function() {
             loadPenilaiCandidates();
-            $('#formPenilai1, #formPenilai2').on('show.bs.collapse', function() { loadPenilaiCandidates(); });
+            $('#formPenilai1, #formPenilai2').on('show.bs.collapse', function() {
+                loadPenilaiCandidates();
+            });
         });
     })();
 </script>

@@ -1082,47 +1082,60 @@
         });
 
         // ==== DataTables Catatan ====
-        var tableCatatan = $('#tabel-catatan').DataTable({
-            responsive: false,
-            paging: true,
-            searching: true,
-            ordering: true,
-            order: [
-                [3, 'desc']
-            ], // kolom tanggal
-            columnDefs: [{
-                    orderable: false,
-                    targets: [2]
-                }, // kolom catatan
-                {
-                    type: 'date-uk',
-                    targets: 3
-                } // kolom tanggal pakai custom sorting
-            ],
-            language: {
-                search: "Cari:",
-                lengthMenu: "Tampilkan _MENU_ baris",
-                info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
-                infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
-                zeroRecords: "Tidak ada catatan yang ditemukan",
-                paginate: {
-                    first: "Pertama",
-                    last: "Terakhir",
-                    next: "Berikut",
-                    previous: "Sebelumnya"
-                }
-            },
-            dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
-            drawCallback: function(settings) {
-                var api = this.api();
-                api.column(0, {
-                    order: 'applied'
-                }).nodes().each(function(cell, i) {
-                    cell.innerHTML = i + 1;
+        var tableCatatan = null;
+        var tableCatatanInitialized = false;
+        try {
+            if ($('#tabel-catatan').length && $.fn.DataTable) {
+                tableCatatan = $('#tabel-catatan').DataTable({
+                    responsive: false,
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    order: [
+                        [3, 'desc']
+                    ], // kolom tanggal
+                    columnDefs: [{
+                            orderable: false,
+                            targets: [2]
+                        }, // kolom catatan
+                        {
+                            type: 'date-uk',
+                            targets: 3
+                        } // kolom tanggal pakai custom sorting
+                    ],
+                    language: {
+                        search: "Cari:",
+                        lengthMenu: "Tampilkan _MENU_ baris",
+                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ catatan",
+                        infoEmpty: "Menampilkan 0 sampai 0 dari 0 catatan",
+                        zeroRecords: "Tidak ada catatan yang ditemukan",
+                        paginate: {
+                            first: "Pertama",
+                            last: "Terakhir",
+                            next: "Berikut",
+                            previous: "Sebelumnya"
+                        }
+                    },
+                    dom: '<"row mb-2"<"col-md-6"l><"col-md-6 text-right"f>>rt<"row mt-2"<"col-md-6"i><"col-md-6 d-flex justify-content-end"p>>',
+                    drawCallback: function(settings) {
+                        var api = this.api();
+                        api.column(0, {
+                            order: 'applied'
+                        }).nodes().each(function(cell, i) {
+                            cell.innerHTML = i + 1;
+                        });
+                    }
                 });
+                tableCatatanInitialized = true;
+            } else {
+                console.info('DataTable #tabel-catatan tidak ditemukan atau plugin DataTable belum ter-load. Menggunakan fallback DOM.');
             }
-        });
-
+        } catch (err) {
+            console.error('Gagal inisialisasi DataTable #tabel-catatan:', err);
+            tableCatatan = null;
+            tableCatatanInitialized = false;
+        }
+ 
         // ===== Bulk helpers and save helper =====
         let bulkMode = false;
         let bulkIds = [];
