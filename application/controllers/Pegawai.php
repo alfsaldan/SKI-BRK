@@ -71,6 +71,9 @@ class Pegawai extends CI_Controller
         $lock_status = $this->Pegawai_model->getLockStatus($periode_awal, $periode_akhir);
         $lock_status2 = $this->Pegawai_model->getLockStatus2($periode_awal, $periode_akhir);
 
+        // 🔹 Ambil status verifikasi penilaian
+        $status_penilaian = $this->Penilaian_model->getStatusPenilaian($nik, $periode_awal, $periode_akhir);
+
         // 🔹 Cek apakah ini adalah filter tahunan
         $is_yearly_filter = (date('m-d', strtotime($periode_awal)) == '01-01' && date('m-d', strtotime($periode_akhir)) == '12-31');
         $tahun_filter = date('Y', strtotime($periode_awal));
@@ -92,6 +95,25 @@ class Pegawai extends CI_Controller
                 $periode_awal,
                 $periode_akhir
             );
+        }
+
+        // 🟢 FIX: Ambil dan gabungkan data 'status2' yang hilang dari query model
+        if (!empty($indikator)) {
+            $indikator_ids = array_map(function($item) { return $item->id; }, $indikator);
+
+            $status2_data = $this->db->select('indikator_id, status2')
+                                     ->from('penilaian')
+                                     ->where('nik', $nik)
+                                     ->where('periode_awal', $periode_awal)
+                                     ->where('periode_akhir', $periode_akhir)
+                                     ->where_in('indikator_id', $indikator_ids)
+                                     ->get()->result_array();
+
+            $status2_map = array_column($status2_data, 'status2', 'indikator_id');
+
+            foreach ($indikator as $item) {
+                $item->status2 = $status2_map[$item->id] ?? null;
+            }
         }
 
         // 🔹 Ambil daftar budaya utama & panduan dari tabel `budaya`
@@ -125,6 +147,7 @@ class Pegawai extends CI_Controller
             'nilai_akhir' => $nilai_akhir,
             'is_locked' => $lock_status,
             'is_locked2' => $lock_status2, // 🔒 Tambahan
+            'is_verified' => ($status_penilaian === 'disetujui'), // 🔒 Tambahan untuk verifikasi
             'budaya' => $budaya, // dari tabel budaya (perilaku + panduan)
             'budaya_nilai' => $budaya_nilai, // dari tabel budaya_nilai (hasil penilaian pegawai)
             'rata_rata_budaya' => $rata_rata_budaya,

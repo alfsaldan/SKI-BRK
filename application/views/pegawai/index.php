@@ -471,6 +471,20 @@
                 }
                 ?>
 
+                <!-- 🟢 BANNER STATUS PERSETUJUAN -->
+                <?php if (isset($is_verified) && $is_verified): ?>
+                    <div class="col-12">
+                        <div class="alert alert-success bg-success text-white border-0" role="alert" style="background-image: linear-gradient(to right, #28a745, #218838); box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">
+                            <div class="d-flex align-items-center">
+                                <i class="mdi mdi-check-decagram mdi-24px mr-2"></i>
+                                <div>
+                                    <h5 class="alert-heading mb-0 text-white">STATUS SKI PERIODE <?= date('d M Y', strtotime($periode_awal)) ?> - <?= date('d M Y', strtotime($periode_akhir)) ?></h5>
+                                    <span class="font-weight-bold">SUDAH SELESAI DAN DISETUJUI</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
                 <!-- Tabel Penilaian -->
                 <div class="row">
                     <div class="col-12">
@@ -497,8 +511,9 @@
                                                 <th class="text-center" style="width: 120px;">Pencapaian (%)</th>
                                                 <th class="text-center" style="width: 120px;">Nilai</th>
                                                 <th class="text-center" style="width: 120px;">Nilai Dibobot</th>
-                                                <th class="text-center" style="width: 100px;">Status</th>
-                                                <th class="text-center" style="width: 100px;">Aksi</th>
+                                                <th class="text-center" style="width: 150px;">Status Penilai 1</th>
+                                                <th class="text-center" style="width: 150px;">Status Penilai 2</th>
+                                                <th class="text-center" style="width: 120px;">Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -521,8 +536,10 @@
                                                         $indik = $i->indikator ?? '';
                                                         $subtotal_bobot_perspektif += $bobot;
 
+                                                        // 🟢 Ambil status untuk Penilai 1 dari kolom `status`
                                                         $status = strtolower(trim($i->status ?? ''));
 
+                                                        // Logika untuk Status Penilai 1
                                                         $statusClass = 'badge badge-danger';
                                                         $statusText  = 'Belum Dinilai';
 
@@ -534,6 +551,24 @@
                                                             case 'disetujui':
                                                                 $statusClass = 'badge badge-success';
                                                                 $statusText  = 'Disetujui';
+                                                                break;
+                                                        }
+
+                                                        // 🟢 Ambil status untuk Penilai 2 dari kolom `status2`
+                                                        $status2 = strtolower(trim($i->status2 ?? ''));
+
+                                                        // Logika untuk Status Penilai 2
+                                                        $status2Class = 'badge badge-danger';
+                                                        $status2Text  = 'Belum Dinilai';
+
+                                                        switch ($status2) {
+                                                            case 'ada catatan':
+                                                                $status2Class = 'badge badge-warning';
+                                                                $status2Text  = 'Ada Catatan';
+                                                                break;
+                                                            case 'disetujui':
+                                                                $status2Class = 'badge badge-success';
+                                                                $status2Text  = 'Disetujui';
                                                                 break;
                                                         }
                                             ?>
@@ -585,18 +620,19 @@
                                                                 <div class="currency-wrapper">
                                                                     <input type="text"
                                                                         class="form-control target-input text-center"
-                                                                        style="min-width:150px;"
-                                                                        value="<?= $i->target ?? ''; ?>">
+                                                                        style="min-width:150px;" value="<?= $i->target ?? ''; ?>"
+                                                                        <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
                                                                     <div class="format-currency text-muted small"></div>
                                                                 </div>
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <input type="date" class="form-control batas-waktu" style="min-width:120px;"
-                                                                    value="<?= $i->batas_waktu ?? ''; ?>">
+                                                                    value="<?= $i->batas_waktu ?? ''; ?>"
+                                                                    <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <div class="currency-wrapper">
-                                                                    <?php if (!$is_locked): ?>
+                                                                    <?php if (!$is_locked && !$is_verified): ?>
                                                                         <input type="text" class="form-control text-center realisasi-input"
                                                                             value="<?= $i->realisasi ?? ''; ?>"
                                                                             style="min-width:150px;">
@@ -627,7 +663,10 @@
                                                                 <span class="<?= $statusClass; ?>"><?= $statusText; ?></span>
                                                             </td>
                                                             <td class="text-center align-middle">
-                                                                <?php if (!$is_locked): ?>
+                                                                <span class="<?= $status2Class; ?>"><?= $status2Text; ?></span>
+                                                            </td>
+                                                            <td class="text-center align-middle">
+                                                                <?php if (!$is_locked && !$is_verified): ?>
                                                                     <button type="button" class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
                                                                 <?php else: ?>
                                                                     <button type="button" class="btn btn-sm btn-secondary" disabled>Terkunci</button>
@@ -644,13 +683,13 @@
                                                     <td class="text-center"><span class="subtotal-bobot"><?= $subtotal_bobot_perspektif; ?></span></td>
                                                     <td colspan="6" class="text-center">Sub Total Nilai <?= $persp; ?> Dibobot</td>
                                                     <td class="text-center"><span class="subtotal-nilai-bobot">0.00</span></td>
-                                                    <td colspan="2"></td>
+                                                    <td colspan="3"></td>
                                                 </tr>
                                             <?php
                                             }
                                             if (!$printed_any) { ?>
                                                 <tr>
-                                                    <td colspan="12" class="text-center">Tidak ada indikator untuk jabatan ini</td>
+                                                    <td colspan="13" class="text-center">Tidak ada indikator untuk jabatan ini</td>
                                                 </tr>
                                             <?php } ?>
                                         </tbody>
@@ -660,7 +699,7 @@
                                                 <td><span id="total-bobot">0</span></td>
                                                 <td colspan="6" class="text-center">Total Nilai Kinerja</td>
                                                 <td><span id="total-nilai-bobot">0.00</span></td>
-                                                <td colspan="2"></td>
+                                                <td colspan="3"></td>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -938,12 +977,12 @@
                                 </div>
 
                                 <div class="text-right mt-3">
-                                    <?php if (!$is_locked): ?>
+                                    <?php if (!$is_locked && !$is_verified): ?>
                                         <button id="btn-simpan-nilai-akhir" class="btn btn-primary">
                                             <i class="mdi mdi-content-save"></i> Simpan Nilai Akhir
                                         </button>
                                     <?php else: ?>
-                                        <button class="btn btn-secondary" disabled>
+                                        <button class="btn btn-secondary" disabled data-toggle="tooltip" title="Penilaian sudah dikunci atau diverifikasi">
                                             <i class="mdi mdi-lock"></i> Terkunci
                                         </button>
                                     <?php endif; ?>
