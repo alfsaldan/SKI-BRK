@@ -899,6 +899,25 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Cek jika ada parameter periode_changed di URL untuk notifikasi toast
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('periode_changed')) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Periode berhasil diubah',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+
+            // Hapus parameter dari URL agar notifikasi tidak muncul lagi saat refresh manual
+            const url = new URL(window.location);
+            url.searchParams.delete('periode_changed');
+            history.replaceState(null, '', url.toString());
+        }
+
         const nik = document.getElementById('nik').value;
         const periodeAwal = document.getElementById('periode_awal');
         const periodeAkhir = document.getElementById('periode_akhir');
@@ -1659,6 +1678,35 @@
             hitungNilaiAkhir();
             autoSaveNilaiAkhir();
         });
+
+        // ===== Handler: Ganti Periode Otomatis dari Dropdown =====
+        if (periodeHistory) {
+            periodeHistory.addEventListener('change', function() {
+                const selectedValue = this.value;
+                if (!selectedValue) return;
+
+                const [awal, akhir] = selectedValue.split('|');
+
+                if (!awal || !akhir) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Periode Tidak Valid',
+                        text: 'Nilai periode yang dipilih tidak valid.'
+                    });
+                    return;
+                }
+
+                // Dapatkan NIK pegawai dari elemen tersembunyi
+                const nikPegawai = document.getElementById('nik')?.value;
+                if (!nikPegawai) {
+                    console.error('NIK Pegawai tidak ditemukan!');
+                    return;
+                }
+
+                // Redirect ke halaman detail dengan periode baru dan flag untuk toast
+                window.location.href = `<?= base_url('Pegawai/nilaiPegawaiDetail/') ?>${nikPegawai}?awal=${awal}&akhir=${akhir}&periode_changed=1`;
+            });
+        }
 
         // 3. Fungsi auto-save nilai akhir
         function autoSaveNilaiAkhir() {

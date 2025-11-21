@@ -863,6 +863,25 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Cek jika ada parameter periode_changed di URL untuk notifikasi toast
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('periode_changed')) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Periode berhasil diubah',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+
+            // Hapus parameter dari URL agar notifikasi tidak muncul lagi saat refresh manual
+            const url = new URL(window.location);
+            url.searchParams.delete('periode_changed');
+            history.replaceState(null, '', url.toString());
+        }
+
         // Element references (safe checks)
         const nikEl = document.getElementById('nik');
         const nik = nikEl ? nikEl.value : '';
@@ -1058,6 +1077,35 @@
         }
         initStatusSemuaFromRows();
 
+        // ===== Handler: Ganti Periode Otomatis dari Dropdown =====
+        if (periodeHistory) {
+            periodeHistory.addEventListener('change', function() {
+                const selectedValue = this.value;
+                if (!selectedValue) return;
+
+                const [awal, akhir] = selectedValue.split('|');
+
+                if (!awal || !akhir) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Periode Tidak Valid',
+                        text: 'Nilai periode yang dipilih tidak valid.'
+                    });
+                    return;
+                }
+
+                // Dapatkan NIK pegawai dari elemen tersembunyi
+                const nikPegawai = document.getElementById('nik')?.value;
+                if (!nikPegawai) {
+                    console.error('NIK Pegawai tidak ditemukan!');
+                    return;
+                }
+
+                // Redirect ke halaman detail dengan periode baru dan flag untuk toast
+                window.location.href = `<?= base_url('Pegawai/nilaiPegawaiDetail2/') ?>${nikPegawai}?awal=${awal}&akhir=${akhir}&periode_changed=1`;
+            });
+        }
+        
         // ===== Custom sorting format dd-mm-yy HH:mm =====
         $.extend($.fn.dataTableExt.oSort, {
             "date-uk-pre": function(a) {
@@ -1469,48 +1517,6 @@
                 });
             });
         })();
-
-        // ===== Periode adjust handlers (safe attach) =====
-        if (periodeHistory) {
-            periodeHistory.addEventListener('change', function() {
-                const val = this.value;
-                if (!val) return;
-                const [awal, akhir] = val.split('|');
-                if (periodeAwal) periodeAwal.value = awal;
-                if (periodeAkhir) periodeAkhir.value = akhir;
-            });
-        }
-        if (periodeAwal && periodeAkhir) {
-            periodeAwal.addEventListener('change', () => {
-                if (periodeAkhir.value < periodeAwal.value) periodeAkhir.value = periodeAwal.value;
-            });
-            periodeAkhir.addEventListener('change', () => {
-                if (periodeAkhir.value < periodeAwal.value) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Periode salah',
-                        text: 'Tanggal akhir tidak boleh lebih kecil dari tanggal awal',
-                        confirmButtonColor: '#d33'
-                    });
-                    periodeAkhir.value = periodeAwal.value;
-                }
-            });
-        }
-        if (btnSesuaikan) {
-            btnSesuaikan.addEventListener('click', () => {
-                const awal = periodeAwal?.value || '';
-                const akhir = periodeAkhir?.value || '';
-                if (!awal || !akhir) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Periode belum lengkap',
-                        text: 'Silakan pilih periode awal dan akhir.'
-                    });
-                    return;
-                }
-                window.location.href = `<?= base_url('Pegawai/nilaiPegawaiDetail2/') ?>${nik}?awal=${awal}&akhir=${akhir}`;
-            });
-        }
 
         // ===== Disable inputs if locked =====
         const isLocked = <?= $is_locked ? 'true' : 'false' ?>;

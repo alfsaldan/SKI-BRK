@@ -122,63 +122,8 @@ class Pegawai_model extends CI_Model
     }
 
     /**
-     * Ambil indikator dengan data penilaian yang diagregasi (SUM) selama satu tahun.
+     * Simpan atau update data penilaian untuk satu indikator.
      */
-    public function get_indikator_yearly_aggregated($jabatan, $unit_kerja, $nik, $tahun)
-    {
-        $periode_awal_tahun = $tahun . '-01-01';
-        $periode_akhir_tahun = $tahun . '-12-31';
-
-        $this->db->select('
-            i.id,
-            i.indikator,
-            i.bobot,
-            sk.perspektif,
-            sk.sasaran_kerja,
-            SUM(p.target) as target,
-            MAX(p.batas_waktu) as batas_waktu,
-            SUM(p.realisasi) as realisasi,
-            "Rekap Tahunan" as status,
-            "' . $periode_awal_tahun . '" as periode_awal,
-            "' . $periode_akhir_tahun . '" as periode_akhir
-        ', false); // false untuk mencegah escaping pada string periode
-
-        $this->db->from('indikator i');
-        $this->db->join('sasaran_kerja sk', 'i.sasaran_id = sk.id');
-
-        // Join ke penilaian untuk mendapatkan data yang akan diagregasi
-        $this->db->join(
-            'penilaian p',
-            "p.indikator_id = i.id 
-            AND p.nik = " . $this->db->escape($nik) . " 
-            AND YEAR(p.periode_awal) = " . $this->db->escape($tahun) . "
-            AND NOT (DATE(p.periode_awal) = '" . $tahun . "-01-01' AND DATE(p.periode_akhir) = '" . $tahun . "-12-31')",
-            // Kondisi di atas akan mengecualikan penilaian manual tahunan dari agregasi
-            'left'
-        );
-
-        $this->db->where('sk.jabatan', $jabatan);
-        $this->db->where('sk.unit_kerja', $unit_kerja);
-
-        // Group berdasarkan indikator untuk SUM()
-        $this->db->group_by('i.id, i.indikator, i.bobot, sk.perspektif, sk.sasaran_kerja');
-
-        $this->db->order_by('sk.perspektif', 'ASC');
-        $this->db->order_by('sk.sasaran_kerja', 'ASC');
-
-        $result = $this->db->get()->result();
-
-        // Karena nilai, pencapaian, dll tidak bisa di-SUM, kita akan hitung di PHP setelah query
-        // Ini memberikan fleksibilitas jika rumus berubah.
-        foreach ($result as $row) {
-            $row->pencapaian = null;
-            $row->nilai = null;
-            $row->nilai_dibobot = null;
-        }
-
-        return $result;
-    }
-
     public function save_penilaian($nik, $indikator_id, $target, $batas_waktu, $realisasi, $periode_awal = null, $periode_akhir = null)
     {
         if (!$periode_awal) $periode_awal = date('Y') . '-01-01';
@@ -425,7 +370,6 @@ class Pegawai_model extends CI_Model
         arsort($count);
         return key($count);
     }
-
 
     // Ubah Penilai
     /**

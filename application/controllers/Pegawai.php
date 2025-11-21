@@ -64,8 +64,34 @@ class Pegawai extends CI_Controller
         $nik = $this->session->userdata('nik');
         $pegawai = $this->Pegawai_model->getPegawaiWithPenilai($nik);
 
+        // 🔹 Ambil daftar periode yang tersedia terlebih dahulu
+        $periode_list = $this->Pegawai_model->getPeriodePegawai($nik);
+
+        // 🔹 Tentukan periode awal dan akhir.
+        // Prioritas: GET -> POST -> Logika Periode Terdekat -> Default Tahunan
         $periode_awal = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y') . "-01-01";
         $periode_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? date('Y') . "-12-31";
+
+        // Logika baru untuk menentukan periode default (dipindahkan ke atas)
+        // Cek jika tidak ada periode yang dikirim via GET atau POST
+        if (!$this->input->get('awal') && !$this->input->post('periode_awal')) {
+            $today = date('Y-m-d');
+            $found_current_periode = false;
+
+            // Urutkan periode dari yang terbaru untuk prioritas
+            usort($periode_list, function($a, $b) {
+                return strtotime($b->periode_awal) - strtotime($a->periode_awal);
+            });
+
+            foreach ($periode_list as $p) {
+                if ($today >= $p->periode_awal && $today <= $p->periode_akhir) {
+                    $periode_awal = $p->periode_awal;
+                    $periode_akhir = $p->periode_akhir;
+                    $found_current_periode = true;
+                    break; // Ambil periode pertama yang cocok
+                }
+            }
+        }
 
         // 🔹 Ambil status lock dari kolom lock_input
         $lock_status = $this->Pegawai_model->getLockStatus($periode_awal, $periode_akhir);
@@ -74,28 +100,15 @@ class Pegawai extends CI_Controller
         // 🔹 Ambil status verifikasi penilaian
         $status_penilaian = $this->Penilaian_model->getStatusPenilaian($nik, $periode_awal, $periode_akhir);
 
-        // 🔹 Cek apakah ini adalah filter tahunan
-        $is_yearly_filter = (date('m-d', strtotime($periode_awal)) == '01-01' && date('m-d', strtotime($periode_akhir)) == '12-31');
-        $tahun_filter = date('Y', strtotime($periode_awal));
+        // Selalu panggil fungsi biasa untuk periode spesifik, tidak ada lagi agregasi
+        $indikator = $this->Pegawai_model->get_indikator_by_jabatan_dan_unit(
+            $pegawai->jabatan,
+            $pegawai->unit_kerja,
+            $nik,
+            $periode_awal,
+            $periode_akhir
+        );
 
-        if ($is_yearly_filter) {
-            // Panggil fungsi agregasi tahunan
-            $indikator = $this->Pegawai_model->get_indikator_yearly_aggregated(
-                $pegawai->jabatan,
-                $pegawai->unit_kerja,
-                $nik,
-                $tahun_filter
-            );
-        } else {
-            // Panggil fungsi biasa untuk periode spesifik
-            $indikator = $this->Pegawai_model->get_indikator_by_jabatan_dan_unit(
-                $pegawai->jabatan,
-                $pegawai->unit_kerja,
-                $nik,
-                $periode_awal,
-                $periode_akhir
-            );
-        }
 
         // 🟢 FIX: Ambil dan gabungkan data 'status2' yang hilang dari query model
         if (!empty($indikator)) {
@@ -130,7 +143,6 @@ class Pegawai extends CI_Controller
         }
 
         // 🔹 Data tambahan
-        $periode_list = $this->Pegawai_model->getPeriodePegawai($nik);
         $nilai_akhir  = $this->Pegawai_model->getNilaiAkhir($nik, $periode_awal, $periode_akhir);
 
         // 🔹 Ambil data grafik pencapaian dari tabel nilai_akhir
@@ -469,28 +481,43 @@ class Pegawai extends CI_Controller
 
     public function nilaiPegawaiDetail($nik)
     {
-        $awal = $this->input->get('awal');
-        $akhir = $this->input->get('akhir');
-
-        if (!$awal || !$akhir) {
-            $awal = date('Y-01-01');
-            $akhir = date('Y-12-31');
-            redirect("Pegawai/nilaiPegawaiDetail/$nik?awal=$awal&akhir=$akhir");
-        }
-
         $this->load->model('pegawai/Nilai_model');
         $this->load->model('Pegawai_model');
 
-        $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik);
-        $indikator = $this->Nilai_model->getIndikatorPegawai($nik, $awal, $akhir);
-
-        // 🔹 Ambil daftar periode
+        // 🔹 Ambil daftar periode yang tersedia terlebih dahulu
         $this->db->select('periode_awal, periode_akhir');
         $this->db->from('penilaian');
         $this->db->where('nik', $nik);
         $this->db->group_by(['periode_awal', 'periode_akhir']);
-        $this->db->order_by('periode_awal', 'ASC');
+        $this->db->order_by('periode_awal', 'DESC'); // Terbaru dulu
         $periode_list = $this->db->get()->result();
+
+        // 🔹 Tentukan periode awal dan akhir.
+        $awal = $this->input->get('awal');
+        $akhir = $this->input->get('akhir');
+
+        // Logika baru untuk menentukan periode default jika tidak ada di URL
+        if (!$awal || !$akhir) {
+            $today = date('Y-m-d');
+            $found_current_periode = false;
+
+            foreach ($periode_list as $p) {
+                if ($today >= $p->periode_awal && $today <= $p->periode_akhir) {
+                    $awal = $p->periode_awal;
+                    $akhir = $p->periode_akhir;
+                    $found_current_periode = true;
+                    break; // Ambil periode pertama yang cocok
+                }
+            }
+            // Fallback jika tidak ada periode yang cocok
+            if (!$found_current_periode) {
+                $awal = date('Y-01-01');
+                $akhir = date('Y-12-31');
+            }
+        }
+
+        $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik);
+        $indikator = $this->Nilai_model->getIndikatorPegawai($nik, $awal, $akhir);
 
         // 🔹 Ambil nilai akhir
         $nilai_akhir = $this->Pegawai_model->getNilaiAkhir($nik, $awal, $akhir);
@@ -531,28 +558,64 @@ class Pegawai extends CI_Controller
 
     public function nilaiPegawaiDetail2($nik)
     {
-        $awal = $this->input->get('awal');
-        $akhir = $this->input->get('akhir');
-
-        if (!$awal || !$akhir) {
-            $awal = date('Y-01-01');
-            $akhir = date('Y-12-31');
-            redirect("Pegawai/nilaiPegawaiDetail2/$nik?awal=$awal&akhir=$akhir");
-        }
-
         $this->load->model('pegawai/Nilai_model');
         $this->load->model('Pegawai_model');
 
-        $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik);
-        $indikator = $this->Nilai_model->getIndikatorPegawai($nik, $awal, $akhir);
-
-        // daftar periode
+        // 🔹 Ambil daftar periode yang tersedia terlebih dahulu
         $this->db->select('periode_awal, periode_akhir');
         $this->db->from('penilaian');
         $this->db->where('nik', $nik);
         $this->db->group_by(['periode_awal', 'periode_akhir']);
-        $this->db->order_by('periode_awal', 'ASC');
+        $this->db->order_by('periode_awal', 'DESC'); // Terbaru dulu
         $periode_list = $this->db->get()->result();
+
+        // 🔹 Tentukan periode awal dan akhir.
+        $awal = $this->input->get('awal');
+        $akhir = $this->input->get('akhir');
+
+        // Logika baru untuk menentukan periode default jika tidak ada di URL
+        if (!$awal || !$akhir) {
+            $today = date('Y-m-d');
+            $found_current_periode = false;
+
+            foreach ($periode_list as $p) {
+                if ($today >= $p->periode_awal && $today <= $p->periode_akhir) {
+                    $awal = $p->periode_awal;
+                    $akhir = $p->periode_akhir;
+                    $found_current_periode = true;
+                    break; // Ambil periode pertama yang cocok
+                }
+            }
+            // Fallback jika tidak ada periode yang cocok
+            if (!$found_current_periode) {
+                $awal = date('Y-01-01');
+                $akhir = date('Y-12-31');
+            }
+        }
+
+        $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik);
+        $indikator = $this->Nilai_model->getIndikatorPegawai($nik, $awal, $akhir);
+
+        // 🟢 FIX: Ambil dan gabungkan data 'status2' yang hilang dari query model
+        if (!empty($indikator)) {
+            $indikator_ids = array_map(function ($item) {
+                return $item->id;
+            }, $indikator);
+
+            $status2_data = $this->db->select('indikator_id, status2')
+                ->from('penilaian')
+                ->where('nik', $nik)
+                ->where('periode_awal', $awal)
+                ->where('periode_akhir', $akhir)
+                ->where_in('indikator_id', $indikator_ids)
+                ->get()->result_array();
+
+            $status2_map = array_column($status2_data, 'status2', 'indikator_id');
+
+            foreach ($indikator as $item) {
+                if (isset($status2_map[$item->id])) $item->status2 = $status2_map[$item->id];
+            }
+        }
 
         $nilai_akhir = $this->Pegawai_model->getNilaiAkhir($nik, $awal, $akhir);
         $is_locked   = $this->Nilai_model->getLockStatus($nik, $awal, $akhir);
@@ -2204,7 +2267,7 @@ class Pegawai extends CI_Controller
             if ($pegawai) {
                 $monitoring_bulanan = $this->MonitoringPegawai_model->getMonitoringBulanan($nik, $bulan, $tahun);
 
-                $awal_tahun = "$tahun-01-01";
+                $awal_tahun = "$tahun-10-01";
                 $akhir_tahun = "$tahun-12-31";
                 $bulanSekarang = (int)$bulan;
 
@@ -2341,7 +2404,7 @@ class Pegawai extends CI_Controller
                     if ($key !== null) $storedMap[$key] = $s;
                 }
 
-                $awal_tahun  = "$tahun-01-01";
+                $awal_tahun  = "$tahun-10-01";
                 $akhir_tahun = "$tahun-12-31";
                 $indicators = $this->MonitoringPegawai_model->get_indikator_by_jabatan_dan_unit(
                     $pegawai->jabatan,
@@ -2391,7 +2454,7 @@ class Pegawai extends CI_Controller
                 $nilai_akhir = $monitoring_bulanan->nilai_akhir;
             } else {
                 // Jika belum ada data bulan itu, buat default 0 tapi tetap akumulatif
-                $awal_tahun = "$tahun-01-01";
+                $awal_tahun = "$tahun-10-01";
                 $akhir_tahun = "$tahun-12-31";
                 $penilaian_tahunan = $this->MonitoringPegawai_model->get_indikator_by_jabatan_dan_unit(
                     $pegawai->jabatan,

@@ -2588,7 +2588,7 @@ class Administrator extends CI_Controller
         if ($pegawai) {
             $monitoring_bulanan = $this->Monitoring_model->getMonitoringBulanan($nik, $bulan, $tahun);
 
-            $awal_tahun = "$tahun-01-01";
+            $awal_tahun = "$tahun-10-01";
             $akhir_tahun = "$tahun-12-31";
 
             if ($monitoring_bulanan) {
@@ -2654,7 +2654,7 @@ class Administrator extends CI_Controller
             }
 
             $budayaData = $this->Monitoring_model->getBudayaNilaiByNik($nik, $awal_tahun, $akhir_tahun);
-            $nilaiAkhirData = $this->Monitoring_model->getNilaiAkhir($nik, "$tahun-01-01", "$tahun-12-31");
+            $nilaiAkhirData = $this->Monitoring_model->getNilaiAkhir($nik, "$tahun-10-01", "$tahun-12-31");
             $nilai_budaya = $nilaiAkhirData->nilai_budaya ?? 0;
             $fraud = $nilaiAkhirData->fraud ?? 0;
             $koefisien = $nilaiAkhirData->koefisien ?? 100;

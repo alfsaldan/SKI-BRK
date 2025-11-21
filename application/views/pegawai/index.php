@@ -289,40 +289,27 @@
                                             <div class="form-inline mb-2">
                                                 <select id="periode_history" class="form-control w-auto ml-2">
                                                     <option value="">Pilih Periode</option>
-                                                    <?php foreach ($periode_list as $p): ?>
+                                                    <?php foreach ($periode_list as $p) : ?>
                                                         <?php
-                                                        $is_rekap_otomatis = isset($p->is_rekap_otomatis) && $p->is_rekap_otomatis;
-                                                        $is_penilaian_manual_tahunan = (
-                                                            date('m-d', strtotime($p->periode_awal)) == '01-01' &&
-                                                            date('m-d', strtotime($p->periode_akhir)) == '12-31' &&
-                                                            !$is_rekap_otomatis
-                                                        );
+                                                        // Abaikan item rekap otomatis
+                                                        if (isset($p->is_rekap_otomatis) && $p->is_rekap_otomatis) {
+                                                            continue;
+                                                        }
 
+                                                        $is_tahunan = (date('m-d', strtotime($p->periode_awal)) == '01-01' && date('m-d', strtotime($p->periode_akhir)) == '12-31');
                                                         $value = $p->periode_awal . '|' . $p->periode_akhir;
                                                         $label = '';
-                                                        $is_rekap_aktif = ($this->input->get('tahunan') === '1');
                                                         $selected = '';
 
-                                                        if ($is_rekap_otomatis) {
-                                                            $label = 'Rekap Tahunan ' . date('Y', strtotime($p->periode_awal)) . ' (Otomatis)';
-                                                            // Khusus untuk rekap otomatis, tambahkan parameter 'tahunan=1'
-                                                            $value .= '|tahunan';
-                                                            // HANYA pilih ini jika mode rekap aktif DAN tahunnya cocok
-                                                            if ($is_rekap_aktif && date('Y', strtotime($periode_awal)) === date('Y', strtotime($p->periode_awal))) {
-                                                                $selected = 'selected';
-                                                            }
-                                                        } elseif ($is_penilaian_manual_tahunan) {
+                                                        if ($is_tahunan) {
                                                             $label = 'Rekap Tahun ' . date('Y', strtotime($p->periode_awal));
-                                                            // HANYA pilih ini jika BUKAN mode rekap DAN tanggalnya cocok
-                                                            if (!$is_rekap_aktif && $periode_awal === $p->periode_awal && $periode_akhir === $p->periode_akhir) {
-                                                                $selected = 'selected';
-                                                            }
                                                         } else {
                                                             $label = formatTanggalIndonesia($p->periode_awal, $bulan_indonesia) . ' s/d ' . formatTanggalIndonesia($p->periode_akhir, $bulan_indonesia);
-                                                            // HANYA pilih ini jika BUKAN mode rekap DAN tanggalnya cocok
-                                                            if (!$is_rekap_aktif && $periode_awal === $p->periode_awal && $periode_akhir === $p->periode_akhir) {
-                                                                $selected = 'selected';
-                                                            }
+                                                        }
+
+                                                        // Logika pemilihan yang disederhanakan
+                                                        if ($periode_awal === $p->periode_awal && $periode_akhir === $p->periode_akhir) {
+                                                            $selected = 'selected';
                                                         }
                                                         ?>
                                                         <option value="<?= $value ?>" <?= $selected ?>>
@@ -1177,13 +1164,9 @@ if ($message): ?>
                     const parts = val.split('|');
                     const awal = parts[0];
                     const akhir = parts[1];
-
-                    // Cek apakah ini rekap tahunan (ada flag 'tahunan' di bagian ketiga)
-                    if (parts.length === 3 && parts[2] === 'tahunan') {
-                        url = `<?= base_url("Pegawai/index") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}&tahunan=1&periode_changed=1`;
-                    } else {
-                        url = `<?= base_url("Pegawai/index") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}&periode_changed=1`;
-                    }
+                    
+                    // URL disederhanakan, tidak ada lagi parameter 'tahunan'
+                    url = `<?= base_url("Pegawai/index") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}&periode_changed=1`;
 
                     // Tampilkan loading sebelum navigasi
                     Swal.fire({

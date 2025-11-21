@@ -133,9 +133,6 @@
             <!-- jika ada data pegawai, tampilkan sampai tabel penilaian (sama struktur tabel seperti penilaiankinerja) -->
             <?php if (isset($pegawai_detail) && $pegawai_detail) { ?>
 
-
-
-
                 <div class="row">
                     <div class="col-12">
                         <div class="card shadow-sm border-0 mt-3">
