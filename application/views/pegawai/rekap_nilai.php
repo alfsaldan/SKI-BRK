@@ -20,6 +20,33 @@
         </div>
       </div>
 
+      <style>
+        .info-button {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          width: 32px;
+          height: 32px;
+          background-color: #86d4e1;
+          /* Biru muda */
+          color: #fff;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          text-decoration: none;
+          z-index: 10;
+          transition: all 0.2s ease-in-out;
+        }
+
+        .info-button:hover {
+          background-color: #17a2b8;
+          /* Warna info */
+          transform: scale(1.1);
+        }
+      </style>
+
       <?php if (!empty($rekap)) { ?>
         <div class="accordion" id="rekapAccordion">
           <?php $i = 1;
@@ -60,11 +87,13 @@
                 <div class="card-body bg-white fade-in">
                   <div class="row justify-content-center">
                     <?php
-                    // Tentukan class kolom berdasarkan jumlah periode
-                    $periode_count = count($r->periode);
+                    // Tentukan class kolom berdasarkan jumlah periode aktif
+                    $periode_count = count($r->periode_aktif);
                     $column_class = ($periode_count == 4) ? 'col-lg-3 col-md-6' : 'col-md-6 col-lg-4';
 
-                    foreach ($r->periode as $p):
+                    // Helper function untuk render card
+                    function render_rekap_card($p, $column_class, $is_arsip = false)
+                    {
                       $predikat_class = 'secondary';
                       $icon = 'mdi-help-circle-outline';
                       if (str_contains(strtolower($p->predikat), 'excellent')) {
@@ -87,6 +116,17 @@
                       <div class="<?= $column_class ?> mb-4">
                         <div class="card card-rekap bg-white shadow-sm hover-card h-100">
                           <div class="card-body position-relative">
+                            <!-- Tombol Info Detail -->
+                            <?php
+                            // Tentukan URL berdasarkan status arsip
+                            $url = $is_arsip
+                              ? base_url('Pegawai/arsipDetail/' . $p->periode_awal . '/' . $p->periode_akhir)
+                              : base_url('Pegawai/index?awal=' . $p->periode_awal . '&akhir=' . $p->periode_akhir);
+                            ?>
+                            <a href="<?= $url ?>" class="info-button" data-toggle="tooltip" data-placement="top" title="Lihat Detail Penilaian">
+                              <i class="mdi mdi-information-outline"></i>
+                            </a>
+
                             <i class="mdi <?= $icon ?> card-icon-bg"></i>
                             <h6 class="text-predikat-<?= $predikat_class ?> font-weight-bold mb-2 text-center">
                               <i class="mdi mdi-calendar-check-outline mr-1"></i>
@@ -130,12 +170,82 @@
                           </div>
                         </div>
                       </div>
-                    <?php endforeach; ?>
+                    <?php } // End of helper function 
+                    ?>
+
+                    <!-- Bagian Penilaian Selesai (Arsip) -->
+                    <?php if (!empty($r->periode_selesai)): ?>
+                      <div class="row justify-content-center w-100">
+                        <div class="col-12 mb-3">
+                          <h5 class="text-muted font-weight-bold"><i class="mdi mdi-file-chart"></i> Arsip Penilaian Selesai</h5>
+                        </div>
+
+                        <!-- Menampilkan Jabatan Sebelumnya -->
+                        <?php if (isset($jabatan_sebelumnya) && $jabatan_sebelumnya): ?>
+                          <div class="col-12 mb-4">
+                            <div class="row">
+                              <!-- Info Jabatan -->
+                              <div class="col-md-4 mb-3">
+                                <div class="alert alert-light border-primary shadow-sm h-100 d-flex align-items-center py-2 px-3">
+                                  <i class="mdi mdi-briefcase-outline mdi-24px text-primary mr-3"></i>
+                                  <div>
+                                    <small class="d-block text-muted">Jabatan Sebelumnya</small>
+                                    <strong class="d-block"><?= htmlspecialchars($jabatan_sebelumnya->jabatan) ?></strong>
+                                  </div>
+                                </div>
+                              </div>
+                              <!-- Info Unit Kantor -->
+                              <div class="col-md-4 mb-3">
+                                <div class="alert alert-light border-success shadow-sm h-100 d-flex align-items-center py-2 px-3">
+                                  <i class="mdi mdi-domain mdi-24px text-success mr-3"></i>
+                                  <div>
+                                    <small class="d-block text-muted">Unit Kantor</small>
+                                    <strong class="d-block"><?= htmlspecialchars($jabatan_sebelumnya->unit_kantor) ?></strong>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-md-4 mb-3">
+                                <div class="alert alert-light border-danger shadow-sm h-100 d-flex align-items-center py-2 px-3">
+                                  <i class="mdi mdi-calendar-check-outline mdi-24px text-danger mr-3"></i>
+                                  <div>
+                                    <small class="d-block text-muted">Tanggal Selesai</small>
+                                    <strong class="d-block"><?= date('d M Y', strtotime($jabatan_sebelumnya->tgl_selesai)) ?></strong>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        <?php endif; ?>
+
+                        <?php foreach ($r->periode_selesai as $p): ?>
+                          <?php render_rekap_card($p, $column_class, true); // Tandai sebagai arsip 
+                          ?>
+                        <?php endforeach; ?>
+                      </div>
+                      <div class="w-100"></div> <!-- Force new line -->
+                      <?php if (!empty($r->periode_aktif)): ?>
+                        <div class="col-12 my-3">
+                          <hr style="border-top: 2px dashed #ccc;">
+                        </div>
+                      <?php endif; ?>
+                    <?php endif; ?>
+
+                    <!-- Bagian Penilaian Aktif -->
+                    <?php if (!empty($r->periode_aktif)): ?>
+                      <div class="col-12 mb-3">
+                        <h5 class="text-success font-weight-bold"><i class="mdi mdi-run-fast"></i> Penilaian Aktif</h5>
+                      </div>
+                      <div class="row justify-content-center w-100">
+                        <?php foreach ($r->periode_aktif as $p): ?>
+                          <?php render_rekap_card($p, $column_class); ?>
+                        <?php endforeach; ?>
+                      </div>
+                    <?php endif; ?>
                   </div>
 
                   <div class="card mt-0 shadow-sm">
                     <div class="card-body">
-                      <div class="row text-center">
+                      <div class="row text-center">4
                         <div class="col">
                           <div class="rekap-item p-2 rounded">
                             <h5 class="mb-0 font-weight-bold text-predikat-<?= $predikat_tahunan_class ?>"><?= $r->rata_nilai_sasaran ?></h5>

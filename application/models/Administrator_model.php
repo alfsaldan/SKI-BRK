@@ -149,4 +149,70 @@ class Administrator_model extends CI_Model
             ["Excellent", rand(5, 10)],
         ];
     }
+
+    /**
+     * Cek apakah pegawai memiliki entri penilaian di tabel `penilaian`.
+     */
+    public function hasPenilaian($nik)
+    {
+        $countPenilaian = $this->db->where('nik', $nik)->from('penilaian')->count_all_results();
+        $countNilaiAkhir = $this->db->where('nik', $nik)->from('nilai_akhir')->count_all_results();
+        $countBudayaNilai = $this->db->where('nik_pegawai', $nik)->from('budaya_nilai')->count_all_results();
+        return ($countPenilaian + $countNilaiAkhir + $countBudayaNilai) > 0;
+    }
+
+    /**
+     * Cek apakah semua baris penilaian untuk NIK tertentu berstatus "disetujui".
+     * Mengabaikan case (menggunakan LOWER pada kolom).
+     * Jika tidak ada baris penilaian, mengembalikan true.
+     */
+    public function semuaPenilaianDisetujui($nik)
+    {
+        // Hitung total baris pada kedua tabel
+        $totalPenilaian = $this->db->where('nik', $nik)->from('penilaian')->count_all_results();
+        $totalNilaiAkhir = $this->db->where('nik', $nik)->from('nilai_akhir')->count_all_results();
+        $totalBudayaNilai = $this->db->where('nik_pegawai', $nik)->from('budaya_nilai')->count_all_results();
+
+        if ($totalPenilaian + $totalNilaiAkhir + $totalBudayaNilai == 0) {
+            return true; // tidak ada penilaian di kedua tabel => tidak perlu menunggu persetujuan
+        }
+
+        // Hitung baris yang TIDAK bernilai 'disetujui' di tabel penilaian
+        $this->db->where('nik', $nik);
+        $this->db->where("LOWER(status_penilaian) NOT IN ('disetujui', 'selesai')");
+        $notApprovedPenilaian = $this->db->from('penilaian')->count_all_results();
+
+        // Hitung baris yang TIDAK bernilai 'disetujui' di tabel nilai_akhir
+        $this->db->where('nik', $nik);
+        $this->db->where("LOWER(status_penilaian) NOT IN ('disetujui', 'selesai')");
+        $notApprovedNilaiAkhir = $this->db->from('nilai_akhir')->count_all_results();
+
+        // Hitung baris yang TIDAK bernilai 'disetujui' di tabel budaya_nilai
+        $this->db->where('nik_pegawai', $nik);
+        $this->db->where("LOWER(status_penilaian) NOT IN ('disetujui', 'selesai')");
+        $notApprovedBudayaNilai = $this->db->from('budaya_nilai')->count_all_results();
+
+        return ($notApprovedPenilaian + $notApprovedNilaiAkhir + $notApprovedBudayaNilai) == 0;
+    }
+
+    /**
+     * Ubah semua `status_penilaian` milik $nik menjadi 'selesai'.
+     * Mengembalikan boolean selesai.
+     */
+    public function markPenilaianSelesai($nik)
+    {
+        $ok1 = true;
+        $ok2 = true;
+
+        $this->db->where('nik', $nik);
+        $ok1 = $this->db->update('penilaian', ['status_penilaian' => 'selesai']);
+
+        $this->db->where('nik', $nik);
+        $ok2 = $this->db->update('nilai_akhir', ['status_penilaian' => 'selesai']);
+
+        $this->db->where('nik_pegawai', $nik);
+        $ok3 = $this->db->update('budaya_nilai', ['status_penilaian' => 'selesai']);
+
+        return ($ok1 && $ok2);
+    }
 }

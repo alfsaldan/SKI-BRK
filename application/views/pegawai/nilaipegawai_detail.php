@@ -1,6 +1,15 @@
 <!-- ============================================================== -->
 <!-- Start Page Content here -->
 <!-- ============================================================== -->
+<?php
+/**
+ * @var array $periode_list
+ * @var object $pegawai_detail
+ * @var string $periode_awal
+ * @var string $periode_akhir
+ * @var array $indikator_by_jabatan
+ */
+?>
 <style>
     /* Area chat */
     #chat-box-nilai {

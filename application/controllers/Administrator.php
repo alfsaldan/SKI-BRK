@@ -51,6 +51,63 @@ class Administrator extends CI_Controller
         }
     }
 
+    private function getClosestPeriode($awalInput = null, $akhirInput = null)
+    {
+        // Jika input eksplisit (GET/POST) diberikan, prioritaskan itu
+        if (!empty($awalInput) && !empty($akhirInput)) {
+            return ['awal' => $awalInput, 'akhir' => $akhirInput];
+        }
+
+        $this->load->model('Penilaian_model');
+        $periode_list = $this->Penilaian_model->getPeriodeList();
+
+        $today = new DateTime('today');
+        if (empty($periode_list)) {
+            // fallback ke tahun berjalan
+            $y = date('Y');
+            return ['awal' => "$y-01-01", 'akhir' => "$y-12-31"];
+        }
+
+        // 1) cari periode yang mencakup today
+        foreach ($periode_list as $p) {
+            try {
+                $pa = new DateTime($p->periode_awal);
+                $pb = new DateTime($p->periode_akhir);
+                if ($today >= $pa && $today <= $pb) {
+                    return ['awal' => $p->periode_awal, 'akhir' => $p->periode_akhir];
+                }
+            } catch (Exception $e) {
+                continue;
+            }
+        }
+
+        // 2) jika tidak ditemukan, pilih periode dengan jarak terkecil ke midpoint periode
+        $closest = null;
+        $minDiff = PHP_INT_MAX;
+        foreach ($periode_list as $p) {
+            try {
+                $pa = new DateTime($p->periode_awal);
+                $pb = new DateTime($p->periode_akhir);
+                $midTs = ($pa->getTimestamp() + $pb->getTimestamp()) / 2;
+                $diff = abs($today->getTimestamp() - $midTs);
+                if ($diff < $minDiff) {
+                    $minDiff = $diff;
+                    $closest = $p;
+                }
+            } catch (Exception $e) {
+                continue;
+            }
+        }
+
+        if ($closest) {
+            return ['awal' => $closest->periode_awal, 'akhir' => $closest->periode_akhir];
+        }
+
+        // terakhir fallback ke tahun berjalan
+        $y = date('Y');
+        return ['awal' => "$y-01-01", 'akhir' => "$y-12-31"];
+    }
+
     public function index()
     {
         $this->load->model('Administrator_model');
@@ -330,11 +387,15 @@ class Administrator extends CI_Controller
     {
         $this->load->model('Penilaian_model');
 
-        // 🔹 Ambil periode dari query (GET) atau pakai default tahun berjalan
-        $periode_awal  = $this->input->get('awal') ?: date('Y') . "-01-01";
-        $periode_akhir = $this->input->get('akhir') ?: date('Y') . "-12-31";
+        // Ambil periode dari query (GET) atau pakai periode terdekat jika tidak ada
+        $req_awal = $this->input->get('awal') ?: null;
+        $req_akhir = $this->input->get('akhir') ?: null;
+        $periode = $this->getClosestPeriode($req_awal, $req_akhir);
 
-        // 🔹 Ambil status lock dari DB
+        $periode_awal  = $periode['awal'];
+        $periode_akhir = $periode['akhir'];
+
+        // Ambil status lock dari DB
         $lock_status = $this->Penilaian_model->getLockStatus($periode_awal, $periode_akhir);
 
         $data = [
@@ -342,7 +403,7 @@ class Administrator extends CI_Controller
             'periode_list'  => $this->Penilaian_model->getPeriodeList(),
             'periode_awal'  => $periode_awal,
             'periode_akhir' => $periode_akhir,
-            'is_locked'     => $lock_status ?? false, // jika null, false
+            'is_locked'     => $lock_status ?? false,
             'pegawai'       => $this->db->get('pegawai')->result(),
             'indikator'     => $this->db->get('indikator')->result(),
             'penilaian'     => $this->Penilaian_model->get_all_penilaian(),
@@ -412,12 +473,15 @@ class Administrator extends CI_Controller
 
         $this->load->model('Penilaian_model');
 
-        // 🔹 ambil daftar periode unik dari penilaian
+        // ambil daftar periode unik dari penilaian
         $data['periode_list'] = $this->Penilaian_model->getPeriodeList();
 
-        // Ambil periode dari GET/POST, default tahun berjalan
-        $periode_awal  = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? date('Y-01-01');
-        $periode_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? date('Y-12-31');
+        // Ambil periode dari GET/POST; jika tidak ada, gunakan helper untuk periode terdekat
+        $req_awal = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? null;
+        $req_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? null;
+        $periode = $this->getClosestPeriode($req_awal, $req_akhir);
+        $periode_awal = $periode['awal'];
+        $periode_akhir = $periode['akhir'];
 
         // pakai model yg sudah ada agar langsung dapat info penilai1 & penilai2
         $pegawai = $this->Penilaian_model->getPegawaiWithPenilai($nik);
@@ -865,6 +929,7 @@ class Administrator extends CI_Controller
     public function updateJabatan()
     {
         $this->load->model('DataPegawai_model');
+        $this->load->model('Administrator_model');
 
         $nik = $this->input->post('nik');
         $jabatan = $this->input->post('jabatan');
@@ -872,9 +937,35 @@ class Administrator extends CI_Controller
         $unit_kantor = $this->input->post('unit_kantor');
         $tgl_mulai = $this->input->post('tgl_mulai');
 
+        // Jika pegawai memiliki penilaian, pastikan semua status_penilaian = 'disetujui'
+        $hasPenilaian = $this->Administrator_model->hasPenilaian($nik);
+        if ($hasPenilaian) {
+            $allApproved = $this->Administrator_model->semuaPenilaianDisetujui($nik);
+            if (!$allApproved) {
+                $this->session->set_flashdata('error', 'Tidak dapat menambah jabatan baru. Masih ada penilaian yang belum disetujui atau selesai.');
+                redirect('Administrator/detailPegawai/' . $nik);
+                return;
+            }
+        }
+
+        // Jika sampai sini: tidak ada penilaian atau semua sudah disetujui.
+        // Lakukan update dalam transaksi: ubah status_penilaian -> 'selesai' lalu tambah riwayat jabatan.
+        $this->db->trans_start();
+
+        if ($hasPenilaian) {
+            $this->Administrator_model->markPenilaianSelesai($nik);
+        }
+
         $this->DataPegawai_model->tambahRiwayatJabatan($nik, $jabatan, $unit_kerja, $unit_kantor, $tgl_mulai);
 
-        $this->session->set_flashdata('success', 'Riwayat jabatan baru berhasil ditambahkan.');
+        $this->db->trans_complete();
+
+        if ($this->db->trans_status() === false) {
+            $this->session->set_flashdata('error', 'Gagal menambahkan jabatan baru. Silakan coba lagi.');
+        } else {
+            $this->session->set_flashdata('success', 'Riwayat jabatan baru berhasil ditambahkan.');
+        }
+
         redirect('Administrator/detailPegawai/' . $nik);
     }
 
@@ -940,16 +1031,19 @@ class Administrator extends CI_Controller
 
     public function cariDataPegawai()
     {
-        // Ambil input NIK dan periode
+        // Ambil input NIK dan periode (prioritaskan GET lalu POST)
         $nik   = $this->input->get('nik') ?? $this->input->post('nik');
-        $awal  = $this->input->get('awal') ?? $this->input->post('periode_awal');
-        $akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir');
+        $req_awal  = $this->input->get('awal') ?? $this->input->post('periode_awal') ?? null;
+        $req_akhir = $this->input->get('akhir') ?? $this->input->post('periode_akhir') ?? null;
 
-        // Default periode jika kosong
-        if (!$awal || !$akhir) {
-            $tahun = date('Y');
-            $awal  = $tahun . '-01-01';
-            $akhir = $tahun . '-12-31';
+        // Jika periode tidak diberikan, pakai periode terdekat (helper getClosestPeriode)
+        if (!$req_awal || !$req_akhir) {
+            $periode = $this->getClosestPeriode($req_awal, $req_akhir);
+            $awal  = $periode['awal'];
+            $akhir = $periode['akhir'];
+        } else {
+            $awal  = $req_awal;
+            $akhir = $req_akhir;
         }
 
         // Load model
@@ -959,7 +1053,7 @@ class Administrator extends CI_Controller
         // Ambil data pegawai
         $pegawai   = $this->DataPegawai_model->getPegawaiWithPenilai($nik);
 
-        // Ambil penilaian detail
+        // Ambil penilaian detail untuk periode yang sudah ditentukan
         $penilaian = $this->DataPegawai_model->getPenilaianByNik($nik, $awal, $akhir);
 
         // 🔹 Ambil nilai akhir langsung dari tabel nilai_akhir
@@ -979,12 +1073,12 @@ class Administrator extends CI_Controller
         $budaya_nilai = $budayaData['nilai_budaya'] ?? [];
         $rata_rata_budaya = $budayaData['rata_rata'] ?? 0;
 
-        // Siapkan data untuk view
+        // Siapkan data untuk view (kirim periode yang benar agar view otomatis "mengaplikasikan" periode)
         $data = [
             'judul'               => "Data Pegawai",
             'pegawai_detail'      => $pegawai,
             'penilaian_pegawai'   => $penilaian,
-            'nilai_akhir'         => $nilaiAkhir,   // 🔹 nilai akhir langsung dari DB
+            'nilai_akhir'         => $nilaiAkhir,
             'periode_awal'        => $awal,
             'periode_akhir'       => $akhir,
             'periode_list'        => $periode_list,
@@ -1540,6 +1634,7 @@ class Administrator extends CI_Controller
             $sheet->setCellValue("C{$row}", $r[1]);
             $sheet->setCellValue("D{$row}", $r[2]);
             $sheet->setCellValue("E{$row}", $r[3]);
+
             $sheet->setCellValue("F{$row}", $r[4]);
 
             $warnaBg = ($row % 2 == 0) ? $warnaZebra1 : $warnaZebra2;

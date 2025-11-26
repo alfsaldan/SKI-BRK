@@ -90,6 +90,11 @@
                                                             <option disabled>Belum ada periode penilaian</option>
                                                         <?php endif; ?>
                                                     </select>
+
+                                                    <!-- Hidden inputs agar JS/komponen lain tahu periode yg dipilih server -->
+                                                    <input type="hidden" id="hidden_periode_awal" value="<?= htmlspecialchars($periode_awal ?? '', ENT_QUOTES) ?>">
+                                                    <input type="hidden" id="hidden_periode_akhir" value="<?= htmlspecialchars($periode_akhir ?? '', ENT_QUOTES) ?>">
+
                                                     <button type="button" id="btn-sesuaikan-periode" class="btn btn-success">Terapkan</button>
                                                 </div>
                                             </li>
@@ -653,13 +658,41 @@
 <?php endif; ?>
 
 <script>
+    // Ganti handler lama dengan versi yang menampilkan SweetAlert sukses sebelum redirect
     document.getElementById('btn-sesuaikan-periode').addEventListener('click', function() {
-        let periode = document.getElementById('periode_select').value.split('|');
-        let awal = periode[0];
-        let akhir = periode[1];
-        let nik = "<?= $pegawai_detail->nik ?? '' ?>";
+        const select = document.getElementById('periode_select');
+        const val = select ? select.value : '';
+        if (!val) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Pilih Periode',
+                text: 'Silakan pilih periode terlebih dahulu.',
+                confirmButtonColor: '#d33'
+            });
+            return;
+        }
 
-        window.location.href = "<?= base_url('Administrator/cariDataPegawai') ?>?nik=" + nik + "&awal=" + awal + "&akhir=" + akhir;
+        // Jika pengguna memilih opsi "baru" (tambah periode), biarkan logika lama (buka manual)
+        if (val === 'baru') {
+            // tampilkan manual UI (jika ada) atau lakukan nothing
+            // ...existing code may handle this case...
+            return;
+        }
+
+        const [awal, akhir] = val.split('|');
+        const nik = "<?= $pegawai_detail->nik ?? '' ?>";
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil',
+            text: 'Periode penilaian telah diperbarui',
+            timer: 2500,
+            showConfirmButton: false,
+            willClose: () => {
+                // Redirect setelah alert close
+                window.location.href = "<?= base_url('Administrator/cariDataPegawai') ?>?nik=" + encodeURIComponent(nik) + "&awal=" + encodeURIComponent(awal) + "&akhir=" + encodeURIComponent(akhir);
+            }
+        });
     });
     // Auto scroll ke bawah saat halaman dibuka
     document.addEventListener("DOMContentLoaded", function() {

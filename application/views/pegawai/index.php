@@ -1,6 +1,15 @@
 <!-- ============================================================== -->
 <!-- Start Page Content here -->
 <!-- ============================================================== -->
+<?php
+/**
+ * @var array $periode_list
+ * @var object $pegawai_detail
+ * @var string $periode_awal
+ * @var string $periode_akhir
+ * @var array $indikator_by_jabatan
+ */
+?>
 <style>
     /* Area chat */
     #chat-box {
@@ -1164,7 +1173,7 @@ if ($message): ?>
                     const parts = val.split('|');
                     const awal = parts[0];
                     const akhir = parts[1];
-                    
+
                     // URL disederhanakan, tidak ada lagi parameter 'tahunan'
                     url = `<?= base_url("Pegawai/index") ?>?nik=${nik}&awal=${awal}&akhir=${akhir}&periode_changed=1`;
 

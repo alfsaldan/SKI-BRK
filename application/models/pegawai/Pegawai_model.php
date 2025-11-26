@@ -307,7 +307,7 @@ class Pegawai_model extends CI_Model
     public function getRekapNilaiTahunan($nik)
     {
         $this->db->where('nik', $nik);
-        $this->db->order_by('periode_awal', 'ASC');
+        $this->db->order_by('periode_awal', 'DESC'); // Urutkan dari yang terbaru
         $query = $this->db->get('nilai_akhir')->result();
 
         if (!$query) return [];
@@ -324,7 +324,8 @@ class Pegawai_model extends CI_Model
             if (!isset($rekap[$tahun])) {
                 $rekap[$tahun] = (object) [
                     'tahun' => $tahun,
-                    'periode' => [],
+                    'periode_aktif' => [],   // Untuk data yang masih berjalan
+                    'periode_selesai' => [], // Untuk data yang sudah selesai
                     'rata_nilai_sasaran' => '-',
                     'rata_nilai_budaya' => '-',
                     'rata_total_nilai' => '-',
@@ -334,18 +335,35 @@ class Pegawai_model extends CI_Model
                 ];
             }
 
-            // 2. Cek apakah ini adalah data tahunan
-            if ($start->format('m-d') == '01-01' && $end->format('m-d') == '12-31') {
-                // Jika ya, langsung gunakan sebagai data rekapitulasi
+            // 2. Cek apakah ini adalah data tahunan -- ubah menjadi periode 1 Okt hingga 31 Des
+            $isTahunan = ($start->format('m-d') == '10-01' && $end->format('m-d') == '12-31');
+
+            if ($isTahunan) {
+                // Jika ya, simpan juga sebagai data rekapitulasi tahunan
                 $rekap[$tahun]->rata_nilai_sasaran = round($row->nilai_sasaran, 2);
                 $rekap[$tahun]->rata_nilai_budaya   = round($row->nilai_budaya, 2);
                 $rekap[$tahun]->rata_total_nilai    = round($row->total_nilai, 2);
                 $rekap[$tahun]->rata_nilai_akhir    = round($row->nilai_akhir, 2);
                 $rekap[$tahun]->rata_pencapaian     = round(floatval(str_replace('%', '', $row->pencapaian)), 2) . '%';
                 $rekap[$tahun]->predikat_tahunan    = $row->predikat;
+
+                // Selain itu, tetap masukkan ke dalam rincian periode agar tercatat juga di list periode
+                $periode_data = (object) [
+                    'periode'        => date('d M Y', strtotime($row->periode_awal)) . ' - ' . date('d M Y', strtotime($row->periode_akhir)),
+                    'periode_awal'   => $row->periode_awal,
+                    'periode_akhir'  => $row->periode_akhir,
+                    'nilai_sasaran' => round($row->nilai_sasaran, 2),
+                    'nilai_budaya'   => round($row->nilai_budaya, 2),
+                    'total_nilai'    => round($row->total_nilai, 2),
+                    'nilai_akhir'    => round($row->nilai_akhir, 2),
+                    'pencapaian'     => round(floatval(str_replace('%', '', $row->pencapaian)), 2),
+                    'predikat'       => $row->predikat,
+                    'fraud'          => $row->fraud ?? '0',
+                    'is_tahunan'     => true
+                ];
             } else {
-                // Jika bukan, masukkan ke dalam rincian periode
-                $rekap[$tahun]->periode[] = (object) [
+                // Jika bukan data tahunan, masukkan ke dalam rincian periode
+                $periode_data = (object) [
                     'periode'        => date('d M Y', strtotime($row->periode_awal)) . ' - ' . date('d M Y', strtotime($row->periode_akhir)),
                     'periode_awal'   => $row->periode_awal,
                     'periode_akhir'  => $row->periode_akhir,
@@ -358,6 +376,27 @@ class Pegawai_model extends CI_Model
                     'fraud'          => $row->fraud ?? '0'
                 ];
             }
+
+            // Pisahkan berdasarkan status penilaian
+            if (isset($periode_data)) {
+                if (strtolower($row->status_penilaian) === 'selesai') {
+                    $rekap[$tahun]->periode_selesai[] = $periode_data;
+                } else {
+                    $rekap[$tahun]->periode_aktif[] = $periode_data;
+                }
+            }
+        }
+
+        // Setelah semua data diproses, urutkan periode di setiap tahun secara ascending (lama ke baru)
+        foreach ($rekap as $tahun => &$data_tahun) {
+            // Urutkan periode selesai
+            usort($data_tahun->periode_selesai, function ($a, $b) {
+                return strtotime($a->periode_awal) <=> strtotime($b->periode_awal);
+            });
+            // Urutkan periode aktif
+            usort($data_tahun->periode_aktif, function ($a, $b) {
+                return strtotime($a->periode_awal) <=> strtotime($b->periode_awal);
+            });
         }
 
         return array_values($rekap);
@@ -412,5 +451,95 @@ class Pegawai_model extends CI_Model
 
         $this->db->where('nik', $nik_pegawai);
         return $this->db->update('pegawai', $data);
+    }
+
+    /**
+     * Ambil data jabatan terakhir yang nonaktif dari riwayat jabatan.
+     */
+    public function getJabatanSebelumnya($nik)
+    {
+        if (empty($nik)) return null;
+
+        return $this->db
+            ->select('jabatan, unit_kerja, unit_kantor, tgl_selesai')
+            ->from('riwayat_jabatan')
+            ->where('nik', $nik)
+            ->where('status', 'nonaktif')
+            ->order_by('tgl_selesai', 'DESC') // Ambil yang paling baru selesai
+            ->limit(1)
+            ->get()->row();
+    }
+
+    /**
+     * Mengambil detail data pegawai (termasuk jabatan, unit, dan penilai)
+     * berdasarkan NIK dan tanggal tertentu dari tabel riwayat jabatan.
+     *
+     * @param string $nik NIK Pegawai
+     * @param string $date Tanggal untuk pengecekan riwayat (Y-m-d)
+     * @return object|null
+     */
+    public function get_pegawai_history_by_date($nik, $date)
+    {
+        $this->db->select('
+            p.nama AS nama_pegawai,
+            rj.nik,
+            rj.jabatan,
+            rj.unit_kerja,
+            NULL AS penilai1_nama,
+            NULL AS penilai2_nama
+        ', FALSE);
+        $this->db->from('pegawai p');
+        // Join ke riwayat jabatan untuk mendapatkan jabatan terakhir yang nonaktif
+        $this->db->join('riwayat_jabatan rj', 'p.nik = rj.nik AND rj.status = "nonaktif"', 'left');
+        $this->db->where('rj.nik', $nik);
+        // Ambil riwayat yang paling baru selesai
+        $this->db->order_by('rj.tgl_selesai', 'DESC');
+        $this->db->limit(1);
+
+        $query = $this->db->get();
+        return $query->row();
+    }
+
+    /**
+     * Mengambil semua data penilaian yang sudah selesai untuk seorang pegawai pada periode tertentu.
+     *
+     * @param string $nik
+     * @param string $awal
+     * @param string $akhir
+     * @return array|null
+     */
+    public function get_arsip_penilaian_by_periode($nik, $awal, $akhir)
+    {
+        // Cek dulu apakah ada penilaian 'selesai' di tabel nilai_akhir
+        $nilai_akhir_check = $this->db->get_where('nilai_akhir', [
+            'nik' => $nik,
+            'periode_awal' => $awal,
+            'periode_akhir' => $akhir,
+            'status_penilaian' => 'selesai'
+        ])->row();
+
+        if (!$nilai_akhir_check) {
+            return null; // Tidak ada data arsip yang selesai untuk periode ini
+        }
+
+        // Ambil detail item penilaian dari tabel 'penilaian'
+        $penilaian_items = $this->db->select('p.*, i.indikator, i.bobot, sk.sasaran_kerja, sk.perspektif')
+            ->from('penilaian p')
+            ->join('indikator i', 'p.indikator_id = i.id', 'left')
+            ->join('sasaran_kerja sk', 'i.sasaran_id = sk.id', 'left')
+            ->where('p.nik', $nik)
+            ->where('p.periode_awal', $awal)
+            ->where('p.periode_akhir', $akhir)
+            ->get()->result();
+
+        // Ambil nilai budaya
+        $budaya_row = $this->db->get_where('budaya_nilai', ['nik_pegawai' => $nik, 'periode_awal' => $awal, 'periode_akhir' => $akhir])->row();
+
+        return [
+            'penilaian_items' => $penilaian_items,
+            'budaya_nilai' => $budaya_row ? json_decode($budaya_row->nilai_budaya, true) : [],
+            'rata_rata_budaya' => $budaya_row ? $budaya_row->rata_rata : 0,
+            'nilai_akhir' => (array) $nilai_akhir_check,
+        ];
     }
 }

@@ -24,6 +24,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
  * @property PenilaiMapping_model $PenilaiMapping_model
  * @property MonitoringPegawai_model $MonitoringPegawai_model
  * @property DataDiri_model $DataDiri_model
+ * @property Administrator_model $Administrator_model
  * @property CI_Input $input
  * @property CI_Loader $load
  * @property CI_Output $output
@@ -45,6 +46,7 @@ class Pegawai extends CI_Controller
         $this->load->model('Penilaian_model');
         $this->load->model('Indikator_model');
         $this->load->model('DataDiri_model');
+        $this->load->model('Administrator_model'); // Diperlukan untuk get_pegawai_history_by_date
         $this->load->library('session');
 
         // Pastikan hanya pegawai yang bisa akses
@@ -79,7 +81,7 @@ class Pegawai extends CI_Controller
             $found_current_periode = false;
 
             // Urutkan periode dari yang terbaru untuk prioritas
-            usort($periode_list, function($a, $b) {
+            usort($periode_list, function ($a, $b) {
                 return strtotime($b->periode_awal) - strtotime($a->periode_awal);
             });
 
@@ -112,15 +114,17 @@ class Pegawai extends CI_Controller
 
         // 🟢 FIX: Ambil dan gabungkan data 'status2' yang hilang dari query model
         if (!empty($indikator)) {
-            $indikator_ids = array_map(function($item) { return $item->id; }, $indikator);
+            $indikator_ids = array_map(function ($item) {
+                return $item->id;
+            }, $indikator);
 
             $status2_data = $this->db->select('indikator_id, status2')
-                                     ->from('penilaian')
-                                     ->where('nik', $nik)
-                                     ->where('periode_awal', $periode_awal)
-                                     ->where('periode_akhir', $periode_akhir)
-                                     ->where_in('indikator_id', $indikator_ids)
-                                     ->get()->result_array();
+                ->from('penilaian')
+                ->where('nik', $nik)
+                ->where('periode_awal', $periode_awal)
+                ->where('periode_akhir', $periode_akhir)
+                ->where_in('indikator_id', $indikator_ids)
+                ->get()->result_array();
 
             $status2_map = array_column($status2_data, 'status2', 'indikator_id');
 
@@ -148,6 +152,16 @@ class Pegawai extends CI_Controller
         // 🔹 Ambil data grafik pencapaian dari tabel nilai_akhir
         $grafik_pencapaian = $this->Pegawai_model->getGrafikPencapaian($nik);
 
+        /**
+         * @var array $data
+         * @property object $pegawai_detail
+         * @property array $indikator_by_jabatan
+         * @property string $periode_awal
+         * @property string $periode_akhir
+         * @property array $periode_list
+         * @property object|null $nilai_akhir
+         * @property bool $is_locked
+         */
         // 🔹 Kirim semua data ke view
         $data = [
             'judul' => "Dashboard Pegawai",
@@ -2209,9 +2223,13 @@ class Pegawai extends CI_Controller
         // Ambil data rekap per tahun dari model Pegawai_model
         $rekap = $this->Pegawai_model->getRekapNilaiTahunan($nik);
 
+        // Ambil data jabatan sebelumnya
+        $jabatan_sebelumnya = $this->Pegawai_model->getJabatanSebelumnya($nik);
+
         $data = [
             'judul' => 'Rekap Nilai Pegawai',
-            'rekap' => $rekap
+            'rekap' => $rekap,
+            'jabatan_sebelumnya' => $jabatan_sebelumnya // Kirim data ke view
         ];
 
         // Load layout view
@@ -2614,5 +2632,62 @@ class Pegawai extends CI_Controller
             'pencapaian_akhir' => $pencapaian_akhir,
             'predikat' => $predikat
         ]);
+    }
+
+    /**
+     * Halaman detail untuk arsip penilaian (halaman kosong).
+     */
+    public function arsipDetail($awal = null, $akhir = null)
+    {
+        // 1. Validasi input dan sesi
+        if (!$this->session->userdata('nik') || !$awal || !$akhir) {
+            // Tampilkan error langsung, jangan redirect ke login
+            show_error('Sesi tidak valid atau periode arsip tidak lengkap. Pastikan Anda mengakses halaman ini dari tautan yang benar.', 403, 'Akses Ditolak');
+            return;
+        }
+
+        $nik_pegawai = $this->session->userdata('nik');
+        $data['title'] = 'Detail Arsip Penilaian';
+
+        // 2. Ambil data riwayat jabatan pegawai pada periode tersebut
+        // Ini adalah langkah kunci untuk mendapatkan jabatan & penilai yang benar
+        $pegawai_history = $this->Pegawai_model->get_pegawai_history_by_date($nik_pegawai, $awal);
+
+        if (!$pegawai_history) {
+            // Jika tidak ada riwayat, coba ambil data pegawai saat ini sebagai fallback
+            $pegawai_history = $this->Pegawai_model->getPegawaiWithPenilai($nik_pegawai);
+            $this->session->set_flashdata('warning', 'Data riwayat jabatan untuk periode ini tidak ditemukan, menampilkan data saat ini.');
+        }
+        $data['pegawai_detail'] = $pegawai_history;
+
+        // 3. Ambil data penilaian yang sudah selesai untuk periode tersebut
+        $penilaian_selesai = $this->Pegawai_model->get_arsip_penilaian_by_periode($nik_pegawai, $awal, $akhir);
+
+        if ($penilaian_selesai) {
+            $data['penilaian'] = $penilaian_selesai['penilaian_items'];
+            $data['budaya_nilai'] = $penilaian_selesai['budaya_nilai'];
+            $data['rata_rata_budaya'] = $penilaian_selesai['rata_rata_budaya'];
+            $data['nilai_akhir'] = $penilaian_selesai['nilai_akhir'];
+            $data['status_penilaian'] = 'selesai';
+        } else {
+            // Jika tidak ada data penilaian yang selesai pada periode itu
+            $data['penilaian'] = [];
+            $data['budaya_nilai'] = [];
+            $data['rata_rata_budaya'] = 0;
+            $data['nilai_akhir'] = [];
+            $data['status_penilaian'] = 'tidak ditemukan';
+        }
+
+        // Ambil master data budaya untuk ditampilkan di tabel
+        $data['budaya'] = $this->db->get('budaya')->result_array();
+
+        // Simpan periode yang dipilih untuk view
+        $data['selected_awal'] = $awal;
+        $data['selected_akhir'] = $akhir;
+
+        // 4. Load view dengan semua data yang sudah disiapkan
+        $this->load->view('layoutpegawai/header', $data);
+        $this->load->view('pegawai/arsip_detail', $data); // View baru yang akan kita buat
+        $this->load->view('layoutpegawai/footer');
     }
 }

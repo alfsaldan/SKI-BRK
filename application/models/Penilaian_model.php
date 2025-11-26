@@ -317,9 +317,11 @@ class Penilaian_model extends CI_Model
 
     public function getNilaiAkhir($nik, $periode_awal, $periode_akhir)
     {
-        return $this->db->where('nik', $nik)
+        $this->db->where('nik', $nik)
             ->where('periode_awal', $periode_awal)
             ->where('periode_akhir', $periode_akhir)
+            ->where("LOWER(status_penilaian) !=", 'selesai');
+        return $this->db
             ->get('nilai_akhir')
             ->row_array();
     }
@@ -407,16 +409,35 @@ class Penilaian_model extends CI_Model
     public function updateStatusPenilaian($nik, $status)
     {
         // Backwards compatible: if $status is actually $status and next params provided, handle later
+        // Juga update tabel nilai_akhir
         $args = func_get_args();
         if (count($args) >= 4) {
             $nik = $args[0];
             $status = $args[1];
             $awal = $args[2];
             $akhir = $args[3];
-            return $this->db->where('nik', $nik)
+
+            $this->db->trans_start();
+
+            // 1. Update tabel penilaian
+            $this->db->where('nik', $nik)
                 ->where('periode_awal', $awal)
                 ->where('periode_akhir', $akhir)
                 ->update('penilaian', ['status_penilaian' => $status]);
+
+            // 2. Update tabel nilai_akhir dan budaya
+            $this->db->where('nik', $nik)
+                ->where('periode_awal', $awal)
+                ->where('periode_akhir', $akhir)
+                ->update('nilai_akhir', ['status_penilaian' => $status]);
+
+            $this->db->where('nik_pegawai', $nik)
+                ->where('periode_awal', $awal)
+                ->where('periode_akhir', $akhir)
+                ->update('budaya_nilai', ['status_penilaian' => $status]);
+
+            $this->db->trans_complete();
+            return $this->db->trans_status();
         }
 
         // Default: update all records for nik
@@ -521,6 +542,9 @@ class Penilaian_model extends CI_Model
         if ($periode_akhir) {
             $this->db->where('periode_akhir', $periode_akhir);
         }
+
+        // ❌ Jangan ambil data yang sudah selesai
+        $this->db->where("LOWER(status_penilaian) !=", 'selesai');
 
         $result = $this->db->get('budaya_nilai')->row(); // gunakan row() biar object
 
