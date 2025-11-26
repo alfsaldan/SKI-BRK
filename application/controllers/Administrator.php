@@ -928,40 +928,55 @@ class Administrator extends CI_Controller
     // Tambah Jabatan Baru
     public function updateJabatan()
     {
-        $this->load->model('DataPegawai_model');
-        $this->load->model('Administrator_model');
-
         $nik = $this->input->post('nik');
         $jabatan = $this->input->post('jabatan');
         $unit_kerja = $this->input->post('unit_kerja');
         $unit_kantor = $this->input->post('unit_kantor');
         $tgl_mulai = $this->input->post('tgl_mulai');
 
+        // 1. Validasi input
+        if (empty($nik) || empty($jabatan) || empty($unit_kerja) || empty($unit_kantor) || empty($tgl_mulai)) {
+            $this->session->set_flashdata('error', 'Data tidak lengkap. Gagal memproses mutasi jabatan.');
+            redirect('Administrator/detailPegawai/' . $nik);
+            return;
+        }
+
+        $this->load->model('DataPegawai_model');
+        $this->load->model('Administrator_model');
+
         // Jika pegawai memiliki penilaian, pastikan semua status_penilaian = 'disetujui'
         $hasPenilaian = $this->Administrator_model->hasPenilaian($nik);
         if ($hasPenilaian) {
             $allApproved = $this->Administrator_model->semuaPenilaianDisetujui($nik);
             if (!$allApproved) {
-                $this->session->set_flashdata('error', 'Tidak dapat menambah jabatan baru. Masih ada penilaian yang belum disetujui atau selesai.');
+                $this->session->set_flashdata('error', 'Tidak dapat menambah jabatan baru. Masih ada penilaian yang belum disetujui.');
                 redirect('Administrator/detailPegawai/' . $nik);
                 return;
             }
         }
 
-        // Jika sampai sini: tidak ada penilaian atau semua sudah disetujui.
-        // Lakukan update dalam transaksi: ubah status_penilaian -> 'selesai' lalu tambah riwayat jabatan.
+        // Tanggal selesai untuk jabatan lama & periode penilaian adalah H-1 dari tanggal mulai jabatan baru
+        $tgl_selesai_lama = date('Y-m-d', strtotime('-1 day', strtotime($tgl_mulai)));
+
         $this->db->trans_start();
 
         if ($hasPenilaian) {
             $this->Administrator_model->markPenilaianSelesai($nik);
         }
 
+        // Akhiri periode penilaian yang sedang berjalan (yang mencakup tanggal mutasi)
+        $data_update_periode = ['periode_akhir' => $tgl_selesai_lama];
+        $this->db->where('nik', $nik)->where('periode_awal <=', $tgl_mulai)->where('periode_akhir >=', $tgl_mulai)->update('penilaian', $data_update_periode);
+        $this->db->where('nik', $nik)->where('periode_awal <=', $tgl_mulai)->where('periode_akhir >=', $tgl_mulai)->update('nilai_akhir', $data_update_periode);
+        $this->db->where('nik_pegawai', $nik)->where('periode_awal <=', $tgl_mulai)->where('periode_akhir >=', $tgl_mulai)->update('budaya_nilai', $data_update_periode);
+
+        // Tambah riwayat jabatan baru (model ini juga menonaktifkan jabatan lama)
         $this->DataPegawai_model->tambahRiwayatJabatan($nik, $jabatan, $unit_kerja, $unit_kantor, $tgl_mulai);
 
         $this->db->trans_complete();
 
         if ($this->db->trans_status() === false) {
-            $this->session->set_flashdata('error', 'Gagal menambahkan jabatan baru. Silakan coba lagi.');
+            $this->session->set_flashdata('error', 'Gagal memproses mutasi jabatan. Terjadi kesalahan database.');
         } else {
             $this->session->set_flashdata('success', 'Riwayat jabatan baru berhasil ditambahkan.');
         }

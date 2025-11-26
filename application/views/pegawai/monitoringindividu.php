@@ -56,7 +56,7 @@
                 </div>
             </div>
 
-            <div class="row d-flex align-items-stretch justify-content-start">
+            <div class="row mt-0 d-flex align-items-stretch justify-content-start">
                 <!-- Card Pilih Periode -->
                 <div class="col-md-6 mb-3">
                     <div class="card h-100">
@@ -135,7 +135,7 @@
 
                 <div class="row">
                     <div class="col-12">
-                        <div class="card shadow-sm border-0 mt-3">
+                        <div class="card shadow-sm border-0 mt-0">
                             <div class="card-body">
                                 <!-- Detail singkat Pegawai -->
                                 <div class="row mb-3">
@@ -188,7 +188,7 @@
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <div class="card shadow-sm border-0 mt-3">
+                        <div class="card shadow-sm border-0 mt-0">
                             <div class="card-body">
                                 <h5 class="text-success font-weight-bold mb-3">
                                     <i class="mdi mdi-star-circle mr-2"></i> Hasil Penilaian
@@ -367,7 +367,7 @@
                 </div>
 
                 <!-- Form Penilaian Budaya (Read-Only untuk Pegawai) -->
-                <div class="row mt-4" hidden>
+                <div class="row mt-0" hidden>
                     <div class="col-12">
                         <div class="card shadow-sm border-0">
                             <div class="card-body">
@@ -485,7 +485,7 @@
                 </div>
 
                 <!-- Nilai Akhir & Predikat -->
-                <div class="card mt-4">
+                <div class="card mt-0">
                     <div class="card-body">
                         <h5 class="text-success fw-bold mb-3">
                             <i class="mdi mdi-star-circle mr-2"></i> Nilai Akhir

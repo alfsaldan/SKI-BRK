@@ -18,7 +18,7 @@
             </div>
 
             <div class="row d-flex align-items-stretch">
-                <div class="col-12 mb-3 d-flex">
+                <div class="col-12 mb-0 d-flex">
                     <div class="card w-100">
                         <div class="card-body">
                             <h5 class="text-primary font-weight-bold mb-3">
@@ -139,7 +139,7 @@
 
                 <div class="row">
                     <div class="col-12">
-                        <div class="card shadow-sm border-0 mt-3">
+                        <div class="card shadow-sm border-0 mt-0">
                             <div class="card-body">
 
                                 <!-- Detail singkat Pegawai -->
@@ -163,7 +163,7 @@
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Unit Kantor</span>
-                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                                <span class="text-dark"><?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
                                             </li>
                                         </ul>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
@@ -193,7 +193,7 @@
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <div class="card shadow-sm border-0 mt-3">
+                        <div class="card shadow-sm border-0 mt-0">
                             <div class="card-body">
                                 <h5 class="text-success font-weight-bold mb-3">
                                     <i class="mdi mdi-star-circle mr-2"></i> Hasil Penilaian
@@ -446,7 +446,7 @@
                 </div>
 
                 <!-- Nilai Akhir & Predikat -->
-                <div class="card mt-4">
+                <div class="card mt-0">
                     <div class="card-body">
                         <h5 class="text-success fw-bold mb-3">
                             <i class="mdi mdi-star-circle mr-2"></i> Nilai Akhir

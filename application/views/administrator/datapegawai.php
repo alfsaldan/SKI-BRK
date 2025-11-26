@@ -59,7 +59,7 @@
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Jenis Unit</span>
-                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                                <span class="text-dark"><?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
                                             </li>
                                         </ul>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
@@ -102,7 +102,7 @@
                                             <!-- Unit Kantor Penilai -->
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Unit Kantor Penilai</span>
-                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                                <span class="text-dark"><?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                             </li>
@@ -170,7 +170,7 @@
         <!-- Tabel Penilaian -->
         <div class="row">
             <div class="col-12">
-                <div class="card mt-3">
+                <div class="card mt-0">
                     <div class="card-body">
                         <h5 class="text-success font-weight-bold mb-3">
                             <i class="mdi mdi-star-circle mr-2"></i> Hasil Penilaian
@@ -303,7 +303,7 @@
         </div>
 
         <!-- Form Penilaian Budaya (Read-Only untuk Pegawai) -->
-        <div class="row mt-4">
+        <div class="row mt-0">
             <div class="col-12">
                 <div class="card shadow-sm border-0">
                     <div class="card-body">
@@ -421,7 +421,7 @@
         </div>
 
         <!-- Nilai Akhir & Predikat -->
-        <div class="card mt-4">
+        <div class="card mt-0">
             <div class="card-body">
                 <h5 class="text-success fw-bold mb-3">
                     <i class="mdi mdi-star-circle mr-2"></i> Nilai Akhir
@@ -574,7 +574,7 @@
 
 
         <!-- Aktivitas Coaching / Chat -->
-        <div class="card mt-4 border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="card mt-0 border-0 shadow-lg rounded-4 overflow-hidden">
             <div class="card-header text-white fw-bold"
                 style="background: linear-gradient(135deg, #05b01cff, #027400ff); font-size:1.1rem;">
                 <i class="bi bi-chat-text-fill me-2"></i> Aktivitas Coaching

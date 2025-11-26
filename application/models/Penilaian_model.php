@@ -307,10 +307,11 @@ class Penilaian_model extends CI_Model
 
     public function getPeriodeList()
     {
-        return $this->db->select('periode_awal, periode_akhir')
+        return $this->db->distinct()
+            ->select('periode_awal, periode_akhir')
             ->from('penilaian')
-            ->group_by(['periode_awal', 'periode_akhir'])
-            ->order_by('periode_awal', 'DESC')
+            ->where("LOWER(status_penilaian) !=", 'selesai')
+            ->order_by('periode_awal', 'ASC')
             ->get()
             ->result();
     }

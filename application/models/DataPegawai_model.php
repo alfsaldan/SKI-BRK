@@ -217,11 +217,13 @@ class DataPegawai_model extends CI_Model
 
     public function getAvailablePeriode()
     {
-        $this->db->select('periode_awal, periode_akhir');
-        $this->db->from('penilaian');
-        $this->db->group_by(['periode_awal', 'periode_akhir']);
-        $this->db->order_by('periode_awal', 'DESC');
-        return $this->db->get()->result();
+        return $this->db->distinct()
+            ->select('periode_awal, periode_akhir')
+            ->from('penilaian')
+            ->where("LOWER(status_penilaian) !=", 'selesai')
+            ->order_by('periode_awal', 'ASC')
+            ->get()
+            ->result();
     }
 
     // 🔹 Ambil nilai akhir pegawai dari tabel nilai_akhir

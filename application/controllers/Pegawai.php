@@ -2223,15 +2223,22 @@ class Pegawai extends CI_Controller
         // Ambil data rekap per tahun dari model Pegawai_model
         $rekap = $this->Pegawai_model->getRekapNilaiTahunan($nik);
 
-        // Ambil data jabatan sebelumnya
-        $jabatan_sebelumnya = $this->Pegawai_model->getJabatanSebelumnya($nik);
+        // Ambil SEMUA riwayat jabatan yang sudah tidak aktif
+        $riwayat_jabatan = $this->Pegawai_model->getRiwayatJabatanNonAktif($nik);
 
+        // Ambil data jabatan sekarang
+        $jabatan_sekarang = $this->db->select('jabatan, unit_kerja, unit_kantor')
+            ->from('pegawai')
+            ->where('nik', $nik)
+            ->get()->row();
+        
         $data = [
             'judul' => 'Rekap Nilai Pegawai',
             'rekap' => $rekap,
-            'jabatan_sebelumnya' => $jabatan_sebelumnya // Kirim data ke view
+            'riwayat_jabatan' => $riwayat_jabatan, // Kirim data riwayat ke view
+            'jabatan_sekarang' => $jabatan_sekarang // Kirim data jabatan sekarang ke view
         ];
-
+        
         // Load layout view
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/rekap_nilai', $data);
@@ -2651,7 +2658,7 @@ class Pegawai extends CI_Controller
 
         // 2. Ambil data riwayat jabatan pegawai pada periode tersebut
         // Ini adalah langkah kunci untuk mendapatkan jabatan & penilai yang benar
-        $pegawai_history = $this->Pegawai_model->get_pegawai_history_by_date($nik_pegawai, $awal);
+        $pegawai_history = $this->Pegawai_model->get_pegawai_history_by_date($nik_pegawai, $awal, $akhir);
 
         if (!$pegawai_history) {
             // Jika tidak ada riwayat, coba ambil data pegawai saat ini sebagai fallback

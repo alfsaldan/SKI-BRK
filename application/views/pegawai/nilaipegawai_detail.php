@@ -825,7 +825,7 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title">Catatan Penilai</h5>
+                                <h5 class="card-title">Formulir Feedback</h5>
                                 <!-- <form id="form-catatan" class="mb-3">
                                     <input type="hidden" name="nik_pegawai" value="<?= $pegawai_detail->nik ?>">
                                     <textarea name="catatan" id="catatan" class="form-control mb-2" rows="3" placeholder="Masukkan catatan"></textarea>

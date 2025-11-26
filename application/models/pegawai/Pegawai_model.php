@@ -175,11 +175,13 @@ class Pegawai_model extends CI_Model
     {
         // Mengembalikan ke versi sederhana: hanya mengambil periode yang ada di database.
         // Tidak ada lagi pembuatan rekap tahunan otomatis.
-        $this->db->select('periode_awal, periode_akhir');
-        $this->db->from('penilaian');
-        $this->db->group_by(['periode_awal', 'periode_akhir']);
-        $this->db->order_by('periode_awal', 'DESC');
-        return $this->db->get()->result();
+        return $this->db->distinct()
+            ->select('periode_awal, periode_akhir')
+            ->from('penilaian')
+            ->where("LOWER(status_penilaian) !=", 'selesai')
+            ->order_by('periode_awal', 'DESC')
+            ->get()
+            ->result();
     }
 
 
@@ -318,6 +320,7 @@ class Pegawai_model extends CI_Model
         foreach ($query as $row) {
             $tahun = date('Y', strtotime($row->periode_awal));
             $start = new DateTime($row->periode_awal);
+            $koefisien_tahunan = $row->koefisien ?? 100; // Ambil koefisien dari data terbaru
             $end   = new DateTime($row->periode_akhir);
 
             // Inisialisasi rekap tahunan jika belum ada
@@ -377,29 +380,143 @@ class Pegawai_model extends CI_Model
                 ];
             }
 
+            // Cek apakah ada periode yang selesai (diarsip) dalam tahun ini
+            $has_arsip = !empty($rekap[$tahun]->periode_selesai);
+
             // Pisahkan berdasarkan status penilaian
             if (isset($periode_data)) {
                 if (strtolower($row->status_penilaian) === 'selesai') {
                     $rekap[$tahun]->periode_selesai[] = $periode_data;
+                    $has_arsip = true; // Tandai bahwa ada arsip
                 } else {
                     $rekap[$tahun]->periode_aktif[] = $periode_data;
                 }
             }
+
         }
 
-        // Setelah semua data diproses, urutkan periode di setiap tahun secara ascending (lama ke baru)
+        // Proses perhitungan rata-rata tertimbang SETELAH semua data periode dikumpulkan
         foreach ($rekap as $tahun => &$data_tahun) {
-            // Urutkan periode selesai
-            usort($data_tahun->periode_selesai, function ($a, $b) {
-                return strtotime($a->periode_awal) <=> strtotime($b->periode_awal);
-            });
-            // Urutkan periode aktif
-            usort($data_tahun->periode_aktif, function ($a, $b) {
-                return strtotime($a->periode_awal) <=> strtotime($b->periode_awal);
-            });
+            // Jika ada riwayat perpindahan jabatan (ada arsip), hitung ulang rekap tahunan
+            if (!empty($data_tahun->periode_selesai)) {
+                $semua_periode_tahun_ini = array_merge($data_tahun->periode_selesai, $data_tahun->periode_aktif);
+
+                // Urutkan semua periode berdasarkan tanggal mulai untuk menangani overlap
+                usort($semua_periode_tahun_ini, function ($a, $b) {
+                    return strtotime($a->periode_awal) <=> strtotime($b->periode_awal);
+                });
+
+                $last_end_date = null;
+                $total_hari = 0;
+                $total_bobot_nilai_sasaran = 0;
+                $total_bobot_nilai_budaya = 0;
+                $total_bobot_total_nilai = 0;
+                $total_bobot_nilai_akhir = 0;
+                $total_bobot_pencapaian = 0;
+
+                foreach ($semua_periode_tahun_ini as $p) {
+                    $tgl_awal = new DateTime($p->periode_awal);
+
+                    // Jika ada overlap, sesuaikan tanggal mulai periode saat ini
+                    if ($last_end_date && $tgl_awal <= $last_end_date) {
+                        $tgl_awal = (clone $last_end_date)->modify('+1 day');
+                    }
+
+                    $tgl_akhir = new DateTime($p->periode_akhir);
+
+                    // Hitung durasi periode dalam hari
+                    $durasi_hari = 0;
+                    if ($tgl_akhir >= $tgl_awal) {
+                        $durasi_hari = $tgl_akhir->diff($tgl_awal)->days + 1;
+                    }
+
+                    if ($durasi_hari <= 0) continue; // Lewati jika durasi tidak valid
+
+                    $total_hari += $durasi_hari;
+
+                    // Akumulasi nilai yang sudah dikalikan dengan bobot durasi
+                    $total_bobot_nilai_sasaran += $p->nilai_sasaran * $durasi_hari;
+                    $total_bobot_nilai_budaya += $p->nilai_budaya * $durasi_hari;
+                    $total_bobot_total_nilai += $p->total_nilai * $durasi_hari;
+                    $total_bobot_nilai_akhir += $p->nilai_akhir * $durasi_hari;
+                    $total_bobot_pencapaian += $p->pencapaian * $durasi_hari;
+
+                    // Simpan tanggal akhir periode ini untuk pengecekan overlap berikutnya
+                    $last_end_date = $tgl_akhir;
+                }
+
+                // Hitung rata-rata tertimbang
+                if ($total_hari > 0) {
+                    $data_tahun->rata_nilai_sasaran = round($total_bobot_nilai_sasaran / $total_hari, 2);
+                    $data_tahun->rata_nilai_budaya  = round($total_bobot_nilai_budaya / $total_hari, 2);
+                    $data_tahun->rata_total_nilai   = round($total_bobot_total_nilai / $total_hari, 2);
+                    $nilai_akhir_rata_rata          = round($total_bobot_nilai_akhir / $total_hari, 2);
+                    $data_tahun->rata_nilai_akhir   = $nilai_akhir_rata_rata;
+                    $data_tahun->rata_pencapaian    = $this->_hitungPencapaianTahunan($nilai_akhir_rata_rata, $koefisien_tahunan);
+                    $data_tahun->predikat_tahunan   = $this->_hitungPredikatTahunan($nilai_akhir_rata_rata, $koefisien_tahunan);
+                }
+            }
+
+            // Hanya urutkan jika ada isinya
+            if (!empty($data_tahun->periode_selesai)) {
+                usort($data_tahun->periode_selesai, function ($a, $b) {
+                    return strtotime($a->periode_awal) <=> strtotime($b->periode_awal);
+                });
+            }
+            if (!empty($data_tahun->periode_aktif)) {
+                usort($data_tahun->periode_aktif, function ($a, $b) {
+                    return strtotime($a->periode_awal) <=> strtotime($b->periode_awal);
+                });
+            }
         }
 
         return array_values($rekap);
+    }
+
+    /**
+     * Menghitung predikat tahunan berdasarkan nilai akhir rata-rata tertimbang.
+     */
+    private function _hitungPredikatTahunan($nilaiAkhir, $koefisien = 100)
+    {
+        if ($nilaiAkhir === null || $nilaiAkhir === 0) return "Belum Ada Nilai";
+
+        $koef = ($koefisien ?: 100) / 100;
+
+        if ($nilaiAkhir < 2 * $koef) return "Minus";
+        if ($nilaiAkhir < 3 * $koef) return "Fair";
+        if ($nilaiAkhir < 3.5 * $koef) return "Good";
+        if ($nilaiAkhir < 4.5 * $koef) return "Very Good";
+        return "Excellent";
+    }
+
+    /**
+     * Menghitung pencapaian tahunan berdasarkan nilai akhir rata-rata tertimbang.
+     */
+    private function _hitungPencapaianTahunan($nilaiAkhir, $koefisien = 100)
+    {
+        if ($nilaiAkhir === null) return "0%";
+
+        $koef = ($koefisien ?: 100) / 100;
+        $v = (float) $nilaiAkhir;
+        $pencapaian = 0;
+
+        if ($v < 0) {
+            $pencapaian = 0;
+        } else if ($v < 2 * $koef) {
+            $pencapaian = ($v / 2) * 0.8 * 100;
+        } else if ($v < 3 * $koef) {
+            $pencapaian = 80 + (($v - 2) / 1) * 10;
+        } else if ($v < 3.5 * $koef) {
+            $pencapaian = 90 + (($v - 3) / 0.5) * 20;
+        } else if ($v < 4.5 * $koef) {
+            $pencapaian = 110 + (($v - 3.5) / 1) * 10;
+        } else if ($v < 5 * $koef) {
+            $pencapaian = 120 + (($v - 4.5) / 0.5) * 10;
+        } else {
+            $pencapaian = 130;
+        }
+
+        return round(min($pencapaian, 130), 2) . '%';
     }
 
 
@@ -475,25 +592,31 @@ class Pegawai_model extends CI_Model
      * berdasarkan NIK dan tanggal tertentu dari tabel riwayat jabatan.
      *
      * @param string $nik NIK Pegawai
-     * @param string $date Tanggal untuk pengecekan riwayat (Y-m-d)
+     * @param string $awal Tanggal awal periode penilaian (Y-m-d)
+     * @param string $akhir Tanggal akhir periode penilaian (Y-m-d)
      * @return object|null
      */
-    public function get_pegawai_history_by_date($nik, $date)
+    public function get_pegawai_history_by_date($nik, $awal, $akhir)
     {
         $this->db->select('
             p.nama AS nama_pegawai,
             rj.nik,
             rj.jabatan,
-            rj.unit_kerja,
+            rj.unit_kantor,
             NULL AS penilai1_nama,
             NULL AS penilai2_nama
         ', FALSE);
         $this->db->from('pegawai p');
-        // Join ke riwayat jabatan untuk mendapatkan jabatan terakhir yang nonaktif
-        $this->db->join('riwayat_jabatan rj', 'p.nik = rj.nik AND rj.status = "nonaktif"', 'left');
+        // Join ke riwayat jabatan
+        $this->db->join('riwayat_jabatan rj', 'p.nik = rj.nik', 'left');
         $this->db->where('rj.nik', $nik);
-        // Ambil riwayat yang paling baru selesai
-        $this->db->order_by('rj.tgl_selesai', 'DESC');
+        $this->db->where('rj.status', 'nonaktif');
+
+        // Ambil riwayat jabatan yang relevan dengan periode arsip.
+        // Logikanya: cari riwayat jabatan yang tanggal selesainya paling mendekati (tapi setelah) tanggal akhir periode penilaian.
+        $this->db->where('DATE(rj.tgl_selesai) >=', $akhir);
+
+        $this->db->order_by('rj.tgl_selesai', 'ASC'); // Urutkan dari yang paling mendekati
         $this->db->limit(1);
 
         $query = $this->db->get();
@@ -541,5 +664,23 @@ class Pegawai_model extends CI_Model
             'rata_rata_budaya' => $budaya_row ? $budaya_row->rata_rata : 0,
             'nilai_akhir' => (array) $nilai_akhir_check,
         ];
+    }
+
+    /**
+     * Mengambil semua riwayat jabatan yang sudah tidak aktif untuk seorang pegawai.
+     * Riwayat ini diurutkan dari yang paling baru (tanggal selesai terbaru).
+     *
+     * @param string $nik NIK Pegawai
+     * @return array
+     */
+    public function getRiwayatJabatanNonAktif($nik)
+    {
+        return $this->db->select('jabatan, unit_kerja, unit_kantor, tgl_mulai, tgl_selesai')
+            ->from('riwayat_jabatan')
+            ->where('nik', $nik)
+            ->where('status', 'nonaktif') // Hanya ambil yang sudah tidak aktif
+            ->order_by('tgl_selesai', 'ASC') // Urutkan dari yang terlama
+            ->get()
+            ->result();
     }
 }

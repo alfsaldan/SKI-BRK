@@ -180,47 +180,71 @@
                           <h5 class="text-muted font-weight-bold"><i class="mdi mdi-file-chart"></i> Arsip Penilaian Selesai</h5>
                         </div>
 
-                        <!-- Menampilkan Jabatan Sebelumnya -->
-                        <?php if (isset($jabatan_sebelumnya) && $jabatan_sebelumnya): ?>
-                          <div class="col-12 mb-4">
-                            <div class="row">
-                              <!-- Info Jabatan -->
-                              <div class="col-md-4 mb-3">
-                                <div class="alert alert-light border-primary shadow-sm h-100 d-flex align-items-center py-2 px-3">
-                                  <i class="mdi mdi-briefcase-outline mdi-24px text-primary mr-3"></i>
-                                  <div>
-                                    <small class="d-block text-muted">Jabatan Sebelumnya</small>
-                                    <strong class="d-block"><?= htmlspecialchars($jabatan_sebelumnya->jabatan) ?></strong>
+                        <?php
+                        $last_jabatan_selesai = null;
+                        $periode_selesai_tersisa = $r->periode_selesai;
+                        if (isset($riwayat_jabatan) && !empty($riwayat_jabatan)) {
+                          $total_riwayat = count($riwayat_jabatan);
+                          foreach ($riwayat_jabatan as $index => $jabatan) {
+                        ?>
+                            <div class="col-12 mb-4">
+                              <div class="row">
+                                <!-- Info Jabatan -->
+                                <div class="col-md-4 mb-3">
+                                  <div class="alert alert-light border-primary shadow-sm h-100 d-flex align-items-center py-2 px-3">
+                                    <i class="mdi mdi-briefcase-outline mdi-24px text-primary mr-3"></i>
+                                    <div>
+                                      <small class="d-block text-muted">Jabatan Sebelumnya</small>
+                                      <strong class="d-block"><?= htmlspecialchars($jabatan->jabatan) ?></strong>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              <!-- Info Unit Kantor -->
-                              <div class="col-md-4 mb-3">
-                                <div class="alert alert-light border-success shadow-sm h-100 d-flex align-items-center py-2 px-3">
-                                  <i class="mdi mdi-domain mdi-24px text-success mr-3"></i>
-                                  <div>
-                                    <small class="d-block text-muted">Unit Kantor</small>
-                                    <strong class="d-block"><?= htmlspecialchars($jabatan_sebelumnya->unit_kantor) ?></strong>
+                                <!-- Info Unit Kantor -->
+                                <div class="col-md-4 mb-3">
+                                  <div class="alert alert-light border-success shadow-sm h-100 d-flex align-items-center py-2 px-3">
+                                    <i class="mdi mdi-domain mdi-24px text-success mr-3"></i>
+                                    <div>
+                                      <small class="d-block text-muted">Unit Kantor Sebelumnya</small>
+                                      <strong class="d-block"><?= htmlspecialchars($jabatan->unit_kantor) ?></strong>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              <div class="col-md-4 mb-3">
-                                <div class="alert alert-light border-danger shadow-sm h-100 d-flex align-items-center py-2 px-3">
-                                  <i class="mdi mdi-calendar-check-outline mdi-24px text-danger mr-3"></i>
-                                  <div>
-                                    <small class="d-block text-muted">Tanggal Selesai</small>
-                                    <strong class="d-block"><?= date('d M Y', strtotime($jabatan_sebelumnya->tgl_selesai)) ?></strong>
+                                <div class="col-md-4 mb-3">
+                                  <div class="alert alert-light border-danger shadow-sm h-100 d-flex align-items-center py-2 px-3">
+                                    <i class="mdi mdi-calendar-check-outline mdi-24px text-danger mr-3"></i>
+                                    <div>
+                                      <small class="d-block text-muted">Tanggal Selesai</small>
+                                      <strong class="d-block"><?= date('d M Y', strtotime($jabatan->tgl_selesai)) ?></strong>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        <?php endif; ?>
+                        <?php
+                            $periode_jabatan_ini = [];
+                            $tgl_selesai_jabatan_ini = strtotime($jabatan->tgl_selesai);
 
-                        <?php foreach ($r->periode_selesai as $p): ?>
-                          <?php render_rekap_card($p, $column_class, true); // Tandai sebagai arsip 
-                          ?>
-                        <?php endforeach; ?>
+                            foreach ($periode_selesai_tersisa as $key => $p) {
+                              $tgl_akhir_periode = strtotime($p->periode_akhir);
+                              // Tampilkan periode jika tanggal akhirnya <= tgl selesai jabatan ini
+                              // DAN (ini jabatan pertama ATAU tgl akhirnya > tgl selesai jabatan sebelumnya)
+                              if ($tgl_akhir_periode <= $tgl_selesai_jabatan_ini && ($last_jabatan_selesai === null || $tgl_akhir_periode > $last_jabatan_selesai)) {
+                                render_rekap_card($p, $column_class, true); // Tandai sebagai arsip
+                                unset($periode_selesai_tersisa[$key]); // Hapus periode yang sudah ditampilkan
+                              }
+                            }
+                            $last_jabatan_selesai = $tgl_selesai_jabatan_ini;
+
+                            // Tambahkan pemisah jika ini bukan riwayat jabatan terakhir
+                            if ($index < $total_riwayat - 1) {
+                        ?>
+                              <div class="col-12 my-3">
+                                <hr style="border-top: 2px dashed #ccc;">
+                              </div>
+                        <?php }
+                          } // end foreach riwayat_jabatan
+                        } // end if isset riwayat_jabatan
+                        ?>
                       </div>
                       <div class="w-100"></div> <!-- Force new line -->
                       <?php if (!empty($r->periode_aktif)): ?>
@@ -235,6 +259,33 @@
                       <div class="col-12 mb-3">
                         <h5 class="text-success font-weight-bold"><i class="mdi mdi-run-fast"></i> Penilaian Aktif</h5>
                       </div>
+                      <!-- Menampilkan Jabatan Sekarang -->
+                      <?php if (isset($jabatan_sekarang) && $jabatan_sekarang): ?>
+                        <div class="col-12 mb-3">
+                          <div class="row">
+                            <!-- Info Jabatan -->
+                            <div class="col-md-6 mb-2">
+                              <div class="alert alert-light border-primary shadow-sm h-100 d-flex align-items-center py-2 px-3">
+                                <i class="mdi mdi-briefcase-outline mdi-24px text-primary mr-3"></i>
+                                <div>
+                                  <small class="d-block text-muted">Jabatan</small>
+                                  <strong class="d-block"><?= htmlspecialchars($jabatan_sekarang->jabatan) ?></strong>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- Info Unit Kantor -->
+                            <div class="col-md-6 mb-2">
+                              <div class="alert alert-light border-success shadow-sm h-100 d-flex align-items-center py-2 px-3">
+                                <i class="mdi mdi-domain mdi-24px text-success mr-3"></i>
+                                <div>
+                                  <small class="d-block text-muted">Unit Kantor</small>
+                                  <strong class="d-block"><?= htmlspecialchars($jabatan_sekarang->unit_kantor) ?></strong>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      <?php endif; ?>
                       <div class="row justify-content-center w-100">
                         <?php foreach ($r->periode_aktif as $p): ?>
                           <?php render_rekap_card($p, $column_class); ?>
@@ -245,7 +296,7 @@
 
                   <div class="card mt-0 shadow-sm">
                     <div class="card-body">
-                      <div class="row text-center">4
+                      <div class="row text-center">
                         <div class="col">
                           <div class="rekap-item p-2 rounded">
                             <h5 class="mb-0 font-weight-bold text-predikat-<?= $predikat_tahunan_class ?>"><?= $r->rata_nilai_sasaran ?></h5>

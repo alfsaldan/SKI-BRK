@@ -19,7 +19,7 @@
 
             <div class="row d-flex align-items-stretch">
                 <!-- Card Pilih Periode Penilaian -->
-                <div class="col-12 col-md-6 mb-3 d-flex">
+                <div class="col-12 col-md-6 mb-0 d-flex">
                     <div class="card w-100">
                         <div class="card-body">
                             <h5 class="text-primary font-weight-bold mb-3">
@@ -82,7 +82,7 @@
                 </div>
 
                 <!-- Card Masukkan NIK Pegawai -->
-                <div class="col-12 col-md-6 mb-3 d-flex">
+                <div class="col-12 col-md-6 mb-0 d-flex">
                     <div class="card w-100">
                         <div class="card-body">
                             <h5>Masukkan NIK Pegawai</h5>
@@ -124,7 +124,7 @@
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Unit Kantor</span>
-                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                                <span class="text-dark"><?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
                                             </li>
                                         </ul>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
@@ -148,7 +148,7 @@
                                             <!-- Unit Kantor Penilai -->
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Unit Kantor Penilai</span>
-                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                                <span class="text-dark"><?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                             </li>
@@ -418,7 +418,7 @@
                     </div>
                 </div>
                 <!-- Form Penilaian Budaya (Read-Only untuk Pegawai) -->
-                <div class="row mt-4">
+                <div class="row mt-0">
                     <div class="col-12">
                         <div class="card shadow-sm border-0">
                             <div class="card-body">
@@ -536,7 +536,7 @@
                 </div>
 
                 <!-- Nilai Akhir & Catatan -->
-                <div class="card mt-4">
+                <div class="card mt-0">
                     <div class="card-body">
                         <h5 class="text-success font-weight-bold mb-3">
                             <i class="mdi mdi-star-circle mr-2"></i> Nilai Akhir (q)
@@ -699,7 +699,7 @@
                 </div>
 
                 <!-- Catatan Penilai & Pegawai -->
-                <div class="row mt-3">
+                <div class="row mt-0">
                     <!-- Catatan Penilai -->
                     <div class="col-md-6">
                         <div class="card">

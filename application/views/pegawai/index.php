@@ -276,7 +276,7 @@
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Unit Kantor</span>
-                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                                <span class="text-dark"><?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
                                             </li>
                                         </ul>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
@@ -335,7 +335,7 @@
                                         </div>
 
                                         <p class="mt-2 text-dark font-weight-medium">
-                                            <b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?>
+                                            <b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kantor ?? '-'; ?>
                                         </p>
                                     </div>
                                 </div>
@@ -706,7 +706,7 @@
                 </div>
 
                 <!-- Form Penilaian Budaya (Read-Only untuk Pegawai) -->
-                <div class="row mt-4">
+                <div class="row mt-0">
                     <div class="col-12">
                         <div class="card shadow-sm border-0">
                             <div class="card-body">
@@ -821,7 +821,7 @@
 
                 <!-- ================== FORM NILAI AKHIR ================== -->
                 <!-- Nilai Akhir & Catatan -->
-                <div class="card mt-4">
+                <div class="card mt-0">
                     <div class="card-body">
                         <h5 class="text-success font-weight-bold mb-3">
                             <i class="mdi mdi-star-circle mr-2"></i> Nilai Akhir (q)

@@ -91,12 +91,12 @@
                                 value="<?= htmlspecialchars($pegawai_detail->jabatan ?? '-', ENT_QUOTES, 'UTF-8') ?>">
                         </div>
                         <div class="col-md-4">
-                            <label class="fw-bold text-secondary">Unit Kerja</label>
+                            <label class="fw-bold text-secondary">Unit Kantor</label>
                             <input type="text" class="form-control" readonly
-                                value="<?= htmlspecialchars($pegawai_detail->unit_kerja ?? '-', ENT_QUOTES, 'UTF-8') ?>">
+                                value="<?= htmlspecialchars($pegawai_detail->unit_kantor ?? '-', ENT_QUOTES, 'UTF-8') ?>">
                         </div>
                         <div class="col-md-4">
-                            <label class="fw-bold text-secondary">Atasan Langsung</label>
+                            <label class="fw-bold text-secondary">Penilai I</label>
                             <input type="text" class="form-control" readonly
                                 value="<?= htmlspecialchars($pegawai_detail->penilai1_nama ?? '-', ENT_QUOTES, 'UTF-8') ?>">
                         </div>

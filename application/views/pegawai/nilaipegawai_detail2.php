@@ -794,7 +794,7 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title">Catatan Penilai</h5>
+                                <h5 class="card-title">Formulir Feedback</h5>
 
                                 <div class="table-responsive">
                                     <table class="table table-sm table-bordered" id="tabel-catatan">
