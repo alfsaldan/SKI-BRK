@@ -147,9 +147,15 @@
             <!-- Grafik Pencapaian Nilai Akhir -->
             <div class="card mt-0 shadow-sm border-0">
                 <div class="card-body">
-                    <h5 class="text-success font-weight-bold mb-3">
-                        <i class="mdi mdi-chart-line mr-2"></i> Grafik Pencapaian Nilai Akhir
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="text-success font-weight-bold mb-0">
+                            <i class="mdi mdi-chart-line mr-2"></i> Grafik Pencapaian Nilai Akhir
+                        </h5>
+                        <div class="form-inline">
+                            <label for="filterTahunGrafik" class="mr-2">Periode:</label>
+                            <select id="filterTahunGrafik" class="form-control form-control-sm" style="width: 150px;"></select>
+                        </div>
+                    </div>
                     <canvas id="grafikPencapaian" height="80"></canvas>
 
                     <!-- Keterangan Predikat & Skala (Horizontal) -->
@@ -2087,27 +2093,6 @@ if ($message): ?>
 <!-- ======================= -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const grafikData = <?= json_encode($grafik_pencapaian, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
-
-    const dataPeriode = grafikData.map(g => {
-        return (new Date(g.periode_awal)).toLocaleDateString('id-ID', {
-                day: '2-digit',
-                month: 'short'
-            }) +
-            ' - ' +
-            (new Date(g.periode_akhir)).toLocaleDateString('id-ID', {
-                day: '2-digit',
-                month: 'short'
-            });
-    });
-
-    const dataPencapaian = grafikData.map(g => g.pencapaian);
-
-    const segmentColors = dataPencapaian.map((value, index, arr) => {
-        if (index === 0) return 'rgba(40, 167, 69, 1)';
-        return value >= arr[index - 1] ? 'rgba(40, 167, 69, 1)' : 'rgba(220, 53, 69, 1)';
-    });
-
     // Fungsi untuk mendapatkan warna berdasarkan predikat
     function getPredikatColor(predikat) {
         if (!predikat) return '#9e9e9e'; // Abu-abu jika tidak ada predikat
@@ -2117,84 +2102,121 @@ if ($message): ?>
         if (p.includes('good')) return '#17a2b8'; // Biru-hijau
         if (p.includes('fair')) return '#ffc107'; // Kuning
         if (p.includes('minus')) return '#dc3545'; // Merah
-        return '#6c757d'; // Default
+        return '#6c757d'; // Default 
     }
 
-    // Buat array warna titik berdasarkan predikat dari data
-    const pointColors = grafikData.map(g => getPredikatColor(g.predikat));
-
-
     const ctx = document.getElementById('grafikPencapaian').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: dataPeriode,
-            datasets: [{
-                    label: 'Pencapaian SKI (%)',
-                    data: dataPencapaian,
-                    borderColor: ctx => {
-                        const colors = segmentColors;
-                        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, ctx.chart.width, 0);
-                        for (let i = 0; i < colors.length; i++) {
-                            gradient.addColorStop(i / (colors.length - 1), colors[i]);
-                        }
-                        return gradient;
-                    },
-                    backgroundColor: 'rgba(40, 167, 69, 0.08)',
-                    borderWidth: 3,
-                    borderWidth: 4,
-                    fill: true,
-                    tension: 0.3,
-                    pointRadius: 5,
-                    pointBackgroundColor: pointColors, // Gunakan warna predikat untuk titik
-                    pointBorderColor: 'rgba(40, 167, 69, 0.08)',
-                    pointHoverRadius: 7
-                }, {
-                    label: 'Target SKI',
-                    data: Array(dataPeriode.length).fill(100), // Array of 100s
-                    borderColor: '#348cd4',
-                    borderWidth: 2,
-                    pointRadius: 0, // Hide points on target line
-                    pointHoverRadius: 0,
-                    borderWidth: 3,
-                    pointRadius: 3, // Show points on target line
-                    pointHoverRadius: 5,
-                    pointBackgroundColor: '#348cd4',
-                    fill: false,
-                    tension: 0,
-                    order: 1 // Ensure target line is behind
-                }
+    let chartInstance = null;
+    const allGrafikData = <?= json_encode($grafik_pencapaian, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    const filterSelect = document.getElementById('filterTahunGrafik');
 
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top'
-                },
-                tooltip: {
-                    callbacks: {
-                        label: ctx => ctx.parsed.y + '%'
+    function renderChart(filteredData) {
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
+        const dataPeriode = filteredData.map(g => {
+            return (new Date(g.periode_awal)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) +
+                ' - ' +
+                (new Date(g.periode_akhir)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+        });
+
+        const dataPencapaian = filteredData.map(g => g.pencapaian);
+        const pointColors = filteredData.map(g => getPredikatColor(g.predikat));
+        const segmentColors = dataPencapaian.map((value, index, arr) => {
+            if (index === 0) return 'rgba(40, 167, 69, 1)';
+            return value >= arr[index - 1] ? 'rgba(40, 167, 69, 1)' : 'rgba(220, 53, 69, 1)';
+        });
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dataPeriode,
+                datasets: [{
+                        label: 'Pencapaian SKI (%)',
+                        data: dataPencapaian,
+                        borderColor: ctx => {
+                            const colors = segmentColors;
+                            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, ctx.chart.width, 0);
+                            for (let i = 0; i < colors.length; i++) {
+                                gradient.addColorStop(i / (colors.length - 1), colors[i]);
+                            }
+                            return gradient;
+                        },
+                        backgroundColor: 'rgba(40, 167, 69, 0.08)',
+                        borderWidth: 4,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointBackgroundColor: pointColors,
+                        pointBorderColor: 'rgba(40, 167, 69, 0.08)',
+                        pointHoverRadius: 7
+                    }, {
+                        label: 'Target SKI',
+                        data: Array(dataPeriode.length).fill(100),
+                        borderColor: '#348cd4',
+                        borderWidth: 3,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: '#348cd4',
+                        fill: false,
+                        tension: 0,
+                        order: 1
                     }
-                }
+                ]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 130,
-                    title: {
-                        display: true,
-                        text: 'Pencapaian (%)',
-                    },
-                    ticks: {
-                        callback: value => value + '%',
-                        stepSize: 10
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { callbacks: { label: ctx => ctx.parsed.y + '%' } }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 130,
+                        title: { display: true, text: 'Pencapaian (%)' },
+                        ticks: { callback: value => value + '%', stepSize: 10 }
                     }
                 }
             }
+        });
+    }
+
+    function filterAndRender() {
+        const selectedYear = filterSelect.value;
+        let dataToShow;
+
+        if (selectedYear === 'semua') {
+            dataToShow = allGrafikData;
+        } else {
+            dataToShow = allGrafikData.filter(item => new Date(item.periode_awal).getFullYear() == selectedYear);
         }
-    });
+        renderChart(dataToShow);
+
+        // Perbarui insight berdasarkan data yang ditampilkan di grafik
+        updateInsight(dataToShow);
+    }
+
+    function initializeFilterAndChart() {
+        const years = [...new Set(allGrafikData.map(item => new Date(item.periode_awal).getFullYear()))].sort((a, b) => b - a);
+        const currentYear = new Date().getFullYear();
+
+        // Populate filter dropdown
+        filterSelect.innerHTML = '<option value="semua">Semua Tahun</option>';
+        years.forEach(year => {
+            const selected = (year === currentYear) ? 'selected' : '';
+            filterSelect.innerHTML += `<option value="${year}" ${selected}>${year}</option>`;
+        });
+
+        // Initial render
+        filterAndRender();
+
+        // Add event listener for filter changes
+        filterSelect.addEventListener('change', filterAndRender);
+    }
+
+    initializeFilterAndChart();
 
     // fallback predikat
     function predikatDariNilaiAkhir(nilai) {
@@ -2206,62 +2228,63 @@ if ($message): ?>
         return 'Minus';
     }
 
-    const insightContainer = document.getElementById('insightContainer');
-    const insightBox = insightContainer.querySelector('.insight-box');
-    const insightText = document.getElementById('insightText');
-    const icon = insightBox.querySelector('.icon');
+    function updateInsight(data) {
+        const insightContainer = document.getElementById('insightContainer');
+        const insightBox = insightContainer.querySelector('.insight-box');
+        const insightText = document.getElementById('insightText');
+        const icon = insightBox.querySelector('.icon');
 
-    if (grafikData.length > 1) {
-        const lastIndex = grafikData.length - 1;
-        const gNow = grafikData[lastIndex];
-        const gPrev = grafikData[lastIndex - 1];
+        // Reset classes
+        insightBox.className = 'insight-box mb-0 shadow-sm';
+        icon.className = 'mdi mr-1 icon';
 
-        const lastP = gNow.pencapaian;
-        const prevP = gPrev.pencapaian;
-        const diff = lastP - prevP;
+        if (data && data.length > 0) {
+            const lastIndex = data.length - 1;
+            const gNow = data[lastIndex];
+            const periodeNowText = (new Date(gNow.periode_awal)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) +
+                    ' - ' + (new Date(gNow.periode_akhir)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+            const predikatNow = gNow.predikat || predikatDariNilaiAkhir(gNow.nilai_akhir) || 'N/A';
 
-        const periodeNow = dataPeriode[lastIndex];
-        const periodePrev = dataPeriode[lastIndex - 1];
+            let message = '';
 
-        const predikatNow = gNow.predikat || predikatDariNilaiAkhir(gNow.nilai_akhir);
-        const predikatPrev = gPrev.predikat || predikatDariNilaiAkhir(gPrev.nilai_akhir);
+            if (data.length > 1) {
+                // Logika untuk 2 data atau lebih (membandingkan)
+                const gPrev = data[lastIndex - 1];
+                const periodePrevText = (new Date(gPrev.periode_awal)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) +
+                    ' - ' + (new Date(gPrev.periode_akhir)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+                const predikatPrev = gPrev.predikat || predikatDariNilaiAkhir(gPrev.nilai_akhir) || 'N/A';
+                
+                const lastP = gNow.pencapaian;
+                const prevP = gPrev.pencapaian;
+                const diff = lastP - prevP;
 
-        let message = '';
-
-        if (diff > 0) {
-            insightBox.classList.add('insight-success');
-            icon.classList.add('mdi-trending-up');
-            message = `
-                🎯 <strong>Pencapaian meningkat</strong> sebesar <strong>${diff.toFixed(1)}%</strong>
-                dari <strong>${periodePrev}</strong> ke <strong>${periodeNow}</strong>.<br>
-                Predikat: <strong>${predikatPrev}</strong> → <strong>${predikatNow}</strong>.<br>
-                Pertahankan performa ini!
-            `;
-        } else if (diff < 0) {
-            insightBox.classList.add('insight-danger');
-            icon.classList.add('mdi-alert-circle-outline');
-            message = `
-                ⚠️ <strong>Pencapaian menurun</strong> sebesar <strong>${Math.abs(diff).toFixed(1)}%</strong>
-                dari <strong>${periodePrev}</strong> ke <strong>${periodeNow}</strong>.<br>
-                Predikat: <strong>${predikatPrev}</strong> → <strong>${predikatNow}</strong>.<br>
-                Segera evaluasi dan perbaiki strategi kerja Anda.
-            `;
+                if (diff > 0) {
+                    insightBox.classList.add('insight-success');
+                    icon.classList.add('mdi-trending-up');
+                    message = `🎯 <strong>Pencapaian meningkat ${diff.toFixed(1)}%</strong> dari <strong>${periodePrevText}</strong> ke <strong>${periodeNowText}</strong>.<br>Predikat: <strong>${predikatPrev}</strong> → <strong>${predikatNow}</strong>. Pertahankan performa ini!`;
+                } else if (diff < 0) {
+                    insightBox.classList.add('insight-danger');
+                    icon.classList.add('mdi-alert-circle-outline');
+                    message = `⚠️ <strong>Pencapaian menurun ${Math.abs(diff).toFixed(1)}%</strong> dari <strong>${periodePrevText}</strong> ke <strong>${periodeNowText}</strong>.<br>Predikat: <strong>${predikatPrev}</strong> → <strong>${predikatNow}</strong>. Segera evaluasi dan perbaiki strategi kerja Anda.`;
+                } else {
+                    insightBox.classList.add('insight-info');
+                    icon.classList.add('mdi-information-outline');
+                    message = `ℹ️ <strong>Pencapaian stabil</strong> antara periode <strong>${periodePrevText}</strong> dan <strong>${periodeNowText}</strong>.<br>Predikat tetap: <strong>${predikatNow}</strong>. Jaga konsistensi.`;
+                }
+            } else {
+                // Logika untuk hanya 1 data
+                insightBox.classList.add('insight-info');
+                icon.classList.add('mdi-information-outline');
+                message = `Penilaian untuk periode <strong>${periodeNowText}</strong> memiliki pencapaian <strong>${gNow.pencapaian}%</strong> dengan predikat <strong>${predikatNow}</strong>.`;
+            }
+            insightText.innerHTML = message;
+            insightContainer.style.display = 'block';
         } else {
             insightBox.classList.add('insight-info');
             icon.classList.add('mdi-information-outline');
-            message = `
-                ℹ️ <strong>Pencapaian stabil</strong> antara <strong>${periodePrev}</strong> dan <strong>${periodeNow}</strong>.<br>
-                Predikat tetap: <strong>${predikatNow}</strong>. Jaga konsistensi.
-            `;
+            insightText.innerHTML = 'Tidak ada data penilaian untuk periode yang dipilih.';
+            insightContainer.style.display = 'block';
         }
-
-        insightText.innerHTML = message;
-        insightContainer.style.display = 'block';
-    } else {
-        insightBox.classList.add('insight-info');
-        icon.classList.add('mdi-information-outline');
-        insightText.innerHTML = 'Belum cukup data untuk membandingkan periode.';
-        insightContainer.style.display = 'block';
     }
 </script>
 
