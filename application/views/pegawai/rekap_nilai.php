@@ -48,6 +48,91 @@
       </style>
 
       <?php if (!empty($rekap)) { ?>
+        <?php
+        // Helper function untuk render card
+        // Pindahkan deklarasi fungsi ke luar dari loop untuk menghindari error "Cannot redeclare function"
+        if (!function_exists('render_rekap_card')) {
+          function render_rekap_card($p, $column_class, $is_arsip = false)
+          {
+            $predikat_class = 'secondary';
+            $icon = 'mdi-help-circle-outline';
+            if (str_contains(strtolower($p->predikat), 'excellent')) {
+              $predikat_class = 'excellent';
+              $icon = 'mdi-rocket-launch';
+            } elseif (str_contains(strtolower($p->predikat), 'very good')) {
+              $predikat_class = 'very-good';
+              $icon = 'mdi-trending-up';
+            } elseif (str_contains(strtolower($p->predikat), 'good')) {
+              $predikat_class = 'good';
+              $icon = 'mdi-thumb-up-outline';
+            } elseif (str_contains(strtolower($p->predikat), 'fair')) {
+              $predikat_class = 'fair';
+              $icon = 'mdi-alert-outline';
+            } elseif (str_contains(strtolower($p->predikat), 'minus')) {
+              $predikat_class = 'minus';
+              $icon = 'mdi-trending-down';
+            }
+        ?>
+            <div class="<?= $column_class ?> mb-4">
+              <div class="card card-rekap bg-white shadow-sm hover-card h-100">
+                <div class="card-body position-relative">
+                  <!-- Tombol Info Detail -->
+                  <?php
+                  // Tentukan URL berdasarkan status arsip
+                  $url = $is_arsip
+                    ? base_url('Pegawai/arsipDetail/' . $p->periode_awal . '/' . $p->periode_akhir)
+                    : base_url('Pegawai/index?awal=' . $p->periode_awal . '&akhir=' . $p->periode_akhir);
+                  ?>
+                  <a href="<?= $url ?>" class="info-button" data-toggle="tooltip" data-placement="top" title="Lihat Detail Penilaian">
+                    <i class="mdi mdi-information-outline"></i>
+                  </a>
+
+                  <i class="mdi <?= $icon ?> card-icon-bg"></i>
+                  <h6 class="text-predikat-<?= $predikat_class ?> font-weight-bold mb-2 text-center">
+                    <i class="mdi mdi-calendar-check-outline mr-1"></i>
+                    <?= $p->periode ?>
+                  </h6>
+                  <ul class="list-unstyled small text-muted mb-3">
+                    <li class="d-flex justify-content-between">
+                      <span><strong>🎯 Nilai Sasaran:</strong></span>
+                      <span class="font-weight-bold text-dark"><?= $p->nilai_sasaran ?></span>
+                    </li>
+                    <li class="d-flex justify-content-between">
+                      <span><strong>🌱 Nilai Budaya:</strong></span>
+                      <span class="font-weight-bold text-dark"><?= $p->nilai_budaya ?></span>
+                    </li>
+                    <li class="d-flex justify-content-between">
+                      <span><strong>📊 Total Nilai:</strong></span>
+                      <span class="font-weight-bold text-dark"><?= $p->total_nilai ?></span>
+                    </li>
+                    <li class="d-flex justify-content-between">
+                      <span><strong>🏁 Nilai Akhir:</strong></span>
+                      <span class="font-weight-bold text-dark"><?= $p->nilai_akhir ?></span>
+                    </li>
+                    <li class="d-flex justify-content-between">
+                      <span><strong>🚀 Pencapaian:</strong></span>
+                      <span class="font-weight-bold text-dark"><?= $p->pencapaian ?></span>
+                    </li>
+                    <!-- <li class="d-flex justify-content-between">
+                                <span><strong>🚨 Fraud:</strong></span>
+                                <span class="font-weight-bold text-dark"><?= $p->fraud ?? '0' ?></span>
+                              </li> -->
+
+                    <?php if (isset($p->fraud) && $p->fraud == 1) : ?>
+                      <li class="d-flex justify-content-between">
+                        <span class="font-weight-bold text-danger mt-2"><i class="mdi mdi-alert-octagon-outline mr-1"></i>FRAUD</span>
+                      </li>
+                    <?php endif; ?>
+                  </ul>
+                  <span class="badge badge-predikat-<?= $predikat_class ?> px-3 py-2 font-weight-bold shadow-sm">
+                    <?= strtoupper($p->predikat) ?>
+                  </span>
+                </div>
+              </div>
+            </div>
+        <?php }
+        } // End of helper function 
+        ?>
         <div class="accordion" id="rekapAccordion">
           <?php $i = 1;
           foreach ($rekap as $r): ?>
@@ -90,87 +175,6 @@
                     // Tentukan class kolom berdasarkan jumlah periode aktif
                     $periode_count = count($r->periode_aktif);
                     $column_class = ($periode_count == 4) ? 'col-lg-3 col-md-6' : 'col-md-6 col-lg-4';
-
-                    // Helper function untuk render card
-                    function render_rekap_card($p, $column_class, $is_arsip = false)
-                    {
-                      $predikat_class = 'secondary';
-                      $icon = 'mdi-help-circle-outline';
-                      if (str_contains(strtolower($p->predikat), 'excellent')) {
-                        $predikat_class = 'excellent';
-                        $icon = 'mdi-rocket-launch';
-                      } elseif (str_contains(strtolower($p->predikat), 'very good')) {
-                        $predikat_class = 'very-good';
-                        $icon = 'mdi-trending-up';
-                      } elseif (str_contains(strtolower($p->predikat), 'good')) {
-                        $predikat_class = 'good';
-                        $icon = 'mdi-thumb-up-outline';
-                      } elseif (str_contains(strtolower($p->predikat), 'fair')) {
-                        $predikat_class = 'fair';
-                        $icon = 'mdi-alert-outline';
-                      } elseif (str_contains(strtolower($p->predikat), 'minus')) {
-                        $predikat_class = 'minus';
-                        $icon = 'mdi-trending-down';
-                      }
-                    ?>
-                      <div class="<?= $column_class ?> mb-4">
-                        <div class="card card-rekap bg-white shadow-sm hover-card h-100">
-                          <div class="card-body position-relative">
-                            <!-- Tombol Info Detail -->
-                            <?php
-                            // Tentukan URL berdasarkan status arsip
-                            $url = $is_arsip
-                              ? base_url('Pegawai/arsipDetail/' . $p->periode_awal . '/' . $p->periode_akhir)
-                              : base_url('Pegawai/index?awal=' . $p->periode_awal . '&akhir=' . $p->periode_akhir);
-                            ?>
-                            <a href="<?= $url ?>" class="info-button" data-toggle="tooltip" data-placement="top" title="Lihat Detail Penilaian">
-                              <i class="mdi mdi-information-outline"></i>
-                            </a>
-
-                            <i class="mdi <?= $icon ?> card-icon-bg"></i>
-                            <h6 class="text-predikat-<?= $predikat_class ?> font-weight-bold mb-2 text-center">
-                              <i class="mdi mdi-calendar-check-outline mr-1"></i>
-                              <?= $p->periode ?>
-                            </h6>
-                            <ul class="list-unstyled small text-muted mb-3">
-                              <li class="d-flex justify-content-between">
-                                <span><strong>🎯 Nilai Sasaran:</strong></span>
-                                <span class="font-weight-bold text-dark"><?= $p->nilai_sasaran ?></span>
-                              </li>
-                              <li class="d-flex justify-content-between">
-                                <span><strong>🌱 Nilai Budaya:</strong></span>
-                                <span class="font-weight-bold text-dark"><?= $p->nilai_budaya ?></span>
-                              </li>
-                              <li class="d-flex justify-content-between">
-                                <span><strong>📊 Total Nilai:</strong></span>
-                                <span class="font-weight-bold text-dark"><?= $p->total_nilai ?></span>
-                              </li>
-                              <li class="d-flex justify-content-between">
-                                <span><strong>🏁 Nilai Akhir:</strong></span>
-                                <span class="font-weight-bold text-dark"><?= $p->nilai_akhir ?></span>
-                              </li>
-                              <li class="d-flex justify-content-between">
-                                <span><strong>🚀 Pencapaian:</strong></span>
-                                <span class="font-weight-bold text-dark"><?= $p->pencapaian ?></span>
-                              </li>
-                              <!-- <li class="d-flex justify-content-between">
-                                <span><strong>🚨 Fraud:</strong></span>
-                                <span class="font-weight-bold text-dark"><?= $p->fraud ?? '0' ?></span>
-                              </li> -->
-
-                              <?php if (isset($p->fraud) && $p->fraud == 1): ?>
-                                <li class="d-flex justify-content-between">
-                                  <span class="font-weight-bold text-danger mt-2"><i class="mdi mdi-alert-octagon-outline mr-1"></i>FRAUD</span>
-                                </li>
-                              <?php endif; ?>
-                            </ul>
-                            <span class="badge badge-predikat-<?= $predikat_class ?> px-3 py-2 font-weight-bold shadow-sm">
-                              <?= strtoupper($p->predikat) ?>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    <?php } // End of helper function 
                     ?>
 
                     <!-- Bagian Penilaian Selesai (Arsip) -->
