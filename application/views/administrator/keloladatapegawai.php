@@ -150,7 +150,7 @@
     <div class="modal-dialog modal-lg">
         <form action="<?= base_url('Administrator/tambahPegawai') ?>" method="post" class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="fas fa-user-plus"></i> Tambah Pegawai</h5>
+                <h5 class="modal-title text-white"><i class="fas fa-user-plus"></i> Tambah Pegawai</h5>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
@@ -163,22 +163,41 @@
                         <label>Nama</label>
                         <input type="text" name="nama" class="form-control" required>
                     </div>
-                    <div class="form-group col-md-6">
-                        <label>Jabatan</label>
-                        <input type="text" name="jabatan" class="form-control" required>
-                    </div>
+
+                    <!-- Perubahan: Jenis Unit, Unit Kantor, Jabatan menjadi Select -->
                     <div class="form-group col-md-6">
                         <label>Jenis Unit</label>
-                        <input type="text" name="unit_kerja" class="form-control" required>
+                        <select name="unit_kerja" id="add_unitKerja" class="form-control select2" required>
+                            <option value="">Pilih Jenis Unit</option>
+                            <?php foreach ($unitkerja_list as $u): ?>
+                                <option value="<?= $u->unit_kerja ?>"><?= $u->unit_kerja ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
                     <div class="form-group col-md-6">
                         <label>Unit Kantor</label>
-                        <input type="text" name="unit_kantor" class="form-control" required>
+                        <select name="unit_kantor" id="add_unitKantor" class="form-control select2" required disabled>
+                            <option value="">Pilih Jenis Unit terlebih dahulu</option>
+                        </select>
                     </div>
+                    <div class="form-group col-md-6">
+                        <label>Jabatan</label>
+                        <select name="jabatan" id="add_jabatan" class="form-control select2" required disabled>
+                            <option value="">Pilih Unit Kantor terlebih dahulu</option>
+                        </select>
+                    </div>
+                    <!-- Akhir Perubahan -->
+
                     <div class="form-group col-md-6">
                         <label>Password</label>
                         <input type="password" name="password" class="form-control" required>
                     </div>
+
+                </div>
+                <!-- Debug panel (temporary) -->
+                <div id="modalDebugPanel" style="display:none; margin-top:10px;">
+                    <label>Debug response (temporary):</label>
+                    <pre id="modalDebug" style="background:#f8f9fa; border:1px solid #ddd; padding:8px; max-height:200px; overflow:auto;"></pre>
                 </div>
             </div>
             <div class="modal-footer">

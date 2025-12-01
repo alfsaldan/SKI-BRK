@@ -156,7 +156,12 @@
                             <select id="filterTahunGrafik" class="form-control form-control-sm" style="width: 150px;"></select>
                         </div>
                     </div>
-                    <canvas id="grafikPencapaian" height="80"></canvas>
+                    <div id="grafikWrapper" style="position: relative; min-height: 120px;">
+                        <canvas id="grafikPencapaian" height="80"></canvas>
+                        <div id="grafikMessage" class="text-center text-muted p-4" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;">
+                            <!-- Pesan akan diisi oleh JavaScript -->
+                        </div>
+                    </div>
 
                     <!-- Keterangan Predikat & Skala (Horizontal) -->
                     <div class="mt-1 pt-3 border-top">
@@ -2114,6 +2119,24 @@ if ($message): ?>
         if (chartInstance) {
             chartInstance.destroy();
         }
+
+        const canvas = document.getElementById('grafikPencapaian');
+        const messageDiv = document.getElementById('grafikMessage');
+
+        if (!filteredData || filteredData.length <= 1) {
+            canvas.style.display = 'none';
+            messageDiv.style.display = 'block';
+            if (filteredData && filteredData.length === 1) {
+                const capaian = filteredData[0].pencapaian || 0;
+                messageDiv.innerHTML = `<i class="mdi mdi-information-outline mdi-24px mb-2 text-danger"></i><br>Anda baru memiliki data penilaian untuk 1 periode dengan pencapaian <strong>${capaian}%</strong>.<br>Grafik akan muncul jika sudah ada lebih dari satu periode penilaian.`;
+            } else {
+                messageDiv.innerHTML = `<i class="mdi mdi-chart-bar-stacked mdi-24px mb-2"></i><br>Tidak ada data penilaian yang dapat ditampilkan untuk periode ini.`;
+            }
+            return; // Hentikan render chart
+        }
+
+        canvas.style.display = 'block';
+        messageDiv.style.display = 'none';
 
         const dataPeriode = filteredData.map(g => {
             return (new Date(g.periode_awal)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) +

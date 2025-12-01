@@ -39,7 +39,49 @@
 <!-- Vendor js -->
 <script src="<?= base_url('assets/js/vendor.min.js') ?>"></script>
 
+<!-- CSS Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap4-theme@1.0.0/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <!-- Bootstrap select plugin -->
+<!-- Small Select2 CSS tweaks to match Bootstrap form-control -->
+<style>
+    /* Make Select2 single select look like .form-control (Bootstrap4) */
+    .select2-container--bootstrap4 .select2-selection--single {
+        height: calc(2.25rem + 2px);
+        padding: .375rem .75rem;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        background-color: #fff;
+        box-sizing: border-box;
+        /* inherit font from surrounding form */
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+        color: inherit;
+    }
+
+    .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered,
+    .select2-container--bootstrap4 .select2-selection--single .select2-selection__placeholder {
+        /* ensure rendered text matches other inputs */
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+        color: #495057;
+        padding: 0;
+        margin: 0;
+    }
+
+    .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+        height: 100%;
+        right: .5rem;
+    }
+
+    /* Ensure the dropdown matches width of form control */
+    .select2-container .select2-selection--single {
+        box-sizing: border-box;
+    }
+</style>
 <script src="<?= base_url('assets/libs/bootstrap-select/bootstrap-select.min.js') ?>"></script>
 
 <!-- App js -->
@@ -547,6 +589,84 @@
             }
         });
     });
+</script>
+ 
+<!-- Script untuk dependent dropdown di modal -->
+<script>
+    (function($) {
+        'use strict';
+        $(document).ready(function() {
+            // Inisialisasi Select2 pada dropdown di dalam modal
+            $('#add_unitKerja, #add_unitKantor, #add_jabatan').select2({
+                dropdownParent: $('#tambahPegawaiModal'), // Penting agar dropdown muncul di atas modal
+                theme: 'bootstrap4', // Gunakan tema Bootstrap 4
+                width: '100%'
+            });
+    
+            // Ketika jenis unit di modal dipilih
+            $('#add_unitKerja').on('change', function() {
+                const unitKerja = $(this).val();
+                const unitKantorSelect = $('#add_unitKantor');
+                const jabatanSelect = $('#add_jabatan');
+    
+                // Reset dan disable dropdown berikutnya
+                unitKantorSelect.prop('disabled', true).empty().append(new Option('Loading...', '')).trigger('change');
+                jabatanSelect.prop('disabled', true).empty().append(new Option('Pilih Unit Kantor terlebih dahulu', '')).trigger('change');
+    
+                if (unitKerja) {
+                    $.get('<?= base_url("Administrator/getUnitKantorByUnitKerjatambah") ?>', {
+                        unit_kerja: unitKerja
+                    }, function(data) {
+                        unitKantorSelect.empty().append(new Option('Pilih Unit Kantor', ''));
+                        if (Array.isArray(data) && data.length > 0) {
+                            data.forEach(function(item) {
+                                unitKantorSelect.append(new Option(item.unit_kantor, item.unit_kantor));
+                            });
+                            unitKantorSelect.prop('disabled', false);
+                        } else {
+                            unitKantorSelect.empty().append(new Option('Tidak ada unit kantor', '')).prop('disabled', true);
+                        }
+                        unitKantorSelect.trigger('change');
+                    }).fail(function() {
+                        unitKantorSelect.empty().append(new Option('Gagal memuat', '')).prop('disabled', true).trigger('change');
+                        alert('Gagal memuat unit kantor.');
+                    });
+                } else {
+                    unitKantorSelect.empty().append(new Option('Pilih Jenis Unit terlebih dahulu', '')).prop('disabled', true).trigger('change');
+                }
+            });
+    
+            // Ketika unit kantor di modal dipilih
+            $('#add_unitKantor').on('change', function() {
+                const unitKantor = $(this).val();
+                const jabatanSelect = $('#add_jabatan');
+    
+                jabatanSelect.prop('disabled', true).empty().append(new Option('Loading...', '')).trigger('change');
+    
+                if (unitKantor) {
+                    $.get('<?= base_url("Administrator/getJabatanByUnitKantortambah") ?>', {
+                        unit_kantor: unitKantor
+                    }, function(data) {
+                        jabatanSelect.empty().append(new Option('Pilih Jabatan', ''));
+                        if (Array.isArray(data) && data.length > 0) {
+                            data.forEach(function(item) {
+                                jabatanSelect.append(new Option(item.jabatan, item.jabatan));
+                            });
+                            jabatanSelect.prop('disabled', false);
+                        } else {
+                            jabatanSelect.empty().append(new Option('Tidak ada jabatan', '')).prop('disabled', true);
+                        }
+                        jabatanSelect.trigger('change');
+                    }).fail(function() {
+                        jabatanSelect.empty().append(new Option('Gagal memuat', '')).prop('disabled', true).trigger('change');
+                        alert('Gagal memuat jabatan.');
+                    });
+                } else {
+                    jabatanSelect.empty().append(new Option('Pilih Unit Kantor terlebih dahulu', '')).prop('disabled', true).trigger('change');
+                }
+            });
+        });
+    })(jQuery);
 </script>
 
 </body>

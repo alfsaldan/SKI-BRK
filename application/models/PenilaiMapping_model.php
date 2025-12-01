@@ -227,6 +227,70 @@ class PenilaiMapping_model extends CI_Model
     }
 
     /**
+     * Cabang / Unit helpers
+     */
+    public function addCabang($kode_cabang, $kode_unit = null, $unit_kantor = null, $unit_kerja = null)
+    {
+        // generate new key
+        $last = $this->db->order_by('id', 'DESC')->limit(1)->get('penilai_mapping')->row();
+        $newKey = $last ? ((int)$last->key + 1) : 1;
+
+        $data = [
+            'kode_cabang' => $kode_cabang,
+            'kode_unit' => $kode_unit ?? $kode_cabang,
+            'unit_kantor' => $unit_kantor,
+            'unit_kerja' => $unit_kerja,
+            'jabatan' => null,
+            'jenis_penilaian' => 'SKI',
+            'key' => $newKey
+        ];
+
+        return $this->db->insert('penilai_mapping', $data);
+    }
+
+    public function updateCabang($kode_cabang, $fields = [])
+    {
+        if (empty($fields)) return false;
+        $this->db->where('kode_cabang', $kode_cabang);
+        return $this->db->update('penilai_mapping', $fields);
+    }
+
+    public function deleteCabang($kode_cabang)
+    {
+        return $this->db->delete('penilai_mapping', ['kode_cabang' => $kode_cabang]);
+    }
+
+    public function addUnit($kode_cabang, $kode_unit, $unit_kantor = null, $unit_kerja = null)
+    {
+        $last = $this->db->order_by('id', 'DESC')->limit(1)->get('penilai_mapping')->row();
+        $newKey = $last ? ((int)$last->key + 1) : 1;
+
+        $data = [
+            'kode_cabang' => $kode_cabang,
+            'kode_unit' => $kode_unit,
+            'unit_kantor' => $unit_kantor,
+            'unit_kerja' => $unit_kerja,
+            'jabatan' => null,
+            'jenis_penilaian' => 'SKI',
+            'key' => $newKey
+        ];
+
+        return $this->db->insert('penilai_mapping', $data);
+    }
+
+    public function updateUnit($kode_cabang, $kode_unit, $fields = [])
+    {
+        if (empty($fields)) return false;
+        $this->db->where('kode_cabang', $kode_cabang)->where('kode_unit', $kode_unit);
+        return $this->db->update('penilai_mapping', $fields);
+    }
+
+    public function deleteUnit($kode_cabang, $kode_unit)
+    {
+        return $this->db->delete('penilai_mapping', ['kode_cabang' => $kode_cabang, 'kode_unit' => $kode_unit]);
+    }
+
+    /**
      * Update kolom penilai1_jabatan / penilai2_jabatan untuk mapping tertentu
      * berdasarkan jabatan dan unit_kerja. $tipe_penilai = '1' atau '2'.
      */

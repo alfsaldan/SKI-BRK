@@ -674,6 +674,9 @@ class Administrator extends CI_Controller
         $data['judul'] = "Kelola Data Pegawai";
         $data['pegawai'] = $this->DataPegawai_model->getAllPegawai();
 
+        // 🔹 Tambahkan ini untuk mengirim data ke dropdown "Jenis Unit"
+        $data['unitkerja_list'] = $this->DataPegawai_model->getAllUnitKerja();
+
         $this->load->view("layout/header");
         $this->load->view("administrator/keloladatapegawai", $data);
         $this->load->view("layout/footer");
@@ -934,6 +937,13 @@ class Administrator extends CI_Controller
         $unit_kantor = $this->input->post('unit_kantor');
         $tgl_mulai = $this->input->post('tgl_mulai');
 
+        // Validasi dasar untuk memastikan semua field yang dibutuhkan terisi
+        if (empty($nik) || empty($jabatan) || empty($unit_kerja) || empty($unit_kantor) || empty($tgl_mulai)) {
+            $this->session->set_flashdata('error', 'Data tidak lengkap. Gagal memproses mutasi jabatan.');
+            redirect('Administrator/detailPegawai/' . $nik);
+            return;
+        }
+
         // 1. Validasi input
         if (empty($nik) || empty($jabatan) || empty($unit_kerja) || empty($unit_kantor) || empty($tgl_mulai)) {
             $this->session->set_flashdata('error', 'Data tidak lengkap. Gagal memproses mutasi jabatan.');
@@ -998,6 +1008,38 @@ class Administrator extends CI_Controller
         $unit_kantor = $this->input->post('unit_kantor');
         $data = $this->DataPegawai_model->getJabatanByUnitKantor($unit_kantor);
         echo json_encode($data);
+    }
+
+    // Ajax: ambil Unit Kantor berdasarkan Unit Kerja
+    public function getUnitKantorByUnitKerjatambah()
+    {
+        $unit_kerja = $this->input->get('unit_kerja'); // Ambil dari GET untuk konsistensi
+        if (!$unit_kerja) {
+            $this->output
+                ->set_content_type('application/json')
+                ->set_output(json_encode([]));
+            return;
+        }
+        $data = $this->DataPegawai_model->getUnitKantorByUnitKerja($unit_kerja);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
+    }
+
+    // Ajax: ambil Jabatan berdasarkan Unit Kantor
+    public function getJabatanByUnitKantortambah()
+    {
+        $unit_kantor = $this->input->get('unit_kantor'); // Ambil dari GET untuk konsistensi
+        if (!$unit_kantor) {
+            $this->output
+                ->set_content_type('application/json')
+                ->set_output(json_encode([]));
+            return;
+        }
+        $data = $this->DataPegawai_model->getJabatanByUnitKantor($unit_kantor);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
     }
 
 
@@ -2217,6 +2259,109 @@ class Administrator extends CI_Controller
         }
 
         redirect('administrator/kelolatingkatanjabatan');
+    }
+
+    // ----- Cabang CRUD (AJAX / form) -----
+    public function tambahCabang()
+    {
+        if (!$this->input->post()) return show_error('Metode tidak diizinkan', 405);
+
+        $kode_cabang = $this->input->post('kode_cabang');
+        $kode_unit = $this->input->post('kode_unit') ?: $kode_cabang;
+        $unit_kantor = $this->input->post('unit_kantor');
+        $unit_kerja = $this->input->post('unit_kerja');
+
+        $this->load->model('PenilaiMapping_model');
+        $ok = $this->PenilaiMapping_model->addCabang($kode_cabang, $kode_unit, $unit_kantor, $unit_kerja);
+
+        if ($this->input->is_ajax_request()) {
+            echo json_encode(['success' => (bool)$ok]);
+        } else {
+            $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Cabang berhasil ditambahkan' : 'Gagal menambahkan cabang');
+            redirect('administrator/kelolatingkatanjabatan');
+        }
+    }
+
+    public function editCabang($kode_cabang = null)
+    {
+        if (!$this->input->post()) return show_error('Metode tidak diizinkan', 405);
+        $kode_cabang = $this->input->post('kode_cabang') ?: $kode_cabang;
+        $fields = [];
+        if ($this->input->post('unit_kantor')) $fields['unit_kantor'] = $this->input->post('unit_kantor');
+        if ($this->input->post('unit_kerja')) $fields['unit_kerja'] = $this->input->post('unit_kerja');
+
+        $this->load->model('PenilaiMapping_model');
+        $ok = $this->PenilaiMapping_model->updateCabang($kode_cabang, $fields);
+
+        if ($this->input->is_ajax_request()) {
+            echo json_encode(['success' => (bool)$ok]);
+        } else {
+            $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Cabang berhasil diubah' : 'Gagal mengubah cabang');
+            redirect('administrator/kelolatingkatanjabatan');
+        }
+    }
+
+    public function hapusCabang($kode_cabang)
+    {
+        $this->load->model('PenilaiMapping_model');
+        $ok = $this->PenilaiMapping_model->deleteCabang($kode_cabang);
+        if ($this->input->is_ajax_request()) {
+            echo json_encode(['success' => (bool)$ok]);
+        } else {
+            $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Cabang dihapus' : 'Gagal hapus cabang');
+            redirect('administrator/kelolatingkatanjabatan');
+        }
+    }
+
+    // ----- Unit CRUD -----
+    public function tambahUnit()
+    {
+        if (!$this->input->post()) return show_error('Metode tidak diizinkan', 405);
+        $kode_cabang = $this->input->post('kode_cabang');
+        $kode_unit = $this->input->post('kode_unit');
+        $unit_kantor = $this->input->post('unit_kantor');
+        $unit_kerja = $this->input->post('unit_kerja');
+
+        $this->load->model('PenilaiMapping_model');
+        $ok = $this->PenilaiMapping_model->addUnit($kode_cabang, $kode_unit, $unit_kantor, $unit_kerja);
+
+        if ($this->input->is_ajax_request()) {
+            echo json_encode(['success' => (bool)$ok]);
+        } else {
+            $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Unit berhasil ditambahkan' : 'Gagal menambahkan unit');
+            redirect('administrator/kelolatingkatanjabatan');
+        }
+    }
+
+    public function editUnit()
+    {
+        if (!$this->input->post()) return show_error('Metode tidak diizinkan', 405);
+        $kode_cabang = $this->input->post('kode_cabang');
+        $kode_unit = $this->input->post('kode_unit');
+        $fields = [];
+        if ($this->input->post('unit_kantor')) $fields['unit_kantor'] = $this->input->post('unit_kantor');
+        if ($this->input->post('unit_kerja')) $fields['unit_kerja'] = $this->input->post('unit_kerja');
+
+        $this->load->model('PenilaiMapping_model');
+        $ok = $this->PenilaiMapping_model->updateUnit($kode_cabang, $kode_unit, $fields);
+        if ($this->input->is_ajax_request()) {
+            echo json_encode(['success' => (bool)$ok]);
+        } else {
+            $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Unit berhasil diubah' : 'Gagal mengubah unit');
+            redirect('administrator/kelolatingkatanjabatan');
+        }
+    }
+
+    public function hapusUnit($kode_cabang, $kode_unit)
+    {
+        $this->load->model('PenilaiMapping_model');
+        $ok = $this->PenilaiMapping_model->deleteUnit($kode_cabang, $kode_unit);
+        if ($this->input->is_ajax_request()) {
+            echo json_encode(['success' => (bool)$ok]);
+        } else {
+            $this->session->set_flashdata($ok ? 'success' : 'error', $ok ? 'Unit dihapus' : 'Gagal hapus unit');
+            redirect('administrator/kelolatingkatanjabatan');
+        }
     }
 
 
