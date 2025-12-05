@@ -575,6 +575,36 @@
                                 </td>
                             </tr>
                             <tr>
+                                <th>Share KPI (*coming soon*)</th>
+                                <td class="text-center" id="share-kpi">
+                                    <input type="text"
+                                        id="share-kpi-value"
+                                        class="form-control form-control-sm text-center"
+                                        min="0"
+                                        max="5"
+                                        value="0"
+                                        oninput="if(this.value > 5) this.value = 5; if(this.value < 0) this.value = 0; hitungShareKPI()">
+                                </td>
+                                <td>x Bobot % Share KPI</td>
+                                <td>
+                                    <div class="input-group input-group-sm" style="width: 100%;">
+                                        <input type="number"
+                                            id="bobot-share-kpi"
+                                            class="form-control f
+                                            orm-control-sm text-center"
+                                            value="0"
+                                            min="0"
+                                            max="100"
+                                            style="height: 30px;"
+                                            oninput="if(this.value > 100) this.value = 100; if(this.value < 0) this.value = 0; hitungShareKPI()">
+                                        <span class="input-group-text" style="height: 30px; line-height: 1;">%</span>
+                                    </div>
+                                </td>
+                                <td class="text-center" id="share-kpi-nilai">
+                                    <?= $nilai_akhir['share_kpi'] ?? '-' ?>
+                                </td>
+                            </tr>
+                            <tr>
                                 <th colspan="4" class="text-right">Total Nilai</th>
                                 <td class="text-center" id="total-nilai">
                                     <?= $nilai_akhir['total_nilai'] ?? 0 ?>
@@ -1572,4 +1602,38 @@
             });
         });
     });
+
+    function hitungShareKPI() {
+        // --- BAGIAN 1: LOGIKA PENGURANGAN BOBOT SASARAN ---
+                
+        // Ambil nilai Bobot Share KPI
+        var bobotShareInput = document.getElementById('bobot-share-kpi').value;
+        var bobotShare = parseFloat(bobotShareInput) || 0;
+
+        // Hitung sisa untuk Sasaran Kerja (95 - Share KPI)
+        // Kenapa 95? Karena Budaya sudah ambil 5%.
+        var bobotSasaran = 95 - bobotShare;
+
+        // Cegah minus (jika Share KPI diisi > 95)
+        if (bobotSasaran < 0) bobotSasaran = 0;
+
+        // Update tampilan input Bobot Sasaran (tambah lambang %)
+        document.getElementById('bobot-sasaran').value = bobotSasaran + "%";
+
+
+        // --- BAGIAN 2: LOGIKA PERHITUNGAN NILAI AKHIR SHARE KPI ---
+
+        // Ambil nilai Input (0-5)
+        var nilaiInput = document.getElementById('share-kpi-value').value;
+        var nilai = parseFloat(nilaiInput) || 0;
+
+        // Rumus: Nilai * (Bobot Share / 100)
+        var hasil = nilai * (bobotShare / 100);
+
+        // Bulatkan 2 desimal
+        var hasilFormatted = parseFloat(hasil.toFixed(2));
+
+        // Tampilkan hasil
+        document.getElementById('share-kpi-nilai').innerText = hasilFormatted;
+    }
 </script>
