@@ -102,15 +102,23 @@
                       <span class="font-weight-bold text-dark"><?= $p->nilai_budaya ?></span>
                     </li>
                     <li class="d-flex justify-content-between">
+                      <span><strong>🔀 Share KPI</strong></span>
+                      <span class="font-weight-bold text-dark"><?= $p->share_kpi_value ?></span>
+                    </li>
+                    <li class="d-flex justify-content-between">
                       <span><strong>📊 Total Nilai:</strong></span>
                       <span class="font-weight-bold text-dark"><?= $p->total_nilai ?></span>
+                    </li>
+                    <li class="d-flex justify-content-between">
+                      <span><strong>🚫 Fraud</strong></span>
+                      <span class="font-weight-bold <?= $p->fraud == 1 ? 'text-danger' : 'text-dark' ?>"><?= $p->fraud ?></span>
                     </li>
                     <li class="d-flex justify-content-between">
                       <span><strong>🏁 Nilai Akhir:</strong></span>
                       <span class="font-weight-bold text-dark"><?= $p->nilai_akhir ?></span>
                     </li>
                     <li class="d-flex justify-content-between">
-                      <span><strong>🚀 Pencapaian:</strong></span>
+                      <span><strong>🏅 Pencapaian:</strong></span>
                       <span class="font-weight-bold text-dark"><?= $p->pencapaian ?></span>
                     </li>
                     <!-- <li class="d-flex justify-content-between">
@@ -118,11 +126,11 @@
                                 <span class="font-weight-bold text-dark"><?= $p->fraud ?? '0' ?></span>
                               </li> -->
 
-                    <?php if (isset($p->fraud) && $p->fraud == 1) : ?>
+                    <!-- <?php if (isset($p->fraud) && $p->fraud == 1) : ?>
                       <li class="d-flex justify-content-between">
                         <span class="font-weight-bold text-danger mt-2"><i class="mdi mdi-alert-octagon-outline mr-1"></i>FRAUD</span>
                       </li>
-                    <?php endif; ?>
+                    <?php endif; ?> -->
                   </ul>
                   <span class="badge badge-predikat-<?= $predikat_class ?> px-3 py-2 font-weight-bold shadow-sm">
                     <?= strtoupper($p->predikat) ?>
@@ -298,6 +306,9 @@
                     <?php endif; ?>
                   </div>
 
+                  <div class="col-12 mb-3">
+                        <h5 class="text-success font-weight-bold"><i class="mdi mdi-run-fast"></i> Yudisium Akhir</h5>
+                      </div>
                   <div class="card mt-0 shadow-sm">
                     <div class="card-body">
                       <div class="row text-center">
@@ -328,7 +339,7 @@
                         <div class="col">
                           <div class="rekap-item p-2 rounded">
                             <h5 class="mb-0 font-weight-bold text-predikat-<?= $predikat_tahunan_class ?>"><?= $r->rata_pencapaian ?></h5>
-                            <small class="text-muted">🚀 Pencapaian</small>
+                            <small class="text-muted">🏅 Pencapaian</small>
                           </div>
                         </div>
                       </div>

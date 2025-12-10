@@ -110,21 +110,30 @@ class Penilaian_model extends CI_Model
         $predikat,
         $periode_awal,
         $periode_akhir,
-        $koefisien // ✅ tambahan baru
+        $koefisien = null, // parameter yang sudah ada
+        $bobot_sasaran = null, // parameter baru
+        $bobot_budaya = null, // parameter baru
+
+        $share_kpi_value = null, // 🟢 Tambahkan parameter baru
+        $bobot_share_kpi = null // parameter baru
     ) {
         $data = [
-            'nik'           => $nik,
-            'nilai_sasaran' => $nilai_sasaran,
-            'nilai_budaya'  => $nilai_budaya,
-            'total_nilai'   => $total_nilai,
-            'fraud'         => $fraud,
-            'nilai_akhir'   => $nilai_akhir,
-            'pencapaian'    => $pencapaian,
-            'predikat'      => $predikat,
-            'periode_awal'  => $periode_awal,
-            'periode_akhir' => $periode_akhir,
-            'koefisien'     => $koefisien, // ✅ disimpan ke database
-            'updated_at'    => date('Y-m-d H:i:s')
+            'nik'               => $nik,
+            'nilai_sasaran'     => $nilai_sasaran,
+            'nilai_budaya'      => $nilai_budaya,
+            'total_nilai'       => $total_nilai,
+            'fraud'             => $fraud,
+            'nilai_akhir'       => $nilai_akhir,
+            'pencapaian'        => $pencapaian,
+            'predikat'          => $predikat,
+            'periode_awal'      => $periode_awal,
+            'periode_akhir'     => $periode_akhir,
+            'koefisien'         => $koefisien, // ✅ disimpan ke database
+            'updated_at'        => date('Y-m-d H:i:s'),
+            'bobot_sasaran'     => $bobot_sasaran,     // 🟢 Tambahkan ini
+            'bobot_budaya'      => $bobot_budaya,      // 🟢 Tambahkan ini
+            'share_kpi_value'   => $share_kpi_value,   // 🟢 Tambahkan ini
+            'bobot_share_kpi'   => $bobot_share_kpi    // 🟢 Tambahkan ini
         ];
 
         // cek apakah data sudah ada

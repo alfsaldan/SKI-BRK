@@ -344,6 +344,20 @@
                                 </a>
                             </li>
 
+                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['verifikasi_ppk'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator/verifikasi_ppk') ?>">
+                                    <i class="mdi mdi-account-group"></i>
+                                    <span> Verifikasi PPK </span>
+                                </a>
+                            </li>
+
+                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['program_ppk'])) ? 'active' : '' ?>">
+                                <a href="<?= base_url('administrator/program_ppk') ?>">
+                                    <i class="mdi mdi-account-badge-alert-outline"></i>
+                                    <span> Program PPK </span>
+                                </a>
+                            </li>
+
 
                             <li class="menu-title mt-2">Lainnya</li>
 
@@ -416,7 +430,7 @@
                         <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['rekapnilaipegawai', 'arsipdetail'])) ? 'active' : '' ?>">
                             <a href="<?= base_url('pegawai/rekapnilaipegawai') ?>">
                                 <i class="mdi mdi-file-chart"></i>
-                                <span> Rekap SKI </span>
+                                <span> Rekap KPI Individu</span>
                             </a>
                         </li>
                         <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['monitoringindividu', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
@@ -433,7 +447,6 @@
                                 <span> Nilai Pegawai </span>
                             </a>
                         </li>
-
                     </ul>
                 </div>
             </div>

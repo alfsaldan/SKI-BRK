@@ -636,7 +636,11 @@ class Administrator extends CI_Controller
         $predikat      = $this->input->post('predikat');
         $periode_awal  = $this->input->post('periode_awal');
         $periode_akhir = $this->input->post('periode_akhir');
-        $koefisien     = $this->input->post('koefisien'); // ✅ tambahan baru
+        $koefisien      = $this->input->post('koefisien'); // ✅ tambahan baru
+        $bobot_sasaran  = $this->input->post('bobot_sasaran');
+        $bobot_budaya   = $this->input->post('bobot_budaya');
+        $share_kpi_value = $this->input->post('share_kpi_value'); // 🟢 Ambil nilai mentah
+        $bobot_share_kpi = $this->input->post('bobot_share_kpi');
 
         $save = $this->Penilaian_model->save_nilai_akhir(
             $nik,
@@ -649,7 +653,11 @@ class Administrator extends CI_Controller
             $predikat,
             $periode_awal,
             $periode_akhir,
-            $koefisien // ✅ ikut dikirim ke model
+            $koefisien,
+            $bobot_sasaran,
+            $bobot_budaya,
+            $share_kpi_value, // 🟢 Kirim ke model
+            $bobot_share_kpi
         );
 
         if ($save) {
@@ -2954,5 +2962,19 @@ class Administrator extends CI_Controller
         $this->load->view("layout/header");
         $this->load->view('administrator/monitoringkinerja', $data);
         $this->load->view("layout/footer");
+    }
+
+    public function verifikasi_ppk()
+    {
+        $this->load->view('layout/header');
+        $this->load->view('administrator/verifikasi_ppk');
+        $this->load->view('layout/footer');
+    }
+
+    public function program_ppk()
+    {
+        $this->load->view('layout/header');
+        $this->load->view('administrator/program_ppk');
+        $this->load->view('layout/footer');
     }
 }
