@@ -59,7 +59,18 @@ class Administrator extends CI_Controller
         }
 
         $this->load->model('Penilaian_model');
-        $periode_list = $this->Penilaian_model->getPeriodeList();
+        // Ambil semua periode dari model, lalu filter sehingga hanya Okt-Dec yang disertakan
+        $all_periodes = $this->Penilaian_model->getPeriodeList();
+        $periode_list = [];
+        if (!empty($all_periodes)) {
+            foreach ($all_periodes as $p) {
+                $ma = date('m', strtotime($p->periode_awal));
+                $mb = date('m', strtotime($p->periode_akhir));
+                if ($ma == '10' && $mb == '12') {
+                    $periode_list[] = $p;
+                }
+            }
+        }
 
         $today = new DateTime('today');
         if (empty($periode_list)) {
@@ -2966,9 +2977,98 @@ class Administrator extends CI_Controller
 
     public function verifikasi_ppk()
     {
+        // Ambil daftar periode dari model dan kirim ke view sehingga select hanya
+        // menampilkan periode yang memang ada di database (mis. Okt-Dec 2024, 2025)
+        $this->load->model('Penilaian_model');
+        $periode_list = $this->Penilaian_model->getPeriodeList();
+
+        // Pilih default: cari periode Okt-Dec terbaru jika ada,
+        // jika tidak pilih periode terakhir yang ada.
+        $selected_awal = null;
+        $selected_akhir = null;
+        if (!empty($periode_list)) {
+            $found = null;
+            // telusuri dari akhir agar dapat periode terbaru
+            for ($i = count($periode_list) - 1; $i >= 0; $i--) {
+                $p = $periode_list[$i];
+                if (date('m', strtotime($p->periode_awal)) == '10' && date('m', strtotime($p->periode_akhir)) == '12') {
+                    $found = $p;
+                    break;
+                }
+            }
+            if ($found) {
+                $selected_awal = $found->periode_awal;
+                $selected_akhir = $found->periode_akhir;
+            } else {
+                $last = $periode_list[count($periode_list) - 1];
+                $selected_awal = $last->periode_awal;
+                $selected_akhir = $last->periode_akhir;
+            }
+        } else {
+            $selected_awal = date('Y') . '-10-01';
+            $selected_akhir = date('Y') . '-12-31';
+        }
+
+        $data = [
+            'periode_list' => $periode_list,
+            'selected_awal' => $selected_awal,
+            'selected_akhir' => $selected_akhir
+        ];
+
         $this->load->view('layout/header');
-        $this->load->view('administrator/verifikasi_ppk');
+        $this->load->view('administrator/verifikasi_ppk', $data);
         $this->load->view('layout/footer');
+    }
+
+    /**
+     * AJAX endpoint untuk Verifikasi PPK
+     * Menampilkan pegawai dengan nilai_akhir.predikat = 'Minus' dan nilai_akhir.status_penilaian = 'disetujui'
+     * untuk periode 1 Oktober - 31 Desember (default tahun berjalan jika tidak disediakan)
+     */
+    public function getVerifikasiPPKData()
+    {
+        $this->load->model('PenilaiMapping_model');
+
+        $awal = $this->input->get('awal') ?? date('Y') . '-10-01';
+        $akhir = $this->input->get('akhir') ?? date('Y') . '-12-31';
+
+        // Ambil penilai1 sebagai nama pegawai menggunakan teknik join serupa getPegawaiWithPenilai
+        $this->db->select('na.nik, p.nama, p.jabatan, p.unit_kerja, na.status_penilaian, na.predikat, pen1_peg.nama AS penilai1_nama');
+        $this->db->from('nilai_akhir na');
+        $this->db->join('pegawai p', 'p.nik = na.nik', 'left');
+        // mapping untuk menentukan key penilai1
+        $this->db->join('penilai_mapping m', 'm.jabatan = p.jabatan AND m.unit_kerja = p.unit_kerja', 'left');
+        // join ke pegawai penilai1 dengan subquery lookup pada penilai_mapping
+        $this->db->join(
+            'pegawai pen1_peg',
+            'pen1_peg.jabatan = (SELECT jabatan FROM penilai_mapping WHERE `key` = m.penilai1_jabatan LIMIT 1)',
+            'left'
+        );
+
+        $this->db->where('na.periode_awal', $awal);
+        $this->db->where('na.periode_akhir', $akhir);
+        $this->db->where('na.predikat', 'Minus');
+        $this->db->where('na.status_penilaian', 'disetujui');
+
+        $query = $this->db->get();
+        $rows = $query->result();
+
+        $result = [];
+        foreach ($rows as $r) {
+            $result[] = [
+                'nik' => $r->nik,
+                'nama' => $r->nama,
+                'jabatan' => $r->jabatan,
+                'unit_kerja' => $r->unit_kerja,
+                'predikat' => $r->predikat,
+                'penilai1' => $r->penilai1_nama ?? '',
+                'action' => site_url('administrator/detailverifikasi/' . $r->nik) . '?awal=' . $awal . '&akhir=' . $akhir
+            ];
+        }
+
+        header('Content-Type: application/json');
+        echo json_encode(['data' => $result]);
+        exit;
     }
 
     public function program_ppk()
