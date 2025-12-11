@@ -207,21 +207,45 @@ class Pegawai_model extends CI_Model
             ->get('nilai_akhir')
             ->row_array();
     }
-    public function save_nilai_akhir($nik, $nilai_sasaran, $nilai_budaya, $total_nilai, $fraud, $nilai_akhir, $pencapaian, $predikat, $periode_awal, $periode_akhir)
-    {
+    public function save_nilai_akhir(
+        $nik,
+        $nilai_sasaran,
+        $nilai_budaya,
+        $share_kpi_value,
+        $total_nilai,
+        $bobot_sasaran,
+        $bobot_budaya,
+        $bobot_share_kpi,
+        $fraud,
+        $nilai_akhir,
+        $pencapaian,
+        $predikat,
+        $periode_awal,
+        $periode_akhir,
+        $koefisien = null
+    ) {
         $data = [
-            'nik'           => $nik,
-            'nilai_sasaran' => $nilai_sasaran,
-            'nilai_budaya'  => $nilai_budaya,
-            'total_nilai'   => $total_nilai,
-            'fraud'         => $fraud,
-            'nilai_akhir'   => $nilai_akhir,
-            'pencapaian'    => $pencapaian,
-            'predikat'      => $predikat,
-            'periode_awal'  => $periode_awal,
-            'periode_akhir' => $periode_akhir,
-            'updated_at'    => date('Y-m-d H:i:s')
+            'nik'               => $nik,
+            'nilai_sasaran'     => $nilai_sasaran,
+            'nilai_budaya'      => $nilai_budaya,
+            'total_nilai'       => $total_nilai,
+            'fraud'             => $fraud,
+            'nilai_akhir'       => $nilai_akhir,
+            'pencapaian'        => $pencapaian,
+            'predikat'          => $predikat,
+            'periode_awal'      => $periode_awal,
+            'periode_akhir'     => $periode_akhir,
+            'updated_at'        => date('Y-m-d H:i:s'),
+            'bobot_sasaran'     => $bobot_sasaran,
+            'bobot_budaya'      => $bobot_budaya,
+            'share_kpi_value'   => $share_kpi_value,
+            'bobot_share_kpi'   => $bobot_share_kpi
         ];
+
+        // Jangan update koefisien jika null (koefisien hanya readonly)
+        if (!is_null($koefisien)) {
+            $data['koefisien'] = $koefisien;
+        }
 
         // cek data existing
         $this->db->where('nik', $nik);
@@ -234,6 +258,10 @@ class Pegawai_model extends CI_Model
             return $this->db->update('nilai_akhir', $data);
         } else {
             $data['created_at'] = date('Y-m-d H:i:s');
+            // Set koefisien default ke 100 saat insert baru jika tidak ada
+            if (is_null($koefisien)) {
+                $data['koefisien'] = 100;
+            }
             return $this->db->insert('nilai_akhir', $data);
         }
     }
@@ -396,7 +424,6 @@ class Pegawai_model extends CI_Model
                     $rekap[$tahun]->periode_aktif[] = $periode_data;
                 }
             }
-
         }
 
         // Proses perhitungan rata-rata tertimbang SETELAH semua data periode dikumpulkan

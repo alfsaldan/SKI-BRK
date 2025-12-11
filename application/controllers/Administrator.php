@@ -2930,6 +2930,10 @@ class Administrator extends CI_Controller
             $budayaData = $this->Monitoring_model->getBudayaNilaiByNik($nik, $awal_tahun, $akhir_tahun);
             $nilaiAkhirData = $this->Monitoring_model->getNilaiAkhir($nik, "$tahun-10-01", "$tahun-12-31");
             $nilai_budaya = $nilaiAkhirData->nilai_budaya ?? 0;
+            $share_kpi_value = $nilaiAkhirData->share_kpi_value ?? 0;
+            $bobot_sasaran = $nilaiAkhirData->bobot_sasaran ?? 95;
+            $bobot_budaya = $nilaiAkhirData->bobot_budaya ?? 5;
+            $bobot_share_kpi = $nilaiAkhirData->bobot_share_kpi ?? 0;
             $fraud = $nilaiAkhirData->fraud ?? 0;
             $koefisien = $nilaiAkhirData->koefisien ?? 100;
 
@@ -2944,6 +2948,10 @@ class Administrator extends CI_Controller
                 'rata_rata_budaya' => $budayaData['rata_rata'],
                 'budaya' => $this->Monitoring_model->getAllBudaya(),
                 'nilai_budaya' => $nilai_budaya,
+                'share_kpi_value' => $share_kpi_value,
+                'bobot_sasaran' => $bobot_sasaran,
+                'bobot_budaya' => $bobot_budaya,
+                'bobot_share_kpi' => $bobot_share_kpi,
                 'fraud' => $fraud,
                 'koefisien' => $koefisien,
                 'periode_awal' => $periode_awal,

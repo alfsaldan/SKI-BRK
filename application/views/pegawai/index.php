@@ -871,6 +871,46 @@
                                 </td>
                             </tr>
                             <tr>
+                                <th>Share KPI</th>
+                                <td class="text-center" id="share-kpi">
+                                    <input type="text"
+                                        id="share-kpi-value"
+                                        class="form-control form-control-sm text-center"
+                                        min="0"
+                                        max="5"
+                                        value="<?= $nilai_akhir['share_kpi_value'] ?? 0 ?>"
+                                        oninput="if(this.value > 5) this.value = 5; if(this.value < 0) this.value = 0; hitungShareKPI()"
+                                        data-toggle="tooltip"
+                                        data-placement="bottom"
+                                        data-html="true"
+                                        data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+                                        title="<i class='mdi mdi-information-outline'></i><br>Pastikan nilai share KPI sesuai dengan data KPI Direksi">
+                                </td>
+                                <td>x Bobot % Share KPI</td>
+                                <td>
+                                    <div class="input-group input-group-sm" style="width: 100%;">
+                                        <input type="number"
+                                            id="bobot-share-kpi"
+                                            class="form-control f
+                                            orm-control-sm text-center"
+                                            value="<?= $nilai_akhir['bobot_share_kpi'] ?? 0 ?>"
+                                            min="0"
+                                            max="95"
+                                            style="height: 30px;"
+                                            oninput="if(this.value > 95) this.value = 95; if(this.value < 0) this.value = 0; hitungShareKPI()"
+                                            data-toggle="tooltip"
+                                            data-placement="bottom"
+                                            data-html="true"
+                                            data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+                                            title="<i class='mdi mdi-information-outline'></i><br>Pastikan bobot share KPI sesuai dengan data KPI Direksi">
+                                        <span class="input-group-text" style="height: 30px; line-height: 1;">%</span>
+                                    </div>
+                                </td>
+                                <td class="text-center" id="share-kpi-nilai">
+                                    <?= $nilai_akhir['share_kpi'] ?? '-' ?>
+                                </td>
+                            </tr>
+                            <tr>
                                 <th colspan="4" class="text-right">Total Nilai</th>
                                 <td class="text-center" id="total-nilai">
                                     <?= $nilai_akhir['total_nilai'] ?? 0 ?>
@@ -1355,28 +1395,32 @@ if ($message): ?>
             // Tambahkan baris ini agar total-sasaran sama dengan total-nilai-bobot
             document.getElementById('total-sasaran').textContent = formatAngka(totalNilai);
 
-            hitungNilaiAkhir();
+            // Jika ada Share KPI di UI, hitung nilai sasaran & nilai akhir berdasarkan share
+            if (document.getElementById('share-kpi-value')) {
+                try { hitungShareKPI(); } catch (e) { console.error('hitungShareKPI error', e); }
+            } else {
+                hitungNilaiAkhir();
+            }
         }
 
         function hitungNilaiAkhir() {
-            const bobotSasaran = 0.95;
-            const bobotBudaya = 0.05;
-
+            // Ambil nilai yang sudah dihitung sebelumnya oleh hitungTotal() dan hitungShareKPI()
             const fraud = parseFloat(document.getElementById("fraud-input").value) || 0;
             const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
 
-            // Ambil nilai sasaran dari total-nilai-bobot
-            const totalSasaran = parseFloat(document.getElementById("total-nilai-bobot").textContent) || 0;
-            const rataBudaya = parseFloat(document.getElementById("rata-budaya").textContent) || 0;
+            // Ambil nilai sasaran yang sudah dikalikan bobot (element 'nilai-sasaran')
+            const nilaiSasaran = parseFloat(document.getElementById('nilai-sasaran')?.textContent) || 0;
+            // Hitung nilai budaya = rata-rata * (bobot_budaya / 100)
+            const rataBudaya = parseFloat(document.getElementById('rata-budaya')?.textContent) || 0;
+            // ambil bobot-budaya (misal '5%') -> dapatkan angka 5
+            const bobotBudayaRaw = (document.getElementById('bobot-budaya')?.value || '').toString().replace('%','') || '0';
+            const bobotBudaya = parseFloat(bobotBudayaRaw) || 0;
+            const nilaiBudaya = parseFloat((rataBudaya * (bobotBudaya/100)).toFixed(2)) || 0;
+            // Ambil nilai share yang sudah dihitung dan ditampilkan di 'share-kpi-nilai'
+            const shareValue = parseFloat(document.getElementById('share-kpi-nilai')?.innerText) || 0;
 
-            // Total nilai sasaran kerja 
-            const nilaiSasaran = totalSasaran * bobotSasaran;
-
-            // Nilai budaya
-            const nilaiBudaya = rataBudaya * bobotBudaya;
-
-            // Total nilai
-            const totalNilai = nilaiSasaran + nilaiBudaya;
+            // Total nilai = nilaiSasaran + nilaiBudaya + shareValue
+            const totalNilai = nilaiSasaran + nilaiBudaya + shareValue;
 
             // Nilai akhir sesuai rumus Excel
             let nilaiAkhir;
@@ -1429,9 +1473,10 @@ if ($message): ?>
             }
 
             // Update ke tampilan
-            document.getElementById("nilai-sasaran").textContent = nilaiSasaran.toFixed(2);
-            document.getElementById("nilai-budaya").textContent = nilaiBudaya.toFixed(2);
-            document.getElementById("total-nilai").textContent = totalNilai.toFixed(2);
+            // Pastikan tampilan konsisten
+            document.getElementById("nilai-sasaran").textContent = (nilaiSasaran).toFixed(2);
+            document.getElementById("nilai-budaya").textContent = (nilaiBudaya).toFixed(2);
+            document.getElementById("total-nilai").textContent = (totalNilai).toFixed(2);
             document.getElementById("nilai-akhir").textContent =
                 nilaiAkhir === "Tidak ada nilai" ? nilaiAkhir : nilaiAkhir.toFixed(2);
             document.getElementById("predikat").textContent = predikat;
@@ -1440,13 +1485,68 @@ if ($message): ?>
                 pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
         }
 
+        // ===== Hitung Share KPI (disamakan dengan logic di halaman administrator) =====
+        function hitungShareKPI() {
+            var bobotShareInputEl = document.getElementById('bobot-share-kpi');
+            var bobotShareInput = bobotShareInputEl ? bobotShareInputEl.value : '';
+            var bobotShare = parseFloat(bobotShareInput) || 0;
+
+            // Hitung sisa untuk Sasaran Kerja (95 - Share KPI)
+            var bobotSasaran = 95 - bobotShare;
+            if (bobotSasaran < 0) bobotSasaran = 0;
+            var bobotSasaranEl = document.getElementById('bobot-sasaran');
+            if (bobotSasaranEl) bobotSasaranEl.value = bobotSasaran + "%";
+
+            // Hitung nilai share KPI
+            var nilaiInput = document.getElementById('share-kpi-value') ? document.getElementById('share-kpi-value').value : '';
+            var nilai = parseFloat(nilaiInput) || 0;
+            var hasil = nilai * (bobotShare / 100);
+            var hasilFormatted = parseFloat(hasil.toFixed(2));
+            var shareEl = document.getElementById('share-kpi-nilai');
+            if (shareEl) shareEl.innerText = hasilFormatted;
+
+            // Hitung nilai sasaran berdasarkan bobot yang disesuaikan
+            var totalSasaranEl = document.getElementById('total-sasaran');
+            var totalSasaranRaw = totalSasaranEl ? totalSasaranEl.innerText : '';
+            var totalSasaran = parseFloat(String(totalSasaranRaw).replace(/,/g, ''));
+            if (isNaN(totalSasaran)) totalSasaran = 0;
+
+            var nilaiSasaran = totalSasaran * (bobotSasaran / 100);
+            var nilaiSasaranFormatted = parseFloat(nilaiSasaran.toFixed(2));
+            var nilaiSasaranEl = document.getElementById('nilai-sasaran');
+            if (nilaiSasaranEl) nilaiSasaranEl.innerText = nilaiSasaranFormatted;
+
+            // Jangan hitung total di sini — biarkan hitungNilaiAkhir() yang menggabungkan nilaiSasaran + nilaiBudaya + share
+            if (typeof hitungNilaiAkhir === 'function') {
+                try { hitungNilaiAkhir(); } catch (e) { console.error('hitungNilaiAkhir error', e); }
+            }
+        }
+
+        // Dengarkan perubahan pada input share KPI dan bobotnya
+        var shareInputEl = document.getElementById('share-kpi-value');
+        var bobotShareEl = document.getElementById('bobot-share-kpi');
+        if (shareInputEl) shareInputEl.addEventListener('input', function() {
+            try { hitungTotal(); } catch (e) { console.error(e); }
+            try { hitungShareKPI(); } catch (e) { console.error(e); }
+            try { autoSaveNilaiAkhir(); } catch (e) {}
+        });
+        if (bobotShareEl) bobotShareEl.addEventListener('input', function() {
+            try { hitungTotal(); } catch (e) { console.error(e); }
+            try { hitungShareKPI(); } catch (e) { console.error(e); }
+            try { autoSaveNilaiAkhir(); } catch (e) {}
+        });
+
         document.getElementById('fraud-input').addEventListener('input', hitungNilaiAkhir);
 
         // 🔹 trigger perhitungan saat input diubah
         document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
             input.addEventListener('input', hitungTotal);
         });
+        // Pastikan total per-barang dihitung terlebih dahulu, lalu hitung Share KPI
         hitungTotal();
+        if (document.getElementById('share-kpi-value')) {
+            try { hitungShareKPI(); } catch (e) { console.error('hitungShareKPI error', e); }
+        }
 
         // Simpan penilaian per baris
         document.querySelectorAll('.simpan-penilaian').forEach(btn => {
@@ -1758,13 +1858,19 @@ if ($message): ?>
             const nilai_akhir = document.getElementById('nilai-akhir').textContent;
             const predikat = document.getElementById('predikat').textContent;
             const pencapaian = document.getElementById('pencapaian-akhir').textContent;
+            const share_kpi_value = document.getElementById('share-kpi-value') ? document.getElementById('share-kpi-value').value : '';
+            const bobot_share_kpi = document.getElementById('bobot-share-kpi') ? document.getElementById('bobot-share-kpi').value : '';
+            const bobot_sasaran = (document.getElementById('bobot-sasaran')?.value || '').toString().replace('%','') || '';
+            const bobot_budaya = (document.getElementById('bobot-budaya')?.value || '').toString().replace('%','') || '';
+            const koefisienElem = document.getElementById('koefisien-input');
+            const koefisien = koefisienElem ? (koefisienElem.value || '').toString() : '100';
 
             fetch('<?= base_url("Pegawai/simpanNilaiAkhir") ?>', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
+                    body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&bobot_sasaran=${encodeURIComponent(bobot_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&bobot_budaya=${encodeURIComponent(bobot_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}&koefisien=${encodeURIComponent(koefisien)}&share_kpi_value=${encodeURIComponent(share_kpi_value)}&bobot_share_kpi=${encodeURIComponent(bobot_share_kpi)}`
                 })
                 .then(res => res.json())
                 .then(res => {
@@ -1825,8 +1931,14 @@ if ($message): ?>
                 const nilai_akhir = document.getElementById('nilai-akhir').textContent;
                 const predikat = document.getElementById('predikat').textContent;
                 const pencapaian = document.getElementById('pencapaian-akhir').textContent;
+                const share_kpi_value = document.getElementById('share-kpi-value') ? document.getElementById('share-kpi-value').value : '';
+                const bobot_share_kpi = document.getElementById('bobot-share-kpi') ? document.getElementById('bobot-share-kpi').value : '';
+                const bobot_sasaran = (document.getElementById('bobot-sasaran')?.value || '').toString().replace('%','') || '';
+                const bobot_budaya = (document.getElementById('bobot-budaya')?.value || '').toString().replace('%','') || '';
+                const koefisienElem = document.getElementById('koefisien-input');
+                const koefisien = koefisienElem ? (koefisienElem.value || '').toString() : '100';
 
-                const bodyNilaiAkhir = `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`;
+                const bodyNilaiAkhir = `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&bobot_sasaran=${encodeURIComponent(bobot_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&bobot_budaya=${encodeURIComponent(bobot_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}&koefisien=${encodeURIComponent(koefisien)}&share_kpi_value=${encodeURIComponent(share_kpi_value)}&bobot_share_kpi=${encodeURIComponent(bobot_share_kpi)}`;
 
                 return fetch('<?= base_url("Pegawai/simpanNilaiAkhir") ?>', {
                     method: 'POST',
@@ -1903,9 +2015,6 @@ if ($message): ?>
                 updateFormatDisplayForInput(input, true);
             });
         });
-
-        // Ubah Penilai 1 dan 2
-
     });
 </script>
 
@@ -2139,9 +2248,15 @@ if ($message): ?>
         messageDiv.style.display = 'none';
 
         const dataPeriode = filteredData.map(g => {
-            return (new Date(g.periode_awal)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) +
+            return (new Date(g.periode_awal)).toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: 'short'
+                }) +
                 ' - ' +
-                (new Date(g.periode_akhir)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+                (new Date(g.periode_akhir)).toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: 'short'
+                });
         });
 
         const dataPencapaian = filteredData.map(g => g.pencapaian);
@@ -2156,50 +2271,61 @@ if ($message): ?>
             data: {
                 labels: dataPeriode,
                 datasets: [{
-                        label: 'Pencapaian SKI (%)',
-                        data: dataPencapaian,
-                        borderColor: ctx => {
-                            const colors = segmentColors;
-                            const gradient = ctx.chart.ctx.createLinearGradient(0, 0, ctx.chart.width, 0);
-                            for (let i = 0; i < colors.length; i++) {
-                                gradient.addColorStop(i / (colors.length - 1), colors[i]);
-                            }
-                            return gradient;
-                        },
-                        backgroundColor: 'rgba(40, 167, 69, 0.08)',
-                        borderWidth: 4,
-                        fill: true,
-                        tension: 0.3,
-                        pointRadius: 5,
-                        pointBackgroundColor: pointColors,
-                        pointBorderColor: 'rgba(40, 167, 69, 0.08)',
-                        pointHoverRadius: 7
-                    }, {
-                        label: 'Target SKI',
-                        data: Array(dataPeriode.length).fill(100),
-                        borderColor: '#348cd4',
-                        borderWidth: 3,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
-                        pointBackgroundColor: '#348cd4',
-                        fill: false,
-                        tension: 0,
-                        order: 1
-                    }
-                ]
+                    label: 'Pencapaian SKI (%)',
+                    data: dataPencapaian,
+                    borderColor: ctx => {
+                        const colors = segmentColors;
+                        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, ctx.chart.width, 0);
+                        for (let i = 0; i < colors.length; i++) {
+                            gradient.addColorStop(i / (colors.length - 1), colors[i]);
+                        }
+                        return gradient;
+                    },
+                    backgroundColor: 'rgba(40, 167, 69, 0.08)',
+                    borderWidth: 4,
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBackgroundColor: pointColors,
+                    pointBorderColor: 'rgba(40, 167, 69, 0.08)',
+                    pointHoverRadius: 7
+                }, {
+                    label: 'Target SKI',
+                    data: Array(dataPeriode.length).fill(100),
+                    borderColor: '#348cd4',
+                    borderWidth: 3,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: '#348cd4',
+                    fill: false,
+                    tension: 0,
+                    order: 1
+                }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: { position: 'top' },
-                    tooltip: { callbacks: { label: ctx => ctx.parsed.y + '%' } }
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ctx.parsed.y + '%'
+                        }
+                    }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
                         max: 130,
-                        title: { display: true, text: 'Pencapaian (%)' },
-                        ticks: { callback: value => value + '%', stepSize: 10 }
+                        title: {
+                            display: true,
+                            text: 'Pencapaian (%)'
+                        },
+                        ticks: {
+                            callback: value => value + '%',
+                            stepSize: 10
+                        }
                     }
                 }
             }
@@ -2264,8 +2390,14 @@ if ($message): ?>
         if (data && data.length > 0) {
             const lastIndex = data.length - 1;
             const gNow = data[lastIndex];
-            const periodeNowText = (new Date(gNow.periode_awal)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) +
-                    ' - ' + (new Date(gNow.periode_akhir)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+            const periodeNowText = (new Date(gNow.periode_awal)).toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: 'short'
+                }) +
+                ' - ' + (new Date(gNow.periode_akhir)).toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: 'short'
+                });
             const predikatNow = gNow.predikat || predikatDariNilaiAkhir(gNow.nilai_akhir) || 'N/A';
 
             let message = '';
@@ -2273,10 +2405,16 @@ if ($message): ?>
             if (data.length > 1) {
                 // Logika untuk 2 data atau lebih (membandingkan)
                 const gPrev = data[lastIndex - 1];
-                const periodePrevText = (new Date(gPrev.periode_awal)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' }) +
-                    ' - ' + (new Date(gPrev.periode_akhir)).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+                const periodePrevText = (new Date(gPrev.periode_awal)).toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: 'short'
+                    }) +
+                    ' - ' + (new Date(gPrev.periode_akhir)).toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: 'short'
+                    });
                 const predikatPrev = gPrev.predikat || predikatDariNilaiAkhir(gPrev.nilai_akhir) || 'N/A';
-                
+
                 const lastP = gNow.pencapaian;
                 const prevP = gPrev.pencapaian;
                 const diff = lastP - prevP;
@@ -2380,3 +2518,23 @@ if ($message): ?>
         });
     })();
 </script>
+<style>
+        /* Kustomisasi untuk tooltip kuning */
+        .tooltip-kuning .tooltip-inner {
+            background-color: #ffc800ff !important; /* Warna kuning muda, !important untuk prioritas */
+            color: #ffffffff;
+            border: 1px solid #ffc800ff;
+            max-width: 300px; /* Lebar maksimal tooltip */
+            padding: 8px 12px; /* Sedikit padding */
+            text-align: center; /* Rata kiri agar ikon dan teks rapi */
+            border-radius: .2rem; /* Menyamakan radius sudut */
+        }
+        /* Mengatur warna panah tooltip */
+        .tooltip-kuning.bs-tooltip-bottom .arrow::before {
+            border-bottom-color: #ffc800ff !important;
+        }
+        /* Jarak antara ikon dan teks */
+        .tooltip-kuning .tooltip-inner i {
+            margin-right: 8px;
+        }
+    </style>

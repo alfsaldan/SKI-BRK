@@ -201,7 +201,7 @@
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Unit Kantor</span>
-                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                                <span class="text-dark"><?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
                                             </li>
                                         </ul>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
@@ -240,7 +240,7 @@
                                         </div>
 
                                         <p class="mt-2 text-dark font-weight-medium">
-                                            <b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?>
+                                            <b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kantor ?? '-'; ?>
                                         </p>
                                     </div>
                                 </div>
@@ -697,6 +697,46 @@
                                 </td>
                             </tr>
                             <tr>
+                                <th>Share KPI</th>
+                                <td class="text-center" id="share-kpi">
+                                    <input type="text"
+                                        id="share-kpi-value"
+                                        class="form-control form-control-sm text-center"
+                                        min="0"
+                                        max="5"
+                                        value="<?= $nilai_akhir['share_kpi_value'] ?? 0 ?>"
+                                        oninput="if(this.value > 5) this.value = 5; if(this.value < 0) this.value = 0; hitungShareKPI()"
+                                        data-toggle="tooltip"
+                                        data-placement="bottom"
+                                        data-html="true"
+                                        data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+                                        title="<i class='mdi mdi-information-outline'></i><br>Pastikan nilai share KPI sesuai dengan data KPI Direksi">
+                                </td>
+                                <td>x Bobot % Share KPI</td>
+                                <td>
+                                    <div class="input-group input-group-sm" style="width: 100%;">
+                                        <input type="number"
+                                            id="bobot-share-kpi"
+                                            class="form-control f
+                                            orm-control-sm text-center"
+                                            value="<?= $nilai_akhir['bobot_share_kpi'] ?? 0 ?>"
+                                            min="0"
+                                            max="95"
+                                            style="height: 30px;"
+                                            oninput="if(this.value > 95) this.value = 95; if(this.value < 0) this.value = 0; hitungShareKPI()"
+                                            data-toggle="tooltip"
+                                            data-placement="bottom"
+                                            data-html="true"
+                                            data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+                                            title="<i class='mdi mdi-information-outline'></i><br>Pastikan bobot share KPI sesuai dengan data KPI Direksi">
+                                        <span class="input-group-text" style="height: 30px; line-height: 1;">%</span>
+                                    </div>
+                                </td>
+                                <td class="text-center" id="share-kpi-nilai">
+                                    <?= $nilai_akhir['share_kpi'] ?? '-' ?>
+                                </td>
+                            </tr>
+                            <tr>
                                 <th colspan="4" class="text-right">Total Nilai</th>
                                 <td class="text-center" id="total-nilai">
                                     <?= $nilai_akhir['total_nilai'] ?? 0 ?>
@@ -1043,6 +1083,48 @@
         }
 
 
+        function hitungTotal() {
+            let totalBobot = 0,
+                totalNilai = 0;
+            const subtotalMap = {};
+
+            // 🔹 hitung total bobot dulu
+            document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
+                totalBobot += parseFloat(row.querySelector('.bobot').value) || 0;
+            });
+
+            // 🔹 lalu panggil hitungRow dengan totalBobot
+            document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
+                const {
+                    bobot,
+                    nilaiBobot,
+                    perspektif
+                } = hitungRow(row, totalBobot);
+                totalNilai += nilaiBobot;
+
+                if (!subtotalMap[perspektif]) subtotalMap[perspektif] = 0;
+                subtotalMap[perspektif] += nilaiBobot;
+            });
+
+            document.getElementById('total-bobot').innerText = formatAngka(totalBobot);
+            document.getElementById('total-nilai-bobot').innerText = formatAngka(totalNilai);
+
+            document.querySelectorAll('.subtotal-row').forEach(row => {
+                const perspektif = row.dataset.perspektif;
+                row.querySelector('.subtotal-nilai-bobot').innerText = formatAngka(subtotalMap[perspektif] || 0);
+            });
+
+            // Tambahkan baris ini agar total-sasaran sama dengan total-nilai-bobot
+            document.getElementById('total-sasaran').textContent = formatAngka(totalNilai);
+
+            // Jika ada Share KPI di UI, hitung nilai sasaran & nilai akhir berdasarkan share
+            if (document.getElementById('share-kpi-value')) {
+                try { hitungShareKPI(); } catch (e) { console.error('hitungShareKPI error', e); }
+            } else {
+                hitungNilaiAkhir();
+            }
+        }
+
         function hitungRow(row, totalBobot) {
             const targetVal = row.querySelector('.target-input').value;
             const realisasiVal = row.querySelector('.realisasi-input').value;
@@ -1116,33 +1198,25 @@
         }
 
         function hitungNilaiAkhir() {
-            const bobotSasaran = 0.95;
-            const bobotBudaya = 0.05;
-
+            // Ambil nilai yang sudah dihitung sebelumnya oleh hitungTotal() dan hitungShareKPI()
             const fraud = parseFloat(document.getElementById("fraud-input").value) || 0;
             const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
 
-            // Ambil nilai sasaran dari total-nilai-bobot
-            const totalSasaran = parseFloat(document.getElementById("total-nilai-bobot").textContent) || 0;
-            const rataBudaya = parseFloat(document.getElementById("ratarata-budaya").textContent) || 0;
+            // Ambil nilai sasaran yang sudah dikalikan bobot (element 'nilai-sasaran')
+            const nilaiSasaran = parseFloat(document.getElementById('nilai-sasaran')?.textContent) || 0;
+            // Hitung nilai budaya = rata-rata * (bobot_budaya / 100)
+            const rataBudaya = parseFloat(document.getElementById('ratarata-budaya')?.textContent) || 0;
+            // ambil bobot-budaya (misal '5%') -> dapatkan angka 5
+            const bobotBudayaRaw = (document.getElementById('bobot-budaya')?.value || '').toString().replace('%','') || '0';
+            const bobotBudaya = parseFloat(bobotBudayaRaw) || 0;
+            const nilaiBudaya = parseFloat((rataBudaya * (bobotBudaya/100)).toFixed(2)) || 0;
+            // Ambil nilai share yang sudah dihitung dan ditampilkan di 'share-kpi-nilai'
+            const shareValue = parseFloat(document.getElementById('share-kpi-nilai')?.innerText) || 0;
 
-            // Total nilai sasaran kerja 
-            const nilaiSasaran = totalSasaran * bobotSasaran;
-
-            // Nilai budaya
-            const nilaiBudaya = rataBudaya * bobotBudaya;
-
-            // Total nilai
-            const totalNilai = nilaiSasaran + nilaiBudaya;
+            // Total nilai = nilaiSasaran + nilaiBudaya + shareValue
+            const totalNilai = nilaiSasaran + nilaiBudaya + shareValue;
 
             // Nilai akhir sesuai rumus Excel
-            // let nilaiAkhir;
-            // if (fraud === 0) {
-            //     nilaiAkhir = totalNilai - fraud;
-            // } else {
-            //     nilaiAkhir = "Tidak ada nilai";
-            // }
-
             let nilaiAkhir;
             if (fraud === 1) {
                 nilaiAkhir = totalNilai - fraud;
@@ -1193,9 +1267,10 @@
             }
 
             // Update ke tampilan
-            document.getElementById("nilai-sasaran").textContent = nilaiSasaran.toFixed(2);
-            document.getElementById("nilai-budaya").textContent = nilaiBudaya.toFixed(2);
-            document.getElementById("total-nilai").textContent = totalNilai.toFixed(2);
+            // Pastikan tampilan konsisten
+            document.getElementById("nilai-sasaran").textContent = (nilaiSasaran).toFixed(2);
+            document.getElementById("nilai-budaya").textContent = (nilaiBudaya).toFixed(2);
+            document.getElementById("total-nilai").textContent = (totalNilai).toFixed(2);
             document.getElementById("nilai-akhir").textContent =
                 nilaiAkhir === "Tidak ada nilai" ? nilaiAkhir : nilaiAkhir.toFixed(2);
             document.getElementById("predikat").textContent = predikat;
@@ -1204,7 +1279,56 @@
                 pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
         }
 
-        document.getElementById('fraud-input').addEventListener('input', hitungNilaiAkhir);
+        // ===== Hitung Share KPI (disamakan dengan logic di halaman administrator) =====
+        function hitungShareKPI() {
+            var bobotShareInputEl = document.getElementById('bobot-share-kpi');
+            var bobotShareInput = bobotShareInputEl ? bobotShareInputEl.value : '';
+            var bobotShare = parseFloat(bobotShareInput) || 0;
+
+            // Hitung sisa untuk Sasaran Kerja (95 - Share KPI)
+            var bobotSasaran = 95 - bobotShare;
+            if (bobotSasaran < 0) bobotSasaran = 0;
+            var bobotSasaranEl = document.getElementById('bobot-sasaran');
+            if (bobotSasaranEl) bobotSasaranEl.value = bobotSasaran + "%";
+
+            // Hitung nilai share KPI
+            var nilaiInput = document.getElementById('share-kpi-value') ? document.getElementById('share-kpi-value').value : '';
+            var nilai = parseFloat(nilaiInput) || 0;
+            var hasil = nilai * (bobotShare / 100);
+            var hasilFormatted = parseFloat(hasil.toFixed(2));
+            var shareEl = document.getElementById('share-kpi-nilai');
+            if (shareEl) shareEl.innerText = hasilFormatted;
+
+            // Hitung nilai sasaran berdasarkan bobot yang disesuaikan
+            var totalSasaranEl = document.getElementById('total-sasaran');
+            var totalSasaranRaw = totalSasaranEl ? totalSasaranEl.innerText : '';
+            var totalSasaran = parseFloat(String(totalSasaranRaw).replace(/,/g, ''));
+            if (isNaN(totalSasaran)) totalSasaran = 0;
+
+            var nilaiSasaran = totalSasaran * (bobotSasaran / 100);
+            var nilaiSasaranFormatted = parseFloat(nilaiSasaran.toFixed(2));
+            var nilaiSasaranEl = document.getElementById('nilai-sasaran');
+            if (nilaiSasaranEl) nilaiSasaranEl.innerText = nilaiSasaranFormatted;
+
+            // Jangan hitung total di sini — biarkan hitungNilaiAkhir() yang menggabungkan nilaiSasaran + nilaiBudaya + share
+            if (typeof hitungNilaiAkhir === 'function') {
+                try { hitungNilaiAkhir(); } catch (e) { console.error('hitungNilaiAkhir error', e); }
+            }
+        }
+
+        // Dengarkan perubahan pada input share KPI dan bobotnya
+        var shareInputEl = document.getElementById('share-kpi-value');
+        var bobotShareEl = document.getElementById('bobot-share-kpi');
+        if (shareInputEl) shareInputEl.addEventListener('input', function() {
+            try { hitungTotal(); } catch (e) { console.error(e); }
+            try { hitungShareKPI(); } catch (e) { console.error(e); }
+            try { autoSaveNilaiAkhir(); } catch (e) {}
+        });
+        if (bobotShareEl) bobotShareEl.addEventListener('input', function() {
+            try { hitungTotal(); } catch (e) { console.error(e); }
+            try { hitungShareKPI(); } catch (e) { console.error(e); }
+            try { autoSaveNilaiAkhir(); } catch (e) {}
+        });
 
         // 🔹 trigger perhitungan saat input diubah
         document.querySelectorAll('.target-input, .realisasi-input').forEach(input => {
@@ -1241,6 +1365,14 @@
                 // selain "Ada Catatan" → simpan langsung
                 simpanStatus(id, status, realisasi, pencapaian, nilai, nilai_dibobot);
             });
+
+        // Inisialisasi perhitungan pada saat halaman dibuka
+        try {
+            hitungShareKPI();
+            hitungNilaiAkhir();
+        } catch (e) {
+            console.error('Error during page initialization:', e);
+        }
         });
 
         function simpanStatus(id, status, realisasi, pencapaian, nilai, nilai_dibobot) {
@@ -1722,20 +1854,24 @@
             const nik = document.getElementById('nik').value;
             const periode_awal = document.getElementById('periode_awal').value;
             const periode_akhir = document.getElementById('periode_akhir').value;
-            const nilai_sasaran = document.getElementById('total-sasaran').textContent;
-            const nilai_budaya = document.getElementById('ratarata-budaya').textContent;
+            const nilai_sasaran = document.getElementById('nilai-sasaran').textContent;
+            const nilai_budaya = document.getElementById('nilai-budaya').textContent;
             const total_nilai = document.getElementById('total-nilai').textContent;
             const fraud = document.getElementById('fraud-input').value;
             const nilai_akhir = document.getElementById('nilai-akhir').textContent;
             const predikat = document.getElementById('predikat').textContent;
             const pencapaian = document.getElementById('pencapaian-akhir').textContent;
+            const share_kpi_value = document.getElementById('share-kpi-value') ? document.getElementById('share-kpi-value').value : '';
+            const bobot_share_kpi = document.getElementById('bobot-share-kpi') ? document.getElementById('bobot-share-kpi').value : '';
+            const bobot_sasaran = (document.getElementById('bobot-sasaran')?.value || '').toString().replace('%','') || '';
+            const bobot_budaya = (document.getElementById('bobot-budaya')?.value || '').toString().replace('%','') || '5';
 
             fetch('<?= base_url("Pegawai/simpanNilaiAkhir") ?>', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}`
+                    body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&bobot_sasaran=${encodeURIComponent(bobot_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&bobot_budaya=${encodeURIComponent(bobot_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}&share_kpi_value=${encodeURIComponent(share_kpi_value)}&bobot_share_kpi=${encodeURIComponent(bobot_share_kpi)}`
                 })
                 .then(res => res.json())
                 .then(res => {
@@ -1751,6 +1887,80 @@
                     }
                 });
         }
+        
+        // ===== Event Listener untuk Fraud Input =====
+        document.getElementById('fraud-input').addEventListener('input', function() {
+            hitungNilaiAkhir();
+            autoSaveNilaiAkhir();
+        });
+
+        // ===== Event Listener untuk Tombol Simpan Nilai Akhir =====
+        const btnSimpanNilaiAkhir = document.getElementById('btn-simpan-nilai-akhir');
+        if (btnSimpanNilaiAkhir) {
+            btnSimpanNilaiAkhir.addEventListener('click', function() {
+                const btn = this;
+                const nik = document.getElementById('nik').value;
+                const periode_awal = document.getElementById('periode_awal').value;
+                const periode_akhir = document.getElementById('periode_akhir').value;
+
+                // Tampilkan loading
+                btn.disabled = true;
+                btn.innerHTML = '<i class="mdi mdi-spin mdi-loading"></i> Menyimpan...';
+
+                // Ambil semua data nilai akhir
+                const nilai_sasaran = document.getElementById('nilai-sasaran').textContent;
+                const nilai_budaya = document.getElementById('nilai-budaya').textContent;
+                const total_nilai = document.getElementById('total-nilai').textContent;
+                const fraud = document.getElementById('fraud-input').value;
+                const nilai_akhir = document.getElementById('nilai-akhir').textContent;
+                const predikat = document.getElementById('predikat').textContent;
+                const pencapaian = document.getElementById('pencapaian-akhir').textContent;
+                const share_kpi_value = document.getElementById('share-kpi-value') ? document.getElementById('share-kpi-value').value : '';
+                const bobot_share_kpi = document.getElementById('bobot-share-kpi') ? document.getElementById('bobot-share-kpi').value : '';
+                const bobot_sasaran = (document.getElementById('bobot-sasaran')?.value || '').toString().replace('%','') || '';
+                const bobot_budaya = (document.getElementById('bobot-budaya')?.value || '').toString().replace('%','') || '5';
+
+                const bodyNilaiAkhir = `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&bobot_sasaran=${encodeURIComponent(bobot_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&bobot_budaya=${encodeURIComponent(bobot_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}&share_kpi_value=${encodeURIComponent(share_kpi_value)}&bobot_share_kpi=${encodeURIComponent(bobot_share_kpi)}`;
+
+                return fetch('<?= base_url("Pegawai/simpanNilaiAkhir") ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: bodyNilaiAkhir
+                }).then(res => res.json()).then(finalResult => {
+                    if (finalResult.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Nilai Akhir berhasil disimpan.',
+                            confirmButtonColor: '#3085d6'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: finalResult.message || 'Gagal menyimpan Nilai Akhir',
+                            confirmButtonColor: '#d33'
+                        });
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="mdi mdi-content-save"></i> Simpan Nilai Akhir';
+                    }
+                }).catch(err => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: err.message || 'Terjadi kesalahan saat menyimpan',
+                        confirmButtonColor: '#d33'
+                    });
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="mdi mdi-content-save"></i> Simpan Nilai Akhir';
+                });
+            });
+        }
+
         // ================ Format Rupiah ===================
         function formatRp(num) {
             if (num === null || num === undefined || num === '') return '';
@@ -1812,3 +2022,23 @@
         }
     });
 </script>
+<style>
+        /* Kustomisasi untuk tooltip kuning */
+        .tooltip-kuning .tooltip-inner {
+            background-color: #ffc800ff !important; /* Warna kuning muda, !important untuk prioritas */
+            color: #ffffffff;
+            border: 1px solid #ffc800ff;
+            max-width: 300px; /* Lebar maksimal tooltip */
+            padding: 8px 12px; /* Sedikit padding */
+            text-align: center; /* Rata kiri agar ikon dan teks rapi */
+            border-radius: .2rem; /* Menyamakan radius sudut */
+        }
+        /* Mengatur warna panah tooltip */
+        .tooltip-kuning.bs-tooltip-bottom .arrow::before {
+            border-bottom-color: #ffc800ff !important;
+        }
+        /* Jarak antara ikon dan teks */
+        .tooltip-kuning .tooltip-inner i {
+            margin-right: 8px;
+        }
+    </style>

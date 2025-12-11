@@ -202,7 +202,7 @@
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Unit Kantor</span>
-                                                <span class="text-dark"><?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
+                                                <span class="text-dark"> <?= $pegawai_detail->unit_kantor ?? '-'; ?></span>
                                             </li>
                                         </ul>
                                         <input type="hidden" id="nik" value="<?= $pegawai_detail->nik ?>">
@@ -241,7 +241,7 @@
                                         </div>
 
                                         <p class="mt-2 text-dark font-weight-medium">
-                                            <b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kerja; ?> <?= $pegawai_detail->unit_kantor ?? '-'; ?>
+                                            <b>Unit Kantor Penilai:</b> <?= $pegawai_detail->unit_kantor ?? '-'; ?>
                                         </p>
                                     </div>
                                 </div>
@@ -639,7 +639,7 @@
                                 <td>
                                     <input type="text" id="bobot-sasaran"
                                         class="form-control form-control-sm text-center"
-                                        value="95%" readonly>
+                                        value="<?= (95 - ($nilai_akhir['bobot_share_kpi'] ?? 0)) ?>%" readonly>
                                 </td>
                                 <td class="text-center" id="nilai-sasaran">
                                     <?= $nilai_akhir['nilai_sasaran'] ?? 0 ?>
@@ -658,6 +658,46 @@
                                 </td>
                                 <td class="text-center" id="nilai-budaya">
                                     <?= $nilai_akhir['nilai_budaya'] ?? '-' ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Share KPI</th>
+                                <td class="text-center" id="share-kpi">
+                                    <input type="text" readonly
+                                        id="share-kpi-value"
+                                        class="form-control form-control-sm text-center"
+                                        min="0"
+                                        max="5"
+                                        value="<?= $nilai_akhir['share_kpi_value'] ?? 0 ?>"
+                                        oninput="if(this.value > 5) this.value = 5; if(this.value < 0) this.value = 0; hitungShareKPI()"
+                                        data-toggle="tooltip"
+                                        data-placement="bottom"
+                                        data-html="true"
+                                        data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+                                        title="<i class='mdi mdi-information-outline'></i><br>Pastikan nilai share KPI sesuai dengan data KPI Direksi">
+                                </td>
+                                <td>x Bobot % Share KPI</td>
+                                <td>
+                                    <div class="input-group input-group-sm" style="width: 100%;">
+                                        <input type="number" readonly
+                                            id="bobot-share-kpi"
+                                            class="form-control f
+                                            orm-control-sm text-center"
+                                            value="<?= $nilai_akhir['bobot_share_kpi'] ?? 0 ?>"
+                                            min="0"
+                                            max="95"
+                                            style="height: 30px;"
+                                            oninput="if(this.value > 95) this.value = 95; if(this.value < 0) this.value = 0; hitungShareKPI()"
+                                            data-toggle="tooltip"
+                                            data-placement="bottom"
+                                            data-html="true"
+                                            data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+                                            title="<i class='mdi mdi-information-outline'></i><br>Pastikan bobot share KPI sesuai dengan data KPI Direksi">
+                                        <span class="input-group-text" style="height: 30px; line-height: 1;">%</span>
+                                    </div>
+                                </td>
+                                <td class="text-center" id="share-kpi-nilai">
+                                    <?= $nilai_akhir['share_kpi'] ?? '-' ?>
                                 </td>
                             </tr>
                             <tr>
@@ -1004,16 +1044,45 @@
             hitungNilaiAkhir();
         }
 
+        function hitungShareKPI() {
+            // Hitung share KPI value × bobot_share_kpi / 100
+            const shareKpiValueEl = document.getElementById('share-kpi-value');
+            const bobotShareKpiEl = document.getElementById('bobot-share-kpi');
+            const shareKpiNilaiEl = document.getElementById('share-kpi-nilai');
+            const bobotSasaranEl = document.getElementById('bobot-sasaran');
+
+            if (!shareKpiValueEl || !bobotShareKpiEl || !shareKpiNilaiEl) return;
+
+            const shareKpiValue = parseFloat(shareKpiValueEl.value) || 0;
+            const bobotShareKpi = parseFloat(bobotShareKpiEl.value) || 0;
+            const shareKpiNilai = shareKpiValue * (bobotShareKpi / 100);
+
+            // Update bobot sasaran secara dinamis: 95 - bobot_share_kpi
+            const bobotSasaran = 95 - bobotShareKpi;
+            if (bobotSasaranEl) bobotSasaranEl.value = bobotSasaran + "%";
+
+            shareKpiNilaiEl.textContent = shareKpiNilai.toFixed(2);
+
+            // Trigger hitungNilaiAkhir untuk update semua nilai
+            hitungNilaiAkhir();
+        }
+
         function hitungNilaiAkhir() {
-            const bobotSasaran = 0.95,
-                bobotBudaya = 0.05;
+            // Ambil bobot sasaran dari input (yang sudah dinamis di-update oleh hitungShareKPI)
+            const bobotSasaranStr = (document.getElementById("bobot-sasaran")?.value || "95").replace('%', '');
+            const bobotShareKpi = parseFloat(document.getElementById("bobot-share-kpi")?.value) / 100 || 0;
+            const bobotSasaran = parseFloat(bobotSasaranStr) / 100;
+            const bobotBudaya = 0.05;
+
             const fraud = parseFloat(document.getElementById("fraud-input")?.value) || 0;
             const totalSasaran = parseFloat(document.getElementById("total-nilai-bobot")?.textContent) || 0;
             const rataBudaya = parseFloat(document.getElementById("ratarata-budaya")?.textContent) || 0;
+            const shareKpiNilai = parseFloat(document.getElementById("share-kpi-nilai")?.textContent) || 0;
+
 
             const nilaiSasaran = totalSasaran * bobotSasaran;
             const nilaiBudaya = rataBudaya * bobotBudaya;
-            const totalNilai = nilaiSasaran + nilaiBudaya;
+            const totalNilai = nilaiSasaran + nilaiBudaya + shareKpiNilai;
             const nilaiAkhir = fraud === 1 ? totalNilai - fraud : totalNilai;
             const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
 
@@ -1057,21 +1126,25 @@
             }
 
             // pencapaian akhir (approx)
-            let pencapaian = 0;
-            const v = parseFloat(nilaiAkhir) || 0;
-            if (v < 2 * koef) pencapaian = (v / 2) * 0.8 * 100;
-            else if (v < 3 * koef) pencapaian = 80 + ((v - 2) / 1) * 10;
-            else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3) / 0.5) * 20;
-            else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5) / 1) * 10;
-            else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
-            else pencapaian = 130;
-
-            if (pencapaianAkhirEl) pencapaianAkhirEl.textContent = pencapaian.toFixed(2) + "%";
+            let pencapaian = "";
+            if (nilaiAkhir !== "Tidak ada nilai") {
+                const v = parseFloat(nilaiAkhir) || 0;
+                if (v < 0) pencapaian = 0;
+                else if (v < 2 * koef) pencapaian = (v / 2) * 0.8 * 100;
+                else if (v < 3 * koef) pencapaian = 80 + ((v - 2) / 1) * 10;
+                else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3) / 0.5) * 20;
+                else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5) / 1) * 10;
+                else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
+                else pencapaian = 130;
+            } else {
+                pencapaian = 0;
+            }
         }
 
         // Jalankan perhitungan awal
         try {
-            hitungTotal();
+            hitungShareKPI(); // Hitung share KPI terlebih dahulu
+            hitungTotal(); // Hitung total indikator dan nilai akhir
         } catch (e) {
             console.warn('hitungTotal error', e);
         }
@@ -1114,7 +1187,7 @@
                 window.location.href = `<?= base_url('Pegawai/nilaiPegawaiDetail2/') ?>${nikPegawai}?awal=${awal}&akhir=${akhir}&periode_changed=1`;
             });
         }
-        
+
         // ===== Custom sorting format dd-mm-yy HH:mm =====
         $.extend($.fn.dataTableExt.oSort, {
             "date-uk-pre": function(a) {
@@ -1192,7 +1265,7 @@
             tableCatatan = null;
             tableCatatanInitialized = false;
         }
- 
+
         // ===== Bulk helpers and save helper =====
         let bulkMode = false;
         let bulkIds = [];

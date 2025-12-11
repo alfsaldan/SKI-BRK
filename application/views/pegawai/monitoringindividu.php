@@ -494,15 +494,20 @@
                         <?php
                         // 🔹 Pastikan data aman
                         $total_skor      = number_format(round(floatval($total_nilai ?? 0), 2), 2);
-                        $avg_budaya      = $nilai_budaya ?? 0;
-                        $kontrib_sasaran = $total_skor * 0.95;
-                        $kontrib_budaya  = $avg_budaya * 0.05;
-                        $total_nilai     = number_format($kontrib_sasaran + $kontrib_budaya, 2);
-                        $nilai           = $nilai_akhir->nilai_akhir ?? 0;
-                        $pencapaian_pct  = floatval(str_replace('%', '', $nilai_akhir->pencapaian ?? 0));
-                        $predikat        = $nilai_akhir->predikat ?? 'Minus (M)';
+                        $avg_budaya      = $rata_rata_budaya ?? 0;
+                        $share_kpi_value = $share_kpi_value ?? 0;
+                        $bobot_sasaran   = $bobot_sasaran;
+                        $bobot_budaya    = $bobot_budaya;
+                        $bobot_share_kpi = $bobot_share_kpi;
+                        $nilai_sasaran   = $total_skor * $bobot_sasaran/100;
+                        $nilai_budaya    = $avg_budaya * $bobot_budaya/100;
+                        $nilai_kpi       = $share_kpi_value * $bobot_share_kpi/100;
+                        $total_nilai     = $nilai_sasaran + $nilai_budaya + $nilai_kpi;
                         $fraud           = $fraud ?? 0;
                         $koefisien       = $koefisien ?? 100;
+                        $nilai_akhir_value = ($fraud == 1) ? ($total_nilai - 1) : $total_nilai;
+                        $pencapaian_pct  = floatval(str_replace('%', '', $nilai_akhir->pencapaian ?? 0));
+                        $predikat        = $nilai_akhir->predikat ?? 'Minus (M)';
                         ?>
 
                         <!-- Bagian Atas: Perhitungan -->
@@ -511,35 +516,41 @@
                                 <th>Total Nilai Sasaran Kerja</th>
                                 <td class="text-center"><?= number_format($total_skor, 2) ?></td>
                                 <td>x Bobot % Sasaran Kerja</td>
-                                <td class="text-center">95%</td>
-                                <td class="text-center"><?= number_format($kontrib_sasaran, 2) ?></td>
+                                <td class="text-center"><?= $bobot_sasaran ?> %</td>
+                                <td class="text-center"><?= number_format($nilai_sasaran, 2) ?></td>
                             </tr>
                             <tr>
                                 <th>Rata-rata Nilai Internalisasi Budaya</th>
                                 <td class="text-center"><?= number_format($avg_budaya, 2) ?></td>
                                 <td>x Bobot % Budaya Perusahaan</td>
-                                <td class="text-center">5%</td>
-                                <td class="text-center"><?= number_format($kontrib_budaya, 2) ?></td>
+                                <td class="text-center"><?= $bobot_budaya ?> %</td>
+                                <td class="text-center"><?= number_format($nilai_budaya, 2) ?></td>
                             </tr>
                             <tr>
-                                <th colspan="4" class="text-end">Total Nilai</th>
+                                <th>Share KPI</th>
+                                <td class="text-center"><?= number_format($share_kpi_value, 2) ?></td>
+                                <td>x Bobot % Share KPI</td>
+                                <td class="text-center"><?= $bobot_share_kpi ?> %</td>
+                                <td class="text-center"><?= number_format($nilai_kpi, 2) ?></td>
+                            </tr>
+                            <tr>
+                                <th colspan="4" class="text-end text-right">Total Nilai</th>
                                 <td class="text-center"><?= number_format($total_nilai, 2) ?></td>
                             </tr>
                             <tr>
-                                <th colspan="4" class="text-end">
+                                <th colspan="4" class="text-right">
                                     Fraud<br>
                                     <small>(1 jika melakukan fraud, 0 jika tidak melakukan fraud)</small>
                                 </th>
                                 <td class="text-center"><?= $fraud ?></td>
                             </tr>
                             <tr>
-                                <th colspan="4" class="text-end">Koefisien Penilaian</th>
+                                <th colspan="4" class="text-right">Koefisien Penilaian</th>
                                 <td class="text-center"><?= number_format($koefisien, 0) ?>%</td>
                         </table>
 
                         <?php
                         // Tentukan predikat & warna berdasarkan nilai akhir
-                        $nilai_akhir_value = $nilai_akhir->nilai_akhir ?? 0; // pastikan ada nilai
                         $predikat = "";
                         $predikatClass = "";
                         $koef = $koefisien ? $koefisien / 100 : 1; // default 1 jika koefisien tidak ada
@@ -611,7 +622,7 @@
                                         <div class="card text-center mb-3">
                                             <div class="card-header bg-success text-white">Nilai Akhir</div>
                                             <div class="card-body">
-                                                <h3 id="nilai-akhir"><?= number_format($nilai_akhir_value, 2) ?></h3>
+                                                <h3 id="nilai-akhir_value"><?= number_format($nilai_akhir_value ?? 0, 2) ?></h3>
                                             </div>
                                         </div>
                                     </div>
@@ -627,7 +638,7 @@
                                 <div class="card text-center mb-3">
                                     <div class="card-header bg-success text-white">Yudisium / Predikat</div>
                                     <div class="card-body">
-                                        <h3 id="predikat" class="<?= $predikatClass ?>"><?= $predikat ?></h3>
+                                        <h3 id="predikatt" class="<?= $predikatClass ?>"><?= $predikat ?></h3>
                                     </div>
                                 </div>
                             </div>
@@ -824,7 +835,7 @@
                 },
                 periode_awal: pAwal,
                 periode_akhir: periodeAkhirEl.value,
-                nilai_akhir_value: parseFloat(totals.nilaiAkhir.toFixed(2)),
+                nilai_akhir_value: totals.nilaiAkhir,
                 pencapaian_pct: parseFloat(totals.pencAkhir.toFixed(2)),
                 predikat: totals.predObj.text
             };

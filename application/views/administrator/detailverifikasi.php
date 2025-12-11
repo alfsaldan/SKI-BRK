@@ -430,9 +430,14 @@
                     // Pastikan variabel dari controller
                     $total_skor     = $nilai_akhir['nilai_sasaran'] ?? 0;
                     $avg_budaya     = number_format($rata_rata_budaya ?? 0, 2);
-                    $kontrib_sasaran = $total_skor * 0.95;
-                    $kontrib_budaya = $avg_budaya * 0.05;
-                    $total_nilai    = $nilai_akhir['total_nilai'] ?? $kontrib_sasaran + $kontrib_budaya;
+                    $share_kpi_value = $nilai_akhir['share_kpi_value'] ?? 0;
+                    $bobot_sasaran  = $nilai_akhir['bobot_sasaran'] ?? 95;
+                    $bobot_budaya   = $nilai_akhir['bobot_budaya'] ?? 5;
+                    $bobot_share_kpi = $nilai_akhir['bobot_share_kpi'] ?? 0;
+                    $nilai_sasaran  = $total_skor * $bobot_sasaran / 100;
+                    $nilai_budaya   = $avg_budaya * $bobot_budaya / 100;
+                    $nilai_kpi      = $share_kpi_value * $bobot_share_kpi / 100;
+                    $total_nilai    = $nilai_akhir['total_nilai'] ?? $nilai_sasaran + $nilai_budaya + $nilai_kpi;
                     $pencapaian_pct = floatval(str_replace('%', '', $nilai_akhir['pencapaian'] ?? 0));
                     $predikat       = $nilai_akhir['predikat'] ?? 'Minus (M)';
                     $fraud          = $nilai_akhir['fraud'] ?? 0;
@@ -446,32 +451,36 @@
                                     <td>Total Nilai Sasaran Kerja</td>
                                     <td style="width:140px; text-align:right;"><?= number_format($total_skor, 2) ?></td>
                                     <td style="width:160px; text-align:center;">x Bobot % Sasaran Kerja</td>
-                                    <td style="width:100px; text-align:right;">95%</td>
-                                    <td style="width:140px; text-align:right;"><?= number_format($kontrib_sasaran, 2) ?></td>
+                                    <td style="width:100px; text-align:right;"><?= $bobot_sasaran ?>%</td>
+                                    <td style="width:140px; text-align:right;"><?= number_format($nilai_sasaran, 2) ?></td>
                                 </tr>
                                 <tr>
                                     <td>Rata-rata Nilai Internalisasi Budaya</td>
                                     <td style="text-align:right;"><?= number_format($avg_budaya, 2) ?></td>
                                     <td style="text-align:center;">x Bobot % Budaya Perusahaan</td>
-                                    <td style="text-align:right;">5%</td>
-                                    <td style="text-align:right;"><?= number_format($kontrib_budaya, 2) ?></td>
+                                    <td style="text-align:right;"><?= $bobot_budaya ?>%</td>
+                                    <td style="text-align:right;"><?= number_format($nilai_budaya, 2) ?></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="4" class="text-end fw-bold">Total Nilai</td>
+                                    <td>Share KPI</td>
+                                    <td style="text-align:right;"><?= number_format($share_kpi_value, 2) ?></td>
+                                    <td style="text-align:center;">x Bobot % Share KPI</td>
+                                    <td style="text-align:right;"><?= $bobot_share_kpi ?>%</td>
+                                    <td style="text-align:right;"><?= number_format($nilai_kpi, 2) ?></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-right fw-bold">Total Nilai</td>
                                     <td class="fw-bold" style="text-align:right;"><?= number_format($total_nilai, 2) ?></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="5" class="text-muted small">
-                                        Fraud<br>
+                                    <td colspan="4" class="text-right fw-bold">Status Fraud
+                                        <br>
                                         <span class="text-muted small">(1 jika melakukan fraud, 0 jika tidak melakukan fraud)</span>
                                     </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="4" class="text-end fw-bold">Status Fraud</td>
                                     <td class="fw-bold text-danger" style="text-align:right;"><?= $fraud ?></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="4" class="text-end fw-bold">Koefisien Penilaian</td>
+                                    <td colspan="4" class="text-right fw-bold">Koefisien Penilaian</td>
                                     <td class="fw-bold" style="text-align:right;"><?= number_format($koefisien, 0) ?>%</td>
                             </table>
                         </div>

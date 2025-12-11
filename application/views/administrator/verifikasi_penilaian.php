@@ -26,11 +26,32 @@
                             <div class="mb-3 d-flex gap-2 align-items-center">
                                 <label>Pilih Periode</label>
                                 <select id="filter_periode" class="form-control">
-                                    <?php if (!empty($periode_list)): ?>
+                                    <?php if (!empty($periode_list)): 
+                                        // Cari periode yang mencakup hari ini
+                                        $today = new DateTime('now');
+                                        $default_selected = null;
+                                        
+                                        foreach ($periode_list as $p) {
+                                            $awal = new DateTime($p->periode_awal);
+                                            $akhir = new DateTime($p->periode_akhir);
+                                            
+                                            // Jika hari ini berada dalam range periode, jadikan default
+                                            if ($today >= $awal && $today <= $akhir) {
+                                                $default_selected = $p->periode_awal . '|' . $p->periode_akhir;
+                                                break;
+                                            }
+                                        }
+                                    ?>
                                         <?php foreach ($periode_list as $p):
                                             $label = date('d M Y', strtotime($p->periode_awal)) . ' - ' . date('d M Y', strtotime($p->periode_akhir));
                                             $val = $p->periode_awal . '|' . $p->periode_akhir;
-                                            $sel = ((isset($selected_awal) && isset($selected_akhir)) && $selected_awal == $p->periode_awal && $selected_akhir == $p->periode_akhir) ? 'selected' : '';
+                                            // Gunakan default_selected jika ada, jika tidak gunakan selected_awal/selected_akhir dari URL param
+                                            $sel = '';
+                                            if ($default_selected && $val === $default_selected) {
+                                                $sel = 'selected';
+                                            } elseif ((isset($selected_awal) && isset($selected_akhir)) && $selected_awal == $p->periode_awal && $selected_akhir == $p->periode_akhir) {
+                                                $sel = 'selected';
+                                            }
                                         ?>
                                             <option value="<?= $val ?>" <?= $sel ?>><?= $label ?></option>
                                         <?php endforeach; ?>

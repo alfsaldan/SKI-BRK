@@ -264,6 +264,10 @@ class Pegawai extends CI_Controller
         $nik           = $this->input->post('nik');
         $nilai_sasaran = $this->input->post('nilai_sasaran');
         $nilai_budaya  = $this->input->post('nilai_budaya');
+        $share_kpi_value = $this->input->post('share_kpi_value');
+        $bobot_sasaran  = $this->input->post('bobot_sasaran');
+        $bobot_budaya   = $this->input->post('bobot_budaya');
+        $bobot_share_kpi = $this->input->post('bobot_share_kpi');
         $total_nilai   = $this->input->post('total_nilai');
         $fraud         = $this->input->post('fraud');
         $nilai_akhir   = $this->input->post('nilai_akhir');
@@ -271,18 +275,25 @@ class Pegawai extends CI_Controller
         $predikat      = $this->input->post('predikat');
         $periode_awal  = $this->input->post('periode_awal');
         $periode_akhir = $this->input->post('periode_akhir');
+        // Koefisien adalah readonly field di view, jadi tidak perlu update (biarkan null agar tidak mengubah nilai lama)
+        $koefisien     = null;
 
         $save = $this->Pegawai_model->save_nilai_akhir(
             $nik,
             $nilai_sasaran,
             $nilai_budaya,
+            $share_kpi_value,
             $total_nilai,
+            $bobot_sasaran,
+            $bobot_budaya,
+            $bobot_share_kpi,
             $fraud,
             $nilai_akhir,
             $pencapaian,
             $predikat,
             $periode_awal,
-            $periode_akhir
+            $periode_akhir,
+            $koefisien
         );
 
         if ($save) {
@@ -2231,14 +2242,14 @@ class Pegawai extends CI_Controller
             ->from('pegawai')
             ->where('nik', $nik)
             ->get()->row();
-        
+
         $data = [
             'judul' => 'Rekap Nilai Pegawai',
             'rekap' => $rekap,
             'riwayat_jabatan' => $riwayat_jabatan, // Kirim data riwayat ke view
             'jabatan_sekarang' => $jabatan_sekarang // Kirim data jabatan sekarang ke view
         ];
-        
+
         // Load layout view
         $this->load->view('layoutpegawai/header', $data);
         $this->load->view('pegawai/rekap_nilai', $data);
@@ -2370,8 +2381,12 @@ class Pegawai extends CI_Controller
 
                 // ✅ Ambil data fraud & koefisien dari tabel nilai_akhir
                 $tahun = date('Y', strtotime($awal_tahun));
-                $nilaiAkhirData = $this->MonitoringPegawai_model->getNilaiAkhir($nik, "$tahun-01-01", "$tahun-12-31");
+                $nilaiAkhirData = $this->MonitoringPegawai_model->getNilaiAkhir($nik, "$tahun-10-01", "$tahun-12-31");
                 $nilai_budaya = $nilaiAkhirData->nilai_budaya ?? 0;
+                $share_kpi_value = $nilaiAkhirData->share_kpi_value ?? 0;
+                $bobot_sasaran = $nilaiAkhirData->bobot_sasaran ?? 95;
+                $bobot_budaya = $nilaiAkhirData->bobot_budaya ?? 5;
+                $bobot_share_kpi = $nilaiAkhirData->bobot_share_kpi ?? 0;
                 $fraud = $nilaiAkhirData->fraud ?? 0;
                 $koefisien = $nilaiAkhirData->koefisien ?? 100;
 
@@ -2380,6 +2395,10 @@ class Pegawai extends CI_Controller
                     'penilaian_pegawai' => $penilaian_bulanan,
                     'nilai_akhir' => $nilai_akhir,
                     'nilai_budaya' => $nilai_budaya,
+                    'share_kpi_value' => $share_kpi_value,
+                    'bobot_sasaran' => $bobot_sasaran,
+                    'bobot_budaya' => $bobot_budaya,
+                    'bobot_share_kpi' => $bobot_share_kpi,
                     'fraud' => $fraud,
                     'koefisien' => $koefisien,
                     'budaya_nilai' => $budayaData['nilai_budaya'],
@@ -2520,8 +2539,12 @@ class Pegawai extends CI_Controller
 
             // ✅ Ambil data fraud & koefisien dari tabel nilai_akhir
             $tahun = date('Y', strtotime($periode_awal));
-            $nilaiAkhirData = $this->MonitoringPegawai_model->getNilaiAkhir($nik, "$tahun-01-01", "$tahun-12-31");
+            $nilaiAkhirData = $this->MonitoringPegawai_model->getNilaiAkhir($nik, "$tahun-10-01", "$tahun-12-31");
             $nilai_budaya = $nilaiAkhirData->nilai_budaya ?? 0;
+            $share_kpi_value = $nilaiAkhirData->share_kpi_value ?? 0;
+            $bobot_sasaran = $nilaiAkhirData->bobot_sasaran ?? 95;
+            $bobot_budaya = $nilaiAkhirData->bobot_budaya ?? 5;
+            $bobot_share_kpi = $nilaiAkhirData->bobot_share_kpi ?? 0;
             $fraud = $nilaiAkhirData->fraud ?? 0;
             $koefisien = $nilaiAkhirData->koefisien ?? 100;
 
@@ -2534,6 +2557,10 @@ class Pegawai extends CI_Controller
                 'rata_rata_budaya' => $budayaData['rata_rata'],
                 'budaya' => $this->MonitoringPegawai_model->getAllBudaya(),
                 'nilai_budaya' => $nilai_budaya,
+                'share_kpi_value' => $share_kpi_value,
+                'bobot_sasaran' => $bobot_sasaran,
+                'bobot_budaya' => $bobot_budaya,
+                'bobot_share_kpi' => $bobot_share_kpi,
                 'fraud' => $fraud,
                 'koefisien' => $koefisien,
                 'tahun_dipilih' => $tahun,
