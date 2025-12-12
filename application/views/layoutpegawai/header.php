@@ -57,6 +57,7 @@
             border-radius: 10px;
             color: #6b7280;
             font-weight: 500;
+            font-size: 13px;
             transition: all 0.3s ease;
             margin: 4px 8px;
         }
@@ -93,14 +94,20 @@
             transform: scale(1.05);
         }
 
+        /* Mengurangi indentasi dropdown agar sejajar dengan menu utama */
+        #sidebar-menu ul ul {
+            padding-left: 0 !important;
+        }
+
         /* Section title */
         .menu-title {
-            padding: 10px 16px 4px;
+            padding: 10px 16px;
             text-transform: uppercase;
-            font-size: 12px;
+            font-size: 11px;
             letter-spacing: 1px;
             color: #9ca3af;
-            margin-top: 10px;
+            font-weight: 700;
+            margin: 15px 0 5px 0;
         }
 
         /* Navbar putih dengan shadow ringan */
@@ -171,6 +178,55 @@
         .button-menu-mobile:hover i.fe-menu {
             color: #277caeff;
         }
+
+        /* Custom style for dropdown headers to resemble menu-title */
+        #sidebar-menu ul li a.special-header-link {
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #9ca3af;
+            font-weight: 700;
+            background: transparent;
+            box-shadow: none;
+            margin: 15px 0 5px 0;
+            padding: 10px 16px;
+            border-radius: 0;
+        }
+
+        #sidebar-menu ul li a.special-header-link:hover,
+        #sidebar-menu ul li.active>a.special-header-link {
+            background: transparent !important;
+            color: #6b7280 !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        #sidebar-menu ul li a.special-header-link i {
+            font-size: 14px;
+            color: #9ca3af;
+            margin-right: 8px;
+        }
+
+        #sidebar-menu ul li a.special-header-link:hover i,
+        #sidebar-menu ul li.active>a.special-header-link i {
+            color: #6b7280 !important;
+            transform: none !important;
+        }
+
+        /* Pastikan dropdown tetap terbuka ketika parent aktif */
+        .nav-first-level.in,
+        .nav-second-level.in {
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+
+        /* Force dropdown container tetap visible */
+        #sidebar-menu li.active>ul {
+            display: block !important;
+        }
     </style>
 
 </head>
@@ -179,8 +235,6 @@
 
     <!-- Begin page -->
     <div id="wrapper">
-
-
         <!-- Topbar Start -->
         <div class="navbar-custom">
             <ul class="list-unstyled topnav-menu float-right mb-0">
@@ -304,7 +358,6 @@
                     <ul class="metismenu" id="side-menu">
 
                         <?php if ($role == 'administrator'): ?>
-                            <!-- MENU ADMIN -->
                             <li class="menu-title">Halaman Utama</li>
 
                             <li class="<?= ($activeController == 'administrator' && $activeMethod == '') ? 'active' : '' ?>">
@@ -314,143 +367,193 @@
                                 </a>
                             </li>
 
-                            <li class="menu-title mt-2">Fitur Utama</li>
-
-                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['keloladatapegawai', 'detailpegawai'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/keloladatapegawai') ?>">
-                                    <i class="mdi mdi-account-card-details"></i>
-                                    <span>Kelola Data Pegawai</span>
+                            <?php
+                            $fiturUtamaActive = ($activeController == 'administrator' && in_array($activeMethod, [
+                                'keloladatapegawai',
+                                'detailpegawai',
+                                'indikatorkinerja',
+                                'penilaiankinerja',
+                                'caripenilaian',
+                                'verifikasi_penilaian',
+                                'detailverifikasi'
+                            ]));
+                            ?>
+                            <li class="<?= $fiturUtamaActive ? 'active' : '' ?>">
+                                <a href="javascript: void(0);" class="special-header-link">
+                                    <!-- <i class="fe-layers"></i> -->
+                                    <span> Fitur Utama </span>
+                                    <span class="menu-arrow"></span>
                                 </a>
+                                <ul class="nav-first-level <?= $fiturUtamaActive ? 'in' : '' ?>" aria-expanded="<?= $fiturUtamaActive ? 'true' : 'false' ?>">
+                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['keloladatapegawai', 'detailpegawai'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('administrator/keloladatapegawai') ?>">
+                                            <i class="mdi mdi-account-card-details"></i>
+                                            <span>Kelola Data Pegawai</span>
+                                        </a>
+                                    </li>
+
+                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['indikatorkinerja'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('administrator/indikatorkinerja') ?>">
+                                            <i class="mdi mdi-target-account"></i>
+                                            <span> Indikator Kinerja </span>
+                                        </a>
+                                    </li>
+
+                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['penilaiankinerja', 'caripenilaian'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('administrator/penilaiankinerja') ?>">
+                                            <i class="mdi mdi-account-edit"></i>
+                                            <span> Penilaian Kinerja </span>
+                                        </a>
+                                    </li>
+
+                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['verifikasi_penilaian', 'detailverifikasi'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('administrator/verifikasi_penilaian') ?>">
+                                            <i class="mdi mdi-clipboard-check-outline"></i>
+                                            <span> Verifikasi Penilaian </span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <?php
+                            $peningkatanKinerjaActive = ($activeController == 'administrator' && in_array($activeMethod, [
+                                'datapegawai',
+                                'caridatapegawai',
+                                'monitoringkinerja',
+                                'caripenilaianbulanan',
+                                'verifikasi_ppk',
+                                'program_ppk'
+                            ]));
+                            ?>
+                            <li class="<?= $peningkatanKinerjaActive ? 'active' : '' ?>">
+                                <a href="javascript: void(0);" class="special-header-link">
+                                    <!-- <i class="fe-trending-up"></i> -->
+                                    <span> Peningkatan Kinerja </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <ul class="nav-first-level <?= $peningkatanKinerjaActive ? 'in' : '' ?>" aria-expanded="<?= $peningkatanKinerjaActive ? 'true' : 'false' ?>">
+                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['datapegawai', 'caridatapegawai'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('administrator/datapegawai') ?>">
+                                            <i class="mdi mdi-account-card-details"></i>
+                                            <span> Cek Kinerja Pegawai </span>
+                                        </a>
+                                    </li>
+
+                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['monitoringkinerja', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('administrator/monitoringkinerja') ?>">
+                                            <i class="mdi mdi-clipboard-pulse"></i>
+                                            <span> Monitoring Kinerja </span>
+                                        </a>
+                                    </li>
+
+                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['verifikasi_ppk'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('administrator/verifikasi_ppk') ?>">
+                                            <i class="mdi mdi-account-group"></i>
+                                            <span> Verifikasi PPK </span>
+                                        </a>
+                                    </li>
+
+                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['program_ppk'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('administrator/program_ppk') ?>">
+                                            <i class="mdi mdi-account-badge-alert-outline"></i>
+                                            <span> Program PPK </span>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
 
-                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['indikatorkinerja'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/indikatorkinerja') ?>">
-                                    <i class="mdi mdi-target-account"></i>
-                                    <span> Indikator Kinerja </span>
+                            <?php
+                            $lainnyaActive = ($activeController == 'administrator' && in_array($activeMethod, [
+                                'kelolatingkatanjabatan',
+                                'kelolabudaya'
+                            ]));
+                            ?>
+                            <li class="<?= $lainnyaActive ? 'active' : '' ?>">
+                                <a href="javascript: void(0);" class="special-header-link">
+                                    <!-- <i class="fe-grid"></i> -->
+                                    <span> Lainnya </span>
+                                    <span class="menu-arrow"></span>
                                 </a>
+                                <ul class="nav-second-level <?= $lainnyaActive ? 'in' : '' ?>" aria-expanded="<?= $lainnyaActive ? 'true' : 'false' ?>">
+                                    <li class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolatingkatanjabatan') ? 'active' : '' ?>">
+                                        <a href="<?= base_url('administrator/kelolatingkatanjabatan') ?>">
+                                            <i class="mdi mdi-briefcase"></i>
+                                            <span>Kelola Jabatan </span>
+                                        </a>
+                                    </li>
+
+                                    <li class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolabudaya') ? 'active' : '' ?>">
+                                        <a href="<?= base_url('administrator/kelolabudaya') ?>">
+                                            <i class="mdi mdi-white-balance-sunny"></i>
+                                            <span>Kelola Budaya</span>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
-
-                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['penilaiankinerja', 'caripenilaian'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/penilaiankinerja') ?>">
-                                    <i class="mdi mdi-account-edit"></i>
-                                    <span> Penilaian Kinerja </span>
-                                </a>
-                            </li>
-
-                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['verifikasi_penilaian', 'detailverifikasi'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/verifikasi_penilaian') ?>">
-                                    <i class="mdi mdi-clipboard-check-outline"></i>
-                                    <span> Verifikasi Penilaian </span>
-                                </a>
-                            </li>
-
-                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['verifikasi_ppk'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/verifikasi_ppk') ?>">
-                                    <i class="mdi mdi-account-group"></i>
-                                    <span> Verifikasi PPK </span>
-                                </a>
-                            </li>
-
-                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['program_ppk'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/program_ppk') ?>">
-                                    <i class="mdi mdi-account-badge-alert-outline"></i>
-                                    <span> Program PPK </span>
-                                </a>
-                            </li>
-
-
-                            <li class="menu-title mt-2">Lainnya</li>
-
-                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['datapegawai', 'caridatapegawai'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/datapegawai') ?>">
-                                    <i class="mdi mdi-account-card-details"></i>
-                                    <span> Cek Kinerja Pegawai </span>
-                                </a>
-                            </li>
-                            <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['monitoringkinerja', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/monitoringkinerja') ?>">
-                                    <i class="mdi mdi-clipboard-pulse"></i>
-                                    <span> Monitoring Kinerja </span>
-                                </a>
-                            </li>
-
-                            <li class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolatingkatanjabatan') ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/kelolatingkatanjabatan') ?>">
-                                    <i class="mdi mdi-briefcase"></i>
-                                    <span>Kelola Jabatan </span>
-                                </a>
-                            </li>
-
-                            <li class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolaBudaya') ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator/kelolaBudaya') ?>">
-                                    <i class="mdi mdi-white-balance-sunny"></i>
-                                    <span>Kelola Budaya</span>
-                                </a>
-                            </li>
-
                         <?php endif; ?>
-                        <?php if ($role == 'administrator_renstra'): ?>
-                            <!-- MENU ADMIN -->
-                            <li class="menu-title">Halaman Utama</li>
 
-                            <li class="<?= ($activeController == 'administrator_renstra' && $activeMethod == '') ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator_renstra') ?>">
-                                    <i class="fe-airplay"></i>
-                                    <span> Dashboard </span>
-                                </a>
-                            </li>
-
-                            <li class="menu-title mt-2">Fitur Utama Renstra</li>
-
-                            <li class="<?= ($activeController == 'administrator_renstra' && in_array($activeMethod, ['kpi_indikatorkinerja', 'kpi_indikatorKinerja?unit_kerja'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator_renstra/kpi_indikatorkinerja') ?>">
-                                    <i class="mdi mdi-key-variant"></i>
-                                    <span> Kelola KPI </span>
-                                </a>
-                            </li>
-
-                            <li class="<?= ($activeController == 'administrator_renstra' && in_array($activeMethod, ['kpi_penilaiankinerja', 'lihatpenilaianrenstra'])) ? 'active' : '' ?>">
-                                <a href="<?= base_url('administrator_renstra/kpi_penilaiankinerja') ?>">
-                                    <i class="mdi mdi-account-key"></i>
-                                    <span> Penilaian KPI </span>
-                                </a>
-                            </li>
-
-
-                        <?php endif; ?>
-
-                        <!-- MENU PEGAWAI (muncul untuk semua role) -->
-                        <li class="menu-title">Halaman Pegawai</li>
-                        <li class="<?= ($activeController == 'pegawai' && ($activeMethod == '' || $activeMethod == 'index')) ? 'active' : '' ?>">
-                            <a href="<?= base_url('pegawai') ?>">
-                                <i class="mdi mdi-account"></i>
-                                <span> Kinerja Individu </span>
+                        <?php
+                        $halamanPegawaiActive = ($activeController == 'pegawai' && in_array($activeMethod, [
+                            '',
+                            'index',
+                            'rekapnilaipegawai',
+                            'monitoringindividu',
+                            'caripenilaianbulanan'
+                        ]));
+                        ?>
+                        <li class="<?= $halamanPegawaiActive ? 'active' : '' ?>">
+                            <a href="javascript: void(0);" class="special-header-link">
+                                <!-- <i class="fe-users"></i> -->
+                                <span> Halaman Pegawai </span>
+                                <span class="menu-arrow"></span>
                             </a>
-                        </li>
-                        <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['rekapnilaipegawai', 'arsipdetail'])) ? 'active' : '' ?>">
-                            <a href="<?= base_url('pegawai/rekapnilaipegawai') ?>">
-                                <i class="mdi mdi-file-chart"></i>
-                                <span> Rekap KPI Individu</span>
-                            </a>
-                        </li>
-                        <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['monitoringindividu', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
-                            <a href="<?= base_url('pegawai/monitoringindividu') ?>">
-                                <i class="mdi mdi-clipboard-pulse-outline"></i>
-                                <span> Monitoring Individu </span>
-                            </a>
+                            <ul class="nav-second-level <?= $halamanPegawaiActive ? 'in' : '' ?>" aria-expanded="<?= $halamanPegawaiActive ? 'true' : 'false' ?>">
+                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['', 'index'])) ? 'active' : '' ?>">
+                                    <a href="<?= base_url('pegawai') ?>">
+                                        <i class="mdi mdi-account"></i>
+                                        <span> Kinerja Individu </span>
+                                    </a>
+                                </li>
+                                <li class="<?= ($activeController == 'pegawai' && $activeMethod == 'rekapnilaipegawai') ? 'active' : '' ?>">
+                                    <a href="<?= base_url('pegawai/rekapnilaipegawai') ?>">
+                                        <i class="mdi mdi-file-chart"></i>
+                                        <span> Rekap KPI Individu </span>
+                                    </a>
+                                </li>
+                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['monitoringindividu', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
+                                    <a href="<?= base_url('pegawai/monitoringindividu') ?>">
+                                        <i class="mdi mdi-clipboard-pulse-outline"></i>
+                                        <span> Monitoring Individu </span>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
 
-                        <li class="menu-title mt-2">Halaman Penilai</li>
-                        <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['nilaipegawai', 'nilaipegawaidetail', 'nilaipegawaidetail2'])) ? 'active' : '' ?>">
-                            <a href="<?= base_url('pegawai/nilaipegawai') ?>">
-                                <i class="mdi mdi-account-edit"></i>
-                                <span> Nilai Pegawai </span>
+                        <?php
+                        $halamanPenilaiActive = ($activeController == 'pegawai' && in_array($activeMethod, [
+                            'nilaipegawai',
+                            'nilaipegawaidetail',
+                            'nilaipegawaidetail2'
+                        ]));
+                        ?>
+                        <li class="<?= $halamanPenilaiActive ? 'active' : '' ?>">
+                            <a href="javascript: void(0);" class="special-header-link">
+                                <!-- <i class="fe-edit"></i> -->
+                                <span> Halaman Penilai </span>
+                                <span class="menu-arrow"></span>
                             </a>
+                            <ul class="nav-second-level <?= $halamanPenilaiActive ? 'in' : '' ?>" aria-expanded="<?= $halamanPenilaiActive ? 'true' : 'false' ?>">
+                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['nilaipegawai', 'nilaipegawaidetail', 'nilaipegawaidetail2'])) ? 'active' : '' ?>">
+                                    <a href="<?= base_url('pegawai/nilaipegawai') ?>">
+                                        <i class="mdi mdi-account-edit"></i>
+                                        <span> Nilai Pegawai </span>
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                     </ul>
-                </div>
-            </div>
-        </div>
+                </div> <!-- end sidebar-menu -->
+            </div> <!-- end slimscroll-menu -->
+        </div> <!-- end left-side-menu -->
 
         <!-- End Sidebar -->
 
@@ -461,3 +564,18 @@
 
     </div>
     <!-- Left Sidebar End -->
+    <script>
+        // Pastikan dropdown tetap terbuka ketika parent menu aktif
+        document.addEventListener('DOMContentLoaded', function() {
+            // Force buka semua dropdown yang memiliki item child aktif
+            const activeParents = document.querySelectorAll('#sidebar-menu li.active > ul');
+            activeParents.forEach(function(dropdown) {
+                dropdown.classList.add('in');
+                dropdown.style.display = 'block';
+                dropdown.setAttribute('aria-expanded', 'true');
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -47,11 +47,9 @@
         }
       </style>
 
-      <?php if (!empty($rekap)) { ?>
-        <?php
-        // Helper function untuk render card
-        // Pindahkan deklarasi fungsi ke luar dari loop untuk menghindari error "Cannot redeclare function"
-        if (!function_exists('render_rekap_card')) {
+      <?php
+      // Helper function untuk render card
+      if (!function_exists('render_rekap_card')) {
           function render_rekap_card($p, $column_class, $is_arsip = false)
           {
             $predikat_class = 'secondary';
@@ -139,8 +137,10 @@
               </div>
             </div>
         <?php }
-        } // End of helper function 
-        ?>
+      } // End of helper function
+      ?>
+
+      <?php if (!empty($rekap)) { ?>
         <div class="accordion" id="rekapAccordion">
           <?php $i = 1;
           foreach ($rekap as $r): ?>
@@ -232,7 +232,7 @@
                                 </div>
                               </div>
                             </div>
-                        <?php
+                            <?php
                             $periode_jabatan_ini = [];
                             $tgl_selesai_jabatan_ini = strtotime($jabatan->tgl_selesai);
 
@@ -249,7 +249,7 @@
 
                             // Tambahkan pemisah jika ini bukan riwayat jabatan terakhir
                             if ($index < $total_riwayat - 1) {
-                        ?>
+                            ?>
                               <div class="col-12 my-3">
                                 <hr style="border-top: 2px dashed #ccc;">
                               </div>
@@ -307,8 +307,9 @@
                   </div>
 
                   <div class="col-12 mb-3">
-                        <h5 class="text-success font-weight-bold"><i class="mdi mdi-run-fast"></i> Yudisium Akhir</h5>
-                      </div>
+                    <h5 class="text-success font-weight-bold">
+                      <i class="mdi mdi-medal"></i>Yudisium Akhir</h5>
+                  </div>
                   <div class="card mt-0 shadow-sm">
                     <div class="card-body">
                       <div class="row text-center">
