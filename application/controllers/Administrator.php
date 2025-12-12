@@ -25,6 +25,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
  * @property CI_Form_validation $form_validation
  * @property Budaya_model $Budaya_model
  * @property Administrator_model $Administrator_model
+ * @property Syarat_ppk_model $Syarat_ppk_model
+ * @property Ppk_responses_model $Ppk_responses_model
  * @property CI_Input $input
  * @property CI_Output $output
  * @property CI_Session $session
@@ -3041,7 +3043,7 @@ class Administrator extends CI_Controller
         $akhir = $this->input->get('akhir') ?? date('Y') . '-12-31';
 
         // Ambil penilai1 sebagai nama pegawai menggunakan teknik join serupa getPegawaiWithPenilai
-        $this->db->select('na.nik, p.nama, p.jabatan, p.unit_kerja, na.status_penilaian, na.predikat, pen1_peg.nama AS penilai1_nama');
+        $this->db->select('na.nik, p.nama, p.jabatan, p.unit_kerja, na.status_penilaian, na.predikat, p.ppk_eligible AS ppk_eligible, pen1_peg.nama AS penilai1_nama');
         $this->db->from('nilai_akhir na');
         $this->db->join('pegawai p', 'p.nik = na.nik', 'left');
         // mapping untuk menentukan key penilai1
@@ -3069,6 +3071,7 @@ class Administrator extends CI_Controller
                 'jabatan' => $r->jabatan,
                 'unit_kerja' => $r->unit_kerja,
                 'predikat' => $r->predikat,
+                'ppk_eligible' => isset($r->ppk_eligible) ? (int)$r->ppk_eligible : 0,
                 'penilai1' => $r->penilai1_nama ?? '',
                 'action' => site_url('administrator/detailverifikasi/' . $r->nik) . '?awal=' . $awal . '&akhir=' . $akhir
             ];
@@ -3084,5 +3087,151 @@ class Administrator extends CI_Controller
         $this->load->view('layout/header');
         $this->load->view('administrator/program_ppk');
         $this->load->view('layout/footer');
+    }
+
+    /**
+     * GET / Administrator/getSyaratPPK
+     * optional query param: id_ppk
+     * returns JSON { data: [...] } or single-row in data array
+     */
+    public function getSyaratPPK()
+    {
+        header('Content-Type: application/json');
+        $this->load->model('Syarat_ppk_model');
+
+        $id = $this->input->get('id_ppk');
+        if ($id) {
+            $row = $this->Syarat_ppk_model->getById($id);
+            echo json_encode(['data' => $row ? [$row] : []]);
+            exit;
+        }
+
+        $list = $this->Syarat_ppk_model->getAll();
+        echo json_encode(['data' => $list]);
+        exit;
+    }
+
+    /**
+     * POST / Administrator/saveSyaratPPK
+     * params: syarat, optional id_ppk
+     * returns JSON { success: bool, message: string, id_ppk: int? }
+     */
+    public function saveSyaratPPK()
+    {
+        header('Content-Type: application/json');
+        $this->load->model('Syarat_ppk_model');
+
+        $syarat = trim($this->input->post('syarat') ?? '');
+        $id = $this->input->post('id_ppk') ?: null;
+
+        if ($syarat === '') {
+            echo json_encode(['success' => false, 'message' => 'Syarat tidak boleh kosong.']);
+            exit;
+        }
+
+        if ($id) {
+            $ok = $this->Syarat_ppk_model->update($id, ['syarat' => $syarat]);
+            echo json_encode([
+                'success' => (bool)$ok,
+                'message' => $ok ? 'Syarat berhasil diupdate.' : 'Gagal mengupdate syarat.',
+                'id_ppk' => (int)$id
+            ]);
+            exit;
+        } else {
+            $newId = $this->Syarat_ppk_model->insert(['syarat' => $syarat]);
+            if ($newId) {
+                echo json_encode(['success' => true, 'message' => 'Syarat berhasil ditambahkan.', 'id_ppk' => (int)$newId]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Gagal menambahkan syarat.']);
+            }
+            exit;
+        }
+    }
+
+    /**
+     * POST / Administrator/deleteSyaratPPK
+     * params: id_ppk
+     */
+    public function deleteSyaratPPK()
+    {
+        header('Content-Type: application/json');
+        $this->load->model('Syarat_ppk_model');
+
+        $id = $this->input->post('id_ppk');
+        if (!$id) {
+            echo json_encode(['success' => false, 'message' => 'id_ppk tidak diberikan.']);
+            exit;
+        }
+
+        $ok = $this->Syarat_ppk_model->delete($id);
+        echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Dihapus' : 'Gagal menghapus']);
+        exit;
+    }
+
+    /**
+     * GET / Administrator/getPpkResponses?nik=...
+     * returns JSON { data: { id_ppk: 'ya'|'tidak', ... } }
+     */
+    public function getPpkResponses()
+    {
+        header('Content-Type: application/json');
+        $nik = $this->input->get('nik') ?? '';
+        $this->load->model('Ppk_responses_model');
+
+        if (!$nik) {
+            echo json_encode(['data' => []]);
+            exit;
+        }
+
+        $map = $this->Ppk_responses_model->getByNik($nik);
+        echo json_encode(['data' => $map]);
+        exit;
+    }
+
+    /**
+     * POST / Administrator/savePpkResponse
+     * params: nik, id_ppk, answer (ya|tidak)
+     * returns JSON { success: bool, message: string }
+     */
+    public function savePpkResponse()
+    {
+        header('Content-Type: application/json');
+        $nik = $this->input->post('nik') ?? '';
+        $id_ppk = $this->input->post('id_ppk') ?? null;
+        $answer = $this->input->post('answer') ?? '';
+
+        if (!$nik || !$id_ppk || !in_array($answer, ['ya', 'tidak'])) {
+            echo json_encode(['success' => false, 'message' => 'Data tidak lengkap atau nilai jawaban tidak valid.']);
+            exit;
+        }
+
+        $this->load->model('Ppk_responses_model');
+
+        try {
+            $ok = $this->Ppk_responses_model->upsert($nik, $id_ppk, $answer);
+        } catch (Exception $e) {
+            log_message('error', 'ppk upsert error: ' . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Gagal menyimpan jawaban (server error).']);
+            exit;
+        }
+
+        // recompute eligibility and persist flag only if pegawai.ppk_eligible exists
+        $eligible = false;
+        try {
+            $eligible = (bool)$this->Ppk_responses_model->computeEligibility($nik);
+            if ($this->db->field_exists('ppk_eligible', 'pegawai')) {
+                $this->db->where('nik', $nik)->update('pegawai', ['ppk_eligible' => $eligible ? 1 : 0]);
+            }
+        } catch (Exception $e) {
+            log_message('error', 'computeEligibility error: ' . $e->getMessage());
+            // continue, we'll still return the upsert result
+        }
+
+        echo json_encode([
+            'success' => (bool)$ok,
+            'message' => $ok ? 'Jawaban tersimpan.' : 'Gagal menyimpan jawaban.',
+            'ppk_eligible' => $eligible ? 1 : 0
+        ]);
+        exit;
     }
 }

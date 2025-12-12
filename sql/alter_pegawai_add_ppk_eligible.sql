@@ -1,0 +1,33 @@
+-- Add ppk_eligible flag to pegawai table
+ALTER TABLE `pegawai`
+ADD COLUMN IF NOT EXISTS `ppk_eligible` TINYINT(1) NOT NULL DEFAULT 0;
+
+-- Optional: set initial values based on existing responses (uncomment and run if desired)
+--
+-- Note: If you migrated to the JSON-per-nik `ppk_responses.answers` column (this repo's migration
+-- script builds a JSON object mapping id_ppk -> answer), use one of the options below.
+-- Option A: MySQL 5.7+ with JSON support (example). This scans each syarat and counts 'ya' answers per nik.
+-- Replace `JSON_EXTRACT` usage if your server stores answers as plain TEXT (then consider using a small PHP script to compute).
+-- UPDATE pegawai p
+-- LEFT JOIN (
+--   SELECT r.nik,
+--     SUM(CASE WHEN JSON_UNQUOTE(JSON_EXTRACT(r.answers, CONCAT('$.', s.id_ppk))) = 'ya' THEN 1 ELSE 0 END) AS ya_count,
+--     COUNT(s.id_ppk) AS total_q
+--   FROM ppk_responses r
+--   CROSS JOIN syarat_ppk s
+--   GROUP BY r.nik
+-- ) t ON t.nik = p.nik
+-- SET p.ppk_eligible = (t.ya_count IS NOT NULL AND t.ya_count = t.total_q);
+--
+-- Option B: If your MySQL does not support JSON functions or you stored answers as TEXT,
+-- run a short PHP script to compute eligibility and update `pegawai.ppk_eligible` using the
+-- application's models (recommended for correctness). Example (pseudo-code):
+--
+-- $this->load->model('Ppk_responses_model');
+-- $this->load->model('Pegawai_model');
+-- $syarats = $this->db->count_all('syarat_ppk');
+-- $rows = $this->db->select('nik')->get('ppk_responses')->result();
+-- foreach ($rows as $r) {
+--   $eligible = $this->Ppk_responses_model->computeEligibility($r->nik) ? 1 : 0;
+--   $this->db->where('nik', $r->nik)->update('pegawai', ['ppk_eligible' => $eligible]);
+-- }
