@@ -3082,10 +3082,10 @@ class Administrator extends CI_Controller
         exit;
     }
 
-    public function program_ppk()
+    public function monitoring_ppk()
     {
         $this->load->view('layout/header');
-        $this->load->view('administrator/program_ppk');
+        $this->load->view('administrator/monitoring_ppk');
         $this->load->view('layout/footer');
     }
 
@@ -3179,12 +3179,25 @@ class Administrator extends CI_Controller
         $this->load->model('Ppk_responses_model');
 
         if (!$nik) {
-            echo json_encode(['data' => []]);
+            echo json_encode(['data' => [], 'tahap' => null]);
             exit;
         }
 
-        $map = $this->Ppk_responses_model->getByNik($nik);
-        echo json_encode(['data' => $map]);
+        $result = $this->Ppk_responses_model->getByNik($nik);
+        echo json_encode(['data' => $result['answers'], 'tahap' => $result['tahap']]);
+        exit;
+    }
+
+    public function savePpkTahap()
+    {
+        header('Content-Type: application/json');
+        $nik = $this->input->post('nik');
+        $tahap = $this->input->post('tahap');
+
+        $this->load->model('Ppk_responses_model');
+        $ok = $this->Ppk_responses_model->updateTahap($nik, $tahap);
+        
+        echo json_encode(['success' => (bool)$ok]);
         exit;
     }
 

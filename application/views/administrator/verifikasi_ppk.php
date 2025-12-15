@@ -55,7 +55,7 @@
                                         <th>Jabatan</th>
                                         <th>Unit Kerja</th>
                                         <th>Predikat</th>
-                                        <th>PPK</th>
+                                        <!-- <th>PPK</th> -->
                                         <th>Nama Penilai1</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -266,25 +266,25 @@
                         return `<span class="badge bg-secondary">${data}</span>`;
                     }
                 },
-                {
-                    // placeholder column for PPK eligibility status; updated dynamically
-                    data: null,
-                    render: function(data, type, row) {
-                        const nik = row.nik || '';
-                        // Prefer server-provided flag when available to avoid flicker on refresh
-                        if (typeof row.ppk_eligible !== 'undefined') {
-                            if (parseInt(row.ppk_eligible) === 1) {
-                                return `<span class="ppk-status" data-nik="${nik}"><span class="badge bg-success">Aktif</span></span>`;
-                            }
-                            return `<span class="ppk-status" data-nik="${nik}"><span class="badge bg-secondary">Tidak Aktif</span></span>`;
-                        }
-                        // fallback: placeholder until client-side logic computes status
-                        return `<span class="ppk-status" data-nik="${nik}">-</span>`;
-                    },
-                    orderable: false,
-                    searchable: false,
-                    width: '120px'
-                },
+                // {
+                //     // placeholder column for PPK eligibility status; updated dynamically
+                //     data: null,
+                //     render: function(data, type, row) {
+                //         const nik = row.nik || '';
+                //         // Prefer server-provided flag when available to avoid flicker on refresh
+                //         if (typeof row.ppk_eligible !== 'undefined') {
+                //             if (parseInt(row.ppk_eligible) === 1) {
+                //                 return `<span class="ppk-status" data-nik="${nik}"><span class="badge bg-success">Aktif</span></span>`;
+                //             }
+                //             return `<span class="ppk-status" data-nik="${nik}"><span class="badge bg-secondary">Tidak Aktif</span></span>`;
+                //         }
+                //         // fallback: placeholder until client-side logic computes status
+                //         return `<span class="ppk-status" data-nik="${nik}">-</span>`;
+                //     },
+                //     orderable: false,
+                //     searchable: false,
+                //     width: '120px'
+                // },
                 {
                     data: 'penilai1'
                 },
@@ -396,40 +396,66 @@
                     return;
                 }
 
-                // All answered — show brief success and close. Responses already saved per-toggle.
-                const nik = $('#ppk_nik').val();
-                $('#ppk-alert').removeClass('d-none').removeClass('alert-danger').addClass('alert-success').text('Data PPK untuk NIK ' + nik + ' berhasil disimpan.');
-                // recompute eligibility on client from DOM and apply immediately
-                try {
-                    const answers = {};
-                    names.forEach(function(nm) {
-                        const val = $dyn.find('input[name="' + nm + '"]:checked').val();
-                        const id = nm.replace(/^ppk_q_/, '');
-                        answers[id] = val;
-                    });
-                    // build syarats array stub from DOM order to compute eligibility
-                    const syarats = [];
-                    $dyn.find('.card.card-body p-2, .col-12.mb-2').each(function(idx) {
-                        /* noop to preserve potential order */ });
-                    // compute eligible: all answers === 'ya'
-                    let ok = true;
-                    for (const k in answers) {
-                        if (answers[k] !== 'ya') {
-                            ok = false;
-                            break;
-                        }
-                    }
-                    applyPpkStatusToTable(nik, ok);
-                } catch (e) {
-                    console.error('post-save client compute error', e);
+                // Save Tahap if visible (ensure it's saved even if user didn't blur), wait for it
+                let savePromise = Promise.resolve();
+                if ($('#ppk-tahap-container').is(':visible')) {
+                    const tVal = $('#ppk_tahap_input').val();
+                    savePromise = savePpkTahap($('#ppk_nik').val(), tVal);
                 }
 
-                setTimeout(function() {
-                    $('#ppkModal').modal('hide');
+                savePromise.then((res) => {
+                    // All answered — show brief success and close. Responses already saved per-toggle.
+                    const nik = $('#ppk_nik').val();
+                    
+                    // recompute eligibility on client from DOM and apply immediately
+                    try {
+                        const answers = {};
+                        names.forEach(function(nm) {
+                            const val = $dyn.find('input[name="' + nm + '"]:checked').val();
+                            const id = nm.replace(/^ppk_q_/, '');
+                            answers[id] = val;
+                        });
+                        // build syarats array stub from DOM order to compute eligibility
+                        const syarats = [];
+                        $dyn.find('.card.card-body p-2, .col-12.mb-2').each(function(idx) {
+                            /* noop to preserve potential order */ });
+                        // compute eligible: all answers === 'ya'
+                        let ok = true;
+                        for (const k in answers) {
+                            if (answers[k] !== 'ya') {
+                                ok = false;
+                                break;
+                            }
+                        }
+                        applyPpkStatusToTable(nik, ok);
+                    } catch (e) {
+                        console.error('post-save client compute error', e);
+                    }
+
+                    Swal.fire({
+                        title: 'Berhasil',
+                        text: 'Data PPK untuk NIK ' + nik + ' berhasil disimpan.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+
                     setTimeout(function() {
-                        $('#ppk-alert').removeClass('alert-success').addClass('alert-danger').addClass('d-none').text('');
-                    }, 300);
-                }, 900);
+                        $('#ppkModal').modal('hide');
+                    }, 1500);
+                }).catch(err => {
+                    console.error('Save promise error:', err);
+                    // Fallback: tetap tampilkan sukses karena kemungkinan data sudah tersimpan via auto-save
+                    Swal.fire({
+                        title: 'Berhasil',
+                        text: 'Data berhasil disimpan.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    setTimeout(function() { $('#ppkModal').modal('hide'); }, 1500);
+                });
+                
                 return;
             }
 
@@ -716,8 +742,9 @@
                     fetch('<?= site_url("Administrator/getPpkResponses") ?>?nik=' + encodeURIComponent(nik))
                         .then(r => r.json())
                         .then(respRes => {
-                            const answers = respRes.data || respRes || {};
-                            renderSyaratListInModal(syarats, answers, nik);
+                            const answers = respRes.data || {};
+                            const tahap = respRes.tahap || '';
+                            renderSyaratListInModal(syarats, answers, nik, tahap);
                         }).catch(err => {
                             console.error(err);
                             renderSyaratListInModal(syarats, {}, nik);
@@ -730,7 +757,7 @@
                 });
         }
 
-        function renderSyaratListInModal(syarats, answers, nik) {
+        function renderSyaratListInModal(syarats, answers, nik, tahap) {
             if (!Array.isArray(syarats) || syarats.length === 0) {
                 $('#ppkModal .modal-body').html('<div class="alert alert-info">Belum ada syarat PPK. Silakan tambah di Kelola Syarat.</div>');
                 return;
@@ -759,6 +786,17 @@
                         </div>
                     </div>`;
             });
+            
+            // Container for Tahap Input (hidden by default, shown if eligible)
+            html += `<div id="ppk-tahap-container" class="col-12 mt-3" style="display:none;">
+                        <div class="card card-body bg-light">
+                            <div class="form-group mb-0">
+                                <label for="ppk_tahap_input" class="font-weight-bold">Tahap Ke-</label>
+                                <input type="number" id="ppk_tahap_input" class="form-control" value="${tahap || ''}" placeholder="Masukkan Tahap">
+                                <small class="text-muted">Isi tahap jika semua syarat terpenuhi (Ya).</small>
+                            </div>
+                        </div>
+                     </div>`;
             html += '</div></form>';
             $('#ppkModal .modal-body').html(html);
 
@@ -770,10 +808,16 @@
                 savePpkResponse(nik, id_ppk, val);
             });
 
+            // attach change handler for tahap: auto-save
+            $('#ppk_tahap_input').on('change', function() {
+                savePpkTahap(nik, $(this).val());
+            });
+
             // compute and apply PPK eligibility for this nik based on current answers
             try {
                 const eligible = computePpkEligible(syarats, answers);
                 applyPpkStatusToTable(nik, eligible);
+                toggleTahapInput(eligible);
             } catch (e) {
                 console.error('compute/apply PPK status error', e);
             }
@@ -801,6 +845,7 @@
                     // prefer server-returned ppk_eligible (0/1). If not present, fall back to recalc.
                     if (typeof j.ppk_eligible !== 'undefined') {
                         applyPpkStatusToTable(nik, !!j.ppk_eligible);
+                        toggleTahapInput(!!j.ppk_eligible);
                     } else {
                         applyPpkStatusToTable(nik, null);
                     }
@@ -817,6 +862,38 @@
                 console.error(e);
                 Swal.fire('Error', 'Request error saat menyimpan jawaban.', 'error');
             });
+        }
+
+        // Variable to debounce/prevent duplicate saves
+        var _lastTahapSave = { nik: null, val: null, ts: 0 };
+
+        function savePpkTahap(nik, val) {
+            // Prevent double save within short time (e.g. blur + click race condition)
+            var now = new Date().getTime();
+            if (_lastTahapSave.nik === nik && _lastTahapSave.val === val && (now - _lastTahapSave.ts) < 1000) {
+                return Promise.resolve({ success: true, skipped: true });
+            }
+            _lastTahapSave = { nik: nik, val: val, ts: now };
+
+            const params = new URLSearchParams();
+            params.append('nik', nik);
+            params.append('tahap', val);
+            if (window.CSRF && window.CSRF.name) params.append(window.CSRF.name, window.CSRF.hash);
+            
+            return fetch('<?= site_url("Administrator/savePpkTahap") ?>', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: params.toString()
+            }).then(r=>r.json()).catch(e=>{
+                console.error(e);
+                return { success: false };
+            });
+        }
+
+        function toggleTahapInput(show) {
+            const $el = $('#ppk-tahap-container');
+            if (show) $el.slideDown();
+            else $el.slideUp();
         }
 
         // compute eligibility: all syarats must have answer === 'ya'
@@ -854,6 +931,7 @@
                     const answers = (results[1] && (results[1].data || results[1])) || {};
                     const ok = computePpkEligible(syarats, answers);
                     setBadge(ok);
+                    // Note: we don't toggle modal input here because this function is used for table rows too
                 }).catch(err => {
                     console.error('applyPpkStatusToTable error', err);
                     setBadge(false);

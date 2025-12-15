@@ -8,19 +8,21 @@ class Ppk_responses_model extends CI_Model
     // returns map [ id_ppk => answer ]
     public function getByNik($nik)
     {
-        if (!$nik) return [];
-        $row = $this->db->select('answers')->where('nik', $nik)->get($this->table)->row();
-        if (!$row) return [];
+        if (!$nik) return ['answers' => [], 'tahap' => null];
+        $row = $this->db->select('answers, tahap')->where('nik', $nik)->get($this->table)->row();
+        
         $answers = [];
-        // answers stored as JSON in `answers` column (or TEXT)
-        if (!empty($row->answers)) {
-            $decoded = json_decode($row->answers, true);
-            if (is_array($decoded)) {
-                $answers = $decoded;
+        $tahap = null;
+
+        if ($row) {
+            $tahap = $row->tahap;
+            if (!empty($row->answers)) {
+                $decoded = json_decode($row->answers, true);
+                if (is_array($decoded)) $answers = $decoded;
             }
         }
-        // ensure keys are consistent (string/int)
-        return $answers;
+        
+        return ['answers' => $answers, 'tahap' => $tahap];
     }
 
     // upsert single response into JSON answers column for nik
@@ -44,6 +46,20 @@ class Ppk_responses_model extends CI_Model
         } else {
             $answers = [(string)$id_ppk => $answer];
             $data = ['nik' => $nik, 'answers' => json_encode($answers), 'created_at' => $now, 'updated_at' => $now];
+            return $this->db->insert($this->table, $data);
+        }
+    }
+
+    // update tahap column for nik
+    public function updateTahap($nik, $tahap)
+    {
+        if (!$nik) return false;
+        $now = date('Y-m-d H:i:s');
+        $row = $this->db->where('nik', $nik)->get($this->table)->row();
+        if ($row) {
+            return $this->db->where('id', $row->id)->update($this->table, ['tahap' => $tahap, 'updated_at' => $now]);
+        } else {
+            $data = ['nik' => $nik, 'tahap' => $tahap, 'created_at' => $now, 'updated_at' => $now];
             return $this->db->insert($this->table, $data);
         }
     }
