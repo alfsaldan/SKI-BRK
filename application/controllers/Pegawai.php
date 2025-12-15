@@ -2732,10 +2732,10 @@ class Pegawai extends CI_Controller
         $this->load->view('layoutpegawai/footer');
     }
 
-    public function ppk_penilai1()
+    public function ppk_penilai_detail()
     {
         $this->load->view('layoutpegawai/header');
-        $this->load->view('pegawai/ppk_penilai1');
+        $this->load->view('pegawai/ppk_penilai_detail');
         $this->load->view('layoutpegawai/footer');
     }
 }

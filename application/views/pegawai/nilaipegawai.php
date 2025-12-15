@@ -9,7 +9,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box d-flex justify-content-between align-items-center">
-                        <h3 class="page-title">
+                        <h3 class="page-title text-primary">
                             <i class="mdi mdi-account-edit mr-2 text-primary"></i> Nilai Pegawai
                         </h3>
                         <ol class="breadcrumb m-0">

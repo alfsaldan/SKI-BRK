@@ -79,7 +79,75 @@
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 <script>
+    // Pastikan dropdown periode hanya menampilkan periode Oktober-Desember.
+    (function enforceOctDecOptions() {
+        try {
+            const sel = document.getElementById('filter_periode');
+            if (!sel) return;
+
+            function isOctDecOption(opt) {
+                try {
+                    const parts = opt.value.split('|');
+                    if (parts.length !== 2) return false;
+                    const awal = parts[0];
+                    const akhir = parts[1];
+                    const ma = new Date(awal).getMonth() + 1; // 1-12
+                    const mb = new Date(akhir).getMonth() + 1;
+                    return ma === 10 && mb === 12;
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            function filterOnce() {
+                const opts = Array.from(sel.options);
+                for (const opt of opts) {
+                    if (!isOctDecOption(opt)) {
+                        sel.removeChild(opt);
+                    }
+                }
+            }
+
+            filterOnce();
+
+            const mo = new MutationObserver(function(muts) {
+                let changed = false;
+                for (const m of muts) {
+                    if (m.type === 'childList' && m.addedNodes.length > 0) {
+                        changed = true;
+                        break;
+                    }
+                }
+                if (changed) {
+                    setTimeout(filterOnce, 20);
+                }
+            });
+            mo.observe(sel, {
+                childList: true
+            });
+
+        } catch (e) {
+            console.warn('enforceOctDecOptions error', e);
+        }
+    })();
+
     document.addEventListener('DOMContentLoaded', function() {
+
+        (function restoreSelectedPeriodFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const awal = params.get('awal');
+            const akhir = params.get('akhir');
+            if (awal && akhir) {
+                const sel = document.getElementById('filter_periode');
+                const optionVal = awal + '|' + akhir;
+                for (let i = 0; i < sel.options.length; i++) {
+                    if (sel.options[i].value === optionVal) {
+                        sel.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        })();
 
         const table = $('#table-monitoring-ppk').DataTable({
             processing: true,
@@ -92,6 +160,12 @@
                     d.awal = parts[0] || '';
                     d.akhir = parts[1] || '';
                 }
+                    ,
+                    error: function(xhr, status, error) {
+                        console.error('getMonitoringPPKData error', xhr.responseText || status || error);
+                        try { console.log(JSON.parse(xhr.responseText)); } catch (e) {}
+                        alert('Ajax error saat memuat data. Buka console untuk detail.');
+                    }
             },
             columns: [{
                     data: null,
@@ -122,12 +196,11 @@
                     }
                 },
                 {
-                    data: null, // Predikat Periodik (Dummy)
+                    data: 'predikat_periodik', // Predikat Periodik (Real Data)
                     render: function(data, type, row) {
-                        // Data dummy acak untuk tampilan
-                        const dummies = ['Baik', 'Cukup', 'Sangat Baik'];
-                        const random = dummies[Math.floor(Math.random() * dummies.length)];
-                        return `<span class="badge bg-info">${random}</span>`;
+                        if (!data) return '-';
+                        // Warna badge bisa disesuaikan jika perlu
+                        return `<span class="badge bg-info">${data}</span>`;
                     }
                 },
                 {
@@ -178,7 +251,7 @@
         $('#table-monitoring-ppk tbody').on('click', '.btn-detail', function() {
             const nik = $(this).data('nik');
             // Redirect ke halaman detail pegawai
-             window.location.href = '<?= site_url("Administrator/detailPegawai/") ?>' + nik;
+             window.location.href = '<?= site_url("Administrator/detailppk/") ?>' + nik;
         });
     });
 </script>

@@ -134,7 +134,7 @@
                                 <li class="breadcrumb-item active">Detail Nilai Pegawai (Penilai 2 - Readonly)</li>
                             </ol>
                         </div>
-                        <h5 class="page-title">Detail Pegawai: <b><?= $pegawai_detail->nama; ?></b></h5>
+                        <h5 class="page-title text-primary">Detail Pegawai: <b><?= $pegawai_detail->nama; ?></b></h5>
                         <p class="text-muted">
                         <h5>Sistem Penilaian Kinerja Insani PT Bank Riau Kepri Syariah</h5>
                         </p>

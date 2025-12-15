@@ -3084,8 +3084,44 @@ class Administrator extends CI_Controller
 
     public function monitoring_ppk()
     {
+        $this->load->model('Penilaian_model');
+        $periode_list = $this->Penilaian_model->getPeriodeList();
+
+        // Pilih default: cari periode Okt-Dec terbaru jika ada,
+        // jika tidak pilih periode terakhir yang ada.
+        $selected_awal = null;
+        $selected_akhir = null;
+        if (!empty($periode_list)) {
+            $found = null;
+            // telusuri dari akhir agar dapat periode terbaru
+            for ($i = count($periode_list) - 1; $i >= 0; $i--) {
+                $p = $periode_list[$i];
+                if (date('m', strtotime($p->periode_awal)) == '10' && date('m', strtotime($p->periode_akhir)) == '12') {
+                    $found = $p;
+                    break;
+                }
+            }
+            if ($found) {
+                $selected_awal = $found->periode_awal;
+                $selected_akhir = $found->periode_akhir;
+            } else {
+                $last = $periode_list[count($periode_list) - 1];
+                $selected_awal = $last->periode_awal;
+                $selected_akhir = $last->periode_akhir;
+            }
+        } else {
+            $selected_awal = date('Y') . '-10-01';
+            $selected_akhir = date('Y') . '-12-31';
+        }
+
+        $data = [
+            'periode_list' => $periode_list,
+            'selected_awal' => $selected_awal,
+            'selected_akhir' => $selected_akhir
+        ];
+
         $this->load->view('layout/header');
-        $this->load->view('administrator/monitoring_ppk');
+        $this->load->view('administrator/monitoring_ppk', $data);
         $this->load->view('layout/footer');
     }
 
@@ -3260,30 +3296,34 @@ class Administrator extends CI_Controller
         $has_ppk_responses = $this->db->table_exists('ppk_responses');
         $has_ppk_eligible = $this->db->field_exists('ppk_eligible', 'pegawai');
 
-        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja');
+        // 1. Ambil data dasar dari Pegawai
+        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja, p.ppk_eligible');
         
-        // Cek kolom ppk_eligible
-        if ($has_ppk_eligible) {
-            $this->db->select('p.ppk_eligible');
-        } else {
-            $this->db->select('0 as ppk_eligible');
-        }
-
+        // 2. Ambil Predikat untuk periode yang dipilih (dari join nilai_akhir)
         $this->db->select('na.predikat');
 
-        // Cek tabel ppk_responses dan kolom tahap
-        if ($has_ppk_responses && $this->db->field_exists('tahap', 'ppk_responses')) {
-            // Gunakan updated_at jika ada, jika tidak gunakan id
-            $order_col = $this->db->field_exists('updated_at', 'ppk_responses') ? 'updated_at' : 'id';
-            $this->db->select("(SELECT tahap FROM ppk_responses WHERE nik = p.nik ORDER BY $order_col DESC LIMIT 1) as tahap");
-        } else {
-            $this->db->select('0 as tahap');
-        }
+        // 3. Ambil Tahap PPK (Subquery dari ppk_responses)
+        // Mengambil tahap terakhir berdasarkan ID terbesar
+        $this->db->select('(SELECT tahap FROM ppk_responses pr WHERE pr.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci ORDER BY pr.id DESC LIMIT 1) as tahap', FALSE);
+
+        // 4. Ambil Predikat Periodik (Subquery dari nilai_akhir)
+        // Mengambil predikat dari periode terakhir yang ada di database untuk pegawai tersebut
+        $this->db->select('(SELECT predikat FROM nilai_akhir na2 WHERE na2.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci ORDER BY na2.periode_akhir DESC LIMIT 1) as predikat_periodik', FALSE);
 
         $this->db->from('pegawai p');
         
-        // Join ke nilai_akhir berdasarkan periode yang dipilih
-        $this->db->join('nilai_akhir na', 'na.nik = p.nik AND na.periode_awal = ' . $this->db->escape($awal) . ' AND na.periode_akhir = ' . $this->db->escape($akhir), 'left');
+        // 5. Join ke nilai_akhir berdasarkan periode yang dipilih di filter
+        // Menggunakan escape() untuk keamanan dan menghapus COLLATE yang menyebabkan error syntax
+        $join_condition = "na.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci AND na.periode_awal = " . $this->db->escape($awal) . " AND na.periode_akhir = " . $this->db->escape($akhir);
+        $this->db->join('nilai_akhir na', $join_condition, 'left', false);
+
+        // Filter hanya menampilkan pegawai dengan status PPK Aktif
+        if ($has_ppk_eligible) {
+            $this->db->where('p.ppk_eligible', 1);
+        }
+
+        // Filter hanya yang predikatnya Minus
+        $this->db->where('na.predikat', 'Minus');
 
         // Opsional: Filter hanya pegawai aktif jika diperlukan
         // $this->db->where('p.status', 'aktif');
@@ -3294,5 +3334,19 @@ class Administrator extends CI_Controller
         $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode(['data' => $result]));
+    }
+
+    public function detailppk($nik = null)
+    {
+        if (!$nik) {
+            show_error('NIK Pegawai tidak valid.', 404);
+            return;
+        }
+
+        $this->load->model('DataPegawai_model');
+        $data['judul'] = "Detail Program Peningkatan Kinerja";
+        $this->load->view('layout/header', $data);
+        $this->load->view('administrator/detailppk', $data);
+        $this->load->view('layout/footer', $data);
     }
 }

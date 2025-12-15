@@ -22,7 +22,7 @@
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box d-flex justify-content-between align-items-center">
-                        <h3 class="page-title">
+                        <h3 class="page-title text-primary">
                             <i class="mdi mdi-file-chart mr-2 text-primary"></i> Detail Arsip Penilaian
                         </h3>
                         <ol class="breadcrumb m-0">

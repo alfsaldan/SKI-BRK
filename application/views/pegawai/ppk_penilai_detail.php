@@ -155,25 +155,12 @@
                                         <div class="card border-secondary border h-100">
                                             <div class="card-body p-3 text-center d-flex flex-column">
                                                 <h6 class="card-title font-weight-bold mb-3">Pegawai</h6>
-                                                <div class="flex-grow-1 d-finilex justify-content-center align-items-center">
-                                                    <div>
-                                                        <!-- Hidden Checkbox (untuk form submit) -->
-                                                        <input type="checkbox" id="status_pegawai" name="status_pegawai" value="Disetujui" style="display:none;" <?= (isset($ppk->status_pegawai) && $ppk->status_pegawai == 'Disetujui') ? 'checked' : '' ?>>
-
-                                                        <!-- Area Tanda Tangan Interaktif -->
-                                                        <div id="btn-signature" class="d-flex flex-column align-items-center justify-content-center p-2" style="border: 2px dashed #ccc; border-radius: 8px; cursor: pointer; min-height: 80px; transition: all 0.3s;">
-                                                            <div class="unsigned-content <?= (isset($ppk->status_pegawai) && $ppk->status_pegawai == 'Disetujui') ? 'd-none' : '' ?>">
-                                                                <i class="mdi mdi-draw text-primary" style="font-size: 2rem;"></i>
-                                                                <div class="small text-muted mt-1">Klik untuk Tanda Tangan</div>
-                                                            </div>
-                                                            <div class="signed-content <?= (isset($ppk->status_pegawai) && $ppk->status_pegawai == 'Disetujui') ? '' : 'd-none' ?>">
-                                                                <div class="text-success" style="font-family: 'Brush Script MT', cursive; font-size: 1.4rem; line-height: 1.2;">
-                                                                    <?= isset($pegawai->nama) ? $pegawai->nama : 'Agung' ?>
-                                                                </div>
-                                                                <div class="small text-muted mt-1" style="font-size: 0.65rem;">Digitally Signed</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
+                                                <div class="flex-grow-1 d-flex justify-content-center align-items-center">
+                                                    <?php
+                                                    $st_pegawai = isset($ppk->status_pegawai) ? $ppk->status_pegawai : 'Belum Disetujui';
+                                                    $cls_pegawai = ($st_pegawai == 'Disetujui') ? 'badge-success' : (($st_pegawai == 'Ditolak') ? 'badge-danger' : 'badge-secondary');
+                                                    ?>
+                                                    <span class="badge <?= $cls_pegawai ?> p-2" style="font-size: 14px;"><?= $st_pegawai ?></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -183,11 +170,24 @@
                                             <div class="card-body p-3 text-center d-flex flex-column">
                                                 <h6 class="card-title font-weight-bold mb-3">Penilai I</h6>
                                                 <div class="flex-grow-1 d-flex justify-content-center align-items-center">
-                                                    <?php
-                                                    $st_penilai1 = isset($ppk->status_penilai1) ? $ppk->status_penilai1 : 'Belum Disetujui';
-                                                    $cls_penilai1 = ($st_penilai1 == 'Disetujui') ? 'badge-success' : (($st_penilai1 == 'Ditolak') ? 'badge-danger' : 'badge-secondary');
-                                                    ?>
-                                                    <span class="badge <?= $cls_penilai1 ?> p-2" style="font-size: 14px;"><?= $st_penilai1 ?></span>
+                                                    <div>
+                                                        <!-- Hidden Checkbox (untuk form submit) -->
+                                                        <input type="checkbox" id="status_penilai1" name="status_penilai1" value="Disetujui" style="display:none;" <?= (isset($ppk->status_penilai1) && $ppk->status_penilai1 == 'Disetujui') ? 'checked' : '' ?>>
+
+                                                        <!-- Area Tanda Tangan Interaktif -->
+                                                        <div id="btn-signature" class="d-flex flex-column align-items-center justify-content-center p-2" style="border: 2px dashed #ccc; border-radius: 8px; cursor: pointer; min-height: 80px; transition: all 0.3s;">
+                                                            <div class="unsigned-content <?= (isset($ppk->status_penilai1) && $ppk->status_penilai1 == 'Disetujui') ? 'd-none' : '' ?>">
+                                                                <i class="mdi mdi-draw text-primary" style="font-size: 2rem;"></i>
+                                                                <div class="small text-muted mt-1">Klik untuk Tanda Tangan</div>
+                                                            </div>
+                                                            <div class="signed-content <?= (isset($ppk->status_penilai1) && $ppk->status_penilai1 == 'Disetujui') ? '' : 'd-none' ?>">
+                                                                <div class="text-success" style="font-family: 'Brush Script MT', cursive; font-size: 1.4rem; line-height: 1.2;">
+                                                                    <?= isset($pegawai->penilai1_nama) ? $pegawai->penilai1_nama : 'Penilai I' ?>
+                                                                </div>
+                                                                <div class="small text-muted mt-1" style="font-size: 0.65rem;">Digitally Signed</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -286,7 +286,7 @@
 
         // Logic Tanda Tangan Digital
         const btnSig = document.getElementById('btn-signature');
-        const chkSig = document.getElementById('status_pegawai');
+        const chkSig = document.getElementById('status_penilai1');
 
         if (btnSig && chkSig) {
             btnSig.addEventListener('click', function() {

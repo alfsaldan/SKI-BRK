@@ -431,6 +431,7 @@
                             '',
                             'index',
                             'rekapnilaipegawai',
+                            'arsipdetail',
                             'monitoringindividu',
                             'caripenilaianbulanan',
                             'ppk_pegawai'
@@ -448,7 +449,7 @@
                                         <span> Kinerja Individu </span>
                                     </a>
                                 </li>
-                                <li class="<?= ($activeController == 'pegawai' && $activeMethod == 'rekapnilaipegawai') ? 'active' : '' ?>">
+                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['rekapnilaipegawai', 'arsipdetail'])) ? 'active' : '' ?>">
                                     <a href="<?= base_url('pegawai/rekapnilaipegawai') ?>">
                                         <i class="mdi mdi-file-chart"></i>
                                         <span> Rekap KPI Individu </span>
