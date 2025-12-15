@@ -2724,4 +2724,18 @@ class Pegawai extends CI_Controller
         $this->load->view('pegawai/arsip_detail', $data); // View baru yang akan kita buat
         $this->load->view('layoutpegawai/footer');
     }
+
+    public function ppk_pegawai()
+    {
+        $this->load->view('layoutpegawai/header');
+        $this->load->view('pegawai/ppk_pegawai');
+        $this->load->view('layoutpegawai/footer');
+    }
+
+    public function ppk_penilai1()
+    {
+        $this->load->view('layoutpegawai/header');
+        $this->load->view('pegawai/ppk_penilai1');
+        $this->load->view('layoutpegawai/footer');
+    }
 }

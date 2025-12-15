@@ -214,8 +214,8 @@
         }
 
         /* Pastikan dropdown tetap terbuka ketika parent aktif */
-        .nav-first-level.in,
-        .nav-second-level.in {
+        body:not(.enlarged) .nav-first-level.in,
+        body:not(.enlarged) .nav-second-level.in {
             display: block !important;
             opacity: 1 !important;
             visibility: visible !important;
@@ -224,8 +224,19 @@
         }
 
         /* Force dropdown container tetap visible */
-        #sidebar-menu li.active>ul {
+        body:not(.enlarged) #sidebar-menu li.active > ul {
             display: block !important;
+        }
+
+        /* Fix: Saat sidebar collapsed, sembunyikan dropdown aktif dan text */
+        body.enlarged #sidebar-menu li.active > ul {
+            display: none !important;
+        }
+        body.enlarged #sidebar-menu li.active:hover > ul {
+            display: block !important;
+        }
+        body.enlarged #sidebar-menu > ul > li > a span {
+            display: none !important;
         }
     </style>
 
@@ -375,12 +386,15 @@
                                 'penilaiankinerja',
                                 'caripenilaian',
                                 'verifikasi_penilaian',
-                                'detailverifikasi'
+                                'detailverifikasi',
+                                'datapegawai',
+                                'caridatapegawai',
+                                'monitoringkinerja',
+                                'caripenilaianbulanan',
                             ]));
                             ?>
                             <li class="<?= $fiturUtamaActive ? 'active' : '' ?>">
                                 <a href="javascript: void(0);" class="special-header-link">
-                                    <!-- <i class="fe-layers"></i> -->
                                     <span> Fitur Utama </span>
                                     <span class="menu-arrow"></span>
                                 </a>
@@ -412,25 +426,7 @@
                                             <span> Verifikasi Penilaian </span>
                                         </a>
                                     </li>
-                                </ul>
-                            </li>
-                            <?php
-                            $peningkatanKinerjaActive = ($activeController == 'administrator' && in_array($activeMethod, [
-                                'datapegawai',
-                                'caridatapegawai',
-                                'monitoringkinerja',
-                                'caripenilaianbulanan',
-                                'verifikasi_ppk',
-                                'program_ppk'
-                            ]));
-                            ?>
-                            <li class="<?= $peningkatanKinerjaActive ? 'active' : '' ?>">
-                                <a href="javascript: void(0);" class="special-header-link">
-                                    <!-- <i class="fe-trending-up"></i> -->
-                                    <span> Peningkatan Kinerja </span>
-                                    <span class="menu-arrow"></span>
-                                </a>
-                                <ul class="nav-first-level <?= $peningkatanKinerjaActive ? 'in' : '' ?>" aria-expanded="<?= $peningkatanKinerjaActive ? 'true' : 'false' ?>">
+
                                     <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['datapegawai', 'caridatapegawai'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/datapegawai') ?>">
                                             <i class="mdi mdi-account-card-details"></i>
@@ -444,7 +440,20 @@
                                             <span> Monitoring Kinerja </span>
                                         </a>
                                     </li>
-
+                                </ul>
+                            </li>
+                            <?php
+                            $peningkatanKinerjaActive = ($activeController == 'administrator' && in_array($activeMethod, [
+                                'verifikasi_ppk',
+                                'monitoring_ppk'
+                            ]));
+                            ?>
+                            <li class="<?= $peningkatanKinerjaActive ? 'active' : '' ?>">
+                                <a href="javascript: void(0);" class="special-header-link">
+                                    <span> Peningkatan Kinerja </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <ul class="nav-first-level <?= $peningkatanKinerjaActive ? 'in' : '' ?>" aria-expanded="<?= $peningkatanKinerjaActive ? 'true' : 'false' ?>">
                                     <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['verifikasi_ppk'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/verifikasi_ppk') ?>">
                                             <i class="mdi mdi-account-group"></i>
@@ -452,10 +461,10 @@
                                         </a>
                                     </li>
 
-                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['program_ppk'])) ? 'active' : '' ?>">
-                                        <a href="<?= base_url('administrator/program_ppk') ?>">
+                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['monitoring_ppk'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('administrator/monitoring_ppk') ?>">
                                             <i class="mdi mdi-account-badge-alert-outline"></i>
-                                            <span> Program PPK </span>
+                                            <span> Monitoring PPK </span>
                                         </a>
                                     </li>
                                 </ul>
@@ -469,7 +478,6 @@
                             ?>
                             <li class="<?= $lainnyaActive ? 'active' : '' ?>">
                                 <a href="javascript: void(0);" class="special-header-link">
-                                    <!-- <i class="fe-grid"></i> -->
                                     <span> Lainnya </span>
                                     <span class="menu-arrow"></span>
                                 </a>
@@ -497,12 +505,12 @@
                             'index',
                             'rekapnilaipegawai',
                             'monitoringindividu',
-                            'caripenilaianbulanan'
+                            'caripenilaianbulanan',
+                            'ppk_pegawai'
                         ]));
                         ?>
                         <li class="<?= $halamanPegawaiActive ? 'active' : '' ?>">
                             <a href="javascript: void(0);" class="special-header-link">
-                                <!-- <i class="fe-users"></i> -->
                                 <span> Halaman Pegawai </span>
                                 <span class="menu-arrow"></span>
                             </a>
@@ -525,6 +533,12 @@
                                         <span> Monitoring Individu </span>
                                     </a>
                                 </li>
+                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_pegawai'])) ? 'active' : '' ?>">
+                                    <a href="<?= base_url('pegawai/ppk_pegawai') ?>">
+                                        <i class="mdi mdi-account-badge-alert mr-1"></i>
+                                        <span> Program PPK </span>
+                                    </a>
+                                </li>
                             </ul>
                         </li>
 
@@ -537,7 +551,6 @@
                         ?>
                         <li class="<?= $halamanPenilaiActive ? 'active' : '' ?>">
                             <a href="javascript: void(0);" class="special-header-link">
-                                <!-- <i class="fe-edit"></i> -->
                                 <span> Halaman Penilai </span>
                                 <span class="menu-arrow"></span>
                             </a>

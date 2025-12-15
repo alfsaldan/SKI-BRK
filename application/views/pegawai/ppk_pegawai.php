@@ -1,0 +1,309 @@
+<div class="content-page">
+    <div class="content">
+        <div class="container-fluid">
+
+            <!-- Judul Halaman -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title-box">
+                        <div class="page-title-right">
+                            <ol class="breadcrumb m-0">
+                                <li class="breadcrumb-item"><a href="javascript:void(0);">KPI Online-BRKS</a></li>
+                                <li class="breadcrumb-item active">Program PPK</li>
+                            </ol>
+                        </div>
+                        <h4 class="page-title"><i class="mdi mdi-account-badge-alert-outline mr-1"></i> Program Peningkatan Kinerja (PPK)</h4>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h4 class="header-title text-center mb-4 text-uppercase text-primary font-weight-bold">Formulir Program Peningkatan Kinerja</h4>
+                            <hr>
+
+                            <form action="<?= base_url('administrator/simpan_ppk') ?>" method="post" id="form-ppk">
+                                
+                                <!-- Bagian 1: Data Pegawai & Periode -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <h5 class="text-info mb-3"><i class="mdi mdi-account-details mr-1"></i> Data Pegawai</h5>
+                                        <div class="form-group row mb-2">
+                                            <label class="col-sm-4 col-form-label font-weight-medium">Nama</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" class="form-control-plaintext font-weight-bold" value="<?= isset($pegawai->nama) ? $pegawai->nama : '-' ?>" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mb-2">
+                                            <label class="col-sm-4 col-form-label font-weight-medium">Jabatan/Grade</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" class="form-control-plaintext" value="<?= isset($pegawai->jabatan) ? $pegawai->jabatan : '-' ?>" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mb-2">
+                                            <label class="col-sm-4 col-form-label font-weight-medium">NIK</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" class="form-control-plaintext" name="nik" value="<?= isset($pegawai->nik) ? $pegawai->nik : '-' ?>" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mb-2">
+                                            <label class="col-sm-4 col-form-label font-weight-medium">Unit Kerja</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" class="form-control-plaintext" value="<?= isset($pegawai->unit_kerja) ? $pegawai->unit_kerja : '-' ?>" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 border-left">
+                                        <h5 class="text-warning mb-3"><i class="mdi mdi-calendar-clock mr-1"></i> Periode Program</h5>
+                                        <div class="form-group row mb-2">
+                                            <label class="col-sm-4 col-form-label">PPK Tahap ke</label>
+                                            <div class="col-sm-8">
+                                                <input type="number" class="form-control" name="tahap" placeholder="Masukkan tahap (misal: 1)" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mb-2">
+                                            <label class="col-sm-4 col-form-label">Periode PPK</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" class="form-control" name="periode_ppk" placeholder="Contoh: Januari - Juni 2025" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mb-2">
+                                            <label class="col-sm-4 col-form-label">Periode Coaching</label>
+                                            <div class="col-sm-8">
+                                                <input type="text" class="form-control" name="periode_coaching" placeholder="Contoh: ke-4" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr class="my-0">
+
+                                <!-- Bagian 2: Review Kinerja Sebelumnya -->
+                                <h5 class="text-primary mb-3"><i class="mdi mdi-history mr-1"></i> Review Kinerja Sebelumnya</h5>
+                                <div class="form-group">
+                                    <label class="font-weight-bold">Hasil Evaluasi Kinerja Sebelumnya</label>
+                                    <textarea class="form-control" name="review_sebelum" rows="3" placeholder="Deskripsikan hasil evaluasi kinerja sebelumnya..."></textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">Target</label>
+                                            <input type="text" class="form-control" name="target" placeholder="Target yang ditetapkan...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">Pencapaian</label>
+                                            <input type="text" class="form-control" name="pencapaian" placeholder="Pencapaian yang diraih...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="font-weight-bold">Aktivitas</label>
+                                            <input type="text" class="form-control" name="aktivitas" placeholder="Aktivitas yang dilakukan...">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <hr class="my-0">
+
+                                <!-- Bagian 3: Rencana Perbaikan -->
+                                <h5 class="text-success mb-3"><i class="mdi mdi-bullseye-arrow mr-1"></i> Rencana dan Aktivitas Perbaikan</h5>
+                                <div class="form-group">
+                                    <label class="font-weight-bold">Rencana Tindakan untuk Mencapai Sasaran</label>
+                                    <textarea class="form-control" name="rencana" rows="3" placeholder="Jelaskan rencana tindakan perbaikan..."></textarea>
+                                </div>
+
+                                <!-- Bagian 4: Sasaran & Tindakan (Dynamic Table) -->
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-bordered table-striped" id="table-sasaran">
+                                        <thead class="thead-light text-center">
+                                            <tr>
+                                                <th style="width: 50px;">No</th>
+                                                <th>Sasaran Bulan Ini</th>
+                                                <th>Rincian Tindakan</th>
+                                                <th style="width: 100px;">Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="sasaran-body">
+                                            <tr>
+                                                <td class="text-center row-number">1</td>
+                                                <td><input type="text" class="form-control" name="sasaran_bulan[]" placeholder="Masukkan sasaran..." required></td>
+                                                <td><input type="text" class="form-control" name="rincian_tindakan[]" placeholder="Masukkan rincian tindakan..." required></td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-danger btn-sm btn-remove" disabled><i class="mdi mdi-trash-can"></i></button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="text-right">
+                                        <button type="button" class="btn btn-info btn-sm" id="btn-add-row">
+                                            <i class="mdi mdi-plus"></i> Tambah Sasaran
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <hr class="my-0">
+
+                                <!-- Bagian 5: Status Verifikasi -->
+                                <h5 class="text-success mb-3"><i class="mdi mdi-check-decagram mr-1"></i> Status Verifikasi</h5>
+                                <div class="row text-center">
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card border-secondary border h-100">
+                                            <div class="card-body p-3 text-center">
+                                                <h6 class="card-title text-muted mb-3">Pegawai</h6>
+                                                
+                                                <!-- Hidden Checkbox (untuk form submit) -->
+                                                <input type="checkbox" id="status_pegawai" name="status_pegawai" value="Disetujui" style="display:none;" <?= (isset($ppk->status_pegawai) && $ppk->status_pegawai == 'Disetujui') ? 'checked' : '' ?>>
+
+                                                <!-- Area Tanda Tangan Interaktif -->
+                                                <div id="btn-signature" class="d-flex flex-column align-items-center justify-content-center p-2" style="border: 2px dashed #ccc; border-radius: 8px; cursor: pointer; min-height: 80px; transition: all 0.3s;">
+                                                    <div class="unsigned-content <?= (isset($ppk->status_pegawai) && $ppk->status_pegawai == 'Disetujui') ? 'd-none' : '' ?>">
+                                                        <i class="mdi mdi-draw text-primary" style="font-size: 2rem;"></i>
+                                                        <div class="small text-muted mt-1">Klik untuk Tanda Tangan</div>
+                                                    </div>
+                                                    <div class="signed-content <?= (isset($ppk->status_pegawai) && $ppk->status_pegawai == 'Disetujui') ? '' : 'd-none' ?>">
+                                                        <div class="text-success" style="font-family: 'Brush Script MT', cursive; font-size: 1.4rem; line-height: 1.2;">
+                                                            <?= isset($pegawai->nama) ? $pegawai->nama : 'Agung' ?>
+                                                        </div>
+                                                        <div class="small text-muted mt-1" style="font-size: 0.65rem;">Digitally Signed</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card border-secondary border h-100">
+                                            <div class="card-body p-3 text-center">
+                                                <h6 class="card-title text-muted mb-3">Penilai I</h6>
+                                                <?php
+                                                $st_penilai1 = isset($ppk->status_penilai1) ? $ppk->status_penilai1 : 'Belum Disetujui';
+                                                $cls_penilai1 = ($st_penilai1 == 'Disetujui') ? 'badge-success' : (($st_penilai1 == 'Ditolak') ? 'badge-danger' : 'badge-secondary');
+                                                ?>
+                                                <span class="badge <?= $cls_penilai1 ?> p-2" style="font-size: 14px;"><?= $st_penilai1 ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card border-secondary border h-100">
+                                            <div class="card-body p-3 text-center">
+                                                <h6 class="card-title text-muted mb-3">Divisi MSDI</h6>
+                                                <?php
+                                                $st_msdi = isset($ppk->status_msdi) ? $ppk->status_msdi : 'Belum Disetujui';
+                                                $cls_msdi = ($st_msdi == 'Disetujui') ? 'badge-success' : (($st_msdi == 'Ditolak') ? 'badge-danger' : 'badge-secondary');
+                                                ?>
+                                                <span class="badge <?= $cls_msdi ?> p-2" style="font-size: 14px;"><?= $st_msdi ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <div class="card border-secondary border h-100">
+                                            <div class="card-body p-3 text-center">
+                                                <h6 class="card-title text-muted mb-3">Pimpinan Unit Kerja</h6>
+                                                <?php
+                                                $st_pimpinan = isset($ppk->status_pimpinanunit) ? $ppk->status_pimpinanunit : 'Belum Disetujui';
+                                                $cls_pimpinan = ($st_pimpinan == 'Disetujui') ? 'badge-success' : (($st_pimpinan == 'Ditolak') ? 'badge-danger' : 'badge-secondary');
+                                                ?>
+                                                <span class="badge <?= $cls_pimpinan ?> p-2" style="font-size: 14px;"><?= $st_pimpinan ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tombol Simpan -->
+                                <div class="row mt-4">
+                                    <div class="col-12 text-right">
+                                        <button type="submit" class="btn btn-primary px-4"><i class="mdi mdi-content-save mr-1"></i> Simpan Formulir</button>
+                                    </div>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fungsi Tambah Baris
+        document.getElementById('btn-add-row').addEventListener('click', function() {
+            var tbody = document.getElementById('sasaran-body');
+            var rowCount = tbody.rows.length + 1;
+            var newRow = `
+                <tr>
+                    <td class="text-center row-number">${rowCount}</td>
+                    <td><input type="text" class="form-control" name="sasaran_bulan[]" placeholder="Masukkan sasaran..." required></td>
+                    <td><input type="text" class="form-control" name="rincian_tindakan[]" placeholder="Masukkan rincian tindakan..." required></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger btn-sm btn-remove"><i class="mdi mdi-trash-can"></i></button>
+                    </td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', newRow);
+        });
+
+        // Fungsi Hapus Baris (Delegated Event)
+        document.getElementById('sasaran-body').addEventListener('click', function(e) {
+            if (e.target.closest('.btn-remove')) {
+                var row = e.target.closest('tr');
+                // Jangan hapus jika hanya tersisa 1 baris
+                if (document.querySelectorAll('#sasaran-body tr').length > 1) {
+                    row.remove();
+                    updateRowNumbers();
+                }
+            }
+        });
+
+        // Update Nomor Urut
+        function updateRowNumbers() {
+            var rows = document.querySelectorAll('#sasaran-body tr');
+            rows.forEach(function(row, index) {
+                row.querySelector('.row-number').textContent = index + 1;
+                // Disable tombol hapus jika hanya 1 baris tersisa
+                var btnRemove = row.querySelector('.btn-remove');
+                if (rows.length === 1) {
+                    btnRemove.disabled = true;
+                } else {
+                    btnRemove.disabled = false;
+                }
+            });
+        }
+
+        // Logic Tanda Tangan Digital
+        const btnSig = document.getElementById('btn-signature');
+        const chkSig = document.getElementById('status_pegawai');
+        
+        if(btnSig && chkSig) {
+            btnSig.addEventListener('click', function() {
+                chkSig.checked = !chkSig.checked;
+                updateSignatureUI();
+            });
+
+            function updateSignatureUI() {
+                const unsigned = btnSig.querySelector('.unsigned-content');
+                const signed = btnSig.querySelector('.signed-content');
+                
+                if(chkSig.checked) {
+                    unsigned.classList.add('d-none');
+                    signed.classList.remove('d-none');
+                    btnSig.style.borderColor = '#28a745'; // Hijau saat ditandatangani
+                    btnSig.style.backgroundColor = '#f0fff4';
+                } else {
+                    signed.classList.add('d-none');
+                    unsigned.classList.remove('d-none');
+                    btnSig.style.borderColor = '#ccc'; // Abu-abu saat belum
+                    btnSig.style.backgroundColor = '#fff';
+                }
+            }
+            
+            // Init state style saat load
+            updateSignatureUI();
+        }
+    });
+</script>
