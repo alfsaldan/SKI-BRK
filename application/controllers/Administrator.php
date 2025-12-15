@@ -3247,4 +3247,52 @@ class Administrator extends CI_Controller
         ]);
         exit;
     }
+
+    // ============================================================
+    // MONITORING PPK DATA (JSON)
+    // ============================================================
+    public function getMonitoringPPKData()
+    {
+        $awal = $this->input->get('awal');
+        $akhir = $this->input->get('akhir');
+
+        // Cek ketersediaan tabel/kolom untuk mencegah error 500
+        $has_ppk_responses = $this->db->table_exists('ppk_responses');
+        $has_ppk_eligible = $this->db->field_exists('ppk_eligible', 'pegawai');
+
+        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja');
+        
+        // Cek kolom ppk_eligible
+        if ($has_ppk_eligible) {
+            $this->db->select('p.ppk_eligible');
+        } else {
+            $this->db->select('0 as ppk_eligible');
+        }
+
+        $this->db->select('na.predikat');
+
+        // Cek tabel ppk_responses dan kolom tahap
+        if ($has_ppk_responses && $this->db->field_exists('tahap', 'ppk_responses')) {
+            // Gunakan updated_at jika ada, jika tidak gunakan id
+            $order_col = $this->db->field_exists('updated_at', 'ppk_responses') ? 'updated_at' : 'id';
+            $this->db->select("(SELECT tahap FROM ppk_responses WHERE nik = p.nik ORDER BY $order_col DESC LIMIT 1) as tahap");
+        } else {
+            $this->db->select('0 as tahap');
+        }
+
+        $this->db->from('pegawai p');
+        
+        // Join ke nilai_akhir berdasarkan periode yang dipilih
+        $this->db->join('nilai_akhir na', 'na.nik = p.nik AND na.periode_awal = ' . $this->db->escape($awal) . ' AND na.periode_akhir = ' . $this->db->escape($akhir), 'left');
+
+        // Opsional: Filter hanya pegawai aktif jika diperlukan
+        // $this->db->where('p.status', 'aktif');
+
+        $query = $this->db->get();
+        $result = $query->result();
+
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode(['data' => $result]));
+    }
 }
