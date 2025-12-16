@@ -2825,10 +2825,231 @@ class Pegawai extends CI_Controller
         }
     }
 
-    public function ppk_penilai_detail()
+    public function ppk_penilaiformulir($id = null)
     {
+        // Cek login
+        if (!$this->session->userdata('nik')) {
+            redirect('auth');
+        }
+
+        if ($id) {
+            // Ambil data nilai_akhir untuk referensi
+            $data['nilai_akhir'] = $this->db->get_where('nilai_akhir', ['id' => $id])->row();
+            
+            if (!$data['nilai_akhir']) {
+                show_404();
+            }
+
+            // Ambil data pegawai yang dinilai (bukan yang login)
+            $nik_pegawai = $data['nilai_akhir']->nik;
+            $data['pegawai'] = $this->Pegawai_model->getPegawaiByNik($nik_pegawai);
+
+            // Ambil data PPK dan sasaran
+            $data['ppk'] = $this->Ppk_model->get_ppk_by_id($id);
+            
+            // Decode detail_sasaran dari JSON jika ada
+            $data['sasaran'] = [];
+            if (isset($data['ppk']->detail_sasaran) && !empty($data['ppk']->detail_sasaran)) {
+                $data['sasaran'] = json_decode($data['ppk']->detail_sasaran, true) ?? [];
+            }
+        } else {
+            show_404();
+        }
+
         $this->load->view('layoutpegawai/header');
-        $this->load->view('pegawai/ppk_penilai_detail');
+        $this->load->view('pegawai/ppk_penilaiformulir', $data);
         $this->load->view('layoutpegawai/footer');
+    }
+
+    public function simpan_ppk_penilai()
+    {
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('nik', 'NIK', 'required');
+        $this->form_validation->set_rules('id_nilai_akhir', 'ID Nilai Akhir', 'required');
+
+        $id_nilai_akhir = $this->input->post('id_nilai_akhir');
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('pegawai/ppk_penilaiformulir/' . $id_nilai_akhir);
+        } else {
+            // Hanya update status penilai 1, data lain dibiarkan tetap (atau ikut tersimpan jika diedit)
+            // Kita asumsikan Penilai juga bisa mengedit konten jika perlu, atau setidaknya save form yang ada.
+            // Namun yang krusial adalah status_penilai1.
+            
+            // Kumpulkan data sasaran dari form (jika penilai boleh edit sasaran)
+            $sasaran_bulan = $this->input->post('sasaran_bulan');
+            $rincian_tindakan = $this->input->post('rincian_tindakan');
+            $detail_sasaran = [];
+            if (is_array($sasaran_bulan)) {
+                for ($i = 0; $i < count($sasaran_bulan); $i++) {
+                    if (!empty($sasaran_bulan[$i])) {
+                        $detail_sasaran[] = [
+                            'sasaran_bulan' => $sasaran_bulan[$i],
+                            'rincian_tindakan' => $rincian_tindakan[$i] ?? ''
+                        ];
+                    }
+                }
+            }
+
+            $data = [
+                'nik' => $this->input->post('nik'),
+                'tahap' => $this->input->post('tahap'),
+                'periode_ppk' => $this->input->post('periode_ppk'),
+                'periode_coaching' => $this->input->post('periode_coaching'),
+                'review_sebelum' => $this->input->post('review_sebelum'),
+                'target' => $this->input->post('target'),
+                'pencapaian' => $this->input->post('pencapaian'),
+                'aktivitas' => $this->input->post('aktivitas'),
+                'rencana' => $this->input->post('rencana'),
+                'detail_sasaran' => json_encode($detail_sasaran),
+                // Update status penilai 1
+                'status_penilai1' => $this->input->post('status_penilai1') ? 'Disetujui' : 'Belum Disetujui'
+            ];
+
+            // Gunakan model yang sama, karena save_or_update_ppk melakukan UPDATE jika data sudah ada
+            // dan hanya mengupdate field yang dikirim di $data. Status pegawai/msdi/pimpinan tidak akan berubah
+            // karena tidak ada di array $data ini.
+            $result = $this->Ppk_model->save_or_update_ppk($data);
+
+            if ($result) {
+                $this->session->set_flashdata('success', 'Penilaian PPK berhasil disimpan.');
+            } else {
+                $this->session->set_flashdata('error', 'Gagal menyimpan penilaian PPK.');
+            }
+
+            redirect('pegawai/ppk_penilaiformulir/' . $id_nilai_akhir);
+        }
+    }
+
+    public function ppk_pimpinanformulir($id = null)
+    {
+        // Cek login
+        if (!$this->session->userdata('nik')) {
+            redirect('auth');
+        }
+
+        if ($id) {
+            // Ambil data nilai_akhir untuk referensi
+            $data['nilai_akhir'] = $this->db->get_where('nilai_akhir', ['id' => $id])->row();
+            
+            if (!$data['nilai_akhir']) {
+                show_404();
+            }
+
+            // Ambil data pegawai yang dinilai (bukan yang login)
+            $nik_pegawai = $data['nilai_akhir']->nik;
+            $data['pegawai'] = $this->Pegawai_model->getPegawaiByNik($nik_pegawai);
+
+            // Ambil data pimpinan yang sedang login untuk nama di tanda tangan
+            $data['pimpinan'] = $this->Pegawai_model->getPegawaiByNik($this->session->userdata('nik'));
+
+            // Ambil data PPK dan sasaran
+            $data['ppk'] = $this->Ppk_model->get_ppk_by_id($id);
+            
+            // Decode detail_sasaran dari JSON jika ada
+            $data['sasaran'] = [];
+            if (isset($data['ppk']->detail_sasaran) && !empty($data['ppk']->detail_sasaran)) {
+                $data['sasaran'] = json_decode($data['ppk']->detail_sasaran, true) ?? [];
+            }
+        } else {
+            show_404();
+        }
+
+        $this->load->view('layoutpegawai/header');
+        $this->load->view('pegawai/ppk_pimpinanformulir', $data);
+        $this->load->view('layoutpegawai/footer');
+    }
+
+    public function simpan_ppk_pimpinan()
+    {
+        $this->load->library('form_validation');
+        $this->form_validation->set_rules('nik', 'NIK', 'required');
+        $this->form_validation->set_rules('id_nilai_akhir', 'ID Nilai Akhir', 'required');
+
+        $id_nilai_akhir = $this->input->post('id_nilai_akhir');
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('pegawai/ppk_pimpinanformulir/' . $id_nilai_akhir);
+        } else {
+            $data = [
+                'nik' => $this->input->post('nik'),
+                'periode_ppk' => $this->input->post('periode_ppk'),
+                'status_pimpinanunit' => $this->input->post('status_pimpinanunit') ? 'Disetujui' : 'Belum Disetujui'
+            ];
+
+            // Gunakan model yang sama, karena save_or_update_ppk melakukan UPDATE jika data sudah ada
+            // dan hanya mengupdate field yang dikirim di $data.
+            $result = $this->Ppk_model->save_or_update_ppk($data);
+
+            if ($result) {
+                $this->session->set_flashdata('success', 'Penilaian PPK oleh Pimpinan Unit berhasil disimpan.');
+            } else {
+                $this->session->set_flashdata('error', 'Gagal menyimpan penilaian PPK.');
+            }
+
+            redirect('pegawai/ppk_pimpinanformulir/' . $id_nilai_akhir);
+        }
+    }
+
+    public function ppk_penilai()
+    {
+        $nik = $this->session->userdata('nik');
+        $this->load->model('pegawai/Ppk_model');
+        $this->load->model('pegawai/Nilai_model');
+        $this->load->model('pegawai/Pegawai_model');
+
+        // 1. Ambil data pegawai yang dinilai oleh user ini sebagai Penilai 1
+        $bawahan1 = $this->Nilai_model->getPegawaiSebagaiPenilai1($nik);
+        $niks1 = [];
+        if (!empty($bawahan1)) {
+            $niks1 = array_column($bawahan1, 'nik');
+        }
+        
+        $list_ppk_penilai1 = [];
+        if (!empty($niks1)) {
+            $list_ppk_penilai1 = $this->Ppk_model->get_ppk_list_by_niks($niks1);
+        }
+
+        // 2. Cek apakah user ini Pimpinan Unit
+        $pegawai = $this->Pegawai_model->getPegawaiByNIK($nik);
+        $is_pimpinan = false;
+        $list_ppk_pimpinan = [];
+
+        if ($pegawai) {
+            $jabatan = strtolower($pegawai->jabatan);
+            // Cek jabatan apakah termasuk pimpinan unit/cabang/divisi
+            if (strpos($jabatan, 'general manager') !== false || 
+                strpos($jabatan, 'branch manager') !== false || 
+                strpos($jabatan, 'pimpinan divisi') !== false ||
+                strpos($jabatan, 'pemimpin divisi') !== false
+               ) {
+                $is_pimpinan = true;
+                // Ambil semua pegawai di unit kerja yang sama
+                $bawahan_unit = $this->Pegawai_model->getPegawaiByUnit($pegawai->unit_kerja, $pegawai->unit_kantor, $nik);
+                $niks_unit = array_column($bawahan_unit, 'nik');
+                
+                if (!empty($niks_unit)) {
+                    $list_ppk_pimpinan = $this->Ppk_model->get_ppk_list_by_niks($niks_unit);
+                }
+            }
+        }
+
+        $data['judul'] = 'Penilaian PPK';
+        $data['list_ppk_penilai1'] = $list_ppk_penilai1;
+        $data['list_ppk_pimpinan'] = $list_ppk_pimpinan;
+        $data['is_pimpinan'] = $is_pimpinan;
+
+        $this->load->view('layoutpegawai/header', $data);
+        $this->load->view('pegawai/ppk_penilai', $data);
+        $this->load->view('layoutpegawai/footer');
+    }
+
+    public function ppk_pegawaievaluasi()
+    {
+        $this->load->view('layout/header');
+        $this->load->view('pegawai/ppk_pegawaievaluasi');
+        $this->load->view('layout/footer');
     }
 }

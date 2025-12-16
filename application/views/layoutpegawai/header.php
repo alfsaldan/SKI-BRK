@@ -15,7 +15,7 @@
     <link href="<?= base_url('assets/libs/bootstrap-select/bootstrap-select.min.css') ?>" rel="stylesheet"
         type="text/css" />
     <!-- Table datatable css -->
-    <link href="<?= base_url(' assets/libs/datatables/dataTables.bootstrap4.min.css') ?>" rel="stylesheet"
+    <link href="<?= base_url('assets/libs/datatables/dataTables.bootstrap4.min.css') ?>" rel="stylesheet"
         type="text/css" />
     <link href="<?= base_url('assets/libs/datatables/responsive.bootstrap4.min.css') ?>" rel="stylesheet"
         type="text/css" />
@@ -548,7 +548,10 @@
                         $halamanPenilaiActive = ($activeController == 'pegawai' && in_array($activeMethod, [
                             'nilaipegawai',
                             'nilaipegawaidetail',
-                            'nilaipegawaidetail2'
+                            'nilaipegawaidetail2',
+                            'ppk_penilai',
+                            'ppk_penilaiformulir',
+                            'ppk_pimpinanformulir'
                         ]));
                         ?>
                         <li class="<?= $halamanPenilaiActive ? 'active' : '' ?>">
@@ -561,6 +564,12 @@
                                     <a href="<?= base_url('pegawai/nilaipegawai') ?>">
                                         <i class="mdi mdi-account-edit"></i>
                                         <span> Nilai Pegawai </span>
+                                    </a>
+                                </li>
+                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_penilai', 'ppk_penilaiformulir', 'ppk_pimpinanformulir'])) ? 'active' : '' ?>">
+                                    <a href="<?= base_url('pegawai/ppk_penilai') ?>">
+                                        <i class="mdi mdi-account-badge-alert mr-1"></i>
+                                        <span> Nilai PPK </span>
                                     </a>
                                 </li>
                             </ul>

@@ -24,8 +24,17 @@
                             <h4 class="header-title text-center mb-0 text-uppercase text-primary font-weight-bold">Formulir Program Peningkatan Kinerja</h4>
                             <hr>
 
-                            <form action="<?= base_url('administrator/simpan_ppk') ?>" method="post" id="form-ppk">
-
+                            <form action="<?= base_url('pegawai/simpan_ppk_penilai') ?>" method="post" id="form-ppk">
+                                <input type="hidden" name="id_nilai_akhir" value="<?= $nilai_akhir->id ?? '' ?>">
+                                <?php
+                                    $periode_ppk_string = '';
+                                    if (isset($nilai_akhir->periode_awal) && isset($nilai_akhir->periode_akhir)) {
+                                        // Format "dd Month YYYY - dd Month YYYY"
+                                        $start_date = date('Y-m-d', strtotime($nilai_akhir->periode_akhir . ' +1 day'));
+                                        $end_date = date('Y-m-d', strtotime($start_date . ' +6 months -1 day'));
+                                        $periode_ppk_string = date('d F Y', strtotime($start_date)) . ' - ' . date('d F Y', strtotime($end_date));
+                                    }
+                                ?>
                                 <!-- Bagian 1: Data Pegawai & Periode -->
                                 <div class="row mb-3">
                                     <div class="col-md-6">
@@ -61,19 +70,19 @@
                                         <div class="form-group row mb-2">
                                             <label class="col-sm-4 col-form-label">PPK Tahap ke</label>
                                             <div class="col-sm-8">
-                                                <input type="number" class="form-control" name="tahap" placeholder="Masukkan tahap (misal: 1)" required>
+                                                <input type="number" class="form-control" name="tahap" placeholder="Masukkan tahap (misal: 1)" value="<?= $ppk->tahap ?? '' ?>" required>
                                             </div>
                                         </div>
                                         <div class="form-group row mb-2">
                                             <label class="col-sm-4 col-form-label">Periode PPK</label>
                                             <div class="col-sm-8">
-                                                <input type="text" class="form-control" name="periode_ppk" placeholder="Contoh: Januari - Juni 2025" required>
+                                                <input type="text" class="form-control" name="periode_ppk" value="<?= $ppk->periode_ppk ?? $periode_ppk_string ?>" readonly required>
                                             </div>
                                         </div>
                                         <div class="form-group row mb-2">
                                             <label class="col-sm-4 col-form-label">Periode Coaching</label>
                                             <div class="col-sm-8">
-                                                <input type="text" class="form-control" name="periode_coaching" placeholder="Contoh: ke-4" required>
+                                                <input type="text" class="form-control" name="periode_coaching" placeholder="Contoh: ke-4" value="<?= $ppk->periode_coaching ?? '' ?>" required>
                                             </div>
                                         </div>
                                     </div>
@@ -85,25 +94,25 @@
                                 <h5 class="text-primary mb-3"><i class="mdi mdi-history mr-1"></i> Review Kinerja Sebelumnya</h5>
                                 <div class="form-group">
                                     <label class="font-weight-bold">Hasil Evaluasi Kinerja Sebelumnya</label>
-                                    <textarea class="form-control" name="review_sebelum" rows="3" placeholder="Deskripsikan hasil evaluasi kinerja sebelumnya..."></textarea>
+                                    <textarea class="form-control" name="review_sebelum" rows="3" placeholder="Deskripsikan hasil evaluasi kinerja sebelumnya..."><?= $ppk->review_sebelum ?? '' ?></textarea>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label class="font-weight-bold">Target</label>
-                                            <input type="text" class="form-control" name="target" placeholder="Target yang ditetapkan...">
+                                            <input type="text" class="form-control" name="target" placeholder="Target yang ditetapkan..." value="<?= $ppk->target ?? '' ?>">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label class="font-weight-bold">Pencapaian</label>
-                                            <input type="text" class="form-control" name="pencapaian" placeholder="Pencapaian yang diraih...">
+                                            <input type="text" class="form-control" name="pencapaian" placeholder="Pencapaian yang diraih..." value="<?= $ppk->pencapaian ?? '' ?>">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label class="font-weight-bold">Aktivitas</label>
-                                            <input type="text" class="form-control" name="aktivitas" placeholder="Aktivitas yang dilakukan...">
+                                            <input type="text" class="form-control" name="aktivitas" placeholder="Aktivitas yang dilakukan..." value="<?= $ppk->aktivitas ?? '' ?>">
                                         </div>
                                     </div>
                                 </div>
@@ -114,7 +123,7 @@
                                 <h5 class="text-primary mb-3"><i class="mdi mdi-bullseye-arrow mr-1"></i> Rencana dan Aktivitas Perbaikan</h5>
                                 <div class="form-group">
                                     <label class="font-weight-bold">Rencana Tindakan untuk Mencapai Sasaran</label>
-                                    <textarea class="form-control" name="rencana" rows="3" placeholder="Jelaskan rencana tindakan perbaikan..."></textarea>
+                                    <textarea class="form-control" name="rencana" rows="3" placeholder="Jelaskan rencana tindakan perbaikan..."><?= $ppk->rencana ?? '' ?></textarea>
                                 </div>
 
                                 <!-- Bagian 4: Sasaran & Tindakan (Dynamic Table) -->
@@ -129,14 +138,27 @@
                                             </tr>
                                         </thead>
                                         <tbody id="sasaran-body">
-                                            <tr>
-                                                <td class="text-center row-number">1</td>
-                                                <td><input type="text" class="form-control" name="sasaran_bulan[]" placeholder="Masukkan sasaran..." required></td>
-                                                <td><input type="text" class="form-control" name="rincian_tindakan[]" placeholder="Masukkan rincian tindakan..." required></td>
-                                                <td class="text-center">
-                                                    <button type="button" class="btn btn-danger btn-sm btn-remove" disabled><i class="mdi mdi-trash-can"></i></button>
-                                                </td>
-                                            </tr>
+                                            <?php if (!empty($sasaran)): ?>
+                                                <?php foreach ($sasaran as $index => $s): ?>
+                                                    <tr>
+                                                        <td class="text-center row-number"><?= $index + 1 ?></td>
+                                                        <td><input type="text" class="form-control" name="sasaran_bulan[]" placeholder="Masukkan sasaran..." value="<?= htmlspecialchars($s['sasaran_bulan'] ?? '') ?>" required></td>
+                                                        <td><textarea class="form-control" name="rincian_tindakan[]" placeholder="Masukkan rincian tindakan..." rows="2" required><?= htmlspecialchars($s['rincian_tindakan'] ?? '') ?></textarea></td>
+                                                        <td class="text-center">
+                                                            <button type="button" class="btn btn-danger btn-sm btn-remove" <?= $index == 0 ? 'disabled' : '' ?>><i class="mdi mdi-trash-can"></i></button>
+                                                        </td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <tr>
+                                                    <td class="text-center row-number">1</td>
+                                                    <td><input type="text" class="form-control" name="sasaran_bulan[]" placeholder="Masukkan sasaran..." required></td>
+                                                    <td><textarea class="form-control" name="rincian_tindakan[]" placeholder="Masukkan rincian tindakan..." rows="2" required></textarea></td>
+                                                    <td class="text-center">
+                                                        <button type="button" class="btn btn-danger btn-sm btn-remove" disabled><i class="mdi mdi-trash-can"></i></button>
+                                                    </td>
+                                                </tr>
+                                            <?php endif; ?>
                                         </tbody>
                                     </table>
                                     <div class="text-right">
@@ -225,7 +247,8 @@
                                 <!-- Tombol Simpan -->
                                 <div class="row mt-4">
                                     <div class="col-12 text-right">
-                                        <button type="submit" class="btn btn-primary px-4"><i class="mdi mdi-content-save mr-1"></i> Simpan Formulir</button>
+                                        <a href="<?= base_url('pegawai/ppk_penilai') ?>" class="btn btn-secondary px-4"><i class="mdi mdi-arrow-left mr-1"></i> Kembali</a>
+                                        <button type="submit" class="btn btn-primary px-4 ml-1"><i class="mdi mdi-content-save mr-1"></i> Simpan Formulir</button>
                                     </div>
                                 </div>
 
@@ -238,6 +261,27 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if ($this->session->flashdata('success')): ?>
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '<?= $this->session->flashdata('success'); ?>',
+                timer: 2500,
+                showConfirmButton: false
+            });
+        <?php elseif ($this->session->flashdata('error')): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: '<?= $this->session->flashdata('error'); ?>',
+            });
+        <?php endif; ?>
+    });
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Fungsi Tambah Baris
@@ -248,7 +292,7 @@
                 <tr>
                     <td class="text-center row-number">${rowCount}</td>
                     <td><input type="text" class="form-control" name="sasaran_bulan[]" placeholder="Masukkan sasaran..." required></td>
-                    <td><input type="text" class="form-control" name="rincian_tindakan[]" placeholder="Masukkan rincian tindakan..." required></td>
+                    <td><textarea class="form-control" name="rincian_tindakan[]" placeholder="Masukkan rincian tindakan..." rows="2" required></textarea></td>
                     <td class="text-center">
                         <button type="button" class="btn btn-danger btn-sm btn-remove"><i class="mdi mdi-trash-can"></i></button>
                     </td>
