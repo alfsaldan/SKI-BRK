@@ -215,7 +215,9 @@
                 {
                     data: null, // Aksi
                     render: function(data, type, row) {
-                        return `<button class="btn btn-sm btn-info btn-detail" data-nik="${row.nik}"><i class="mdi mdi-information-outline"></i> Detail</button>`;
+                        const formulirBtn = `<button class="btn btn-sm btn-info btn-detail" data-nik="${row.nik}"><i class="mdi mdi-file-document-outline"></i> Formulir</button>`;
+                        const evaluasiBtn = `<a href="<?= site_url('administrator/evaluasi_ppk') ?>/${row.nik}" class="btn btn-sm btn-success"><i class="mdi mdi-clipboard-check-outline"></i> Evaluasi</a>`;
+                        return `<div class="btn-group" role="group">${formulirBtn} ${evaluasiBtn}</div>`;
                     },
                     orderable: false,
                     searchable: false

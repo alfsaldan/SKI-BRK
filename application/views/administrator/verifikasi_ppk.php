@@ -867,7 +867,7 @@
         // Variable to debounce/prevent duplicate saves
         var _lastTahapSave = { nik: null, val: null, ts: 0 };
 
-        function savePpkTahap(nik, val) {
+        window.savePpkTahap = function(nik, val) {
             // Prevent double save within short time (e.g. blur + click race condition)
             var now = new Date().getTime();
             if (_lastTahapSave.nik === nik && _lastTahapSave.val === val && (now - _lastTahapSave.ts) < 1000) {
@@ -888,7 +888,7 @@
                 console.error(e);
                 return { success: false };
             });
-        }
+        };
 
         function toggleTahapInput(show) {
             const $el = $('#ppk-tahap-container');
@@ -908,7 +908,7 @@
 
         // apply PPK status badge to table row for a nik
         // if `eligible` is null, we will re-fetch data (responses & syarats) to decide
-        function applyPpkStatusToTable(nik, eligible) {
+        window.applyPpkStatusToTable = function(nik, eligible) {
             if (!nik) return;
             const $cell = $(`.ppk-status[data-nik="${nik}"]`);
             if (!$cell || $cell.length === 0) return;
@@ -939,7 +939,7 @@
             } else {
                 setBadge(!!eligible);
             }
-        }
+        };
 
         // helper to escape html
         function escapeHtml(text) {

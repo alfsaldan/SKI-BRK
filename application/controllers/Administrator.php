@@ -3349,4 +3349,16 @@ class Administrator extends CI_Controller
         $this->load->view('administrator/detailppk', $data);
         $this->load->view('layout/footer', $data);
     }
+
+    public function evaluasi_ppk($nik = null)
+    {
+        $data = [];
+        if ($nik) {
+            $this->load->model('DataPegawai_model');
+            $data['pegawai'] = $this->DataPegawai_model->getPegawaiByNik($nik);
+        }
+        $this->load->view('layout/header');
+        $this->load->view('administrator/evaluasi_ppk', $data);
+        $this->load->view('layout/footer');
+    }
 }
