@@ -25,11 +25,13 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
  * @property MonitoringPegawai_model $MonitoringPegawai_model
  * @property DataDiri_model $DataDiri_model
  * @property Administrator_model $Administrator_model
+ * @property Ppk_model $Ppk_model
  * @property CI_Input $input
  * @property CI_Loader $load
  * @property CI_Output $output
  * @property CI_Session $session
  * @property CI_DB_query_builder $db
+ * @property form_validation $form_validation
  */
 
 class Pegawai extends CI_Controller
@@ -47,6 +49,7 @@ class Pegawai extends CI_Controller
         $this->load->model('Indikator_model');
         $this->load->model('DataDiri_model');
         $this->load->model('Administrator_model'); // Diperlukan untuk get_pegawai_history_by_date
+        $this->load->model('pegawai/Ppk_model');
         $this->load->library('session');
 
         // Pastikan hanya pegawai yang bisa akses
@@ -2727,9 +2730,99 @@ class Pegawai extends CI_Controller
 
     public function ppk_pegawai()
     {
+        $nik = $this->session->userdata('nik');
+        $data['pegawai'] = $this->Pegawai_model->getPegawaiByNik($nik);
+        // Ambil list PPK berdasarkan NIK
+        $data['list_ppk'] = $this->Ppk_model->get_ppk_by_nik($nik);
+
         $this->load->view('layoutpegawai/header');
-        $this->load->view('pegawai/ppk_pegawai');
+        $this->load->view('pegawai/ppk_pegawai', $data);
         $this->load->view('layoutpegawai/footer');
+    }
+
+    public function ppk_pegawaiformulir($id = null)
+    {
+        $nik = $this->session->userdata('nik');
+        $data['pegawai'] = $this->Pegawai_model->getPegawaiByNik($nik);
+
+        if ($id) {
+            // Ambil data nilai_akhir untuk referensi periode dll agar id_nilai_akhir tidak kosong di view
+            $data['nilai_akhir'] = $this->db->get_where('nilai_akhir', ['id' => $id])->row();
+
+            // Jika edit, ambil data PPK dan sasaran
+            $data['ppk'] = $this->Ppk_model->get_ppk_by_id($id);
+            
+            // Decode detail_sasaran dari JSON jika ada (sesuai format simpan)
+            $data['sasaran'] = [];
+            if (isset($data['ppk']->detail_sasaran) && !empty($data['ppk']->detail_sasaran)) {
+                $data['sasaran'] = json_decode($data['ppk']->detail_sasaran, true) ?? [];
+            }
+        } else {
+            // Jika baru
+            $data['ppk'] = null;
+            $data['sasaran'] = [];
+            $data['nilai_akhir'] = null;
+        }
+
+        $this->load->view('layoutpegawai/header');
+        $this->load->view('pegawai/ppk_pegawaiformulir', $data);
+        $this->load->view('layoutpegawai/footer');
+    }
+
+    public function simpan_ppk()
+    {
+        $this->load->library('form_validation');
+
+        $this->form_validation->set_rules('nik', 'NIK', 'required');
+        $this->form_validation->set_rules('tahap', 'Tahap', 'required|numeric');
+        $this->form_validation->set_rules('periode_ppk', 'Periode PPK', 'required');
+
+        $id_nilai_akhir = $this->input->post('id_nilai_akhir');
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('pegawai/ppk_pegawaiformulir/' . $id_nilai_akhir);
+        } else {
+            // Kumpulkan data sasaran dari form
+            $sasaran_bulan = $this->input->post('sasaran_bulan');
+            $rincian_tindakan = $this->input->post('rincian_tindakan');
+            $detail_sasaran = [];
+            if (is_array($sasaran_bulan)) {
+                for ($i = 0; $i < count($sasaran_bulan); $i++) {
+                    if (!empty($sasaran_bulan[$i])) {
+                        $detail_sasaran[] = [
+                            'sasaran_bulan' => $sasaran_bulan[$i],
+                            'rincian_tindakan' => $rincian_tindakan[$i] ?? ''
+                        ];
+                    }
+                }
+            }
+
+            // Siapkan data untuk disimpan ke model
+            $data = [
+                'nik' => $this->input->post('nik'),
+                'tahap' => $this->input->post('tahap'),
+                'periode_ppk' => $this->input->post('periode_ppk'),
+                'periode_coaching' => $this->input->post('periode_coaching'),
+                'review_sebelum' => $this->input->post('review_sebelum'),
+                'target' => $this->input->post('target'),
+                'pencapaian' => $this->input->post('pencapaian'),
+                'aktivitas' => $this->input->post('aktivitas'),
+                'rencana' => $this->input->post('rencana'),
+                'detail_sasaran' => json_encode($detail_sasaran),
+                'status_pegawai' => $this->input->post('status_pegawai') ? 'Disetujui' : 'Belum Disetujui'
+            ];
+
+            $result = $this->Ppk_model->save_or_update_ppk($data);
+
+            if ($result) {
+                $this->session->set_flashdata('success', 'Formulir PPK berhasil disimpan.');
+            } else {
+                $this->session->set_flashdata('error', 'Gagal menyimpan formulir PPK.');
+            }
+
+            redirect('pegawai/ppk_pegawaiformulir/' . $id_nilai_akhir);
+        }
     }
 
     public function ppk_penilai_detail()

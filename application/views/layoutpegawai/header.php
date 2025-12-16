@@ -507,7 +507,8 @@
                             'arsipdetail',
                             'monitoringindividu',
                             'caripenilaianbulanan',
-                            'ppk_pegawai'
+                            'ppk_pegawai',
+                            'ppk_pegawaiformulir'
                         ]));
                         ?>
                         <li class="<?= $halamanPegawaiActive ? 'active' : '' ?>">
@@ -534,7 +535,7 @@
                                         <span> Monitoring Individu </span>
                                     </a>
                                 </li>
-                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_pegawai'])) ? 'active' : '' ?>">
+                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_pegawai', 'ppk_pegawaiformulir'])) ? 'active' : '' ?>">
                                     <a href="<?= base_url('pegawai/ppk_pegawai') ?>">
                                         <i class="mdi mdi-account-badge-alert mr-1"></i>
                                         <span> Program PPK </span>
