@@ -27,6 +27,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
  * @property Administrator_model $Administrator_model
  * @property Syarat_ppk_model $Syarat_ppk_model
  * @property Ppk_responses_model $Ppk_responses_model
+ * @property Ppk_model $Ppk_model 
  * @property CI_Input $input
  * @property CI_Output $output
  * @property CI_Session $session
@@ -3043,11 +3044,11 @@ class Administrator extends CI_Controller
         $akhir = $this->input->get('akhir') ?? date('Y') . '-12-31';
 
         // Ambil penilai1 sebagai nama pegawai menggunakan teknik join serupa getPegawaiWithPenilai
-        $this->db->select('na.nik, p.nama, p.jabatan, p.unit_kerja, na.status_penilaian, na.predikat, p.ppk_eligible AS ppk_eligible, pen1_peg.nama AS penilai1_nama');
+        $this->db->select('na.nik, p.nama, p.jabatan, p.unit_kantor, na.status_penilaian, na.predikat, p.ppk_eligible AS ppk_eligible, pen1_peg.nama AS penilai1_nama');
         $this->db->from('nilai_akhir na');
         $this->db->join('pegawai p', 'p.nik = na.nik', 'left');
         // mapping untuk menentukan key penilai1
-        $this->db->join('penilai_mapping m', 'm.jabatan = p.jabatan AND m.unit_kerja = p.unit_kerja', 'left');
+        $this->db->join('penilai_mapping m', 'm.jabatan = p.jabatan AND m.unit_kantor = p.unit_kantor', 'left');
         // join ke pegawai penilai1 dengan subquery lookup pada penilai_mapping
         $this->db->join(
             'pegawai pen1_peg',
@@ -3069,7 +3070,7 @@ class Administrator extends CI_Controller
                 'nik' => $r->nik,
                 'nama' => $r->nama,
                 'jabatan' => $r->jabatan,
-                'unit_kerja' => $r->unit_kerja,
+                'unit_kantor' => $r->unit_kantor,
                 'predikat' => $r->predikat,
                 'ppk_eligible' => isset($r->ppk_eligible) ? (int)$r->ppk_eligible : 0,
                 'penilai1' => $r->penilai1_nama ?? '',
@@ -3232,7 +3233,7 @@ class Administrator extends CI_Controller
 
         $this->load->model('Ppk_responses_model');
         $ok = $this->Ppk_responses_model->updateTahap($nik, $tahap);
-        
+
         echo json_encode(['success' => (bool)$ok]);
         exit;
     }
@@ -3248,6 +3249,7 @@ class Administrator extends CI_Controller
         $nik = $this->input->post('nik') ?? '';
         $id_ppk = $this->input->post('id_ppk') ?? null;
         $answer = $this->input->post('answer') ?? '';
+        $monitoring_akhir = $this->input->post('monitoring_akhir') ?? ''; // Tambahan parameter
 
         if (!$nik || !$id_ppk || !in_array($answer, ['ya', 'tidak'])) {
             echo json_encode(['success' => false, 'message' => 'Data tidak lengkap atau nilai jawaban tidak valid.']);
@@ -3268,6 +3270,29 @@ class Administrator extends CI_Controller
         $eligible = false;
         try {
             $eligible = (bool)$this->Ppk_responses_model->computeEligibility($nik);
+
+            // LOGIKA BARU: Jika eligible (semua Ya), set tahap 1 dan hitung periode PPK
+            if ($eligible) {
+                $updateData = ['tahap' => 1];
+
+                // Hitung periode PPK jika tanggal akhir monitoring dikirim
+                if (!empty($monitoring_akhir)) {
+                    // Start date = H+1 dari akhir monitoring
+                    $ts_start = strtotime($monitoring_akhir . ' +1 day');
+                    // End date = 6 bulan dari start date - 1 hari
+                    $ts_end = strtotime(date('Y-m-d', $ts_start) . ' +6 months -1 day');
+
+                    // Format: 01 January 2025 - 30 June 2025
+                    $str_start = date('d F Y', $ts_start);
+                    $str_end = date('d F Y', $ts_end);
+
+                    $updateData['periode_ppk'] = "$str_start - $str_end";
+                }
+
+                // Update tabel ppk_responses langsung
+                $this->db->where('nik', $nik)->update('ppk_responses', $updateData);
+            }
+
             if ($this->db->field_exists('ppk_eligible', 'pegawai')) {
                 $this->db->where('nik', $nik)->update('pegawai', ['ppk_eligible' => $eligible ? 1 : 0]);
             }
@@ -3297,21 +3322,19 @@ class Administrator extends CI_Controller
         $has_ppk_eligible = $this->db->field_exists('ppk_eligible', 'pegawai');
 
         // 1. Ambil data dasar dari Pegawai
-        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kerja, p.ppk_eligible');
-        
+        $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kantor, p.ppk_eligible');
+
         // 2. Ambil Predikat untuk periode yang dipilih (dari join nilai_akhir)
         $this->db->select('na.predikat');
 
         // 3. Ambil Tahap PPK (Subquery dari ppk_responses)
         // Mengambil tahap terakhir berdasarkan ID terbesar
         $this->db->select('(SELECT tahap FROM ppk_responses pr WHERE pr.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci ORDER BY pr.id DESC LIMIT 1) as tahap', FALSE);
-
-        // 4. Ambil Predikat Periodik (Subquery dari nilai_akhir)
-        // Mengambil predikat dari periode terakhir yang ada di database untuk pegawai tersebut
-        $this->db->select('(SELECT predikat FROM nilai_akhir na2 WHERE na2.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci ORDER BY na2.periode_akhir DESC LIMIT 1) as predikat_periodik', FALSE);
+        // TAMBAHAN: Ambil periode_ppk
+        $this->db->select('(SELECT periode_ppk FROM ppk_responses pr WHERE pr.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci ORDER BY pr.id DESC LIMIT 1) as periode_ppk', FALSE);
 
         $this->db->from('pegawai p');
-        
+
         // 5. Join ke nilai_akhir berdasarkan periode yang dipilih di filter
         // Menggunakan escape() untuk keamanan dan menghapus COLLATE yang menyebabkan error syntax
         $join_condition = "na.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci AND na.periode_awal = " . $this->db->escape($awal) . " AND na.periode_akhir = " . $this->db->escape($akhir);
@@ -3331,12 +3354,38 @@ class Administrator extends CI_Controller
         $query = $this->db->get();
         $result = $query->result();
 
+        // Proses list predikat periodik berdasarkan periode_ppk
+        foreach ($result as $row) {
+            $row->predikat_list = [];
+            if (!empty($row->periode_ppk)) {
+                $parts = explode(' - ', $row->periode_ppk);
+                if (count($parts) === 2) {
+                    $start = date('Y-m-d', strtotime($parts[0]));
+                    $end = date('Y-m-d', strtotime($parts[1]));
+
+                    $this->db->select('predikat');
+                    $this->db->from('nilai_akhir');
+                    $this->db->where('nik', $row->nik);
+                    $this->db->where('periode_akhir >=', $start);
+                    $this->db->where('periode_akhir <=', $end);
+                    $this->db->order_by('periode_akhir', 'ASC');
+                    $res = $this->db->get()->result();
+
+                    foreach ($res as $r) {
+                        if (!empty($r->predikat)) {
+                            $row->predikat_list[] = $r->predikat;
+                        }
+                    }
+                }
+            }
+        }
+
         $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode(['data' => $result]));
     }
 
-    public function detailppk($nik = null)
+    public function ppk_msdiformulir($nik = null)
     {
         if (!$nik) {
             show_error('NIK Pegawai tidak valid.', 404);
@@ -3344,10 +3393,77 @@ class Administrator extends CI_Controller
         }
 
         $this->load->model('DataPegawai_model');
-        $data['judul'] = "Detail Program Peningkatan Kinerja";
+        $this->load->model('pegawai/Ppk_model');
+        $this->load->model('DataDiri_model');
+
+        $data['pegawai'] = $this->DataPegawai_model->getPegawaiByNik($nik);
+
+        // Ambil data pimpinan (User yang login / MSDI)
+        $data['pimpinan'] = $this->DataDiri_model->getDataByNik($this->session->userdata('nik'));
+
+        // Ambil Nilai Akhir terbaru yang predikatnya Minus (sebagai referensi periode)
+        $this->db->where('nik', $nik);
+        $this->db->where('predikat', 'Minus');
+        $this->db->order_by('periode_akhir', 'DESC');
+        $nilai_akhir = $this->db->get('nilai_akhir')->row();
+        $data['nilai_akhir'] = $nilai_akhir;
+
+        // TAMBAHAN: Ambil periode_ppk dari ppk_responses (DIPINDAHKAN KE ATAS)
+        $ppk_resp = $this->db->select('periode_ppk')->where('nik', $nik)->get('ppk_responses')->row();
+        $data['periode_ppk_response'] = $ppk_resp ? $ppk_resp->periode_ppk : null;
+
+        // Ambil data PPK
+        $data['ppk'] = null;
+        $data['sasaran'] = [];
+
+        // LOGIKA BARU: Load PPK berdasarkan NIK dan Periode PPK dari ppk_responses
+        if (!empty($data['periode_ppk_response'])) {
+            $this->db->where('nik', $nik);
+            $this->db->where('periode_ppk', $data['periode_ppk_response']);
+            $ppk_data = $this->db->get('ppk')->row();
+
+            if ($ppk_data) {
+                $data['ppk'] = $ppk_data;
+                if (isset($ppk_data->detail_sasaran) && !empty($ppk_data->detail_sasaran)) {
+                    $data['sasaran'] = json_decode($ppk_data->detail_sasaran, true) ?? [];
+                }
+            }
+        }
+
+        $data['judul'] = "Formulir Program Peningkatan Kinerja";
         $this->load->view('layout/header', $data);
-        $this->load->view('administrator/detailppk', $data);
+        $this->load->view('administrator/ppk_msdiformulir', $data);
         $this->load->view('layout/footer', $data);
+    }
+
+    public function simpan_ppk_msdi()
+    {
+        $this->load->model('pegawai/Ppk_model');
+        $this->load->library('form_validation');
+
+        $this->form_validation->set_rules('nik', 'NIK', 'required');
+        $nik = $this->input->post('nik');
+
+        if ($this->form_validation->run() == FALSE) {
+            $this->session->set_flashdata('error', validation_errors());
+            redirect('Administrator/ppk_msdiformulir/' . $nik);
+        } else {
+            $data = [
+                'nik' => $nik,
+                'periode_ppk' => $this->input->post('periode_ppk'),
+                'status_msdi' => $this->input->post('status_msdi') ? 'Disetujui' : 'Belum Disetujui'
+            ];
+
+            $result = $this->Ppk_model->save_or_update_ppk($data);
+
+            if ($result) {
+                $this->session->set_flashdata('success', 'Verifikasi MSDI berhasil disimpan.');
+            } else {
+                $this->session->set_flashdata('error', 'Gagal menyimpan verifikasi.');
+            }
+
+            redirect('Administrator/ppk_msdiformulir/' . $nik);
+        }
     }
 
     public function evaluasi_ppk($nik = null)

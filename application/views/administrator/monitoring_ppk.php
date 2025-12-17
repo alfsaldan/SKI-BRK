@@ -53,8 +53,9 @@
                                         <th>NIK</th>
                                         <th>Nama</th>
                                         <th>Jabatan</th>
-                                        <th>Unit Kerja</th>
+                                        <th>Unit Kantor</th>
                                         <th>Tahapan PPK</th>
+                                        <th>Periode PPK</th> <!-- TAMBAHAN KOLOM -->
                                         <th>Predikat</th>
                                         <th>Predikat Periodik</th>
                                         <th>Status</th>
@@ -159,13 +160,14 @@
                     const parts = v.split('|');
                     d.awal = parts[0] || '';
                     d.akhir = parts[1] || '';
+                },
+                error: function(xhr, status, error) {
+                    console.error('getMonitoringPPKData error', xhr.responseText || status || error);
+                    try {
+                        console.log(JSON.parse(xhr.responseText));
+                    } catch (e) {}
+                    alert('Ajax error saat memuat data. Buka console untuk detail.');
                 }
-                    ,
-                    error: function(xhr, status, error) {
-                        console.error('getMonitoringPPKData error', xhr.responseText || status || error);
-                        try { console.log(JSON.parse(xhr.responseText)); } catch (e) {}
-                        alert('Ajax error saat memuat data. Buka console untuk detail.');
-                    }
             },
             columns: [{
                     data: null,
@@ -175,14 +177,28 @@
                     orderable: false,
                     searchable: false
                 },
-                { data: 'nik' },
-                { data: 'nama' },
-                { data: 'jabatan' },
-                { data: 'unit_kerja' },
+                {
+                    data: 'nik'
+                },
+                {
+                    data: 'nama'
+                },
+                {
+                    data: 'jabatan'
+                },
+                {
+                    data: 'unit_kantor'
+                },
                 {
                     data: 'tahap',
                     render: function(data) {
                         return (data && data != '0') ? 'Tahap ' + data : '-';
+                    }
+                },
+                {
+                    data: 'periode_ppk', // TAMBAHAN DATA
+                    render: function(data) {
+                        return data ? data : '-';
                     }
                 },
                 {
@@ -196,11 +212,18 @@
                     }
                 },
                 {
-                    data: 'predikat_periodik', // Predikat Periodik (Real Data)
+                    data: 'predikat_list', // Predikat Periodik (List)
                     render: function(data, type, row) {
-                        if (!data) return '-';
-                        // Warna badge bisa disesuaikan jika perlu
-                        return `<span class="badge bg-info">${data}</span>`;
+
+                        if (!data || data.length === 0) return '<span class="text-muted small">Belum ada predikat terbaru</span>';
+                        let html = '';
+                        data.forEach(function(p) {
+
+                            let badgeClass = 'badge bg-info';
+                            if (String(p).toLowerCase() === 'minus') badgeClass = 'badge bg-danger';
+                            html += `<span class="${badgeClass} mr-1">${p}</span>`;
+                        });
+                        return html;
                     }
                 },
                 {
@@ -215,9 +238,9 @@
                 {
                     data: null, // Aksi
                     render: function(data, type, row) {
-                        const formulirBtn = `<button class="btn btn-sm btn-info btn-detail" data-nik="${row.nik}"><i class="mdi mdi-file-document-outline"></i> Formulir</button>`;
-                        const evaluasiBtn = `<a href="<?= site_url('administrator/evaluasi_ppk') ?>/${row.nik}" class="btn btn-sm btn-success"><i class="mdi mdi-clipboard-check-outline"></i> Evaluasi</a>`;
-                        return `<div class="btn-group" role="group">${formulirBtn} ${evaluasiBtn}</div>`;
+                        const formulirBtn = `<button class="btn btn-sm btn-info btn-detail mr-1" style="min-width: 90px;" data-nik="${row.nik}"><i class="mdi mdi-file-document-outline"></i> Formulir</button>`;
+                        const evaluasiBtn = `<a href="<?= site_url('administrator/evaluasi_ppk') ?>/${row.nik}" class="btn btn-sm btn-success" style="min-width: 90px;"><i class="mdi mdi-clipboard-check-outline"></i> Evaluasi</a>`;
+                        return `<div class="d-flex justify-content-center">${formulirBtn}${evaluasiBtn}</div>`;
                     },
                     orderable: false,
                     searchable: false
@@ -248,12 +271,12 @@
                 table.ajax.reload();
             });
         }
-        
+
         // Aksi tombol detail
         $('#table-monitoring-ppk tbody').on('click', '.btn-detail', function() {
             const nik = $(this).data('nik');
             // Redirect ke halaman detail pegawai
-             window.location.href = '<?= site_url("Administrator/detailppk/") ?>' + nik;
+            window.location.href = '<?= site_url("Administrator/ppk_msdiformulir/") ?>' + nik;
         });
     });
 </script>

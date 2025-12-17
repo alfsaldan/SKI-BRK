@@ -53,7 +53,7 @@
                                         <th>NIK</th>
                                         <th>Nama</th>
                                         <th>Jabatan</th>
-                                        <th>Unit Kerja</th>
+                                        <th>Unit Kantor</th>
                                         <th>Predikat</th>
                                         <!-- <th>PPK</th> -->
                                         <th>Nama Penilai1</th>
@@ -250,7 +250,7 @@
                     data: 'jabatan'
                 },
                 {
-                    data: 'unit_kerja'
+                    data: 'unit_kantor'
                 },
                 {
                     data: 'predikat',
@@ -828,6 +828,13 @@
             params.append('nik', nik);
             params.append('id_ppk', id_ppk);
             params.append('answer', answer);
+            
+            // TAMBAHAN: Kirim tanggal akhir monitoring dari dropdown filter
+            const periodeVal = document.getElementById('filter_periode').value || '';
+            const parts = periodeVal.split('|');
+            const monitoring_akhir = parts[1] || ''; // Ambil tanggal akhir (YYYY-MM-DD)
+            params.append('monitoring_akhir', monitoring_akhir);
+
             if (window.CSRF && window.CSRF.name) params.append(window.CSRF.name, window.CSRF.hash);
 
             fetch('<?= site_url("Administrator/savePpkResponse") ?>', {

@@ -2733,7 +2733,38 @@ class Pegawai extends CI_Controller
         $nik = $this->session->userdata('nik');
         $data['pegawai'] = $this->Pegawai_model->getPegawaiByNik($nik);
         // Ambil list PPK berdasarkan NIK
-        $data['list_ppk'] = $this->Ppk_model->get_ppk_by_nik($nik);
+        $list_ppk = $this->Ppk_model->get_ppk_by_nik($nik);
+
+        // Logika untuk mengambil semua predikat dalam periode PPK
+        if (!empty($list_ppk)) {
+            foreach ($list_ppk as $ppk) {
+                $ppk->predikat_list = [];
+                if (!empty($ppk->periode_ppk)) {
+                    // Format string periode_ppk: "dd Month YYYY - dd Month YYYY"
+                    $parts = explode(' - ', $ppk->periode_ppk);
+                    if (count($parts) === 2) {
+                        $start = date('Y-m-d', strtotime($parts[0]));
+                        $end = date('Y-m-d', strtotime($parts[1]));
+
+                        // Ambil predikat dari nilai_akhir yang periode_akhir-nya ada di dalam range PPK
+                        $this->db->select('predikat');
+                        $this->db->from('nilai_akhir');
+                        $this->db->where('nik', $nik);
+                        $this->db->where('periode_akhir >=', $start);
+                        $this->db->where('periode_akhir <=', $end);
+                        $this->db->order_by('periode_akhir', 'ASC');
+                        $res = $this->db->get()->result();
+
+                        foreach ($res as $r) {
+                            if (!empty($r->predikat)) {
+                                $ppk->predikat_list[] = $r->predikat;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        $data['list_ppk'] = $list_ppk;
 
         $this->load->view('layoutpegawai/header');
         $this->load->view('pegawai/ppk_pegawai', $data);
@@ -2757,11 +2788,16 @@ class Pegawai extends CI_Controller
             if (isset($data['ppk']->detail_sasaran) && !empty($data['ppk']->detail_sasaran)) {
                 $data['sasaran'] = json_decode($data['ppk']->detail_sasaran, true) ?? [];
             }
+
+            // TAMBAHAN: Ambil periode_ppk dari ppk_responses
+            $ppk_resp = $this->db->select('periode_ppk')->where('nik', $nik)->get('ppk_responses')->row();
+            $data['periode_ppk_response'] = $ppk_resp ? $ppk_resp->periode_ppk : null;
         } else {
             // Jika baru
             $data['ppk'] = null;
             $data['sasaran'] = [];
             $data['nilai_akhir'] = null;
+            $data['periode_ppk_response'] = null;
         }
 
         $this->load->view('layoutpegawai/header');
@@ -2844,6 +2880,9 @@ class Pegawai extends CI_Controller
             $nik_pegawai = $data['nilai_akhir']->nik;
             $data['pegawai'] = $this->Pegawai_model->getPegawaiByNik($nik_pegawai);
 
+            // Ambil data penilai yang sedang login
+            $data['penilai'] = $this->Pegawai_model->getPegawaiByNik($this->session->userdata('nik'));
+
             // Ambil data PPK dan sasaran
             $data['ppk'] = $this->Ppk_model->get_ppk_by_id($id);
             
@@ -2852,6 +2891,10 @@ class Pegawai extends CI_Controller
             if (isset($data['ppk']->detail_sasaran) && !empty($data['ppk']->detail_sasaran)) {
                 $data['sasaran'] = json_decode($data['ppk']->detail_sasaran, true) ?? [];
             }
+
+            // TAMBAHAN: Ambil periode_ppk dari ppk_responses
+            $ppk_resp = $this->db->select('periode_ppk')->where('nik', $nik_pegawai)->get('ppk_responses')->row();
+            $data['periode_ppk_response'] = $ppk_resp ? $ppk_resp->periode_ppk : null;
         } else {
             show_404();
         }
@@ -2952,6 +2995,10 @@ class Pegawai extends CI_Controller
             if (isset($data['ppk']->detail_sasaran) && !empty($data['ppk']->detail_sasaran)) {
                 $data['sasaran'] = json_decode($data['ppk']->detail_sasaran, true) ?? [];
             }
+
+            // TAMBAHAN: Ambil periode_ppk dari ppk_responses
+            $ppk_resp = $this->db->select('periode_ppk')->where('nik', $nik_pegawai)->get('ppk_responses')->row();
+            $data['periode_ppk_response'] = $ppk_resp ? $ppk_resp->periode_ppk : null;
         } else {
             show_404();
         }

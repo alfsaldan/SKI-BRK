@@ -23,26 +23,51 @@
                         <div class="card-body">
                             
                             <!-- Nav Tabs -->
-                            <ul class="nav nav-tabs nav-bordered mb-3">
+                            <ul class="nav nav-tabs nav-bordered mb-0">
                                 <li class="nav-item">
-                                    <a href="#penilai1" data-toggle="tab" aria-expanded="true" class="nav-link active">
+                                    <a href="#penilai1" data-toggle="tab" aria-expanded="true" class="nav-link active text-info">
                                         <i class="mdi mdi-account-tie mr-1"></i> Sebagai Penilai I
                                     </a>
                                 </li>
                                 <?php if($is_pimpinan): ?>
                                 <li class="nav-item">
-                                    <a href="#pimpinan" data-toggle="tab" aria-expanded="false" class="nav-link">
+                                    <a href="#pimpinan" data-toggle="tab" aria-expanded="false" class="nav-link text-warning">
                                         <i class="mdi mdi-domain mr-1"></i> Sebagai Pimpinan Unit
                                     </a>
                                 </li>
                                 <?php endif; ?>
                             </ul>
 
-                            <div class="tab-content">
+                            <div class="tab-content pt-2">
                                 <!-- TAB PENILAI 1 -->
                                 <div class="tab-pane show active" id="penilai1">
                                     <h5 class="text-info mb-3">Daftar Pegawai yang Dinilai (Penilai I)</h5>
                                     <div class="table-responsive">
+                                        <?php
+                                        // Filter: hanya tampilkan jika pegawai ybs sudah mengisi respon (ada di ppk_responses)
+                                        $filtered_penilai1 = [];
+                                        if (!empty($list_ppk_penilai1)) {
+                                            $niks = [];
+                                            foreach($list_ppk_penilai1 as $r) $niks[] = $r->nik;
+                                            $niks = array_unique($niks);
+                                            
+                                            $map_responses = [];
+                                            if(!empty($niks)){
+                                                $this->db->select('nik, periode_ppk');
+                                                $this->db->where_in('nik', $niks);
+                                                $q = $this->db->get('ppk_responses');
+                                                foreach($q->result() as $resp){
+                                                    $map_responses[$resp->nik][] = $resp->periode_ppk;
+                                                }
+                                            }
+
+                                            foreach ($list_ppk_penilai1 as $row) {
+                                                if (isset($map_responses[$row->nik]) && in_array($row->periode_ppk, $map_responses[$row->nik])) {
+                                                    $filtered_penilai1[] = $row;
+                                                }
+                                            }
+                                        }
+                                        ?>
                                         <table class="table table-bordered table-hover display responsive nowrap" style="width:100%" id="tabel-ppk-penilai1">
                                             <thead class="thead-light text-center">
                                                 <tr>
@@ -57,8 +82,8 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <?php if(!empty($list_ppk_penilai1)): ?>
-                                                    <?php $no=1; foreach($list_ppk_penilai1 as $row): ?>
+                                                <?php if(!empty($filtered_penilai1)): ?>
+                                                    <?php $no=1; foreach($filtered_penilai1 as $row): ?>
                                                     <tr>
                                                         <td class="text-center"><?= $no++ ?></td>
                                                         <td><?= $row->nik ?></td>
@@ -96,6 +121,31 @@
                                 <div class="tab-pane" id="pimpinan">
                                     <h5 class="text-warning mb-3">Daftar Pegawai Unit Kerja (Pimpinan Unit)</h5>
                                     <div class="table-responsive">
+                                        <?php
+                                        // Filter: hanya tampilkan jika pegawai ybs sudah mengisi respon
+                                        $filtered_pimpinan = [];
+                                        if (!empty($list_ppk_pimpinan)) {
+                                            $niks = [];
+                                            foreach($list_ppk_pimpinan as $r) $niks[] = $r->nik;
+                                            $niks = array_unique($niks);
+                                            
+                                            $map_responses = [];
+                                            if(!empty($niks)){
+                                                $this->db->select('nik, periode_ppk');
+                                                $this->db->where_in('nik', $niks);
+                                                $q = $this->db->get('ppk_responses');
+                                                foreach($q->result() as $resp){
+                                                    $map_responses[$resp->nik][] = $resp->periode_ppk;
+                                                }
+                                            }
+
+                                            foreach ($list_ppk_pimpinan as $row) {
+                                                if (isset($map_responses[$row->nik]) && in_array($row->periode_ppk, $map_responses[$row->nik])) {
+                                                    $filtered_pimpinan[] = $row;
+                                                }
+                                            }
+                                        }
+                                        ?>
                                         <table class="table table-bordered table-hover display responsive nowrap" style="width:100%" id="tabel-ppk-pimpinan">
                                             <thead class="thead-light text-center">
                                                 <tr>
@@ -110,8 +160,8 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <?php if(!empty($list_ppk_pimpinan)): ?>
-                                                    <?php $no=1; foreach($list_ppk_pimpinan as $row): ?>
+                                                <?php if(!empty($filtered_pimpinan)): ?>
+                                                    <?php $no=1; foreach($filtered_pimpinan as $row): ?>
                                                     <tr>
                                                         <td class="text-center"><?= $no++ ?></td>
                                                         <td><?= $row->nik ?></td>

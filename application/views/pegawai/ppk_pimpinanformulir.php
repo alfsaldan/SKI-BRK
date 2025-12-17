@@ -28,7 +28,9 @@
                                     <input type="hidden" name="id_nilai_akhir" value="<?= $nilai_akhir->id ?? '' ?>">
                                     <?php
                                     $periode_ppk_string = '';
-                                    if (isset($nilai_akhir->periode_awal) && isset($nilai_akhir->periode_akhir)) {
+                                    if (!empty($periode_ppk_response)) {
+                                        $periode_ppk_string = $periode_ppk_response;
+                                    } elseif (isset($nilai_akhir->periode_awal) && isset($nilai_akhir->periode_akhir)) {
                                         // Format "dd Month YYYY - dd Month YYYY"
                                         $start_date = date('Y-m-d', strtotime($nilai_akhir->periode_akhir . ' +1 day'));
                                         $end_date = date('Y-m-d', strtotime($start_date . ' +6 months -1 day'));
@@ -59,9 +61,9 @@
                                                 </div>
                                             </div>
                                             <div class="form-group row mb-2">
-                                                <label class="col-sm-4 col-form-label font-weight-medium">Unit Kerja</label>
+                                                <label class="col-sm-4 col-form-label font-weight-medium">Unit Kantor</label>
                                                 <div class="col-sm-8">
-                                                    <p class="form-control-plaintext mb-0"><?= isset($pegawai->unit_kerja) ? $pegawai->unit_kerja : '-' ?></p>
+                                                    <p class="form-control-plaintext mb-0"><?= isset($pegawai->unit_kantor) ? $pegawai->unit_kantor : '-' ?></p>
                                                 </div>
                                             </div>
                                         </div>

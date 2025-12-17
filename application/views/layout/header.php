@@ -213,18 +213,20 @@
         }
 
         /* Force dropdown container tetap visible */
-        body:not(.enlarged) #sidebar-menu li.active > ul {
+        body:not(.enlarged) #sidebar-menu li.active>ul {
             display: block !important;
         }
 
         /* Fix: Saat sidebar collapsed, sembunyikan dropdown aktif dan text */
-        body.enlarged #sidebar-menu li.active > ul {
+        body.enlarged #sidebar-menu li.active>ul {
             display: none !important;
         }
-        body.enlarged #sidebar-menu li.active:hover > ul {
+
+        body.enlarged #sidebar-menu li.active:hover>ul {
             display: block !important;
         }
-        body.enlarged #sidebar-menu > ul > li > a span {
+
+        body.enlarged #sidebar-menu>ul>li>a span {
             display: none !important;
         }
     </style>
@@ -372,7 +374,9 @@
                             <?php
                             $peningkatanKinerjaActive = ($activeController == 'administrator' && in_array($activeMethod, [
                                 'verifikasi_ppk',
-                                'monitoring_ppk'
+                                'monitoring_ppk',
+                                'ppk_msdiformulir',
+                                'ppk_msdievaluasi'
                             ]));
                             ?>
                             <li class="<?= $peningkatanKinerjaActive ? 'active' : '' ?>">
@@ -388,7 +392,7 @@
                                         </a>
                                     </li>
 
-                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['monitoring_ppk'])) ? 'active' : '' ?>">
+                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['monitoring_ppk', 'ppk_msdiformulir', 'ppk_msdievaluasi'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/monitoring_ppk') ?>">
                                             <i class="mdi mdi-account-badge-alert-outline"></i>
                                             <span> Monitoring PPK </span>
@@ -435,7 +439,8 @@
                             'monitoringindividu',
                             'caripenilaianbulanan',
                             'ppk_pegawai',
-                            'ppk_pegawaiformulir'
+                            'ppk_pegawaiformulir',
+                            'ppk_pegawaievaluasi'
                         ]));
                         ?>
                         <li class="<?= $halamanPegawaiActive ? 'active' : '' ?>">
@@ -462,9 +467,9 @@
                                         <span> Monitoring Individu </span>
                                     </a>
                                 </li>
-                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_pegawai', 'ppk_pegawaiformulir'])) ? 'active' : '' ?>">
+                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_pegawai', 'ppk_pegawaiformulir', 'ppk_pegawaievaluasi'])) ? 'active' : '' ?>">
                                     <a href="<?= base_url('pegawai/ppk_pegawai') ?>">
-                                        <i class="mdi mdi-account-badge-alert mr-1"></i>
+                                        <i class="mdi mdi-account-badge-alert-outline"></i>
                                         <span> Program PPK </span>
                                     </a>
                                 </li>
@@ -475,7 +480,12 @@
                         $halamanPenilaiActive = ($activeController == 'pegawai' && in_array($activeMethod, [
                             'nilaipegawai',
                             'nilaipegawaidetail',
-                            'nilaipegawaidetail2'
+                            'nilaipegawaidetail2',
+                            'ppk_penilai',
+                            'ppk_penilaiformulir',
+                            'ppk_pimpinanformulir',
+                            'ppk_penilaievaluasi',
+                            'ppk_pimpinanevaluasi'
                         ]));
                         ?>
                         <li class="<?= $halamanPenilaiActive ? 'active' : '' ?>">
@@ -488,6 +498,12 @@
                                     <a href="<?= base_url('pegawai/nilaipegawai') ?>">
                                         <i class="mdi mdi-account-edit"></i>
                                         <span> Nilai Pegawai </span>
+                                    </a>
+                                </li>
+                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_penilai', 'ppk_penilaiformulir', 'ppk_pimpinanformulir', 'ppk_penilaievaluasi', 'ppk_pimpinanevaluasi'])) ? 'active' : '' ?>">
+                                    <a href="<?= base_url('pegawai/ppk_penilai') ?>">
+                                        <i class="mdi mdi-account-badge-alert"></i>
+                                        <span> Nilai PPK </span>
                                     </a>
                                 </li>
                             </ul>
@@ -514,4 +530,5 @@
         });
     </script>
 </body>
+
 </html>

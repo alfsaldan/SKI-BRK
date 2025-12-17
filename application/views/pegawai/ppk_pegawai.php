@@ -24,7 +24,25 @@
                             <h4 class="header-title mb-4 text-primary text-center font-weight-bold"> Riwayat Program Peningkatan Kinerja (PPK)
                             </h4>
                             <div class="table-responsive">
-                                <?php if(isset($list_ppk) && !empty($list_ppk)): ?>
+                                <?php
+                                // Filter data: hanya tampilkan jika periode_ppk ada di tabel ppk_responses untuk user ini
+                                $nik_session = $this->session->userdata('nik');
+                                $valid_periods = [];
+                                $q_resp = $this->db->select('periode_ppk')->where('nik', $nik_session)->get('ppk_responses');
+                                foreach ($q_resp->result() as $resp) {
+                                    $valid_periods[] = $resp->periode_ppk;
+                                }
+
+                                $filtered_ppk = [];
+                                if (isset($list_ppk) && !empty($list_ppk)) {
+                                    foreach ($list_ppk as $item) {
+                                        if (in_array($item->periode_ppk, $valid_periods)) {
+                                            $filtered_ppk[] = $item;
+                                        }
+                                    }
+                                }
+                                ?>
+                                <?php if (!empty($filtered_ppk)): ?>
                                 <table class="table table-bordered table-hover dt-responsive nowrap" id="tabel-ppk">
                                     <thead class="thead-light text-center">
                                         <tr>
@@ -38,17 +56,20 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php $no=1; foreach($list_ppk as $row): ?>
+                                        <?php $no=1; foreach($filtered_ppk as $row): ?>
                                             <tr>
                                                 <td class="text-center"><?= $no++ ?></td>
                                                 <td class="text-center">Tahap <?= $row->tahap ?? '-' ?></td>
                                                 <td class="text-center"><span class="badge badge-danger"><?= $row->predikat ?></span></td>
                                                 <td class="text-center"><?= $row->periode_ppk ?></td>
                                                 <td class="text-center">
-                                                    <?php if (!empty($row->predikat_periodik)): ?>
-                                                        <span class="badge badge-info"><?= $row->predikat_periodik ?></span>
+                                                    <?php if (!empty($row->predikat_list)): ?>
+                                                        <?php foreach ($row->predikat_list as $p): ?>
+                                                            <?php $badge_cls = (strtolower($p) == 'minus') ? 'badge-danger' : 'badge-info'; ?>
+                                                            <span class="badge <?= $badge_cls ?> mr-1"><?= $p ?></span>
+                                                        <?php endforeach; ?>
                                                     <?php else: ?>
-                                                        -
+                                                        <span class="text-muted small">Belum ada predikat terbaru</span>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td class="text-center">
