@@ -46,22 +46,24 @@
                                 <button id="btn_refresh" class="btn btn-primary">Refresh</button>
                             </div>
 
-                            <table id="table-verifikasi-ppk" class="table table-bordered table-striped" style="width:100%">
-                                <thead>
-                                    <tr>
-                                        <th>NO</th>
-                                        <th>NIK</th>
-                                        <th>Nama</th>
-                                        <th>Jabatan</th>
-                                        <th>Unit Kantor</th>
-                                        <th>Predikat</th>
-                                        <!-- <th>PPK</th> -->
-                                        <th>Nama Penilai1</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                            <div class="table-responsive">
+                                <table id="table-verifikasi-ppk" class="table table-bordered table-striped" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>NO</th>
+                                            <th>NIK</th>
+                                            <th>Nama</th>
+                                            <th>Jabatan</th>
+                                            <th>Unit Kantor</th>
+                                            <th>Predikat</th>
+                                            <!-- <th>PPK</th> -->
+                                            <th>Nama Penilai1</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
 
                         </div>
                     </div>
@@ -79,16 +81,18 @@
                                 <button id="btn_add_syarat" class="btn btn-success btn-sm">Tambah Syarat</button>
                             </div>
 
-                            <table id="table-syarat" class="table table-bordered table-striped" style="width:100%">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Syarat</th>
-                                        <th style="width:120px">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                            <div class="table-responsive">
+                                <table id="table-syarat" class="table table-bordered table-striped" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Syarat</th>
+                                            <th style="width:120px">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
 
                         </div>
                     </div>
