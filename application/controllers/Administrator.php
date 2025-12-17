@@ -3430,6 +3430,10 @@ class Administrator extends CI_Controller
             }
         }
 
+        // Ambil periode dari URL untuk tombol "Kembali"
+        $data['periode_awal_kembali'] = $this->input->get('awal');
+        $data['periode_akhir_kembali'] = $this->input->get('akhir');
+
         $data['judul'] = "Formulir Program Peningkatan Kinerja";
         $this->load->view('layout/header', $data);
         $this->load->view('administrator/ppk_msdiformulir', $data);
@@ -3451,7 +3455,8 @@ class Administrator extends CI_Controller
             $data = [
                 'nik' => $nik,
                 'periode_ppk' => $this->input->post('periode_ppk'),
-                'status_msdi' => $this->input->post('status_msdi') ? 'Disetujui' : 'Belum Disetujui'
+                'status_msdi' => $this->input->post('status_msdi') ? 'Disetujui' : 'Belum Disetujui',
+                'catatan_msdi' => $this->input->post('catatan_msdi'),
             ];
 
             $result = $this->Ppk_model->save_or_update_ppk($data);
@@ -3473,6 +3478,10 @@ class Administrator extends CI_Controller
             $this->load->model('DataPegawai_model');
             $data['pegawai'] = $this->DataPegawai_model->getPegawaiByNik($nik);
         }
+        // Ambil periode dari URL untuk tombol "Kembali"
+        $data['periode_awal_kembali'] = $this->input->get('awal');
+        $data['periode_akhir_kembali'] = $this->input->get('akhir');
+
         $this->load->view('layout/header');
         $this->load->view('administrator/evaluasi_ppk', $data);
         $this->load->view('layout/footer');

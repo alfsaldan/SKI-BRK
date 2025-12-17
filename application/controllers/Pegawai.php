@@ -2776,28 +2776,53 @@ class Pegawai extends CI_Controller
         $nik = $this->session->userdata('nik');
         $data['pegawai'] = $this->Pegawai_model->getPegawaiByNik($nik);
 
-        if ($id) {
-            // Ambil data nilai_akhir untuk referensi periode dll agar id_nilai_akhir tidak kosong di view
-            $data['nilai_akhir'] = $this->db->get_where('nilai_akhir', ['id' => $id])->row();
+        $data['ppk'] = null;
+        $data['nilai_akhir'] = null;
+        $data['sasaran'] = [];
+        $data['periode_ppk_response'] = null;
 
-            // Jika edit, ambil data PPK dan sasaran
-            $data['ppk'] = $this->Ppk_model->get_ppk_by_id($id);
-            
-            // Decode detail_sasaran dari JSON jika ada (sesuai format simpan)
-            $data['sasaran'] = [];
-            if (isset($data['ppk']->detail_sasaran) && !empty($data['ppk']->detail_sasaran)) {
-                $data['sasaran'] = json_decode($data['ppk']->detail_sasaran, true) ?? [];
+        if ($id) {
+            // Strategi 1: Cek apakah ID adalah id_nilai_akhir
+            $nilai_akhir = $this->db->get_where('nilai_akhir', ['id' => $id])->row();
+
+            if ($nilai_akhir) {
+                $data['nilai_akhir'] = $nilai_akhir;
+                
+                // Cari PPK berdasarkan NIK dan Periode (derived from ppk_responses)
+                $ppk_resp = $this->db->select('periode_ppk')->where('nik', $nik)->order_by('id', 'DESC')->get('ppk_responses')->row();
+                $periode_ppk = $ppk_resp ? $ppk_resp->periode_ppk : null;
+                $data['periode_ppk_response'] = $periode_ppk;
+
+                if ($periode_ppk) {
+                    $this->db->where('nik', $nik);
+                    $this->db->where('periode_ppk', $periode_ppk);
+                    $data['ppk'] = $this->db->get('ppk')->row();
+                }
+            } else {
+                // Strategi 2: Jika bukan nilai_akhir, cek apakah ID adalah id_ppk
+                $ppk = $this->Ppk_model->get_ppk_by_id($id);
+                if ($ppk) {
+                    $data['ppk'] = $ppk;
+                    $data['periode_ppk_response'] = $ppk->periode_ppk;
+                    
+                    // Cari nilai_akhir yang relevan (sebelum periode PPK)
+                    if (!empty($ppk->periode_ppk)) {
+                        $parts = explode(' - ', $ppk->periode_ppk);
+                        if (count($parts) >= 1) {
+                            $start_date = date('Y-m-d', strtotime($parts[0]));
+                            $this->db->where('nik', $nik);
+                            $this->db->where('periode_akhir <', $start_date);
+                            $this->db->order_by('periode_akhir', 'DESC');
+                            $data['nilai_akhir'] = $this->db->get('nilai_akhir')->row();
+                        }
+                    }
+                }
             }
 
-            // TAMBAHAN: Ambil periode_ppk dari ppk_responses
-            $ppk_resp = $this->db->select('periode_ppk')->where('nik', $nik)->get('ppk_responses')->row();
-            $data['periode_ppk_response'] = $ppk_resp ? $ppk_resp->periode_ppk : null;
-        } else {
-            // Jika baru
-            $data['ppk'] = null;
-            $data['sasaran'] = [];
-            $data['nilai_akhir'] = null;
-            $data['periode_ppk_response'] = null;
+            // Decode sasaran jika data PPK ditemukan
+            if ($data['ppk'] && isset($data['ppk']->detail_sasaran) && !empty($data['ppk']->detail_sasaran)) {
+                $data['sasaran'] = json_decode($data['ppk']->detail_sasaran, true) ?? [];
+            }
         }
 
         $this->load->view('layoutpegawai/header');

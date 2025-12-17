@@ -145,8 +145,8 @@
                                                     <?php foreach ($sasaran as $index => $s): ?>
                                                         <tr>
                                                             <td class="text-center row-number"><?= $index + 1 ?></td>
-                                                         <td class="align-middle"><?= htmlspecialchars($s['sasaran_bulan'] ?? '') ?></td>
-                                                         <td class="align-middle"><?= nl2br(htmlspecialchars($s['rincian_tindakan'] ?? '')) ?></td>
+                                                            <td class="align-middle"><?= htmlspecialchars($s['sasaran_bulan'] ?? '') ?></td>
+                                                            <td class="align-middle"><?= nl2br(htmlspecialchars($s['rincian_tindakan'] ?? '')) ?></td>
                                                         </tr>
                                                     <?php endforeach; ?>
                                                 <?php else: ?>
@@ -156,6 +156,14 @@
                                                 <?php endif; ?>
                                             </tbody>
                                         </table>
+                                    </div>
+
+                                    <hr class="my-0">
+
+                                    <!-- Bagian Tambahan: Catatan Divisi MSDI -->
+                                    <h5 class="text-primary mb-3 mt-3"><i class="mdi mdi-comment-text-outline mr-1"></i> Catatan Divisi MSDI</h5>
+                                    <div class="form-group mb-4">
+                                        <textarea class="form-control" name="catatan_msdi" rows="3" placeholder="Tuliskan catatan evaluasi dari Divisi MSDI..."><?= $ppk->catatan_msdi ?? '' ?></textarea>
                                     </div>
 
                                     <hr class="my-0">
@@ -237,7 +245,13 @@
                                     <!-- Tombol Simpan -->
                                     <div class="row mt-4">
                                         <div class="col-12 text-right">
-                                        <a href="<?= base_url('Administrator/monitoring_ppk') ?>" class="btn btn-secondary px-4"><i class="mdi mdi-arrow-left mr-1"></i> Kembali</a>
+                                            <?php
+                                            $kembali_url = base_url('Administrator/monitoring_ppk');
+                                            if (!empty($periode_awal_kembali) && !empty($periode_akhir_kembali)) {
+                                                $kembali_url .= '?awal=' . urlencode($periode_awal_kembali) . '&akhir=' . urlencode($periode_akhir_kembali);
+                                            }
+                                            ?>
+                                            <a href="<?= $kembali_url ?>" class="btn btn-secondary px-4"><i class="mdi mdi-arrow-left mr-1"></i> Kembali</a>
                                             <button type="submit" class="btn btn-primary px-4 ml-1"><i class="mdi mdi-content-save mr-1"></i> Simpan Formulir</button>
                                         </div>
                                     </div>

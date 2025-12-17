@@ -23,19 +23,19 @@
                         <div class="card-body">
                             <h4 class="header-title text-center mb-0 text-uppercase text-primary font-weight-bold">Formulir Program Peningkatan Kinerja</h4>
                             <hr>
- 
+
                             <form action="<?= base_url('pegawai/simpan_ppk') ?>" method="post" id="form-ppk">
                                 <input type="hidden" name="id_nilai_akhir" value="<?= $nilai_akhir->id ?? '' ?>">
                                 <?php
-                                    $periode_ppk_string = '';
-                                    if (!empty($periode_ppk_response)) {
-                                        $periode_ppk_string = $periode_ppk_response;
-                                    } elseif (isset($nilai_akhir->periode_awal) && isset($nilai_akhir->periode_akhir)) {
-                                        // Format "dd Month YYYY - dd Month YYYY"
-                                        $start_date = date('Y-m-d', strtotime($nilai_akhir->periode_akhir . ' +1 day'));
-                                        $end_date = date('Y-m-d', strtotime($start_date . ' +6 months -1 day'));
-                                        $periode_ppk_string = date('d F Y', strtotime($start_date)) . ' - ' . date('d F Y', strtotime($end_date));
-                                    }
+                                $periode_ppk_string = '';
+                                if (!empty($periode_ppk_response)) {
+                                    $periode_ppk_string = $periode_ppk_response;
+                                } elseif (isset($nilai_akhir->periode_awal) && isset($nilai_akhir->periode_akhir)) {
+                                    // Format "dd Month YYYY - dd Month YYYY"
+                                    $start_date = date('Y-m-d', strtotime($nilai_akhir->periode_akhir . ' +1 day'));
+                                    $end_date = date('Y-m-d', strtotime($start_date . ' +6 months -1 day'));
+                                    $periode_ppk_string = date('d F Y', strtotime($start_date)) . ' - ' . date('d F Y', strtotime($end_date));
+                                }
                                 ?>
                                 <!-- Bagian 1: Data Pegawai & Periode -->
                                 <div class="row mb-3">
@@ -172,6 +172,15 @@
 
                                 <hr class="my-0">
 
+                                <!-- Bagian Tambahan: Catatan Divisi MSDI -->
+                                <?php if (!empty($ppk) && !empty($ppk->catatan_msdi)): ?>
+                                    <h5 class="text-primary mb-3 mt-3"><i class="mdi mdi-comment-text-outline mr-1"></i> Catatan Divisi MSDI</h5>
+                                    <div class="alert alert-info" role="alert">
+                                        <?= nl2br(htmlspecialchars($ppk->catatan_msdi)) ?>
+                                    </div>
+                                    <hr class="my-0">
+                                <?php endif; ?>
+
                                 <!-- Bagian 5: Status Verifikasi -->
                                 <h5 class="text-success mb-3"><i class="mdi mdi-check-decagram mr-1"></i> Status Verifikasi</h5>
                                 <div class="row text-center">
@@ -186,11 +195,11 @@
 
                                                         <!-- Area Tanda Tangan Interaktif -->
                                                         <div id="btn-signature" class="d-flex flex-column align-items-center justify-content-center p-2" style="border: 2px dashed #ccc; border-radius: 8px; cursor: pointer; min-height: 80px; transition: all 0.3s;">
-                                                            <div class="unsigned-content <?= (isset($ppk->status_pegawai) && $ppk->status_pegawai == 'Disetujui') ? 'd-none' : ''?>">
+                                                            <div class="unsigned-content <?= (isset($ppk->status_pegawai) && $ppk->status_pegawai == 'Disetujui') ? 'd-none' : '' ?>">
                                                                 <i class="mdi mdi-draw text-primary" style="font-size: 2rem;"></i>
                                                                 <div class="small text-muted mt-1">Klik untuk Tanda Tangan</div>
                                                             </div>
-                                                            <div class="signed-content <?= (isset($ppk->status_pegawai) && $ppk->status_pegawai == 'Disetujui') ? '' : 'd-none'?>">
+                                                            <div class="signed-content <?= (isset($ppk->status_pegawai) && $ppk->status_pegawai == 'Disetujui') ? '' : 'd-none' ?>">
                                                                 <div class="text-success" style="font-family: 'Brush Script MT', cursive; font-size: 1.4rem; line-height: 1.2;">
                                                                     <?= isset($pegawai->nama) ? $pegawai->nama : 'Agung' ?>
                                                                 </div>
@@ -207,7 +216,7 @@
                                             <div class="card-body p-3 text-center d-flex flex-column">
                                                 <h6 class="card-title font-weight-bold mb-3">Penilai I</h6>
                                                 <div class="flex-grow-1 d-flex justify-content-center align-items-center">
-                                                    <?php 
+                                                    <?php
                                                     $st_penilai1 = isset($ppk->status_penilai1) ? $ppk->status_penilai1 : 'Belum Disetujui';
                                                     $cls_penilai1 = ($st_penilai1 == 'Disetujui') ? 'badge-success' : (($st_penilai1 == 'Ditolak') ? 'badge-danger' : 'badge-secondary');
                                                     ?>

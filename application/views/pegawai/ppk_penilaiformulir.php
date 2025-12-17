@@ -172,6 +172,15 @@
 
                                 <hr class="my-0">
 
+                                <!-- Bagian Tambahan: Catatan Divisi MSDI -->
+                                <?php if (!empty($ppk) && !empty($ppk->catatan_msdi)): ?>
+                                    <h5 class="text-primary mb-3 mt-3"><i class="mdi mdi-comment-text-outline mr-1"></i> Catatan Divisi MSDI</h5>
+                                    <div class="alert alert-info" role="alert">
+                                        <?= nl2br(htmlspecialchars($ppk->catatan_msdi)) ?>
+                                    </div>
+                                    <hr class="my-0">
+                                <?php endif; ?>
+
                                 <!-- Bagian 5: Status Verifikasi -->
                                 <h5 class="text-success mb-3"><i class="mdi mdi-check-decagram mr-1"></i> Status Verifikasi</h5>
                                 <div class="row text-center">

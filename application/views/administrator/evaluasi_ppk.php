@@ -193,7 +193,13 @@
                                 <!-- Tombol Aksi -->
                                 <div class="row mt-4">
                                     <div class="col-12 text-right">
-                                        <a href="<?= base_url('administrator/monitoring_ppk') ?>" class="btn btn-secondary mr-2"><i class="mdi mdi-arrow-left"></i> Kembali</a>
+                                        <?php
+                                        $kembali_url = base_url('administrator/monitoring_ppk');
+                                        if (isset($periode_awal_kembali) && isset($periode_akhir_kembali)) {
+                                            $kembali_url .= '?awal=' . urlencode($periode_awal_kembali) . '&akhir=' . urlencode($periode_akhir_kembali);
+                                        }
+                                        ?>
+                                        <a href="<?= $kembali_url ?>" class="btn btn-secondary mr-2"><i class="mdi mdi-arrow-left"></i> Kembali</a>
                                         <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save"></i> Simpan Evaluasi</button>
                                     </div>
                                 </div>

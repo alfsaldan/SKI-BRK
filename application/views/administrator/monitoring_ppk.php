@@ -46,14 +46,14 @@
                                 <button id="btn_refresh" class="btn btn-primary">Refresh</button>
                             </div>
 
-                            <table id="table-monitoring-ppk" class="table table-bordered table-striped" style="width:100%">
+                            <table id="table-monitoring-ppk" class="table table-bordered table-striped display responsive nowrap table-centered" style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>No</th>
                                         <th>NIK</th>
                                         <th>Nama</th>
-                                        <th>Jabatan</th>
-                                        <th>Unit Kantor</th>
+                                        <th width="20%">Jabatan</th>
+                                        <th width="20%">Unit Kantor</th>
                                         <th>Tahapan PPK</th>
                                         <th>Periode PPK</th> <!-- TAMBAHAN KOLOM -->
                                         <th>Predikat</th>
@@ -78,6 +78,8 @@
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 
 <script>
     // Pastikan dropdown periode hanya menampilkan periode Oktober-Desember.
@@ -153,6 +155,7 @@
         const table = $('#table-monitoring-ppk').DataTable({
             processing: true,
             serverSide: false,
+            responsive: true,
             ajax: {
                 url: '<?= site_url('Administrator/getMonitoringPPKData') ?>',
                 data: function(d) {
@@ -184,21 +187,27 @@
                     data: 'nama'
                 },
                 {
-                    data: 'jabatan'
+                    data: 'jabatan',
+                    render: function(data, type, row) {
+                        return '<div style="white-space:normal;">' + (data ? data : '-') + '</div>';
+                    }
                 },
                 {
-                    data: 'unit_kantor'
+                    data: 'unit_kantor',
+                    render: function(data, type, row) {
+                        return '<div style="white-space:normal;">' + (data ? data : '-') + '</div>';
+                    }
                 },
                 {
                     data: 'tahap',
                     render: function(data) {
-                        return (data && data != '0') ? 'Tahap ' + data : '-';
+                        return '<div style="white-space:normal;">' + ((data && data != '0') ? 'Tahap ' + data : '-') + '</div>';
                     }
                 },
                 {
                     data: 'periode_ppk', // TAMBAHAN DATA
                     render: function(data) {
-                        return data ? data : '-';
+                        return '<div style="white-space:normal;">' + (data ? data : '-') + '</div>';
                     }
                 },
                 {
@@ -238,9 +247,15 @@
                 {
                     data: null, // Aksi
                     render: function(data, type, row) {
-                        const formulirBtn = `<button class="btn btn-sm btn-info btn-detail mr-1" style="min-width: 90px;" data-nik="${row.nik}"><i class="mdi mdi-file-document-outline"></i> Formulir</button>`;
-                        const evaluasiBtn = `<a href="<?= site_url('administrator/evaluasi_ppk') ?>/${row.nik}" class="btn btn-sm btn-success" style="min-width: 90px;"><i class="mdi mdi-clipboard-check-outline"></i> Evaluasi</a>`;
-                        return `<div class="d-flex justify-content-center">${formulirBtn}${evaluasiBtn}</div>`;
+                        const periodeVal = document.getElementById('filter_periode').value || '';
+                        const periodeParts = periodeVal.split('|');
+                        const awal = encodeURIComponent(periodeParts[0] || '');
+                        const akhir = encodeURIComponent(periodeParts[1] || '');
+                        const periodeQuery = `?awal=${awal}&akhir=${akhir}`;
+
+                        const formulirBtn = `<a href="<?= site_url('administrator/ppk_msdiformulir') ?>/${row.nik}${periodeQuery}" class="btn btn-sm btn-info mb-1" style="min-width: 90px;"><i class="mdi mdi-file-document-outline"></i> Formulir</a>`;
+                        const evaluasiBtn = `<a href="<?= site_url('administrator/evaluasi_ppk') ?>/${row.nik}${periodeQuery}" class="btn btn-sm btn-success" style="min-width: 90px;"><i class="mdi mdi-clipboard-check-outline"></i> Evaluasi</a>`;
+                        return `<div class="d-flex flex-column">${formulirBtn}${evaluasiBtn}</div>`;
                     },
                     orderable: false,
                     searchable: false
@@ -272,11 +287,5 @@
             });
         }
 
-        // Aksi tombol detail
-        $('#table-monitoring-ppk tbody').on('click', '.btn-detail', function() {
-            const nik = $(this).data('nik');
-            // Redirect ke halaman detail pegawai
-            window.location.href = '<?= site_url("Administrator/ppk_msdiformulir/") ?>' + nik;
-        });
     });
 </script>
