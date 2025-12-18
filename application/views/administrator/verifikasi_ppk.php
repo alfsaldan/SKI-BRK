@@ -46,24 +46,22 @@
                                 <button id="btn_refresh" class="btn btn-primary">Refresh</button>
                             </div>
 
-                            <div class="table-responsive">
-                                <table id="table-verifikasi-ppk" class="table table-bordered table-striped" style="width:100%">
-                                    <thead>
-                                        <tr>
-                                            <th>NO</th>
-                                            <th>NIK</th>
-                                            <th>Nama</th>
-                                            <th>Jabatan</th>
-                                            <th>Unit Kantor</th>
-                                            <th>Predikat</th>
-                                            <!-- <th>PPK</th> -->
-                                            <th>Nama Penilai1</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
+                            <table id="table-verifikasi-ppk" class="table table-bordered table-striped" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>NO</th>
+                                        <th>NIK</th>
+                                        <th>Nama</th>
+                                        <th>Jabatan</th>
+                                        <th>Unit Kerja</th>
+                                        <th>Predikat</th>
+                                        <!-- <th>PPK</th> -->
+                                        <th>Nama Penilai1</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
 
                         </div>
                     </div>
@@ -81,18 +79,16 @@
                                 <button id="btn_add_syarat" class="btn btn-success btn-sm">Tambah Syarat</button>
                             </div>
 
-                            <div class="table-responsive">
-                                <table id="table-syarat" class="table table-bordered table-striped" style="width:100%">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Syarat</th>
-                                            <th style="width:120px">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody></tbody>
-                                </table>
-                            </div>
+                            <table id="table-syarat" class="table table-bordered table-striped" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Syarat</th>
+                                        <th style="width:120px">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
 
                         </div>
                     </div>
@@ -254,7 +250,7 @@
                     data: 'jabatan'
                 },
                 {
-                    data: 'unit_kantor'
+                    data: 'unit_kerja'
                 },
                 {
                     data: 'predikat',
@@ -832,13 +828,6 @@
             params.append('nik', nik);
             params.append('id_ppk', id_ppk);
             params.append('answer', answer);
-            
-            // TAMBAHAN: Kirim tanggal akhir monitoring dari dropdown filter
-            const periodeVal = document.getElementById('filter_periode').value || '';
-            const parts = periodeVal.split('|');
-            const monitoring_akhir = parts[1] || ''; // Ambil tanggal akhir (YYYY-MM-DD)
-            params.append('monitoring_akhir', monitoring_akhir);
-
             if (window.CSRF && window.CSRF.name) params.append(window.CSRF.name, window.CSRF.hash);
 
             fetch('<?= site_url("Administrator/savePpkResponse") ?>', {

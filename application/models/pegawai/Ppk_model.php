@@ -10,6 +10,7 @@ class Ppk_model extends CI_Model
 
         $this->db->select('na.id, na.periode_awal, na.periode_akhir, na.predikat');
         // Ambil data status dari tabel ppk
+        $this->db->select('ppk.id as id_ppk');
         $this->db->select('COALESCE(ppk.tahap, ppk_responses.tahap) as tahap, ppk.status_pegawai, ppk.status_penilai1, ppk.status_msdi, ppk.status_pimpinanunit', FALSE);
 
         // Format Periode
@@ -94,5 +95,32 @@ class Ppk_model extends CI_Model
         $this->db->order_by('na.periode_akhir', 'DESC');
 
         return $this->db->get()->result();
+    }
+
+    // --- Tambahan untuk PPK Evaluasi ---
+
+    public function get_ppk_row($id_ppk)
+    {
+        return $this->db->get_where('ppk', ['id' => $id_ppk])->row();
+    }
+
+    public function get_evaluasi_by_ppk($id_ppk)
+    {
+        return $this->db->get_where('ppk_evaluasi', ['id_ppk' => $id_ppk])->row();
+    }
+
+    public function save_evaluasi($data)
+    {
+        $this->db->where('id_ppk', $data['id_ppk']);
+        $query = $this->db->get('ppk_evaluasi');
+
+        if ($query->num_rows() > 0) {
+            $id = $query->row()->id;
+            $this->db->where('id', $id);
+            $data['updated_at'] = date('Y-m-d H:i:s');
+            return $this->db->update('ppk_evaluasi', $data);
+        } else {
+            return $this->db->insert('ppk_evaluasi', $data);
+        }
     }
 }
