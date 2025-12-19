@@ -74,6 +74,7 @@
                                                 </td>
                                                 <td class="text-center">
                                                     <?php
+                                                        // Status Formulir
                                                         $s_pegawai = $row->status_pegawai ?? null;
                                                         $s_penilai1 = $row->status_penilai1 ?? null;
                                                         $s_msdi = $row->status_msdi ?? null;
@@ -92,8 +93,21 @@
                                                             $status = 'Menunggu Persetujuan';
                                                             $badge_class = 'warning';
                                                         }
+                                                        $formulirBadge = '<span class="badge badge-'.$badge_class.'">'.$status.'</span>';
+
+                                                        // Status Kesimpulan
+                                                        $kesimpulanBadge = '';
+                                                        if (isset($row->kesimpulan) && $row->kesimpulan) {
+                                                            $isBerhasil = $row->kesimpulan === 'Berhasil';
+                                                            $kClass = $isBerhasil ? 'badge-success' : 'badge-secondary';
+                                                            $kesimpulanText = $isBerhasil ? 'Berhasil' : 'Belum<br>Berhasil';
+                                                            $kesimpulanBadge = '<span class="badge '.$kClass.' mt-1">'.$kesimpulanText.'</span>';
+                                                        }
                                                     ?>
-                                                    <span class="badge badge-<?= $badge_class ?>"><?= $status ?></span>
+                                                    <div class="d-flex flex-column">
+                                                        <?= $formulirBadge ?>
+                                                        <?= $kesimpulanBadge ?>
+                                                    </div>
                                                 </td>
                                                 <td class="text-center">
                                                     <a href="<?= base_url('pegawai/ppk_pegawaiformulir/'.$row->id) ?>" class="btn btn-sm btn-primary">

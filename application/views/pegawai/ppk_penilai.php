@@ -77,7 +77,7 @@
                                                     <th>Jabatan</th>
                                                     <th>Tahap PPK</th>
                                                     <th>Periode</th>
-                                                    <th>Status Penilai I</th>
+                                                    <th>Status</th>
                                                     <th>Aksi</th>
                                                 </tr>
                                             </thead>
@@ -155,7 +155,7 @@
                                                     <th>Jabatan</th>
                                                     <th>Tahap PPK</th>
                                                     <th>Periode</th>
-                                                    <th>Status Pimpinan</th>
+                                                    <th>Status</th>
                                                     <th>Aksi</th>
                                                 </tr>
                                             </thead>
@@ -180,7 +180,7 @@
                                                             <a href="<?= base_url('pegawai/ppk_pimpinanformulir/'.$row->id_nilai_akhir) ?>" class="btn btn-sm btn-primary">
                                                                 <i class="mdi mdi-file-document-edit-outline mr-1"></i> Formulir
                                                             </a>
-                                                            <a href="<?= base_url('pegawai/ppk_penilaievaluasi/'.$row->id_nilai_akhir) ?>" class="btn btn-sm btn-info">
+                                                            <a href="<?= base_url('pegawai/ppk_pimpinanevaluasi/'.$row->id_nilai_akhir) ?>" class="btn btn-sm btn-info">
                                                                 <i class="mdi mdi-clipboard-check-outline mr-1"></i> Evaluasi
                                                             </a>
                                                         </td>

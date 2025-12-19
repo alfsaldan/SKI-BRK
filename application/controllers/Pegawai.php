@@ -2762,6 +2762,17 @@ class Pegawai extends CI_Controller
                         }
                     }
                 }
+
+                // Ambil kesimpulan dari ppk_evaluasi
+                if (isset($ppk->id)) {
+                    $evaluasi = $this->db->select('kesimpulan')
+                                         ->from('ppk_evaluasi')
+                                         ->where('id_ppk', $ppk->id)
+                                         ->get()->row();
+                    $ppk->kesimpulan = $evaluasi ? $evaluasi->kesimpulan : null;
+                } else {
+                    $ppk->kesimpulan = null;
+                }
             }
         }
         $data['list_ppk'] = $list_ppk;
@@ -3230,5 +3241,124 @@ class Pegawai extends CI_Controller
         }
 
         redirect('pegawai/ppk_penilaievaluasi/' . $id_ppk);
+    }
+
+    public function ppk_pimpinanevaluasi($id_nilai_akhir)
+    {
+        $data['title'] = 'Evaluasi PPK (Pimpinan)';
+        $data['user'] = $this->db->get_where('users', ['nik' => $this->session->userdata('nik')])->row_array();
+        $data['current_user'] = $this->Pegawai_model->getPegawaiByNIK($this->session->userdata('nik'));
+        
+        $this->load->model('pegawai/Ppk_model');
+        $nilai_akhir = $this->db->get_where('nilai_akhir', ['id' => $id_nilai_akhir])->row();
+        
+        if (!$nilai_akhir) {
+            show_404();
+        }
+
+        $data['nilai_akhir'] = $nilai_akhir;
+        
+        // Ambil data PPK
+        $ppk = $this->Ppk_model->get_ppk_by_id($id_nilai_akhir);
+        $data['ppk'] = $ppk;
+        
+        if (!$ppk) {
+            $this->session->set_flashdata('error', 'Data PPK tidak ditemukan.');
+            redirect('pegawai/ppk_penilai');
+        }
+
+        $data['pegawai'] = $this->Pegawai_model->getPegawaiByNIK($ppk->nik);
+        
+        // Ambil data evaluasi
+        $evaluasi = $this->Ppk_model->get_evaluasi_by_ppk($ppk->id);
+        $data['evaluasi'] = $evaluasi;
+        
+        // Decode JSON details untuk ditampilkan di view
+        $data['detail_evaluasi'] = ($evaluasi && $evaluasi->detail_evaluasi) ? json_decode($evaluasi->detail_evaluasi, true) : [];
+        $data['detail_tindakan'] = ($evaluasi && $evaluasi->detail_tindakan) ? json_decode($evaluasi->detail_tindakan, true) : [];
+
+        $this->load->view('layoutpegawai/header');
+        $this->load->view('pegawai/ppk_pimpinanevaluasi', $data);
+        $this->load->view('layoutpegawai/footer');
+    }
+
+    public function simpan_ppk_pimpinanevaluasi()
+    {
+        $id_ppk = $this->input->post('id_ppk');
+        $status_pimpinanunit = $this->input->post('status_pimpinanunit');
+        
+        // Jika checkbox dicentang valuenya 'Disetujui', jika tidak maka null/kosong
+        $status = ($status_pimpinanunit == 'Disetujui') ? 'Disetujui' : 'Belum Disetujui';
+        
+        $this->load->model('pegawai/Ppk_model');
+        
+        // Simpan status pimpinan
+        $data = [
+            'id_ppk' => $id_ppk,
+            'status_pimpinanunit' => $status
+        ];
+        
+        // Menggunakan save_evaluasi (upsert) agar aman
+        $this->Ppk_model->save_evaluasi($data);
+        
+        $this->session->set_flashdata('success', 'Status persetujuan Pimpinan Unit berhasil disimpan.');
+        redirect('pegawai/ppk_pimpinanevaluasi/' . $this->input->post('id_nilai_akhir'));
+    }
+
+    public function ppk_pegawaievaluasi($id_nilai_akhir)
+    {
+        $data['title'] = 'Evaluasi PPK (Pegawai)';
+        $data['user'] = $this->db->get_where('users', ['nik' => $this->session->userdata('nik')])->row_array();
+        $data['current_user'] = $this->Pegawai_model->getPegawaiByNIK($this->session->userdata('nik'));
+        
+        $this->load->model('pegawai/Ppk_model');
+        $nilai_akhir = $this->db->get_where('nilai_akhir', ['id' => $id_nilai_akhir])->row();
+        
+        if (!$nilai_akhir) {
+            show_404();
+        }
+
+        $data['nilai_akhir'] = $nilai_akhir;
+        
+        // Ambil data PPK
+        $ppk = $this->Ppk_model->get_ppk_by_id($id_nilai_akhir);
+        $data['ppk'] = $ppk;
+        
+        if (!$ppk) {
+            $this->session->set_flashdata('error', 'Data PPK tidak ditemukan.');
+            redirect('pegawai/ppk_pegawai');
+        }
+
+        $data['pegawai'] = $this->Pegawai_model->getPegawaiByNIK($ppk->nik);
+        
+        // Ambil data evaluasi
+        $evaluasi = $this->Ppk_model->get_evaluasi_by_ppk($ppk->id);
+        $data['evaluasi'] = $evaluasi;
+        
+        // Decode JSON details untuk ditampilkan di view
+        $data['detail_evaluasi'] = ($evaluasi && $evaluasi->detail_evaluasi) ? json_decode($evaluasi->detail_evaluasi, true) : [];
+        $data['detail_tindakan'] = ($evaluasi && $evaluasi->detail_tindakan) ? json_decode($evaluasi->detail_tindakan, true) : [];
+
+        $this->load->view('layoutpegawai/header', $data);
+        $this->load->view('pegawai/ppk_pegawaievaluasi', $data);
+        $this->load->view('layoutpegawai/footer');
+    }
+
+    public function simpan_ppk_pegawaievaluasi()
+    {
+        $id_ppk = $this->input->post('id_ppk');
+        $status_pegawai = $this->input->post('status_pegawai');
+        $id_nilai_akhir = $this->input->post('id_nilai_akhir');
+        
+        // Jika checkbox dicentang valuenya 'Disetujui', jika tidak maka null/kosong
+        $status = ($status_pegawai == 'Disetujui') ? 'Disetujui' : 'Belum Disetujui';
+        
+        $this->load->model('pegawai/Ppk_model');
+        
+        // Simpan status pegawai
+        $this->Ppk_model->update_status_pegawai_evaluasi($id_ppk, $status);
+        
+        $this->session->set_flashdata('success', 'Status persetujuan Pegawai berhasil disimpan.');
+        redirect('pegawai/ppk_pegawaievaluasi/' . $id_nilai_akhir);
     }
 }

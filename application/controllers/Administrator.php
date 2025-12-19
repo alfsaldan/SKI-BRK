@@ -3325,13 +3325,15 @@ class Administrator extends CI_Controller
         $this->db->select('p.nik, p.nama, p.jabatan, p.unit_kantor, p.ppk_eligible');
 
         // 2. Ambil Predikat untuk periode yang dipilih (dari join nilai_akhir)
-        $this->db->select('na.predikat');
+        $this->db->select('na.predikat, ');
 
         // 3. Ambil Tahap PPK (Subquery dari ppk_responses)
         // Mengambil tahap terakhir berdasarkan ID terbesar
         $this->db->select('(SELECT tahap FROM ppk_responses pr WHERE pr.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci ORDER BY pr.id DESC LIMIT 1) as tahap', FALSE);
         // TAMBAHAN: Ambil periode_ppk
         $this->db->select('(SELECT periode_ppk FROM ppk_responses pr WHERE pr.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci ORDER BY pr.id DESC LIMIT 1) as periode_ppk', FALSE);
+        // Ambil kesimpulan dari ppk_evaluasi dengan join ke tabel ppk.
+        $this->db->select("(SELECT pe.kesimpulan FROM ppk_evaluasi pe JOIN ppk ON ppk.id = pe.id_ppk WHERE ppk.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci AND BINARY ppk.periode_ppk = BINARY (SELECT pr.periode_ppk FROM ppk_responses pr WHERE pr.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci ORDER BY pr.id DESC LIMIT 1) ORDER BY pe.id DESC LIMIT 1) as kesimpulan", FALSE);
 
         $this->db->from('pegawai p');
 
@@ -3471,19 +3473,92 @@ class Administrator extends CI_Controller
         }
     }
 
-    public function evaluasi_ppk($nik = null)
+    public function ppk_msdievaluasi($nik = null)
     {
-        $data = [];
-        if ($nik) {
-            $this->load->model('DataPegawai_model');
-            $data['pegawai'] = $this->DataPegawai_model->getPegawaiByNik($nik);
+        if (!$nik) {
+            show_404();
         }
+
+        $this->load->model('DataPegawai_model');
+        $this->load->model('pegawai/Ppk_model');
+        $this->load->model('DataDiri_model');
+
+        $data['pegawai'] = $this->DataPegawai_model->getPegawaiByNik($nik);
+        
+        // Ambil data user yang login (MSDI/Admin) untuk nama di tanda tangan
+        $data['current_user'] = $this->DataDiri_model->getDataByNik($this->session->userdata('nik'));
+
+        // Ambil Nilai Akhir terbaru yang predikatnya Minus (sebagai referensi periode)
+        // Atau gunakan periode dari URL jika ada
+        $awal = $this->input->get('awal');
+        $akhir = $this->input->get('akhir');
+        
+        if ($awal && $akhir) {
+             $this->db->where('nik', $nik);
+             $this->db->where('periode_awal', $awal);
+             $this->db->where('periode_akhir', $akhir);
+             $nilai_akhir = $this->db->get('nilai_akhir')->row();
+        } else {
+             $this->db->where('nik', $nik);
+             $this->db->where('predikat', 'Minus');
+             $this->db->order_by('periode_akhir', 'DESC');
+             $nilai_akhir = $this->db->get('nilai_akhir')->row();
+        }
+        
+        $data['nilai_akhir'] = $nilai_akhir;
+
+        // Ambil PPK
+        $ppk = null;
+        if ($nilai_akhir) {
+             $ppk = $this->Ppk_model->get_ppk_by_id($nilai_akhir->id);
+        }
+        $data['ppk'] = $ppk;
+        
+        // Ambil Evaluasi
+        $evaluasi = null;
+        if ($ppk) {
+            $evaluasi = $this->Ppk_model->get_evaluasi_by_ppk($ppk->id);
+        }
+        $data['evaluasi'] = $evaluasi;
+
+        // Decode JSON details
+        $data['detail_evaluasi'] = ($evaluasi && $evaluasi->detail_evaluasi) ? json_decode($evaluasi->detail_evaluasi, true) : [];
+        $data['detail_tindakan'] = ($evaluasi && $evaluasi->detail_tindakan) ? json_decode($evaluasi->detail_tindakan, true) : [];
+
         // Ambil periode dari URL untuk tombol "Kembali"
         $data['periode_awal_kembali'] = $this->input->get('awal');
         $data['periode_akhir_kembali'] = $this->input->get('akhir');
+        
+        $data['judul'] = "Evaluasi PPK (Divisi MSDI)";
 
         $this->load->view('layout/header');
-        $this->load->view('administrator/evaluasi_ppk', $data);
+        $this->load->view('administrator/ppk_msdievaluasi', $data);
         $this->load->view('layout/footer');
+    }
+
+    public function simpan_ppk_msdievaluasi()
+    {
+        $id_ppk = $this->input->post('id_ppk');
+        $status_msdi = $this->input->post('status_msdi');
+        $nik = $this->input->post('nik');
+        $awal = $this->input->post('periode_awal_kembali');
+        $akhir = $this->input->post('periode_akhir_kembali');
+        
+        // Jika checkbox dicentang valuenya 'Disetujui', jika tidak maka null/kosong
+        $status = ($status_msdi == 'Disetujui') ? 'Disetujui' : 'Belum Disetujui';
+        
+        $this->load->model('pegawai/Ppk_model');
+        
+        // Simpan status msdi
+        $this->Ppk_model->update_status_msdi_evaluasi($id_ppk, $status);
+        
+        $this->session->set_flashdata('success', 'Status verifikasi MSDI berhasil disimpan.');
+        
+        // Redirect kembali ke halaman evaluasi dengan membawa parameter periode
+        $redirect_url = 'Administrator/ppk_msdievaluasi/' . $nik;
+        if (!empty($awal) && !empty($akhir)) {
+            $redirect_url .= '?awal=' . urlencode($awal) . '&akhir=' . urlencode($akhir);
+        }
+        redirect($redirect_url);
     }
 }

@@ -123,4 +123,42 @@ class Ppk_model extends CI_Model
             return $this->db->insert('ppk_evaluasi', $data);
         }
     }
+
+    public function update_status_pimpinan_evaluasi($id_ppk, $status)
+    {
+        $this->db->where('id_ppk', $id_ppk);
+        return $this->db->update('ppk_evaluasi', ['status_pimpinanunit' => $status, 'updated_at' => date('Y-m-d H:i:s')]);
+    }
+
+    public function update_status_pegawai_evaluasi($id_ppk, $status)
+    {
+        $this->db->where('id_ppk', $id_ppk);
+        // Cek apakah data evaluasi sudah ada, jika belum insert dulu (seharusnya sudah ada dari penilai)
+        $query = $this->db->get('ppk_evaluasi');
+        if ($query->num_rows() == 0) {
+            $this->db->insert('ppk_evaluasi', [
+                'id_ppk' => $id_ppk,
+                'status_pegawai' => $status,
+                'created_at' => date('Y-m-d H:i:s')
+            ]);
+            return true;
+        }
+        return $this->db->where('id_ppk', $id_ppk)->update('ppk_evaluasi', ['status_pegawai' => $status, 'updated_at' => date('Y-m-d H:i:s')]);
+    }
+
+    public function update_status_msdi_evaluasi($id_ppk, $status)
+    {
+        $this->db->where('id_ppk', $id_ppk);
+        // Cek apakah data evaluasi sudah ada
+        $query = $this->db->get('ppk_evaluasi');
+        if ($query->num_rows() == 0) {
+             $this->db->insert('ppk_evaluasi', [
+                'id_ppk' => $id_ppk,
+                'status_msdi' => $status,
+                'created_at' => date('Y-m-d H:i:s')
+             ]);
+             return true;
+        }
+        return $this->db->where('id_ppk', $id_ppk)->update('ppk_evaluasi', ['status_msdi' => $status, 'updated_at' => date('Y-m-d H:i:s')]);
+    }
 }

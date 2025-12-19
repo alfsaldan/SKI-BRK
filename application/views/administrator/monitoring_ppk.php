@@ -238,10 +238,22 @@
                 {
                     data: 'ppk_eligible', // Status
                     render: function(data, type, row) {
+                        let statusBadge = '';
                         if (parseInt(data) === 1) {
-                            return `<span class="badge bg-success">Aktif</span>`;
+                            statusBadge = `<span class="badge badge-success">Aktif</span>`;
+                        } else {
+                            statusBadge = `<span class="badge badge-secondary">Tidak Aktif</span>`;
                         }
-                        return `<span class="badge bg-secondary">Tidak Aktif</span>`;
+
+                        let kesimpulanBadge = '';
+                        if (row.kesimpulan) {
+                            const isBerhasil = row.kesimpulan === 'Berhasil';
+                            const kClass = isBerhasil ? 'badge-success' : 'badge-secondary';
+                            // Jika 'Belum Berhasil', tambahkan line break
+                            const kesimpulanText = isBerhasil ? row.kesimpulan : 'Belum<br>Berhasil';
+                            kesimpulanBadge = `<span class="badge ${kClass} mt-1">${kesimpulanText}</span>`;
+                        }
+                        return `<div class="d-flex flex-column">${statusBadge}${kesimpulanBadge}</div>`;
                     }
                 },
                 {
@@ -254,7 +266,7 @@
                         const periodeQuery = `?awal=${awal}&akhir=${akhir}`;
 
                         const formulirBtn = `<a href="<?= site_url('administrator/ppk_msdiformulir') ?>/${row.nik}${periodeQuery}" class="btn btn-sm btn-info mb-1" style="min-width: 90px;"><i class="mdi mdi-file-document-outline"></i> Formulir</a>`;
-                        const evaluasiBtn = `<a href="<?= site_url('administrator/evaluasi_ppk') ?>/${row.nik}${periodeQuery}" class="btn btn-sm btn-success" style="min-width: 90px;"><i class="mdi mdi-clipboard-check-outline"></i> Evaluasi</a>`;
+                        const evaluasiBtn = `<a href="<?= site_url('administrator/ppk_msdievaluasi') ?>/${row.nik}${periodeQuery}" class="btn btn-sm btn-success" style="min-width: 90px;"><i class="mdi mdi-clipboard-check-outline"></i> Evaluasi</a>`;
                         return `<div class="d-flex flex-column">${formulirBtn}${evaluasiBtn}</div>`;
                     },
                     orderable: false,

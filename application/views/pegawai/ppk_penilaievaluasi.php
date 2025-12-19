@@ -9,7 +9,7 @@
                         <div class="page-title-right">
                             <ol class="breadcrumb m-0">
                                 <li class="breadcrumb-item"><a href="javascript:void(0);">KPI Online-BRKS</a></li>
-                                <li class="breadcrumb-item"><a href="<?= base_url('pegawai/ppk_pegawai') ?>">PPK</a></li>
+                                <li class="breadcrumb-item"><a href="<?= base_url('pegawai/ppk_penilai') ?>">PPK</a></li>
                                 <li class="breadcrumb-item active">Evaluasi PPK</li>
                             </ol>
                         </div>
@@ -290,7 +290,7 @@
                                 <!-- Tombol Aksi -->
                                 <div class="row mt-4">
                                     <div class="col-12 text-right">
-                                        <a href="<?= base_url('pegawai/ppk_pegawai') ?>" class="btn btn-secondary mr-2"><i class="mdi mdi-arrow-left"></i> Kembali</a>
+                                        <a href="<?= base_url('pegawai/ppk_penilai') ?>" class="btn btn-secondary mr-2"><i class="mdi mdi-arrow-left"></i> Kembali</a>
                                         <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save"></i> Simpan Evaluasi</button>
                                     </div>
                                 </div>

@@ -22,10 +22,13 @@
                 <div class="col-12">
                     <div class="card shadow-sm border-0">
                         <div class="card-body">
-                            <h4 class="header-title mb-4 text-primary text-center font-weight-bold">Formulir Evaluasi PPK (Pegawai)</h4>
+                            <h4 class="header-title mb-4 text-primary text-center font-weight-bold">Formulir Evaluasi PPK (Divisi MSDI)</h4>
 
-                            <form action="<?= base_url('pegawai/simpan_ppk_pegawaievaluasi') ?>" method="post">
-                                <input type="hidden" name="id_ppk" value="<?= $ppk->id ?>">
+                            <form action="<?= base_url('Administrator/simpan_ppk_msdievaluasi') ?>" method="post">
+                                <input type="hidden" name="id_ppk" value="<?= $ppk->id ?? '' ?>">
+                                <input type="hidden" name="nik" value="<?= $pegawai->nik ?? '' ?>">
+                                <input type="hidden" name="periode_awal_kembali" value="<?= $periode_awal_kembali ?? '' ?>">
+                                <input type="hidden" name="periode_akhir_kembali" value="<?= $periode_akhir_kembali ?? '' ?>">
                                 <input type="hidden" name="id_nilai_akhir" value="<?= $nilai_akhir->id ?? '' ?>">
 
                                 <!-- 1. Evaluasi Pelaksanaan PPK -->
@@ -132,25 +135,11 @@
                                                 <div class="card-body p-3 d-flex flex-column">
                                                     <h6 class="card-title font-weight-bold mb-3">Disetujui bersama oleh<br><small>Pegawai</small></h6>
                                                     <div class="flex-grow-1 d-flex justify-content-center align-items-center">
-                                                        <?php
-                                                        $is_signed = (isset($evaluasi->status_pegawai) && $evaluasi->status_pegawai == 'Disetujui');
-                                                        $sig_style = $is_signed ? 'border-color: #28a745; background-color: #f0fff4;' : 'border: 2px dashed #ccc;';
-                                                        ?>
-                                                        <div>
-                                                            <input type="checkbox" id="status_pegawai" name="status_pegawai" value="Disetujui" style="display:none;" <?= $is_signed ? 'checked' : '' ?>>
-                                                            <div id="sig-pegawai" class="signature-box d-flex flex-column align-items-center justify-content-center p-2" style="<?= $sig_style ?> border-radius: 8px; cursor: pointer; min-height: 80px; transition: all 0.3s;">
-                                                                <div class="unsigned-content <?= $is_signed ? 'd-none' : '' ?>">
-                                                                    <i class="mdi mdi-draw text-primary" style="font-size: 2rem;"></i>
-                                                                    <div class="small text-muted mt-1">Klik untuk Tanda Tangan</div>
-                                                                </div>
-                                                                <div class="signed-content <?= $is_signed ? '' : 'd-none' ?>">
-                                                                    <div class="text-success signer-name" style="font-family: 'Brush Script MT', cursive; font-size: 1.4rem; line-height: 1.2;">
-                                                                        <?= isset($current_user->nama) ? htmlspecialchars($current_user->nama) : '(Nama Pegawai)' ?>
-                                                                    </div>
-                                                                    <div class="small text-muted mt-1" style="font-size: 0.65rem;">Digitally Signed</div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        <?php if (isset($evaluasi->status_pegawai) && $evaluasi->status_pegawai == 'Disetujui'): ?>
+                                                            <span class="badge badge-success p-2" style="font-size: 14px;">Disetujui</span>
+                                                        <?php else: ?>
+                                                            <span class="badge badge-secondary p-2" style="font-size: 14px;">Belum Disetujui</span>
+                                                        <?php endif; ?>
                                                     </div>
                                                 </div>
                                             </div>
@@ -176,11 +165,25 @@
                                                 <div class="card-body p-3 d-flex flex-column">
                                                     <h6 class="card-title font-weight-bold mb-3">Diverifikasi oleh<br><small>Divisi SDI</small></h6>
                                                     <div class="flex-grow-1 d-flex justify-content-center align-items-center">
-                                                        <?php if (isset($evaluasi->status_msdi) && $evaluasi->status_msdi == 'Disetujui'): ?>
-                                                            <span class="badge badge-success p-2" style="font-size: 14px;">Diverifikasi</span>
-                                                        <?php else: ?>
-                                                            <span class="badge badge-secondary p-2" style="font-size: 14px;">Belum Diverifikasi</span>
-                                                        <?php endif; ?>
+                                                        <?php
+                                                        $is_signed = (isset($evaluasi->status_msdi) && $evaluasi->status_msdi == 'Disetujui');
+                                                        $sig_style = $is_signed ? 'border-color: #28a745; background-color: #f0fff4;' : 'border: 2px dashed #ccc;';
+                                                        ?>
+                                                        <div>
+                                                            <input type="checkbox" id="status_msdi" name="status_msdi" value="Disetujui" style="display:none;" <?= $is_signed ? 'checked' : '' ?>>
+                                                            <div id="sig-msdi" class="signature-box d-flex flex-column align-items-center justify-content-center p-2" style="<?= $sig_style ?> border-radius: 8px; cursor: pointer; min-height: 80px; transition: all 0.3s;">
+                                                                <div class="unsigned-content <?= $is_signed ? 'd-none' : '' ?>">
+                                                                    <i class="mdi mdi-draw text-primary" style="font-size: 2rem;"></i>
+                                                                    <div class="small text-muted mt-1">Klik untuk Tanda Tangan</div>
+                                                                </div>
+                                                                <div class="signed-content <?= $is_signed ? '' : 'd-none' ?>">
+                                                                    <div class="text-success signer-name" style="font-family: 'Brush Script MT', cursive; font-size: 1.4rem; line-height: 1.2;">
+                                                                        <?= isset($current_user->nama) ? htmlspecialchars($current_user->nama) : 'MSDI' ?>
+                                                                    </div>
+                                                                    <div class="small text-muted mt-1" style="font-size: 0.65rem;">Digitally Signed</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -206,7 +209,13 @@
                                 <!-- Tombol Aksi -->
                                 <div class="row mt-4">
                                     <div class="col-12 text-right">
-                                        <a href="<?= base_url('pegawai/ppk_pegawai') ?>" class="btn btn-secondary mr-2"><i class="mdi mdi-arrow-left"></i> Kembali</a>
+                                        <?php
+                                        $kembali_url = base_url('Administrator/monitoring_ppk');
+                                        if (!empty($periode_awal_kembali) && !empty($periode_akhir_kembali)) {
+                                            $kembali_url .= '?awal=' . urlencode($periode_awal_kembali) . '&akhir=' . urlencode($periode_akhir_kembali);
+                                        }
+                                        ?>
+                                        <a href="<?= $kembali_url ?>" class="btn btn-secondary mr-2"><i class="mdi mdi-arrow-left"></i> Kembali</a>
                                         <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save"></i> Simpan Persetujuan</button>
                                     </div>
                                 </div>
@@ -223,8 +232,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Logic Tanda Tangan Digital
-        const btnSig = document.getElementById('sig-pegawai');
-        const chkSig = document.getElementById('status_pegawai');
+        const btnSig = document.getElementById('sig-msdi');
+        const chkSig = document.getElementById('status_msdi');
 
         if (btnSig && chkSig) {
             btnSig.addEventListener('click', function() {
