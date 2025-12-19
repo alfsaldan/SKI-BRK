@@ -2737,8 +2737,23 @@ class Pegawai extends CI_Controller
 
         // Logika untuk mengambil semua predikat dalam periode PPK
         if (!empty($list_ppk)) {
-            foreach ($list_ppk as $ppk) {
-                $ppk->predikat_list = [];
+            foreach ($list_ppk as $key => $ppk) {
+                // Ambil kesimpulan dari ppk_evaluasi
+                $list_ppk[$key]->kesimpulan = null;
+                // Prefer querying by id_ppk if available (stable FK), fallback ke nik+periode_ppk
+                if (!empty($ppk->id_ppk)) {
+                    $eval = $this->Ppk_model->get_evaluasi_by_ppk($ppk->id_ppk);
+                    $list_ppk[$key]->kesimpulan = ($eval && !empty($eval->kesimpulan)) ? $eval->kesimpulan : null;
+                } else {
+                    $this->db->select('kesimpulan');
+                    $this->db->where('nik', $nik);
+                    $this->db->where('periode_ppk', $ppk->periode_ppk);
+                    $this->db->order_by('id', 'DESC');
+                    $eval = $this->db->get('ppk_evaluasi')->row();
+                    $list_ppk[$key]->kesimpulan = ($eval && !empty($eval->kesimpulan)) ? $eval->kesimpulan : null;
+                }
+
+                $list_ppk[$key]->predikat_list = [];
                 if (!empty($ppk->periode_ppk)) {
                     // Format string periode_ppk: "dd Month YYYY - dd Month YYYY"
                     $parts = explode(' - ', $ppk->periode_ppk);
@@ -2757,21 +2772,10 @@ class Pegawai extends CI_Controller
 
                         foreach ($res as $r) {
                             if (!empty($r->predikat)) {
-                                $ppk->predikat_list[] = $r->predikat;
+                                $list_ppk[$key]->predikat_list[] = $r->predikat;
                             }
                         }
                     }
-                }
-
-                // Ambil kesimpulan dari ppk_evaluasi
-                if (isset($ppk->id)) {
-                    $evaluasi = $this->db->select('kesimpulan')
-                                         ->from('ppk_evaluasi')
-                                         ->where('id_ppk', $ppk->id)
-                                         ->get()->row();
-                    $ppk->kesimpulan = $evaluasi ? $evaluasi->kesimpulan : null;
-                } else {
-                    $ppk->kesimpulan = null;
                 }
             }
         }
@@ -2798,7 +2802,7 @@ class Pegawai extends CI_Controller
 
             if ($nilai_akhir) {
                 $data['nilai_akhir'] = $nilai_akhir;
-                
+
                 // Cari PPK berdasarkan NIK dan Periode (derived from ppk_responses)
                 $ppk_resp = $this->db->select('periode_ppk')->where('nik', $nik)->order_by('id', 'DESC')->get('ppk_responses')->row();
                 $periode_ppk = $ppk_resp ? $ppk_resp->periode_ppk : null;
@@ -2815,7 +2819,7 @@ class Pegawai extends CI_Controller
                 if ($ppk) {
                     $data['ppk'] = $ppk;
                     $data['periode_ppk_response'] = $ppk->periode_ppk;
-                    
+
                     // Cari nilai_akhir yang relevan (sebelum periode PPK)
                     if (!empty($ppk->periode_ppk)) {
                         $parts = explode(' - ', $ppk->periode_ppk);
@@ -2907,7 +2911,7 @@ class Pegawai extends CI_Controller
         if ($id) {
             // Ambil data nilai_akhir untuk referensi
             $data['nilai_akhir'] = $this->db->get_where('nilai_akhir', ['id' => $id])->row();
-            
+
             if (!$data['nilai_akhir']) {
                 show_404();
             }
@@ -2921,7 +2925,7 @@ class Pegawai extends CI_Controller
 
             // Ambil data PPK dan sasaran
             $data['ppk'] = $this->Ppk_model->get_ppk_by_id($id);
-            
+
             // Decode detail_sasaran dari JSON jika ada
             $data['sasaran'] = [];
             if (isset($data['ppk']->detail_sasaran) && !empty($data['ppk']->detail_sasaran)) {
@@ -2955,7 +2959,7 @@ class Pegawai extends CI_Controller
             // Hanya update status penilai 1, data lain dibiarkan tetap (atau ikut tersimpan jika diedit)
             // Kita asumsikan Penilai juga bisa mengedit konten jika perlu, atau setidaknya save form yang ada.
             // Namun yang krusial adalah status_penilai1.
-            
+
             // Kumpulkan data sasaran dari form (jika penilai boleh edit sasaran)
             $sasaran_bulan = $this->input->post('sasaran_bulan');
             $rincian_tindakan = $this->input->post('rincian_tindakan');
@@ -3011,7 +3015,7 @@ class Pegawai extends CI_Controller
         if ($id) {
             // Ambil data nilai_akhir untuk referensi
             $data['nilai_akhir'] = $this->db->get_where('nilai_akhir', ['id' => $id])->row();
-            
+
             if (!$data['nilai_akhir']) {
                 show_404();
             }
@@ -3025,7 +3029,7 @@ class Pegawai extends CI_Controller
 
             // Ambil data PPK dan sasaran
             $data['ppk'] = $this->Ppk_model->get_ppk_by_id($id);
-            
+
             // Decode detail_sasaran dari JSON jika ada
             $data['sasaran'] = [];
             if (isset($data['ppk']->detail_sasaran) && !empty($data['ppk']->detail_sasaran)) {
@@ -3089,7 +3093,7 @@ class Pegawai extends CI_Controller
         if (!empty($bawahan1)) {
             $niks1 = array_column($bawahan1, 'nik');
         }
-        
+
         $list_ppk_penilai1 = [];
         if (!empty($niks1)) {
             $list_ppk_penilai1 = $this->Ppk_model->get_ppk_list_by_niks($niks1);
@@ -3103,16 +3107,17 @@ class Pegawai extends CI_Controller
         if ($pegawai) {
             $jabatan = strtolower($pegawai->jabatan);
             // Cek jabatan apakah termasuk pimpinan unit/cabang/divisi
-            if (strpos($jabatan, 'general manager') !== false || 
-                strpos($jabatan, 'branch manager') !== false || 
+            if (
+                strpos($jabatan, 'general manager') !== false ||
+                strpos($jabatan, 'branch manager') !== false ||
                 strpos($jabatan, 'pimpinan divisi') !== false ||
                 strpos($jabatan, 'pemimpin divisi') !== false
-               ) {
+            ) {
                 $is_pimpinan = true;
                 // Ambil semua pegawai di unit kerja yang sama
                 $bawahan_unit = $this->Pegawai_model->getPegawaiByUnit($pegawai->unit_kerja, $pegawai->unit_kantor, $nik);
                 $niks_unit = array_column($bawahan_unit, 'nik');
-                
+
                 if (!empty($niks_unit)) {
                     $list_ppk_pimpinan = $this->Ppk_model->get_ppk_list_by_niks($niks_unit);
                 }
@@ -3141,7 +3146,7 @@ class Pegawai extends CI_Controller
 
         // 1. Coba ambil data PPK menganggap input adalah ID PPK
         $ppk = $this->Ppk_model->get_ppk_row($id_ppk);
-        
+
         // 2. Jika tidak ditemukan, coba cari menganggap input adalah ID Nilai Akhir (Fallback)
         if (!$ppk) {
             $candidate = $this->Ppk_model->get_ppk_by_id($id_ppk); // get_ppk_by_id mencari via nilai_akhir.id
@@ -3232,6 +3237,17 @@ class Pegawai extends CI_Controller
             $data['status_pegawai'] = $this->input->post('status_pegawai_eval') ? 'Disetujui' : 'Belum Disetujui';
         } elseif ($role_actor == 'penilai') {
             $data['status_penilai1'] = $this->input->post('status_penilai1_eval') ? 'Disetujui' : 'Belum Disetujui';
+
+            // Jika penilai menyimpan, update status ppk_eligible pegawai.
+            // Berhasil -> ppk_eligible = 0 (tidak aktif lagi untuk PPK)
+            // Belum Berhasil -> ppk_eligible = 1 (masih aktif untuk PPK)
+            $kesimpulan = $this->input->post('kesimpulan');
+            if ($kesimpulan === 'Berhasil') {
+                $this->db->where('nik', $nik)->update('pegawai', ['ppk_eligible' => 0]);
+            } elseif ($kesimpulan === 'Belum Berhasil') {
+                // Pastikan pegawai tetap eligible jika evaluasi belum berhasil
+                $this->db->where('nik', $nik)->update('pegawai', ['ppk_eligible' => 1]);
+            }
         }
 
         if ($this->Ppk_model->save_evaluasi($data)) {
@@ -3248,31 +3264,31 @@ class Pegawai extends CI_Controller
         $data['title'] = 'Evaluasi PPK (Pimpinan)';
         $data['user'] = $this->db->get_where('users', ['nik' => $this->session->userdata('nik')])->row_array();
         $data['current_user'] = $this->Pegawai_model->getPegawaiByNIK($this->session->userdata('nik'));
-        
+
         $this->load->model('pegawai/Ppk_model');
         $nilai_akhir = $this->db->get_where('nilai_akhir', ['id' => $id_nilai_akhir])->row();
-        
+
         if (!$nilai_akhir) {
             show_404();
         }
 
         $data['nilai_akhir'] = $nilai_akhir;
-        
+
         // Ambil data PPK
         $ppk = $this->Ppk_model->get_ppk_by_id($id_nilai_akhir);
         $data['ppk'] = $ppk;
-        
+
         if (!$ppk) {
             $this->session->set_flashdata('error', 'Data PPK tidak ditemukan.');
             redirect('pegawai/ppk_penilai');
         }
 
         $data['pegawai'] = $this->Pegawai_model->getPegawaiByNIK($ppk->nik);
-        
+
         // Ambil data evaluasi
         $evaluasi = $this->Ppk_model->get_evaluasi_by_ppk($ppk->id);
         $data['evaluasi'] = $evaluasi;
-        
+
         // Decode JSON details untuk ditampilkan di view
         $data['detail_evaluasi'] = ($evaluasi && $evaluasi->detail_evaluasi) ? json_decode($evaluasi->detail_evaluasi, true) : [];
         $data['detail_tindakan'] = ($evaluasi && $evaluasi->detail_tindakan) ? json_decode($evaluasi->detail_tindakan, true) : [];
@@ -3286,21 +3302,21 @@ class Pegawai extends CI_Controller
     {
         $id_ppk = $this->input->post('id_ppk');
         $status_pimpinanunit = $this->input->post('status_pimpinanunit');
-        
+
         // Jika checkbox dicentang valuenya 'Disetujui', jika tidak maka null/kosong
         $status = ($status_pimpinanunit == 'Disetujui') ? 'Disetujui' : 'Belum Disetujui';
-        
+
         $this->load->model('pegawai/Ppk_model');
-        
+
         // Simpan status pimpinan
         $data = [
             'id_ppk' => $id_ppk,
             'status_pimpinanunit' => $status
         ];
-        
+
         // Menggunakan save_evaluasi (upsert) agar aman
         $this->Ppk_model->save_evaluasi($data);
-        
+
         $this->session->set_flashdata('success', 'Status persetujuan Pimpinan Unit berhasil disimpan.');
         redirect('pegawai/ppk_pimpinanevaluasi/' . $this->input->post('id_nilai_akhir'));
     }
@@ -3310,31 +3326,31 @@ class Pegawai extends CI_Controller
         $data['title'] = 'Evaluasi PPK (Pegawai)';
         $data['user'] = $this->db->get_where('users', ['nik' => $this->session->userdata('nik')])->row_array();
         $data['current_user'] = $this->Pegawai_model->getPegawaiByNIK($this->session->userdata('nik'));
-        
+
         $this->load->model('pegawai/Ppk_model');
         $nilai_akhir = $this->db->get_where('nilai_akhir', ['id' => $id_nilai_akhir])->row();
-        
+
         if (!$nilai_akhir) {
             show_404();
         }
 
         $data['nilai_akhir'] = $nilai_akhir;
-        
+
         // Ambil data PPK
         $ppk = $this->Ppk_model->get_ppk_by_id($id_nilai_akhir);
         $data['ppk'] = $ppk;
-        
+
         if (!$ppk) {
             $this->session->set_flashdata('error', 'Data PPK tidak ditemukan.');
             redirect('pegawai/ppk_pegawai');
         }
 
         $data['pegawai'] = $this->Pegawai_model->getPegawaiByNIK($ppk->nik);
-        
+
         // Ambil data evaluasi
         $evaluasi = $this->Ppk_model->get_evaluasi_by_ppk($ppk->id);
         $data['evaluasi'] = $evaluasi;
-        
+
         // Decode JSON details untuk ditampilkan di view
         $data['detail_evaluasi'] = ($evaluasi && $evaluasi->detail_evaluasi) ? json_decode($evaluasi->detail_evaluasi, true) : [];
         $data['detail_tindakan'] = ($evaluasi && $evaluasi->detail_tindakan) ? json_decode($evaluasi->detail_tindakan, true) : [];
@@ -3349,15 +3365,15 @@ class Pegawai extends CI_Controller
         $id_ppk = $this->input->post('id_ppk');
         $status_pegawai = $this->input->post('status_pegawai');
         $id_nilai_akhir = $this->input->post('id_nilai_akhir');
-        
+
         // Jika checkbox dicentang valuenya 'Disetujui', jika tidak maka null/kosong
         $status = ($status_pegawai == 'Disetujui') ? 'Disetujui' : 'Belum Disetujui';
-        
+
         $this->load->model('pegawai/Ppk_model');
-        
+
         // Simpan status pegawai
         $this->Ppk_model->update_status_pegawai_evaluasi($id_ppk, $status);
-        
+
         $this->session->set_flashdata('success', 'Status persetujuan Pegawai berhasil disimpan.');
         redirect('pegawai/ppk_pegawaievaluasi/' . $id_nilai_akhir);
     }

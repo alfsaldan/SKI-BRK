@@ -97,11 +97,12 @@
 
                                                         // Status Kesimpulan
                                                         $kesimpulanBadge = '';
-                                                        if (isset($row->kesimpulan) && $row->kesimpulan) {
-                                                            $isBerhasil = $row->kesimpulan === 'Berhasil';
-                                                            $kClass = $isBerhasil ? 'badge-success' : 'badge-secondary';
-                                                            $kesimpulanText = $isBerhasil ? 'Berhasil' : 'Belum<br>Berhasil';
-                                                            $kesimpulanBadge = '<span class="badge '.$kClass.' mt-1">'.$kesimpulanText.'</span>';
+                                                        if (!empty($row->kesimpulan)) {
+                                                            if ($row->kesimpulan == 'Berhasil') {
+                                                                $kesimpulanBadge = '<span class="badge badge-success mt-1">Berhasil</span>';
+                                                            } else {
+                                                                $kesimpulanBadge = '<span class="badge badge-secondary mt-1">Belum<br>Berhasil</span>';
+                                                            }
                                                         }
                                                     ?>
                                                     <div class="d-flex flex-column">
@@ -132,3 +133,9 @@
         </div>
     </div>
 </div>
+
+<style>
+    #tabel-ppk td {
+        vertical-align: middle;
+    }
+</style>

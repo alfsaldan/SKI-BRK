@@ -174,6 +174,7 @@
             },
             columns: [{
                     data: null,
+                    className: 'text-center',
                     render: function(data, type, row, meta) {
                         return meta.row + 1;
                     },
@@ -212,6 +213,7 @@
                 },
                 {
                     data: 'predikat',
+                    className: 'text-center',
                     render: function(data) {
                         if (!data) return '';
                         if (String(data).toLowerCase() === 'minus') {
@@ -222,6 +224,7 @@
                 },
                 {
                     data: 'predikat_list', // Predikat Periodik (List)
+                    className: 'text-center',
                     render: function(data, type, row) {
 
                         if (!data || data.length === 0) return '<span class="text-muted small">Belum ada predikat terbaru</span>';
@@ -237,6 +240,7 @@
                 },
                 {
                     data: 'ppk_eligible', // Status
+                    className: 'text-center',
                     render: function(data, type, row) {
                         let statusBadge = '';
                         if (parseInt(data) === 1) {

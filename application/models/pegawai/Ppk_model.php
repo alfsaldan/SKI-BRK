@@ -79,6 +79,9 @@ class Ppk_model extends CI_Model
         $this->db->select('na.id as id_nilai_akhir, na.nik, p.nama, p.jabatan, p.unit_kerja, na.periode_awal, na.periode_akhir, na.predikat');
         $this->db->select('COALESCE(ppk.tahap, ppk_responses.tahap) as tahap, ppk.id as id_ppk, ppk.status_pegawai, ppk.status_penilai1, ppk.status_msdi, ppk.status_pimpinanunit', FALSE);
 
+        // Ambil kesimpulan dari ppk_evaluasi
+        $this->db->select('(SELECT kesimpulan FROM ppk_evaluasi WHERE id_ppk = ppk.id ORDER BY id DESC LIMIT 1) as kesimpulan', FALSE);
+
         // Format Periode
         $this->db->select("CONCAT(DATE_FORMAT(DATE_ADD(na.periode_akhir, INTERVAL 1 DAY), '%d %M %Y'), ' - ', DATE_FORMAT(DATE_SUB(DATE_ADD(DATE_ADD(na.periode_akhir, INTERVAL 1 DAY), INTERVAL 6 MONTH), INTERVAL 1 DAY), '%d %M %Y')) as periode_ppk", FALSE);
 

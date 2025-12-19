@@ -55,8 +55,7 @@
                                         <th>Jabatan</th>
                                         <th>Unit Kerja</th>
                                         <th>Predikat</th>
-                                        <!-- <th>PPK</th> -->
-                                        <th>Nama Penilai1</th>
+                                        <th>Nama Penilai I</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -98,6 +97,13 @@
         </div> <!-- end container-fluid -->
     </div> <!-- end content -->
 </div> <!-- end content-page -->
+
+<style>
+    #table-verifikasi-ppk td,
+    #table-syarat td {
+        vertical-align: middle;
+    }
+</style>
 
 
 <!-- ================= MODAL FORM SYARAT ================= -->
@@ -234,6 +240,7 @@
             },
             columns: [{
                     data: null,
+                    className: 'text-center',
                     render: function(data, type, row, meta) {
                         return meta.row + 1;
                     },
@@ -250,10 +257,11 @@
                     data: 'jabatan'
                 },
                 {
-                    data: 'unit_kerja'
+                    data: 'unit_kantor'
                 },
                 {
                     data: 'predikat',
+                    className: 'text-center',
                     render: function(data) {
                         if (!data) return '';
                         try {

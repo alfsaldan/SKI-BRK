@@ -71,14 +71,14 @@
                                         <table class="table table-bordered table-hover display responsive nowrap" style="width:100%" id="tabel-ppk-penilai1">
                                             <thead class="thead-light text-center">
                                                 <tr>
-                                                    <th>No</th>
-                                                    <th>NIK</th>
-                                                    <th>Nama Pegawai</th>
-                                                    <th>Jabatan</th>
-                                                    <th>Tahap PPK</th>
-                                                    <th>Periode</th>
-                                                    <th>Status</th>
-                                                    <th>Aksi</th>
+                                                    <th class="text-center">No</th>
+                                                    <th class="text-center">NIK</th>
+                                                    <th class="text-center">Nama Pegawai</th>
+                                                    <th class="text-center">Jabatan</th>
+                                                    <th class="text-center">Tahap PPK</th>
+                                                    <th class="text-center">Periode</th>
+                                                    <th class="text-center">Status</th>
+                                                    <th class="text-center">Aksi</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -92,11 +92,21 @@
                                                         <td class="text-center">Tahap <?= $row->tahap ?? '-' ?></td>
                                                         <td class="text-center"><?= $row->periode_ppk ?></td>
                                                         <td class="text-center">
-                                                            <?php
-                                                                $st = $row->status_penilai1 ?? 'Belum Disetujui';
-                                                                $cls = ($st == 'Disetujui') ? 'badge-success' : (($st == 'Ditolak') ? 'badge-danger' : 'badge-secondary');
-                                                            ?>
-                                                            <span class="badge <?= $cls ?>"><?= $st ?></span>
+                                                            <div class="d-flex flex-column">
+                                                                <?php
+                                                                    $st = $row->status_penilai1 ?? 'Belum Disetujui';
+                                                                    $cls = ($st == 'Disetujui') ? 'badge-success' : (($st == 'Ditolak') ? 'badge-danger' : 'badge-secondary');
+                                                                    echo '<span class="badge '.$cls.'">'.$st.'</span>';
+
+                                                                    if (!empty($row->kesimpulan)) {
+                                                                        if ($row->kesimpulan == 'Berhasil') {
+                                                                            echo '<span class="badge badge-success mt-1">Berhasil</span>';
+                                                                        } else {
+                                                                            echo '<span class="badge badge-secondary mt-1">Belum<br>Berhasil</span>';
+                                                                        }
+                                                                    }
+                                                                ?>
+                                                            </div>
                                                         </td>
                                                         <td class="text-center">
                                                             <a href="<?= base_url('pegawai/ppk_penilaiformulir/'.$row->id_nilai_akhir) ?>" class="btn btn-sm btn-primary">
@@ -149,14 +159,14 @@
                                         <table class="table table-bordered table-hover display responsive nowrap" style="width:100%" id="tabel-ppk-pimpinan">
                                             <thead class="thead-light text-center">
                                                 <tr>
-                                                    <th>No</th>
-                                                    <th>NIK</th>
-                                                    <th>Nama Pegawai</th>
-                                                    <th>Jabatan</th>
-                                                    <th>Tahap PPK</th>
-                                                    <th>Periode</th>
-                                                    <th>Status</th>
-                                                    <th>Aksi</th>
+                                                    <th class="text-center">No</th>
+                                                    <th class="text-center">NIK</th>
+                                                    <th class="text-center">Nama Pegawai</th>
+                                                    <th class="text-center">Jabatan</th>
+                                                    <th class="text-center">Tahap PPK</th>
+                                                    <th class="text-center">Periode</th>
+                                                    <th class="text-center">Status</th>
+                                                    <th class="text-center">Aksi</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -170,11 +180,21 @@
                                                         <td class="text-center">Tahap <?= $row->tahap ?? '-' ?></td>
                                                         <td class="text-center"><?= $row->periode_ppk ?></td>
                                                         <td class="text-center">
-                                                            <?php
-                                                                $st = $row->status_pimpinanunit ?? 'Belum Disetujui';
-                                                                $cls = ($st == 'Disetujui') ? 'badge-success' : (($st == 'Ditolak') ? 'badge-danger' : 'badge-secondary');
-                                                            ?>
-                                                            <span class="badge <?= $cls ?>"><?= $st ?></span>
+                                                            <div class="d-flex flex-column">
+                                                                <?php
+                                                                    $st = $row->status_pimpinanunit ?? 'Belum Disetujui';
+                                                                    $cls = ($st == 'Disetujui') ? 'badge-success' : (($st == 'Ditolak') ? 'badge-danger' : 'badge-secondary');
+                                                                    echo '<span class="badge '.$cls.'">'.$st.'</span>';
+
+                                                                    if (!empty($row->kesimpulan)) {
+                                                                        if ($row->kesimpulan == 'Berhasil') {
+                                                                            echo '<span class="badge badge-success mt-1">Berhasil</span>';
+                                                                        } else {
+                                                                            echo '<span class="badge badge-secondary mt-1">Belum<br>Berhasil</span>';
+                                                                        }
+                                                                    }
+                                                                ?>
+                                                            </div>
                                                         </td>
                                                         <td class="text-center">
                                                             <a href="<?= base_url('pegawai/ppk_pimpinanformulir/'.$row->id_nilai_akhir) ?>" class="btn btn-sm btn-primary">
@@ -203,6 +223,13 @@
         </div>
     </div>
 </div>
+
+<style>
+    #tabel-ppk-penilai1 td,
+    #tabel-ppk-pimpinan td {
+        vertical-align: middle;
+    }
+</style>
 
 <!-- DataTables JS & CSS (CDN) -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">

@@ -3342,9 +3342,39 @@ class Administrator extends CI_Controller
         $join_condition = "na.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci AND na.periode_awal = " . $this->db->escape($awal) . " AND na.periode_akhir = " . $this->db->escape($akhir);
         $this->db->join('nilai_akhir na', $join_condition, 'left', false);
 
-        // Filter hanya menampilkan pegawai dengan status PPK Aktif
+        // Filter PPK:
+        // 1. ppk_eligible = 1
+        // 2. ppk_eligible = 0 TAPI kesimpulan = 'berhasil'
         if ($has_ppk_eligible) {
+
+            $this->db->group_start(); // (
+
+            // Kondisi 1: PPK aktif
             $this->db->where('p.ppk_eligible', 1);
+
+            // Kondisi 2: PPK tidak aktif tapi berhasil
+            $this->db->or_group_start(); // OR (
+            $this->db->where('p.ppk_eligible', 0);
+            $this->db->where("
+                (
+                    SELECT pe.kesimpulan
+                    FROM ppk_evaluasi pe
+                    JOIN ppk ON ppk.id = pe.id_ppk
+                    WHERE ppk.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci
+                      AND BINARY ppk.periode_ppk = BINARY (
+                          SELECT pr.periode_ppk
+                          FROM ppk_responses pr
+                          WHERE pr.nik COLLATE utf8mb4_unicode_ci = p.nik COLLATE utf8mb4_unicode_ci
+                          ORDER BY pr.id DESC
+                          LIMIT 1
+                      )
+                    ORDER BY pe.id DESC
+                    LIMIT 1
+                ) = 'berhasil'
+            ", null, false);
+            $this->db->group_end(); // )
+
+            $this->db->group_end(); // )
         }
 
         // Filter hanya yang predikatnya Minus
@@ -3484,7 +3514,7 @@ class Administrator extends CI_Controller
         $this->load->model('DataDiri_model');
 
         $data['pegawai'] = $this->DataPegawai_model->getPegawaiByNik($nik);
-        
+
         // Ambil data user yang login (MSDI/Admin) untuk nama di tanda tangan
         $data['current_user'] = $this->DataDiri_model->getDataByNik($this->session->userdata('nik'));
 
@@ -3492,28 +3522,28 @@ class Administrator extends CI_Controller
         // Atau gunakan periode dari URL jika ada
         $awal = $this->input->get('awal');
         $akhir = $this->input->get('akhir');
-        
+
         if ($awal && $akhir) {
-             $this->db->where('nik', $nik);
-             $this->db->where('periode_awal', $awal);
-             $this->db->where('periode_akhir', $akhir);
-             $nilai_akhir = $this->db->get('nilai_akhir')->row();
+            $this->db->where('nik', $nik);
+            $this->db->where('periode_awal', $awal);
+            $this->db->where('periode_akhir', $akhir);
+            $nilai_akhir = $this->db->get('nilai_akhir')->row();
         } else {
-             $this->db->where('nik', $nik);
-             $this->db->where('predikat', 'Minus');
-             $this->db->order_by('periode_akhir', 'DESC');
-             $nilai_akhir = $this->db->get('nilai_akhir')->row();
+            $this->db->where('nik', $nik);
+            $this->db->where('predikat', 'Minus');
+            $this->db->order_by('periode_akhir', 'DESC');
+            $nilai_akhir = $this->db->get('nilai_akhir')->row();
         }
-        
+
         $data['nilai_akhir'] = $nilai_akhir;
 
         // Ambil PPK
         $ppk = null;
         if ($nilai_akhir) {
-             $ppk = $this->Ppk_model->get_ppk_by_id($nilai_akhir->id);
+            $ppk = $this->Ppk_model->get_ppk_by_id($nilai_akhir->id);
         }
         $data['ppk'] = $ppk;
-        
+
         // Ambil Evaluasi
         $evaluasi = null;
         if ($ppk) {
@@ -3528,7 +3558,7 @@ class Administrator extends CI_Controller
         // Ambil periode dari URL untuk tombol "Kembali"
         $data['periode_awal_kembali'] = $this->input->get('awal');
         $data['periode_akhir_kembali'] = $this->input->get('akhir');
-        
+
         $data['judul'] = "Evaluasi PPK (Divisi MSDI)";
 
         $this->load->view('layout/header');
@@ -3543,17 +3573,17 @@ class Administrator extends CI_Controller
         $nik = $this->input->post('nik');
         $awal = $this->input->post('periode_awal_kembali');
         $akhir = $this->input->post('periode_akhir_kembali');
-        
+
         // Jika checkbox dicentang valuenya 'Disetujui', jika tidak maka null/kosong
         $status = ($status_msdi == 'Disetujui') ? 'Disetujui' : 'Belum Disetujui';
-        
+
         $this->load->model('pegawai/Ppk_model');
-        
+
         // Simpan status msdi
         $this->Ppk_model->update_status_msdi_evaluasi($id_ppk, $status);
-        
+
         $this->session->set_flashdata('success', 'Status verifikasi MSDI berhasil disimpan.');
-        
+
         // Redirect kembali ke halaman evaluasi dengan membawa parameter periode
         $redirect_url = 'Administrator/ppk_msdievaluasi/' . $nik;
         if (!empty($awal) && !empty($akhir)) {
