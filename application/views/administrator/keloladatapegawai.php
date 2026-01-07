@@ -56,27 +56,7 @@
                                         </div>
                                     </form>
 
-                                    <!-- Import Mutasi Pegawai (Excel) -->
-                                    <form action="<?= base_url('Administrator/importMutasiPegawai') ?>" method="post"
-                                        enctype="multipart/form-data" class="mr-2 mb-2">
-                                        <div class="input-group input-group-sm">
-                                            <div class="custom-file">
-                                                <input type="file" name="file_excel_mutasi" class="custom-file-input"
-                                                    id="fileExcelMutasi" required>
-                                                <label class="custom-file-label" for="fileExcelMutasi">Pilih File Mutasi</label>
-                                            </div>
-                                            <div class="input-group-append">
-                                                <button type="submit" class="btn btn-info">
-                                                    <i class="fas fa-file-upload"></i> Import Mutasi
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </form>
-
-                                    <a href="<?= base_url('Administrator/downloadTemplateMutasiPegawai') ?>"
-                                        class="btn btn-secondary btn-sm mr-2 mb-2">
-                                        <i class="fas fa-file-download"></i> Template Mutasi
-                                    </a>
+                                    <!-- Import Mutasi Pegawai moved to a dedicated card below -->
 
                                     <!-- Button Tambah -->
                                     <button class="btn btn-primary btn-sm mr-2 mb-2" data-toggle="modal"
@@ -158,6 +138,50 @@
                                 </ul>
                             </div>
 
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Dedicated Card: Import Mutasi Pegawai -->
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">📥 Import Mutasi Pegawai (Excel)</h5>
+
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <form action="<?= base_url('Administrator/importMutasiPegawai') ?>" method="post" enctype="multipart/form-data">
+                                        <div class="input-group input-group-sm">
+                                            <div class="custom-file">
+                                                <input type="file" name="file_excel_mutasi" class="custom-file-input" id="fileExcelMutasiCard" required>
+                                                <label class="custom-file-label" for="fileExcelMutasiCard">Pilih File Mutasi (.xls/.xlsx)</label>
+                                            </div>
+                                            <div class="input-group-append">
+                                                <button type="submit" class="btn btn-info">
+                                                    <i class="fas fa-file-upload"></i> Import Mutasi
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="col-md-4 text-right">
+                                    <a href="<?= base_url('Administrator/downloadTemplateMutasiPegawai') ?>" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-file-download"></i> Download Template Mutasi
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning mt-3">
+                                <strong>Catatan khusus Import Mutasi</strong>
+                                <ul class="mb-0">
+                                    <li>Format header yang diharapkan (dalam urutan kolom): <code>NIK, Jenis Unit, Unit Kantor, Jabatan Baru, Tanggal Mulai</code>.</li>
+                                    <li>Tanggal mulai bisa berupa tanggal teks (YYYY-MM-DD) atau serial tanggal Excel; sistem akan mencoba parsing otomatis.</li>
+                                    <li>Import akan menutup riwayat jabatan lama (tgl_selesai = TanggalMulai - 1 hari) dan menambahkan riwayat baru serta memperbarui data di tabel <code>pegawai</code>.</li>
+                                    <li>Pastikan Anda memiliki backup database sebelum melakukan import massal.</li>
+                                    <li>Hanya file <code>.xls</code> atau <code>.xlsx</code> yang didukung.</li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
