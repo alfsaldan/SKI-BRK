@@ -243,9 +243,9 @@
 
         <form id="loginForm" action="<?= site_url('auth/login'); ?>" method="post">
             <div class="form-group mb-3 text-left">
-                <label for="nik"><b>NIK</b></label>
-                <input type="text" class="form-control" id="nik" name="nik" required maxlength="16"
-                    placeholder="Masukkan NIK" value="<?= isset($nik) ? $nik : ''; ?>">
+                <label for="nik"><b>NIP</b></label>
+                <input type="text" class="form-control" id="nik" name="nik" required maxlength="6"
+                    placeholder="Masukkan NIP Pegawai" value="<?= isset($nik) ? $nik : ''; ?>">
             </div>
 
             <div class="form-group mb-4 position-relative">

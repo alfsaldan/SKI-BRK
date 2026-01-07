@@ -694,7 +694,17 @@ class Administrator extends CI_Controller
     {
         $this->load->model('DataPegawai_model');
         $data['judul'] = "Kelola Data Pegawai";
-        $data['pegawai'] = $this->DataPegawai_model->getAllPegawai();
+        $pegawai_list = $this->DataPegawai_model->getAllPegawai();
+
+        // Defensive dedupe: ensure we have at most one entry per NIK.
+        // This prevents duplicate rows in the rendered table if the query returns tied/latest rows.
+        $unique = [];
+        foreach ($pegawai_list as $p) {
+            if (!isset($unique[$p->nik])) {
+                $unique[$p->nik] = $p;
+            }
+        }
+        $data['pegawai'] = array_values($unique);
 
         // 🔹 Tambahkan ini untuk mengirim data ke dropdown "Jenis Unit"
         $data['unitkerja_list'] = $this->DataPegawai_model->getAllUnitKerja();
@@ -870,6 +880,177 @@ class Administrator extends CI_Controller
         }
 
         redirect('Administrator/kelolaDataPegawai');
+    }
+
+    // Import Mutasi Pegawai (Excel)
+    public function importMutasiPegawai()
+    {
+        $this->load->model('DataPegawai_model');
+
+        if (!isset($_FILES['file_excel_mutasi']['tmp_name']) || $_FILES['file_excel_mutasi']['error'] !== UPLOAD_ERR_OK) {
+            $this->session->set_flashdata('error', 'File mutasi tidak valid atau gagal diupload.');
+            redirect('Administrator/kelolaDataPegawai');
+            return;
+        }
+
+        $fileTmp = $_FILES['file_excel_mutasi']['tmp_name'];
+        $fileName = $_FILES['file_excel_mutasi']['name'];
+        $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+        if (!in_array($ext, ['xls', 'xlsx'])) {
+            $this->session->set_flashdata('error', 'Format file salah. Hanya mendukung .xls atau .xlsx sesuai template.');
+            redirect('Administrator/kelolaDataPegawai');
+            return;
+        }
+
+        try {
+            $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($fileTmp);
+            $spreadsheet = $reader->load($fileTmp);
+        } catch (\PhpOffice\PhpSpreadsheet\Reader\Exception $e) {
+            $this->session->set_flashdata('error', 'File Excel tidak dapat dibaca: ' . $e->getMessage());
+            redirect('Administrator/kelolaDataPegawai');
+            return;
+        } catch (\Exception $e) {
+            $this->session->set_flashdata('error', 'Terjadi error saat membuka file: ' . $e->getMessage());
+            redirect('Administrator/kelolaDataPegawai');
+            return;
+        }
+
+        $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+
+        if (count($sheetData) <= 1) {
+            $this->session->set_flashdata('error', 'File kosong atau tidak sesuai template mutasi.');
+            redirect('Administrator/kelolaDataPegawai');
+            return;
+        }
+
+        // normalize header
+        $normalize = function ($text) {
+            return strtolower(str_replace(' ', '_', trim($text)));
+        };
+
+        $header = $sheetData[1];
+        $colA = $normalize($header['A']); // expected: nik
+        $colB = $normalize($header['B']); // expected: jenis_unit or unit_kerja
+        $colC = $normalize($header['C']); // expected: unit_kantor
+        $colD = $normalize($header['D']); // expected: jabatan or jabatan_baru
+        $colE = $normalize($header['E']); // expected: tgl_mulai or tanggal_mulai
+
+        $okA = ($colA === 'nik');
+        $okB = in_array($colB, ['jenis_unit', 'unit_kerja']);
+        $okC = ($colC === 'unit_kantor');
+        $okD = in_array($colD, ['jabatan', 'jabatan_baru']);
+        $okE = in_array($colE, ['tgl_mulai', 'tanggal_mulai']);
+
+        if (!($okA && $okB && $okC && $okD && $okE)) {
+            $this->session->set_flashdata('error', 'Header tidak sesuai. Gunakan template mutasi resmi dengan header (dalam urutan): NIK, Jenis Unit, Unit Kantor, Jabatan Baru, Tanggal Mulai.');
+            redirect('Administrator/kelolaDataPegawai');
+            return;
+        }
+
+        $successCount = 0;
+        $errors = [];
+
+        foreach ($sheetData as $i => $row) {
+            if ($i == 1) continue;
+
+            $nik = trim($row['A']);
+            $unit_kerja = trim($row['B']);
+            $unit_kantor = trim($row['C']);
+            $jabatan_baru = trim($row['D']);
+            $tgl_mulai_raw = $row['E'];
+
+            if (empty($nik)) {
+                $errors[] = "Baris $i: NIK kosong.";
+                continue;
+            }
+
+            $pegawai = $this->DataPegawai_model->getPegawaiByNik($nik);
+            if (!$pegawai) {
+                $errors[] = "Baris $i: NIK $nik tidak ditemukan.";
+                continue;
+            }
+
+            // parse date: if numeric then Excel date
+            $tgl_mulai = null;
+            if (is_numeric($tgl_mulai_raw)) {
+                try {
+                    $dt = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tgl_mulai_raw);
+                    $tgl_mulai = $dt->format('Y-m-d');
+                } catch (Exception $e) {
+                    $errors[] = "Baris $i: Tanggal tidak valid.";
+                    continue;
+                }
+            } else {
+                $parsed = date_create($tgl_mulai_raw);
+                if ($parsed) $tgl_mulai = $parsed->format('Y-m-d');
+                else {
+                    $errors[] = "Baris $i: Tanggal tidak valid.";
+                    continue;
+                }
+            }
+
+            // perform riwayat update
+            try {
+                $this->DataPegawai_model->tambahRiwayatJabatan($nik, $jabatan_baru, $unit_kerja, $unit_kantor, $tgl_mulai);
+                $successCount++;
+            } catch (Exception $e) {
+                $errors[] = "Baris $i: Gagal menyimpan mutasi - " . $e->getMessage();
+            }
+        }
+
+        if ($successCount > 0) {
+            $this->session->set_flashdata('success', "$successCount data mutasi berhasil diproses.");
+        }
+        if (!empty($errors)) {
+            $this->session->set_flashdata('warning', implode('<br>', $errors));
+        }
+
+        redirect('Administrator/kelolaDataPegawai');
+    }
+
+    // Download template Mutasi Pegawai
+    public function downloadTemplateMutasiPegawai()
+    {
+        // Generate the template on the fly to ensure header/order matches expected import format
+        try {
+            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            // Header in the exact order we expect: Nik, Jenis Unit, Unit Kantor, Jabatan Baru, Tanggal Mulai
+            $header = ['Nik', 'Jenis Unit', 'Unit Kantor', 'Jabatan Baru', 'Tanggal Mulai'];
+            $sheet->fromArray($header, NULL, 'A1');
+            $sheet->getStyle('A1:E1')->getFont()->setBold(true);
+
+            // Set some reasonable column widths
+            $sheet->getColumnDimension('A')->setWidth(20);
+            $sheet->getColumnDimension('B')->setWidth(30);
+            $sheet->getColumnDimension('C')->setWidth(25);
+            $sheet->getColumnDimension('D')->setWidth(25);
+            $sheet->getColumnDimension('E')->setWidth(18);
+
+            // Make the tanggal column use ISO date format as a hint
+            $sheet->getStyle('E')->getNumberFormat()->setFormatCode('yyyy-mm-dd');
+
+            $filename = 'template_mutasipegawai.xlsx';
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header('Content-Disposition: attachment;filename="' . $filename . '"');
+            header('Cache-Control: max-age=0');
+
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+            $writer->save('php://output');
+            exit;
+        } catch (\Exception $e) {
+            // fallback to file on disk if generation fails
+            $this->load->helper('download');
+            $path = FCPATH . 'uploads/template_mutasipegawai.xlsx';
+            if (file_exists($path)) {
+                force_download($path, NULL);
+            } else {
+                $this->session->set_flashdata('error', 'Gagal membuat template mutasi dan file fallback tidak ditemukan: ' . $e->getMessage());
+                redirect('Administrator/kelolaDataPegawai');
+            }
+        }
     }
 
 
@@ -3510,9 +3691,6 @@ class Administrator extends CI_Controller
         }
 
         $this->load->model('DataPegawai_model');
-        $this->load->model('pegawai/Ppk_model');
-        $this->load->model('DataDiri_model');
-
         $data['pegawai'] = $this->DataPegawai_model->getPegawaiByNik($nik);
 
         // Ambil data user yang login (MSDI/Admin) untuk nama di tanda tangan

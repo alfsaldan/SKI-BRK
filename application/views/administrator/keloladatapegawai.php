@@ -56,6 +56,28 @@
                                         </div>
                                     </form>
 
+                                    <!-- Import Mutasi Pegawai (Excel) -->
+                                    <form action="<?= base_url('Administrator/importMutasiPegawai') ?>" method="post"
+                                        enctype="multipart/form-data" class="mr-2 mb-2">
+                                        <div class="input-group input-group-sm">
+                                            <div class="custom-file">
+                                                <input type="file" name="file_excel_mutasi" class="custom-file-input"
+                                                    id="fileExcelMutasi" required>
+                                                <label class="custom-file-label" for="fileExcelMutasi">Pilih File Mutasi</label>
+                                            </div>
+                                            <div class="input-group-append">
+                                                <button type="submit" class="btn btn-info">
+                                                    <i class="fas fa-file-upload"></i> Import Mutasi
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                    <a href="<?= base_url('Administrator/downloadTemplateMutasiPegawai') ?>"
+                                        class="btn btn-secondary btn-sm mr-2 mb-2">
+                                        <i class="fas fa-file-download"></i> Template Mutasi
+                                    </a>
+
                                     <!-- Button Tambah -->
                                     <button class="btn btn-primary btn-sm mr-2 mb-2" data-toggle="modal"
                                         data-target="#tambahPegawaiModal">

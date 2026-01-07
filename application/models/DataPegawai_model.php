@@ -6,20 +6,13 @@ class DataPegawai_model extends CI_Model
 
     public function getAllPegawai()
     {
+        // Use a correlated subquery join to pick the single latest riwayat_jabatan per pegawai.
+        // This prevents duplicate rows when there are multiple riwayat_jabatan entries with the same max tgl_mulai.
         $this->db->select('p.*, r.status as riwayat_status');
         $this->db->from('pegawai p');
-        $this->db->join(
-            '(SELECT r1.nik, r1.status 
-          FROM riwayat_jabatan r1
-          INNER JOIN (
-              SELECT nik, MAX(tgl_mulai) as tgl_terakhir
-              FROM riwayat_jabatan
-              GROUP BY nik
-          ) r2 ON r1.nik = r2.nik AND r1.tgl_mulai = r2.tgl_terakhir
-        ) r',
-            'p.nik = r.nik',
-            'left'
-        );
+        // Correlated join: match riwayat_jabatan row whose tgl_mulai is the max for that nik.
+        // This should return at most one matching r row per p, so GROUP BY is not needed and causes ONLY_FULL_GROUP_BY errors.
+        $this->db->join('riwayat_jabatan r', "p.nik = r.nik AND r.tgl_mulai = (SELECT MAX(tgl_mulai) FROM riwayat_jabatan WHERE nik = p.nik)", 'left');
         return $this->db->get()->result();
     }
 

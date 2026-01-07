@@ -224,18 +224,20 @@
         }
 
         /* Force dropdown container tetap visible */
-        body:not(.enlarged) #sidebar-menu li.active > ul {
+        body:not(.enlarged) #sidebar-menu li.active>ul {
             display: block !important;
         }
 
         /* Fix: Saat sidebar collapsed, sembunyikan dropdown aktif dan text */
-        body.enlarged #sidebar-menu li.active > ul {
+        body.enlarged #sidebar-menu li.active>ul {
             display: none !important;
         }
-        body.enlarged #sidebar-menu li.active:hover > ul {
+
+        body.enlarged #sidebar-menu li.active:hover>ul {
             display: block !important;
         }
-        body.enlarged #sidebar-menu > ul > li > a span {
+
+        body.enlarged #sidebar-menu>ul>li>a span {
             display: none !important;
         }
     </style>
@@ -538,7 +540,7 @@
                                         <span> Monitoring Individu </span>
                                     </a>
                                 </li>
-                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_pegawai', 'ppk_pegawaiformulir','ppk_pegawaievaluasi'])) ? 'active' : '' ?>">
+                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_pegawai', 'ppk_pegawaiformulir', 'ppk_pegawaievaluasi'])) ? 'active' : '' ?>">
                                     <a href="<?= base_url('pegawai/ppk_pegawai') ?>">
                                         <i class="mdi mdi-account-badge-alert-outline"></i>
                                         <span> Program PPK </span>
@@ -555,9 +557,27 @@
                             'ppk_penilai',
                             'ppk_penilaiformulir',
                             'ppk_pimpinanformulir',
-                            'ppk_penilaievaluasi', 
+                            'ppk_penilaievaluasi',
                             'ppk_pimpinanevaluasi'
                         ]));
+                        ?>
+                        <?php
+                        // Determine whether current user has any pegawai to grade (penilai1 or penilai2)
+                        $ci = &get_instance();
+                        // Ensure session library is loaded before accessing userdata
+                        if (!isset($ci->session)) {
+                            $ci->load->library('session');
+                        }
+                        $ci->load->model('pegawai/Nilai_model');
+                        $current_nik = $ci->session->userdata('nik');
+                        $__penilai1_list = [];
+                        $__penilai2_list = [];
+                        if (!empty($current_nik)) {
+                            // These methods return an array; keep them lightweight by only checking count
+                            $__penilai1_list = $ci->Nilai_model->getPegawaiSebagaiPenilai1($current_nik);
+                            $__penilai2_list = $ci->Nilai_model->getPegawaiSebagaiPenilai2($current_nik);
+                        }
+                        $showNilaiPegawai = (!empty($__penilai1_list) || !empty($__penilai2_list));
                         ?>
                         <li class="<?= $halamanPenilaiActive ? 'active' : '' ?>">
                             <a href="javascript: void(0);" class="special-header-link">
@@ -565,12 +585,14 @@
                                 <span class="menu-arrow"></span>
                             </a>
                             <ul class="nav-second-level <?= $halamanPenilaiActive ? 'in' : '' ?>" aria-expanded="<?= $halamanPenilaiActive ? 'true' : 'false' ?>">
-                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['nilaipegawai', 'nilaipegawaidetail', 'nilaipegawaidetail2'])) ? 'active' : '' ?>">
-                                    <a href="<?= base_url('pegawai/nilaipegawai') ?>">
-                                        <i class="mdi mdi-account-edit"></i>
-                                        <span> Nilai Pegawai </span>
-                                    </a>
-                                </li>
+                                <?php if ($showNilaiPegawai): ?>
+                                    <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['nilaipegawai', 'nilaipegawaidetail', 'nilaipegawaidetail2'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('pegawai/nilaipegawai') ?>">
+                                            <i class="mdi mdi-account-edit"></i>
+                                            <span> Nilai Pegawai </span>
+                                        </a>
+                                    </li>
+                                <?php endif; ?>
                                 <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_penilai', 'ppk_penilaiformulir', 'ppk_pimpinanformulir', 'ppk_penilaievaluasi', 'ppk_pimpinanevaluasi'])) ? 'active' : '' ?>">
                                     <a href="<?= base_url('pegawai/ppk_penilai') ?>">
                                         <i class="mdi mdi-account-badge-alert"></i>
