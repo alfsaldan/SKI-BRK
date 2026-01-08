@@ -579,28 +579,28 @@
                         }
                         $showNilaiPegawai = (!empty($__penilai1_list) || !empty($__penilai2_list));
                         ?>
-                        <li class="<?= $halamanPenilaiActive ? 'active' : '' ?>">
-                            <a href="javascript: void(0);" class="special-header-link">
-                                <span> Halaman Penilai </span>
-                                <span class="menu-arrow"></span>
-                            </a>
-                            <ul class="nav-second-level <?= $halamanPenilaiActive ? 'in' : '' ?>" aria-expanded="<?= $halamanPenilaiActive ? 'true' : 'false' ?>">
-                                <?php if ($showNilaiPegawai): ?>
+                        <?php if ($showNilaiPegawai): ?>
+                            <li class="<?= $halamanPenilaiActive ? 'active' : '' ?>">
+                                <a href="javascript: void(0);" class="special-header-link">
+                                    <span> Halaman Penilai </span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <ul class="nav-second-level <?= $halamanPenilaiActive ? 'in' : '' ?>" aria-expanded="<?= $halamanPenilaiActive ? 'true' : 'false' ?>">
                                     <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['nilaipegawai', 'nilaipegawaidetail', 'nilaipegawaidetail2'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('pegawai/nilaipegawai') ?>">
                                             <i class="mdi mdi-account-edit"></i>
                                             <span> Nilai Pegawai </span>
                                         </a>
                                     </li>
-                                <?php endif; ?>
-                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_penilai', 'ppk_penilaiformulir', 'ppk_pimpinanformulir', 'ppk_penilaievaluasi', 'ppk_pimpinanevaluasi'])) ? 'active' : '' ?>">
-                                    <a href="<?= base_url('pegawai/ppk_penilai') ?>">
-                                        <i class="mdi mdi-account-badge-alert"></i>
-                                        <span> Nilai PPK </span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                                    <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_penilai', 'ppk_penilaiformulir', 'ppk_pimpinanformulir', 'ppk_penilaievaluasi', 'ppk_pimpinanevaluasi'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('pegawai/ppk_penilai') ?>">
+                                            <i class="mdi mdi-account-badge-alert"></i>
+                                            <span> Nilai PPK </span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        <?php endif; ?>
                     </ul>
                 </div> <!-- end sidebar-menu -->
             </div> <!-- end slimscroll-menu -->
