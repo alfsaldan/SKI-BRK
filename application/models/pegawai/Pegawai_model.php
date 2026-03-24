@@ -84,6 +84,7 @@ class Pegawai_model extends CI_Model
         indikator.id,
         indikator.indikator,
         indikator.bobot,
+        sasaran_kerja.id as sasaran_id,
         sasaran_kerja.perspektif,
         sasaran_kerja.sasaran_kerja,
         penilaian.id as penilaian_id,
@@ -112,8 +113,19 @@ class Pegawai_model extends CI_Model
             $this->db->join('penilaian', 'penilaian.indikator_id = indikator.id', 'left');
         }
 
+        // Hanya ambil sasaran_kerja yang sesuai jabatan/unit
         $this->db->where('sasaran_kerja.jabatan', $jabatan);
         $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+        // Jika $nik diberikan (tampilan pegawai), tampilkan juga item personal milik pegawai
+        if ($nik) {
+            $this->db->where('(sasaran_kerja.owner_nik IS NULL OR sasaran_kerja.owner_nik = ' . $this->db->escape($nik) . ')');
+            // Pastikan indikator yang di-join juga default atau milik pegawai
+            $this->db->where('(indikator.owner_nik IS NULL OR indikator.owner_nik = ' . $this->db->escape($nik) . ')');
+        } else {
+            // Jika tidak ada nik (mis. admin/overview), hanya ambil default (owner NULL)
+            $this->db->where('sasaran_kerja.owner_nik IS NULL');
+            $this->db->where('indikator.owner_nik IS NULL');
+        }
 
         $this->db->order_by('sasaran_kerja.perspektif', 'ASC');
         $this->db->order_by('sasaran_kerja.sasaran_kerja', 'ASC');
@@ -713,5 +725,17 @@ class Pegawai_model extends CI_Model
             ->order_by('tgl_selesai', 'ASC') // Urutkan dari yang terlama
             ->get()
             ->result();
+    }
+
+    public function insert_sasaran_kerja($data)
+    {
+        $this->db->insert('sasaran_kerja', $data);
+        return $this->db->insert_id();
+    }
+
+    public function insert_indikator($data)
+    {
+        $this->db->insert('indikator', $data);
+        return $this->db->insert_id();
     }
 }

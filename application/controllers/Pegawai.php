@@ -189,12 +189,96 @@ class Pegawai extends CI_Controller
         $this->load->view('layoutpegawai/footer');
     }
 
+    public function simpan_sasaran_baru()
+    {
+        $nik = $this->session->userdata('nik');
+        $pegawai = $this->Pegawai_model->getPegawaiByNIK($nik);
+
+        $perspektif = $this->input->post('perspektif');
+        $sasaran = $this->input->post('sasaran');
+        $indikator = $this->input->post('indikator');
+        $bobot = $this->input->post('bobot');
+        $target = $this->input->post('target');
+        $batas_waktu = $this->input->post('batas_waktu');
+        
+        $periode_awal = $this->input->post('periode_awal');
+        $periode_akhir = $this->input->post('periode_akhir');
+
+        // 1. Insert Sasaran Kerja
+        $data_sasaran = [
+            'jabatan' => $pegawai->jabatan,
+            'unit_kerja' => $pegawai->unit_kerja,
+            'perspektif' => $perspektif,
+            'sasaran_kerja' => $sasaran,
+            // Tandai sebagai milik pegawai ini sehingga tidak mengubah default jabatan
+            'owner_nik' => $nik
+        ];
+        $sasaran_id = $this->Pegawai_model->insert_sasaran_kerja($data_sasaran);
+
+        // 2. Insert Indikator
+        $data_indikator = [
+            'sasaran_id' => $sasaran_id,
+            'indikator' => $indikator,
+            'bobot' => $bobot
+        ];
+        $indikator_id = $this->Pegawai_model->insert_indikator($data_indikator);
+
+        // 3. Insert Penilaian (Initial)
+        $this->Pegawai_model->save_penilaian(
+            $nik,
+            $indikator_id,
+            $target,
+            $batas_waktu,
+            0, // realisasi 0
+            $periode_awal,
+            $periode_akhir
+        );
+
+        echo json_encode(['status' => 'success', 'message' => 'Sasaran baru berhasil ditambahkan']);
+    }
+
+    public function simpan_indikator_baru()
+    {
+        $nik = $this->session->userdata('nik');
+        
+        $sasaran_id = $this->input->post('sasaran_id');
+        $indikator = $this->input->post('indikator');
+        $bobot = $this->input->post('bobot');
+        $target = $this->input->post('target');
+        $batas_waktu = $this->input->post('batas_waktu');
+        
+        $periode_awal = $this->input->post('periode_awal');
+        $periode_akhir = $this->input->post('periode_akhir');
+
+        // 1. Insert Indikator
+        $data_indikator = [
+            'sasaran_id' => $sasaran_id,
+            'indikator' => $indikator,
+            'bobot' => $bobot
+        ];
+        $indikator_id = $this->Pegawai_model->insert_indikator($data_indikator);
+
+        // 2. Insert Penilaian (Initial)
+        $this->Pegawai_model->save_penilaian(
+            $nik,
+            $indikator_id,
+            $target,
+            $batas_waktu,
+            0,
+            $periode_awal,
+            $periode_akhir
+        );
+
+        echo json_encode(['status' => 'success', 'message' => 'Indikator baru berhasil ditambahkan']);
+    }
+
     public function simpanPenilaianBaris()
     {
         $nik = $this->session->userdata('nik');
 
         // Ambil semua input dari fetch()
         $indikator_id = $this->input->post('indikator_id');
+        $bobot = $this->input->post('bobot');
         $target = $this->input->post('target');
         $batas_waktu = $this->input->post('batas_waktu');
         $realisasi = $this->input->post('realisasi');
@@ -211,6 +295,11 @@ class Pegawai extends CI_Controller
                 'message' => 'Data tidak lengkap (indikator_id atau nik kosong).'
             ]);
             return;
+        }
+
+        // Jika bobot dikirim, update tabel indikator
+        if ($bobot !== null) {
+            $this->db->where('id', $indikator_id)->update('indikator', ['bobot' => $bobot]);
         }
 
         // Simpan atau update penilaian

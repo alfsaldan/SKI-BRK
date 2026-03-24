@@ -7,6 +7,8 @@ class Indikator_model extends CI_Model
     public function getSasaranKerja()
     {
         $this->db->select('id, sasaran_kerja, perspektif, jabatan, unit_kerja');
+        // Hanya ambil sasaran default (master) untuk tampilan administrator
+        $this->db->where('owner_nik IS NULL');
         return $this->db->get('sasaran_kerja')->result();
     }
 
@@ -65,6 +67,10 @@ class Indikator_model extends CI_Model
         $this->db->select('indikator.*, sasaran_kerja.sasaran_kerja, sasaran_kerja.perspektif, sasaran_kerja.jabatan, sasaran_kerja.unit_kerja');
         $this->db->from('indikator');
         $this->db->join('sasaran_kerja', 'sasaran_kerja.id = indikator.sasaran_id');
+
+        // Hanya ambil indikator & sasaran default (owner_nik IS NULL) untuk administrator
+        $this->db->where('sasaran_kerja.owner_nik IS NULL');
+        $this->db->where('indikator.owner_nik IS NULL');
 
         if ($unit_kerja) {
             $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
