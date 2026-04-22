@@ -532,626 +532,630 @@
                                     <i class="mdi mdi-file-excel"></i> Download Excel
                                 </a>
                                 <?php if (!$is_locked && !$is_verified): ?>
-                                            <div class="mb-3">
-                                                <button class="btn btn-info btn-sm mr-2" onclick="addSasaranRow()"><i
-                                                        class="mdi mdi-plus"></i> Tambah Sasaran</button>
-                                                <button class="btn btn-secondary btn-sm" onclick="addIndikatorRow()"><i
-                                                        class="mdi mdi-plus"></i> Tambah Indikator</button>
-                                            </div>
-                                    <?php endif; ?>
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered" id="tabel-penilaian">
-                                            <thead style="background-color:#2E7D32;color:#fff;text-align:center;">
-                                                <tr>
-                                                    <th>Perspektif</th>
-                                                    <th>Sasaran Kerja</th>
-                                                    <th class="text-center" style="width: 80px;">Bobot (%)</th>
-                                                    <th>Indikator</th>
-                                                    <th class="text-center" style="width: 120px;">Target</th>
-                                                    <th class="text-center" style="width: 80px;">Batas Waktu</th>
-                                                    <th class="text-center" style="width: 120px;">Realisasi</th>
-                                                    <th class="text-center" style="width: 120px;">Pencapaian (%)</th>
-                                                    <th class="text-center" style="width: 120px;">Nilai</th>
-                                                    <th class="text-center" style="width: 120px;">Nilai Dibobot</th>
-                                                    <th class="text-center" style="width: 150px;">Status Penilai 1</th>
-                                                    <th class="text-center" style="width: 150px;">Status Penilai 2</th>
-                                                    <th class="text-center" style="width: 120px;">Aksi</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php
-                                                $printed_any = false;
-                                                foreach ($order as $persp) {
-                                                    if (empty($grouped[$persp]))
-                                                        continue;
-                                                    $printed_any = true;
-                                                    $persp_rows = count_rows($grouped[$persp]);
-                                                    $first_persp_cell = true;
-                                                    $subtotal_bobot_perspektif = 0;
-
-                                                    foreach ($grouped[$persp] as $sasaran => $items) {
-                                                        $sasaran_rows = count($items);
-                                                        $first_sas_cell = true;
-
-                                                        foreach ($items as $i) {
-                                                            $id = $i->id;
-                                                            $bobot = $i->bobot ?? 0;
-                                                            $indik = $i->indikator ?? '';
-                                                            $subtotal_bobot_perspektif += $bobot;
-
-                                                            // 🟢 Ambil status untuk Penilai 1 dari kolom `status`
-                                                            $status = strtolower(trim($i->status ?? ''));
-
-                                                            // Logika untuk Status Penilai 1
-                                                            $statusClass = 'badge badge-danger';
-                                                            $statusText = 'Belum Dinilai';
-
-                                                            switch ($status) {
-                                                                case 'ada catatan':
-                                                                    $statusClass = 'badge badge-warning';
-                                                                    $statusText = 'Ada Catatan';
-                                                                    break;
-                                                                case 'disetujui':
-                                                                    $statusClass = 'badge badge-success';
-                                                                    $statusText = 'Disetujui';
-                                                                    break;
-                                                            }
-
-                                                            // 🟢 Ambil status untuk Penilai 2 dari kolom `status2`
-                                                            $status2 = strtolower(trim($i->status2 ?? ''));
-
-                                                            // Logika untuk Status Penilai 2
-                                                            $status2Class = 'badge badge-danger';
-                                                            $status2Text = 'Belum Dinilai';
-
-                                                            switch ($status2) {
-                                                                case 'ada catatan':
-                                                                    $status2Class = 'badge badge-warning';
-                                                                    $status2Text = 'Ada Catatan';
-                                                                    break;
-                                                                case 'disetujui':
-                                                                    $status2Class = 'badge badge-success';
-                                                                    $status2Text = 'Disetujui';
-                                                                    break;
-                                                            }
-                                                            ?>
-
-                                                                        <tr data-id="<?= $id; ?>" data-sasaran-id="<?= $i->sasaran_id ?? '' ?>"
-                                                                            data-sasaran-nama="<?= htmlspecialchars($sasaran ?? '', ENT_QUOTES, 'UTF-8') ?>"
-                                                                            data-bobot="<?= $bobot ?? '' ?>" data-perspektif="<?= $persp ?? '' ?>"
-                                                                            data-indikator="<?= htmlspecialchars($indik ?? '', ENT_QUOTES, 'UTF-8'); ?>">
-                                                                            <?php if ($first_persp_cell) { ?>
-                                                                                    <td rowspan="<?= $persp_rows; ?>"
-                                                                                        style="vertical-align:middle;font-weight:600;background:#C8E6C9;">
-                                                                                        <?= $persp; ?></td>
-                                                                                    <?php $first_persp_cell = false;
-                                                                            } ?>
-
-                                                                            <?php if ($first_sas_cell) { ?>
-                                                                                    <td rowspan="<?= $sasaran_rows; ?>"
-                                                                                        style="vertical-align:middle;background:#E3F2FD;"><?= $sasaran; ?></td>
-                                                                                    <?php $first_sas_cell = false;
-                                                                            } ?>
-
-                                                    <td class="text-center align-middle">
-                                                        <input type="number" class="form-control form-control-sm text-center bobot"
-                                                            value="<?= $bobot; ?>" min="5" step="5"
-                                                            data-toggle="tooltip" data-placement="bottom" data-html="true"
-                                                            data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
-                                                            title="<i class='mdi mdi-information-outline'></i><br>Minimal nilai 5 dan kelipatan 5"
-                                                            <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
-                                                    </td>
-                                                                            <td><?= $indik; ?></td>
-
-                                                                            <style>
-                                                                                .currency-wrapper {
-                                                                                    position: relative;
-                                                                                    display: inline-block;
-                                                                                    width: 100%;
-                                                                                }
-
-                                                                                .currency-wrapper .format-currency {
-                                                                                    position: absolute;
-                                                                                    top: 0;
-                                                                                    left: 0;
-                                                                                    width: 100%;
-                                                                                    height: 100%;
-                                                                                    display: flex;
-                                                                                    justify-content: center;
-                                                                                    align-items: center;
-                                                                                    color: #000;
-                                                                                    font-weight: 550;
-                                                                                    pointer-events: none;
-                                                                                }
-
-                                                                                .currency-wrapper input.hide-text {
-                                                                                    color: transparent;
-                                                                                    caret-color: black;
-                                                                                }
-                                                                            </style>
-                                                                            <!-- Target -->
-                                                                            <td class="text-center align-middle">
-                                                                                <div class="currency-wrapper">
-                                                                                    <input type="text" class="form-control target-input text-center"
-                                                                                        style="min-width:150px;" value="<?= $i->target ?? ''; ?>"
-                                                                                        <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
-                                                                                    <div class="format-currency text-muted small"></div>
-                                                                                </div>
-                                                                            </td>
-                                                                            <td class="text-center align-middle">
-                                                                                <input type="date" class="form-control batas-waktu"
-                                                                                    style="min-width:120px;" value="<?= $i->batas_waktu ?? ''; ?>"
-                                                                                    <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
-                                                                            </td>
-                                                                            <td class="text-center align-middle">
-                                                                                <div class="currency-wrapper">
-                                                                                    <?php if (!$is_locked && !$is_verified): ?>
-                                                                                            <input type="text" class="form-control text-center realisasi-input"
-                                                                                                value="<?= $i->realisasi ?? ''; ?>" style="min-width:150px;">
-                                                                                    <?php else: ?>
-                                                                                            <input type="text" class="form-control text-center realisasi-input"
-                                                                                                value="<?= $i->realisasi ?? ''; ?>" style="min-width:150px;"
-                                                                                                readonly>
-                                                                                    <?php endif; ?>
-                                                                                    <div class="format-currency text-muted small"></div>
-                                                                                </div>
-                                                                            </td>
-
-                                                                            <td class="text-center align-middle">
-                                                                                <input type="text"
-                                                                                    class="form-control form-control-sm text-center pencapaian-output"
-                                                                                    readonly style="min-width:50px;">
-                                                                            </td>
-                                                                            <td class="text-center align-middle">
-                                                                                <input type="text"
-                                                                                    class="form-control form-control-sm text-center nilai-output"
-                                                                                    readonly style="min-width:60px;">
-                                                                            </td>
-                                                                            <td class="text-center align-middle">
-                                                                                <input type="text"
-                                                                                    class="form-control form-control-sm text-center nilai-bobot-output"
-                                                                                    readonly style="min-width:50px;">
-                                                                            </td>
-
-
-                                                                            <td class="text-center align-middle">
-                                                                                <span class="<?= $statusClass; ?>"><?= $statusText; ?></span>
-                                                                            </td>
-                                                                            <td class="text-center align-middle">
-                                                                                <span class="<?= $status2Class; ?>"><?= $status2Text; ?></span>
-                                                                            </td>
-                                                                            <td class="text-center align-middle">
-                                                                                <?php if (!$is_locked && !$is_verified): ?>
-                                                                                        <button type="button"
-                                                                                            class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
-                                                                                <?php else: ?>
-                                                                                        <button type="button" class="btn btn-sm btn-secondary"
-                                                                                            disabled>Terkunci</button>
-                                                                                <?php endif; ?>
-
-                                                                            </td>
-                                                                        </tr>
-                                                                        <?php
-                                                        }
-                                                    }
-                                                    ?>
-                                                        <tr class="subtotal-row" data-perspektif="<?= $persp; ?>"
-                                                            style="font-weight:bold;background:#F1F8E9;">
-                                                            <td colspan="2">Sub Total Bobot <?= $persp; ?></td>
-                                                            <td class="text-center"><span
-                                                                    class="subtotal-bobot"><?= $subtotal_bobot_perspektif; ?></span>
-                                                            </td>
-                                                            <td colspan="6" class="text-center">Sub Total Nilai <?= $persp; ?> Dibobot
-                                                            </td>
-                                                            <td class="text-center"><span class="subtotal-nilai-bobot">0.00</span></td>
-                                                            <td colspan="3"></td>
-                                                        </tr>
-                                                        <?php
-                                                }
-                                                if (!$printed_any) { ?>
-                                                        <tr>
-                                                            <td colspan="13" class="text-center">Tidak ada indikator untuk jabatan ini
-                                                            </td>
-                                                        </tr>
-                                                <?php } ?>
-                                            </tbody>
-                                            <tfoot
-                                                style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
-                                                <tr>
-                                                    <td colspan="2">Total</td>
-                                                    <td><span id="total-bobot">0</span></td>
-                                                    <td colspan="6" class="text-center">Total Nilai Kinerja</td>
-                                                    <td><span id="total-nilai-bobot">0.00</span></td>
-                                                    <td colspan="3"></td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
+                                    <div class="mb-3">
+                                        <button class="btn btn-info btn-sm mr-2" onclick="addSasaranRow()"><i
+                                                class="mdi mdi-plus"></i> Tambah Sasaran</button>
+                                        <button class="btn btn-secondary btn-sm" onclick="addIndikatorRow()"><i
+                                                class="mdi mdi-plus"></i> Tambah Indikator</button>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Form Penilaian Budaya (Read-Only untuk Pegawai) -->
-                    <div class="row mt-0">
-                        <div class="col-12">
-                            <div class="card shadow-sm border-0">
-                                <div class="card-body">
-                                    <h5 class="text-success fw-bold mb-3">
-                                        <i class="mdi mdi-account-star-outline me-2"></i> Form Penilaian Budaya
-                                    </h5>
-
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered" id="tabel-penilaian-budaya">
-                                            <thead class="text-center align-middle">
-                                                <tr class="bg-success text-white fw-bold">
-                                                    <th colspan="4" style="vertical-align: middle;">Budaya Kerja</th>
-                                                </tr>
-                                                <tr class="bg-success-subtle text-dark fw-bold align-middle">
-                                                    <th style="width:50px;">No</th>
-                                                    <th style="width:300px;">Perilaku Utama</th>
-                                                    <th>Panduan Perilaku</th>
-                                                    <th style="width:180px;">Nilai</th>
-                                                </tr>
-                                            </thead>
-
-                                            <tbody>
-                                                <?php
-                                                $no = 1;
-                                                if (!empty($budaya)):
-                                                    foreach ($budaya as $b):
-                                                        $panduanList = json_decode($b['panduan_perilaku'], true);
-
-                                                        if (is_array($panduanList)):
-                                                            foreach ($panduanList as $pIndex => $p):
-                                                                // Key sesuai format JSON nilai_budaya
-                                                                $nilaiKey = "budaya_{$no}_{$pIndex}";
-                                                                $nilai = isset($budaya_nilai[$nilaiKey]) ? (int) $budaya_nilai[$nilaiKey] : 0;
-
-                                                                // Mapping label dan warna
-                                                                switch ($nilai) {
-                                                                    case 1:
-                                                                        $labelNilai = "1 - Sangat Jarang";
-                                                                        $color = "text-danger"; // merah
-                                                                        break;
-                                                                    case 2:
-                                                                        $labelNilai = "2 - Jarang";
-                                                                        $color = "text-warning"; // kuning
-                                                                        break;
-                                                                    case 3:
-                                                                        $labelNilai = "3 - Kadang";
-                                                                        $color = "text-primary"; // biru
-                                                                        break;
-                                                                    case 4:
-                                                                        $labelNilai = "4 - Sering";
-                                                                        $color = "text-success"; // hijau muda
-                                                                        break;
-                                                                    case 5:
-                                                                        $labelNilai = "5 - Selalu";
-                                                                        $color = "fw-bold"; // hijau tua (nanti pakai inline)
-                                                                        break;
-                                                                    default:
-                                                                        $labelNilai = "<span class='text-muted fst-italic'>Belum Dinilai</span>";
-                                                                        $color = "";
-                                                                }
-                                                                ?>
-                                                                                <tr>
-                                                                                    <?php if ($pIndex === 0): ?>
-                                                                                            <td class="text-center align-middle" rowspan="<?= count($panduanList); ?>">
-                                                                                                <?= $no; ?>
-                                                                                            </td>
-                                                                                            <td class="align-middle" rowspan="<?= count($panduanList); ?>">
-                                                                                                <?= htmlspecialchars($b['perilaku_utama']); ?>
-                                                                                            </td>
-                                                                                    <?php endif; ?>
-                                                                                    <td><?= chr(97 + $pIndex) . ". " . htmlspecialchars($p); ?></td>
-                                                                                    <td class="text-center align-middle">
-                                                                                        <?php
-                                                                                        if ($nilai >= 1 && $nilai <= 5) {
-                                                                                            // Warna hijau tua (lebih gelap dari default Bootstrap)
-                                                                                            $style = $nilai == 5 ? "color:#1e9c44;" : "";
-                                                                                            echo "<span class='$color' style='$style'>$labelNilai</span>";
-                                                                                        } else {
-                                                                                            echo $labelNilai;
-                                                                                        }
-                                                                                        ?>
-                                                                                    </td>
-                                                                                </tr>
-                                                                                <?php
-                                                            endforeach;
-                                                            $no++;
-                                                        endif;
-                                                    endforeach;
-                                                else:
-                                                    echo '<tr><td colspan="4" class="text-center text-muted">Data penilaian budaya belum tersedia.</td></tr>';
-                                                endif;
-                                                ?>
-                                            </tbody>
-
-                                            <tfoot class="text-center fw-bold bg-success text-white">
-                                                <tr>
-                                                    <td colspan="3" class="text-end align-middle">
-                                                        Rata-Rata Nilai Internalisasi Budaya
-                                                    </td>
-                                                    <td>
-                                                        <input type="text" class="form-control form-control-sm text-center"
-                                                            value="<?= number_format($rata_rata_budaya ?? 0, 2); ?>" readonly>
-                                                    </td>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ================== FORM NILAI AKHIR ================== -->
-                    <!-- Nilai Akhir & Catatan -->
-                    <div class="card mt-0">
-                        <div class="card-body">
-                            <h5 class="text-success font-weight-bold mb-3">
-                                <i class="mdi mdi-star-circle mr-2"></i> Nilai Akhir (q)
-                            </h5>
-
-                            <!-- Bagian Atas: Perhitungan -->
-                            <table class="table table-bordered mb-4">
-                                <tr>
-                                    <th>Total Nilai Sasaran Kerja</th>
-                                    <td class="text-center" id="total-sasaran">
-                                        <?= $nilai_akhir['total_sasaran'] ?? 0 ?>
-                                    </td>
-                                    <td>x Bobot % Sasaran Kerja</td>
-                                    <td>
-                                        <input type="text" id="bobot-sasaran" class="form-control form-control-sm text-center"
-                                            value="95%" readonly>
-                                    </td>
-                                    <td class="text-center" id="nilai-sasaran">
-                                        <?= $nilai_akhir['nilai_sasaran'] ?? 0 ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Rata-rata Nilai Internalisasi Budaya</th>
-                                    <td class="text-center" id="rata-budaya">
-                                        <?= number_format($rata_rata_budaya ?? 0, 2); ?>
-                                    </td>
-                                    <td>x Bobot % Budaya Perusahaan</td>
-                                    <td>
-                                        <input type="text" id="bobot-budaya" class="form-control form-control-sm text-center"
-                                            value="5%" readonly>
-                                    </td>
-                                    <td class="text-center" id="nilai-budaya">
-                                        <?= $nilai_akhir['nilai_budaya'] ?? '-' ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Share KPI</th>
-                                    <td class="text-center" id="share-kpi">
-                                        <input type="text" id="share-kpi-value" class="form-control form-control-sm text-center"
-                                            min="0" max="5" value="<?= $nilai_akhir['share_kpi_value'] ?? 0 ?>"
-                                            oninput="if(this.value > 5) this.value = 5; if(this.value < 0) this.value = 0; hitungShareKPI()"
-                                            data-toggle="tooltip" data-placement="bottom" data-html="true"
-                                            data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
-                                            title="<i class='mdi mdi-information-outline'></i><br>Pastikan nilai share KPI sesuai dengan data KPI Direksi">
-                                    </td>
-                                    <td>x Bobot % Share KPI</td>
-                                    <td>
-                                        <div class="input-group input-group-sm" style="width: 100%;">
-                                            <input type="number" id="bobot-share-kpi" class="form-control f
-                                            orm-control-sm text-center"
-                                                value="<?= $nilai_akhir['bobot_share_kpi'] ?? 0 ?>" min="0" max="95"
-                                                style="height: 30px;"
-                                                oninput="if(this.value > 95) this.value = 95; if(this.value < 0) this.value = 0; hitungShareKPI()"
-                                                data-toggle="tooltip" data-placement="bottom" data-html="true"
-                                                data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
-                                                title="<i class='mdi mdi-information-outline'></i><br>Pastikan bobot share KPI sesuai dengan data KPI Direksi">
-                                            <span class="input-group-text" style="height: 30px; line-height: 1;">%</span>
-                                        </div>
-                                    </td>
-                                    <td class="text-center" id="share-kpi-nilai">
-                                        <?= $nilai_akhir['share_kpi'] ?? '-' ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th colspan="4" class="text-right">Total Nilai</th>
-                                    <td class="text-center" id="total-nilai">
-                                        <?= $nilai_akhir['total_nilai'] ?? 0 ?>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th colspan="4" class="text-right">
-                                        Fraud<br>
-                                        <small>(diisi 1 jika melakukan fraud, 0 jika tidak)</small>
-                                    </th>
-                                    <td>
-                                        <input type="number" min="0" max="1" class="form-control form-control-sm text-center"
-                                            id="fraud-input" value="<?= $nilai_akhir['fraud'] ?? 0 ?>" readonly>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th colspan="4" class="text-right">
-                                        Koefisien Nilai<br>
-                                    </th>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" name="koefisien" id="koefisien-input"
-                                                class="form-control text-center" max="100" min="70" step="5"
-                                                value="<?= isset($nilai_akhir['koefisien']) ? htmlspecialchars($nilai_akhir['koefisien']) : 100 ?>"
-                                                readonly>
-                                            <div class="input-group-append">
-                                                <span class="input-group-text">%</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-
-                            <!-- Bagian Bawah: Kiri-Kanan -->
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <!-- Tabel Predikat -->
-                                    <table class="table table-bordered text-center">
-                                        <thead class="bg-success text-white">
+                                <?php endif; ?>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="tabel-penilaian">
+                                        <thead style="background-color:#2E7D32;color:#fff;text-align:center;">
                                             <tr>
-                                                <th>Nilai Akhir</th>
-                                                <th>Yudisium / Predikat</th>
+                                                <th>Perspektif</th>
+                                                <th>Sasaran Kerja</th>
+                    
+                                                <th class="text-center" style="min-width: 120px;">Bobot (%)</th>
+                                                <th>Indikator</th>
+                                                <th class="text-center" style="width: 120px;">Target</th>
+                                                <th class="text-center" style="width: 80px;">Batas Waktu</th>
+                                                <th class="text-center" style="width: 120px;">Realisasi</th>
+                                                <th class="text-center" style="width: 120px;">Pencapaian (%)</th>
+                                                <th class="text-center" style="width: 120px;">Nilai</th>
+                                                <th class="text-center" style="width: 120px;">Nilai Dibobot</th>
+                                                <th class="text-center" style="width: 150px;">Status Penilai 1</th>
+                                                <th class="text-center" style="width: 150px;">Status Penilai 2</th>
+                                                <th class="text-center" style="width: 120px;">Aksi</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <tr>
-                                                <td>&ge; 4.50 - 5</td>
-                                                <td><b>Excellent (E)</b></td>
-                                            </tr>
-                                            <tr>
-                                                <td>3.50 - &lt; 4.50</td>
-                                                <td><b>Very Good (VG)</b></td>
-                                            </tr>
-                                            <tr>
-                                                <td>3.00 - &lt; 3.50</td>
-                                                <td><b>Good (G)</b></td>
-                                            </tr>
-                                            <tr>
-                                                <td>2.00 - &lt; 3.00</td>
-                                                <td><b>Fair (F)</b></td>
-                                            </tr>
-                                            <tr>
-                                                <td>&lt; 2.00</td>
-                                                <td><b>Minus (M)</b></td>
-                                            </tr>
+                                            <?php
+                                            $printed_any = false;
+                                            foreach ($order as $persp) {
+                                                if (empty($grouped[$persp]))
+                                                    continue;
+                                                $printed_any = true;
+                                                $persp_rows = count_rows($grouped[$persp]);
+                                                $first_persp_cell = true;
+                                                $subtotal_bobot_perspektif = 0;
+
+                                                foreach ($grouped[$persp] as $sasaran => $items) {
+                                                    $sasaran_rows = count($items);
+                                                    $first_sas_cell = true;
+
+                                                    foreach ($items as $i) {
+                                                        $id = $i->id;
+                                                        $bobot = $i->bobot ?? 0;
+                                                        $indik = $i->indikator ?? '';
+                                                        $subtotal_bobot_perspektif += $bobot;
+
+                                                        // 🟢 Ambil status untuk Penilai 1 dari kolom `status`
+                                                        $status = strtolower(trim($i->status ?? ''));
+
+                                                        // Logika untuk Status Penilai 1
+                                                        $statusClass = 'badge badge-danger';
+                                                        $statusText = 'Belum Dinilai';
+
+                                                        switch ($status) {
+                                                            case 'ada catatan':
+                                                                $statusClass = 'badge badge-warning';
+                                                                $statusText = 'Ada Catatan';
+                                                                break;
+                                                            case 'disetujui':
+                                                                $statusClass = 'badge badge-success';
+                                                                $statusText = 'Disetujui';
+                                                                break;
+                                                        }
+
+                                                        // 🟢 Ambil status untuk Penilai 2 dari kolom `status2`
+                                                        $status2 = strtolower(trim($i->status2 ?? ''));
+
+                                                        // Logika untuk Status Penilai 2
+                                                        $status2Class = 'badge badge-danger';
+                                                        $status2Text = 'Belum Dinilai';
+
+                                                        switch ($status2) {
+                                                            case 'ada catatan':
+                                                                $status2Class = 'badge badge-warning';
+                                                                $status2Text = 'Ada Catatan';
+                                                                break;
+                                                            case 'disetujui':
+                                                                $status2Class = 'badge badge-success';
+                                                                $status2Text = 'Disetujui';
+                                                                break;
+                                                        }
+                                                        ?>
+
+                                                        <tr data-id="<?= $id; ?>" data-sasaran-id="<?= $i->sasaran_id ?? '' ?>"
+                                                            data-sasaran-nama="<?= htmlspecialchars($sasaran ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                                            data-bobot="<?= $bobot ?? '' ?>" data-perspektif="<?= $persp ?? '' ?>"
+                                                            data-indikator="<?= htmlspecialchars($indik ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+                                                            <?php if ($first_persp_cell) { ?>
+                                                                <td rowspan="<?= $persp_rows; ?>"
+                                                                    style="vertical-align:middle;font-weight:600;background:#C8E6C9;">
+                                                                    <?= $persp; ?>
+                                                                </td>
+                                                                <?php $first_persp_cell = false;
+                                                            } ?>
+
+                                                            <?php if ($first_sas_cell) { ?>
+                                                                <td rowspan="<?= $sasaran_rows; ?>"
+                                                                    style="vertical-align:middle;background:#E3F2FD;"><?= $sasaran; ?></td>
+                                                                <?php $first_sas_cell = false;
+                                                            } ?>
+
+                                                            <td class="text-center align-middle">
+                                                                <input type="number"
+                                                                    class="form-control form-control-sm text-center bobot"
+                                                                    value="<?= $bobot; ?>" min="5" step="5" data-toggle="tooltip"
+                                                                    data-prev-value="<?= $bobot; ?>"
+                                                                    data-placement="bottom" data-html="true"
+                                                                    data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+                                                                    title="<i class='mdi mdi-information-outline'></i><br>Minimal nilai 5 dan kelipatan 5"
+                                                                    <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
+                                                            </td>
+                                                            <td><?= $indik; ?></td>
+
+                                                            <style>
+                                                                .currency-wrapper {
+                                                                    position: relative;
+                                                                    display: inline-block;
+                                                                    width: 100%;
+                                                                }
+
+                                                                .currency-wrapper .format-currency {
+                                                                    position: absolute;
+                                                                    top: 0;
+                                                                    left: 0;
+                                                                    width: 100%;
+                                                                    height: 100%;
+                                                                    display: flex;
+                                                                    justify-content: center;
+                                                                    align-items: center;
+                                                                    color: #000;
+                                                                    font-weight: 550;
+                                                                    pointer-events: none;
+                                                                }
+
+                                                                .currency-wrapper input.hide-text {
+                                                                    color: transparent;
+                                                                    caret-color: black;
+                                                                }
+                                                            </style>
+                                                            <!-- Target -->
+                                                            <td class="text-center align-middle">
+                                                                <div class="currency-wrapper">
+                                                                    <input type="text" class="form-control target-input text-center"
+                                                                        style="min-width:150px;" value="<?= $i->target ?? ''; ?>"
+                                                                        <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
+                                                                    <div class="format-currency text-muted small"></div>
+                                                                </div>
+                                                            </td>
+                                                            <td class="text-center align-middle">
+                                                                <input type="date" class="form-control batas-waktu"
+                                                                    style="min-width:120px;" value="<?= $i->batas_waktu ?? ''; ?>"
+                                                                    <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
+                                                            </td>
+                                                            <td class="text-center align-middle">
+                                                                <div class="currency-wrapper">
+                                                                    <?php if (!$is_locked && !$is_verified): ?>
+                                                                        <input type="text" class="form-control text-center realisasi-input"
+                                                                            value="<?= $i->realisasi ?? ''; ?>" style="min-width:150px;">
+                                                                    <?php else: ?>
+                                                                        <input type="text" class="form-control text-center realisasi-input"
+                                                                            value="<?= $i->realisasi ?? ''; ?>" style="min-width:150px;"
+                                                                            readonly>
+                                                                    <?php endif; ?>
+                                                                    <div class="format-currency text-muted small"></div>
+                                                                </div>
+                                                            </td>
+
+                                                            <td class="text-center align-middle">
+                                                                <input type="text"
+                                                                    class="form-control form-control-sm text-center pencapaian-output"
+                                                                    readonly style="min-width:50px;">
+                                                            </td>
+                                                            <td class="text-center align-middle">
+                                                                <input type="text"
+                                                                    class="form-control form-control-sm text-center nilai-output"
+                                                                    readonly style="min-width:60px;">
+                                                            </td>
+                                                            <td class="text-center align-middle">
+                                                                <input type="text"
+                                                                    class="form-control form-control-sm text-center nilai-bobot-output"
+                                                                    readonly style="min-width:50px;">
+                                                            </td>
+
+
+                                                            <td class="text-center align-middle">
+                                                                <span class="<?= $statusClass; ?>"><?= $statusText; ?></span>
+                                                            </td>
+                                                            <td class="text-center align-middle">
+                                                                <span class="<?= $status2Class; ?>"><?= $status2Text; ?></span>
+                                                            </td>
+                                                            <td class="text-center align-middle">
+                                                                <?php if (!$is_locked && !$is_verified): ?>
+                                                                    <button type="button"
+                                                                        class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
+                                                                <?php else: ?>
+                                                                    <button type="button" class="btn btn-sm btn-secondary"
+                                                                        disabled>Terkunci</button>
+                                                                <?php endif; ?>
+
+                                                            </td>
+                                                        </tr>
+                                                        <?php
+                                                    }
+                                                }
+                                                ?>
+                                                <tr class="subtotal-row" data-perspektif="<?= $persp; ?>"
+                                                    style="font-weight:bold;background:#F1F8E9;">
+                                                    <td colspan="2">Sub Total Bobot <?= $persp; ?></td>
+                                                    <td class="text-center"><span
+                                                            class="subtotal-bobot"><?= $subtotal_bobot_perspektif; ?></span>
+                                                    </td>
+                                                    <td colspan="6" class="text-center">Sub Total Nilai <?= $persp; ?> Dibobot
+                                                    </td>
+                                                    <td class="text-center"><span class="subtotal-nilai-bobot">0.00</span></td>
+                                                    <td colspan="3"></td>
+                                                </tr>
+                                                <?php
+                                            }
+                                            if (!$printed_any) { ?>
+                                                <tr>
+                                                    <td colspan="13" class="text-center">Tidak ada indikator untuk jabatan ini
+                                                    </td>
+                                                </tr>
+                                            <?php } ?>
                                         </tbody>
+                                        <tfoot
+                                            style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
+                                            <tr>
+                                                <td colspan="2">Total</td>
+                                                <td><span id="total-bobot">0</span></td>
+                                                <td colspan="6" class="text-center">Total Nilai Kinerja</td>
+                                                <td><span id="total-nilai-bobot">0.00</span></td>
+                                                <td colspan="3"></td>
+                                            </tr>
+                                        </tfoot>
                                     </table>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <!-- Nilai Akhir & Pencapaian -->
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="card text-center mb-3">
-                                                <div class="card-header bg-success text-white">Nilai Akhir</div>
-                                                <div class="card-body">
-                                                    <h3 id="nilai-akhir">
-                                                        <?= $nilai_akhir['nilai_akhir'] ?? 0 ?>
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="card text-center">
-                                                <div class="card-header bg-success text-white">Pencapaian Akhir</div>
-                                                <div class="card-body">
-                                                    <h3 id="pencapaian-akhir">
-                                                        <?= $nilai_akhir['pencapaian'] ?? '-' ?>
-                                                    </h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Predikat -->
-                                    <div class="card text-center mb-3">
-                                        <div class="card-header bg-success text-white">Yudisium / Predikat</div>
-                                        <div class="card-body">
-                                            <h3 id="predikat">
-                                                <?= $nilai_akhir['predikat'] ?? '-' ?>
-                                            </h3>
-                                        </div>
-                                    </div>
-
-                                    <div class="text-right mt-3">
-                                        <?php if (!$is_locked && !$is_verified): ?>
-                                                <button id="btn-simpan-nilai-akhir" class="btn btn-primary">
-                                                    <i class="mdi mdi-content-save"></i> Simpan Nilai Akhir
-                                                </button>
-                                        <?php else: ?>
-                                                <button class="btn btn-secondary" disabled data-toggle="tooltip"
-                                                    title="Penilaian sudah dikunci atau diverifikasi">
-                                                    <i class="mdi mdi-lock"></i> Terkunci
-                                                </button>
-                                        <?php endif; ?>
-
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- ================== FORM TAMBAH CATATAN ================== -->
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h5 class="card-title">Formulir feedback</h5>
-                            <form id="form-catatan-pegawai">
-                                <input type="hidden" name="nik" id="nik" value="<?= $pegawai_detail->nik;
-                                ; ?>">
+                <!-- Form Penilaian Budaya (Read-Only untuk Pegawai) -->
+                <div class="row mt-0">
+                    <div class="col-12">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body">
+                                <h5 class="text-success fw-bold mb-3">
+                                    <i class="mdi mdi-account-star-outline me-2"></i> Form Penilaian Budaya
+                                </h5>
 
-                                <div class="mb-3">
-                                    <label for="catatan-pegawai" class="form-label"><b>Pegawai</b></label>
-                                    <textarea class="form-control" name="catatan" id="catatan-pegawai" rows="3"
-                                        required></textarea>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="tabel-penilaian-budaya">
+                                        <thead class="text-center align-middle">
+                                            <tr class="bg-success text-white fw-bold">
+                                                <th colspan="4" style="vertical-align: middle;">Budaya Kerja</th>
+                                            </tr>
+                                            <tr class="bg-success-subtle text-dark fw-bold align-middle">
+                                                <th style="width:50px;">No</th>
+                                                <th style="width:300px;">Perilaku Utama</th>
+                                                <th>Panduan Perilaku</th>
+                                                <th style="width:180px;">Nilai</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+                                            <?php
+                                            $no = 1;
+                                            if (!empty($budaya)):
+                                                foreach ($budaya as $b):
+                                                    $panduanList = json_decode($b['panduan_perilaku'], true);
+
+                                                    if (is_array($panduanList)):
+                                                        foreach ($panduanList as $pIndex => $p):
+                                                            // Key sesuai format JSON nilai_budaya
+                                                            $nilaiKey = "budaya_{$no}_{$pIndex}";
+                                                            $nilai = isset($budaya_nilai[$nilaiKey]) ? (int) $budaya_nilai[$nilaiKey] : 0;
+
+                                                            // Mapping label dan warna
+                                                            switch ($nilai) {
+                                                                case 1:
+                                                                    $labelNilai = "1 - Sangat Jarang";
+                                                                    $color = "text-danger"; // merah
+                                                                    break;
+                                                                case 2:
+                                                                    $labelNilai = "2 - Jarang";
+                                                                    $color = "text-warning"; // kuning
+                                                                    break;
+                                                                case 3:
+                                                                    $labelNilai = "3 - Kadang";
+                                                                    $color = "text-primary"; // biru
+                                                                    break;
+                                                                case 4:
+                                                                    $labelNilai = "4 - Sering";
+                                                                    $color = "text-success"; // hijau muda
+                                                                    break;
+                                                                case 5:
+                                                                    $labelNilai = "5 - Selalu";
+                                                                    $color = "fw-bold"; // hijau tua (nanti pakai inline)
+                                                                    break;
+                                                                default:
+                                                                    $labelNilai = "<span class='text-muted fst-italic'>Belum Dinilai</span>";
+                                                                    $color = "";
+                                                            }
+                                                            ?>
+                                                            <tr>
+                                                                <?php if ($pIndex === 0): ?>
+                                                                    <td class="text-center align-middle" rowspan="<?= count($panduanList); ?>">
+                                                                        <?= $no; ?>
+                                                                    </td>
+                                                                    <td class="align-middle" rowspan="<?= count($panduanList); ?>">
+                                                                        <?= htmlspecialchars($b['perilaku_utama']); ?>
+                                                                    </td>
+                                                                <?php endif; ?>
+                                                                <td><?= chr(97 + $pIndex) . ". " . htmlspecialchars($p); ?></td>
+                                                                <td class="text-center align-middle">
+                                                                    <?php
+                                                                    if ($nilai >= 1 && $nilai <= 5) {
+                                                                        // Warna hijau tua (lebih gelap dari default Bootstrap)
+                                                                        $style = $nilai == 5 ? "color:#1e9c44;" : "";
+                                                                        echo "<span class='$color' style='$style'>$labelNilai</span>";
+                                                                    } else {
+                                                                        echo $labelNilai;
+                                                                    }
+                                                                    ?>
+                                                                </td>
+                                                            </tr>
+                                                            <?php
+                                                        endforeach;
+                                                        $no++;
+                                                    endif;
+                                                endforeach;
+                                            else:
+                                                echo '<tr><td colspan="4" class="text-center text-muted">Data penilaian budaya belum tersedia.</td></tr>';
+                                            endif;
+                                            ?>
+                                        </tbody>
+
+                                        <tfoot class="text-center fw-bold bg-success text-white">
+                                            <tr>
+                                                <td colspan="3" class="text-end align-middle">
+                                                    Rata-Rata Nilai Internalisasi Budaya
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control form-control-sm text-center"
+                                                        value="<?= number_format($rata_rata_budaya ?? 0, 2); ?>" readonly>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                                <button type="submit" class="btn btn-primary" id="btnSimpanCatatan">Simpan</button>
-                            </form>
+                <!-- ================== FORM NILAI AKHIR ================== -->
+                <!-- Nilai Akhir & Catatan -->
+                <div class="card mt-0">
+                    <div class="card-body">
+                        <h5 class="text-success font-weight-bold mb-3">
+                            <i class="mdi mdi-star-circle mr-2"></i> Nilai Akhir (q)
+                        </h5>
 
+                        <!-- Bagian Atas: Perhitungan -->
+                        <table class="table table-bordered mb-4">
+                            <tr>
+                                <th>Total Nilai Sasaran Kerja</th>
+                                <td class="text-center" id="total-sasaran">
+                                    <?= $nilai_akhir['total_sasaran'] ?? 0 ?>
+                                </td>
+                                <td>x Bobot % Sasaran Kerja</td>
+                                <td>
+                                    <input type="text" id="bobot-sasaran" class="form-control form-control-sm text-center"
+                                        value="95%" readonly>
+                                </td>
+                                <td class="text-center" id="nilai-sasaran">
+                                    <?= $nilai_akhir['nilai_sasaran'] ?? 0 ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Rata-rata Nilai Internalisasi Budaya</th>
+                                <td class="text-center" id="rata-budaya">
+                                    <?= number_format($rata_rata_budaya ?? 0, 2); ?>
+                                </td>
+                                <td>x Bobot % Budaya Perusahaan</td>
+                                <td>
+                                    <input type="text" id="bobot-budaya" class="form-control form-control-sm text-center"
+                                        value="5%" readonly>
+                                </td>
+                                <td class="text-center" id="nilai-budaya">
+                                    <?= $nilai_akhir['nilai_budaya'] ?? '-' ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Share KPI</th>
+                                <td class="text-center" id="share-kpi">
+                                    <input type="text" id="share-kpi-value" class="form-control form-control-sm text-center"
+                                        min="0" max="5" value="<?= $nilai_akhir['share_kpi_value'] ?? 0 ?>"
+                                        oninput="if(this.value > 5) this.value = 5; if(this.value < 0) this.value = 0; hitungShareKPI()"
+                                        data-toggle="tooltip" data-placement="bottom" data-html="true"
+                                        data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+                                        title="<i class='mdi mdi-information-outline'></i><br>Pastikan nilai share KPI sesuai dengan data KPI Direksi">
+                                </td>
+                                <td>x Bobot % Share KPI</td>
+                                <td>
+                                    <div class="input-group input-group-sm" style="width: 100%;">
+                                        <input type="number" id="bobot-share-kpi" class="form-control f
+                                            orm-control-sm text-center"
+                                            value="<?= $nilai_akhir['bobot_share_kpi'] ?? 0 ?>" min="0" max="95"
+                                            style="height: 30px;"
+                                            oninput="if(this.value > 95) this.value = 95; if(this.value < 0) this.value = 0; hitungShareKPI()"
+                                            data-toggle="tooltip" data-placement="bottom" data-html="true"
+                                            data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+                                            title="<i class='mdi mdi-information-outline'></i><br>Pastikan bobot share KPI sesuai dengan data KPI Direksi">
+                                        <span class="input-group-text" style="height: 30px; line-height: 1;">%</span>
+                                    </div>
+                                </td>
+                                <td class="text-center" id="share-kpi-nilai">
+                                    <?= $nilai_akhir['share_kpi'] ?? '-' ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th colspan="4" class="text-right">Total Nilai</th>
+                                <td class="text-center" id="total-nilai">
+                                    <?= $nilai_akhir['total_nilai'] ?? 0 ?>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th colspan="4" class="text-right">
+                                    Fraud<br>
+                                    <small>(diisi 1 jika melakukan fraud, 0 jika tidak)</small>
+                                </th>
+                                <td>
+                                    <input type="number" min="0" max="1" class="form-control form-control-sm text-center"
+                                        id="fraud-input" value="<?= $nilai_akhir['fraud'] ?? 0 ?>" readonly>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th colspan="4" class="text-right">
+                                    Koefisien Nilai<br>
+                                </th>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="koefisien" id="koefisien-input"
+                                            class="form-control text-center" max="100" min="70" step="5"
+                                            value="<?= isset($nilai_akhir['koefisien']) ? htmlspecialchars($nilai_akhir['koefisien']) : 100 ?>"
+                                            readonly>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
 
-                            <!-- ================== TABEL CATATAN ================== -->
-
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered" id="tabel-catatan-pegawai">
-                                    <thead class="table-light">
+                        <!-- Bagian Bawah: Kiri-Kanan -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- Tabel Predikat -->
+                                <table class="table table-bordered text-center">
+                                    <thead class="bg-success text-white">
                                         <tr>
-                                            <th>No</th>
-                                            <th>Catatan</th>
-                                            <th>Tanggal</th>
+                                            <th>Nilai Akhir</th>
+                                            <th>Yudisium / Predikat</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php
-                                        $catatan_list = $this->Pegawai_model->getCatatanPegawai($pegawai_detail->nik);
-                                        $no = 1;
-                                        if (!empty($catatan_list)):
-                                            foreach ($catatan_list as $c):
-                                                $tgl = new DateTime($c->tanggal, new DateTimeZone('UTC'));
-                                                $tgl->setTimezone(new DateTimeZone('Asia/Jakarta'));
-                                                ?>
-                                                        <tr>
-                                                            <td><?= $no++ ?></td>
-                                                            <td><?= $c->catatan ?></td>
-                                                            <td><?= $tgl->format('d-m-Y H:i') ?></td>
-                                                        </tr>
-                                                        <?php
-                                            endforeach;
-                                        else: ?>
-                                                <tr>
-                                                    <td colspan="3" class="text-center">Belum ada catatan</td>
-                                                </tr>
-                                        <?php endif; ?>
+                                        <tr>
+                                            <td>&ge; 4.50 - 5</td>
+                                            <td><b>Excellent (E)</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>3.50 - &lt; 4.50</td>
+                                            <td><b>Very Good (VG)</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>3.00 - &lt; 3.50</td>
+                                            <td><b>Good (G)</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>2.00 - &lt; 3.00</td>
+                                            <td><b>Fair (F)</b></td>
+                                        </tr>
+                                        <tr>
+                                            <td>&lt; 2.00</td>
+                                            <td><b>Minus (M)</b></td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
+
+                            <div class="col-md-6">
+                                <!-- Nilai Akhir & Pencapaian -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card text-center mb-3">
+                                            <div class="card-header bg-success text-white">Nilai Akhir</div>
+                                            <div class="card-body">
+                                                <h3 id="nilai-akhir">
+                                                    <?= $nilai_akhir['nilai_akhir'] ?? 0 ?>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card text-center">
+                                            <div class="card-header bg-success text-white">Pencapaian Akhir</div>
+                                            <div class="card-body">
+                                                <h3 id="pencapaian-akhir">
+                                                    <?= $nilai_akhir['pencapaian'] ?? '-' ?>
+                                                </h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Predikat -->
+                                <div class="card text-center mb-3">
+                                    <div class="card-header bg-success text-white">Yudisium / Predikat</div>
+                                    <div class="card-body">
+                                        <h3 id="predikat">
+                                            <?= $nilai_akhir['predikat'] ?? '-' ?>
+                                        </h3>
+                                    </div>
+                                </div>
+
+                                <div class="text-right mt-3">
+                                    <?php if (!$is_locked && !$is_verified): ?>
+                                        <button id="btn-simpan-nilai-akhir" class="btn btn-primary">
+                                            <i class="mdi mdi-content-save"></i> Simpan Nilai Akhir
+                                        </button>
+                                    <?php else: ?>
+                                        <button class="btn btn-secondary" disabled data-toggle="tooltip"
+                                            title="Penilaian sudah dikunci atau diverifikasi">
+                                            <i class="mdi mdi-lock"></i> Terkunci
+                                        </button>
+                                    <?php endif; ?>
+
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- ================== FORM CHAT ================== -->
-                    <div class="card mb-3 shadow-sm border-0">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">
-                                <i class="fas fa-comments text-primary mr-2"></i> Aktivitas Coaching Kinerja
-                            </h5>
+                <!-- ================== FORM TAMBAH CATATAN ================== -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Formulir feedback</h5>
+                        <form id="form-catatan-pegawai">
+                            <input type="hidden" name="nik" id="nik" value="<?= $pegawai_detail->nik;
+                            ; ?>">
 
-                            <!-- Box Chat -->
-                            <div id="chat-box" style="max-height:400px; overflow-y:auto; border:1px solid #ddd; padding:10px;">
-                                <!-- Pesan via AJAX -->
+                            <div class="mb-3">
+                                <label for="catatan-pegawai" class="form-label"><b>Pegawai</b></label>
+                                <textarea class="form-control" name="catatan" id="catatan-pegawai" rows="3"
+                                    required></textarea>
                             </div>
 
-                            <!-- Form Kirim -->
-                            <form id="form-chat" class="mt-2 d-flex">
-                                <input type="hidden" name="nik_pegawai" value="<?= $pegawai_detail->nik ?>">
-                                <input type="text" name="pesan" id="input-pesan" class="form-control mr-2"
-                                    placeholder="Tulis pesan..." autocomplete="off">
-                                <button type="submit" class="btn btn-primary">Kirim</button>
-                            </form>
+                            <button type="submit" class="btn btn-primary" id="btnSimpanCatatan">Simpan</button>
+                        </form>
+
+
+                        <!-- ================== TABEL CATATAN ================== -->
+
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered" id="tabel-catatan-pegawai">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>No</th>
+                                        <th>Catatan</th>
+                                        <th>Tanggal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php
+                                    $catatan_list = $this->Pegawai_model->getCatatanPegawai($pegawai_detail->nik);
+                                    $no = 1;
+                                    if (!empty($catatan_list)):
+                                        foreach ($catatan_list as $c):
+                                            $tgl = new DateTime($c->tanggal, new DateTimeZone('UTC'));
+                                            $tgl->setTimezone(new DateTimeZone('Asia/Jakarta'));
+                                            ?>
+                                            <tr>
+                                                <td><?= $no++ ?></td>
+                                                <td><?= $c->catatan ?></td>
+                                                <td><?= $tgl->format('d-m-Y H:i') ?></td>
+                                            </tr>
+                                            <?php
+                                        endforeach;
+                                    else: ?>
+                                        <tr>
+                                            <td colspan="3" class="text-center">Belum ada catatan</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
+                </div>
+
+                <!-- ================== FORM CHAT ================== -->
+                <div class="card mb-3 shadow-sm border-0">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-comments text-primary mr-2"></i> Aktivitas Coaching Kinerja
+                        </h5>
+
+                        <!-- Box Chat -->
+                        <div id="chat-box" style="max-height:400px; overflow-y:auto; border:1px solid #ddd; padding:10px;">
+                            <!-- Pesan via AJAX -->
+                        </div>
+
+                        <!-- Form Kirim -->
+                        <form id="form-chat" class="mt-2 d-flex">
+                            <input type="hidden" name="nik_pegawai" value="<?= $pegawai_detail->nik ?>">
+                            <input type="text" name="pesan" id="input-pesan" class="form-control mr-2"
+                                placeholder="Tulis pesan..." autocomplete="off">
+                            <button type="submit" class="btn btn-primary">Kirim</button>
+                        </form>
+                    </div>
+                </div>
 
 
             <?php } ?>
@@ -1171,14 +1175,14 @@
 // flash message (jika ada)
 $message = $this->session->flashdata('message');
 if ($message): ?>
-        <script>
-            Swal.fire({
-                icon: '<?= $message['type']; ?>',
-                title: 'Informasi',
-                text: '<?= $message['text']; ?>',
-                confirmButtonColor: '#2E7D32'
-            });
-        </script>
+    <script>
+        Swal.fire({
+            icon: '<?= $message['type']; ?>',
+            title: 'Informasi',
+            text: '<?= $message['text']; ?>',
+            confirmButtonColor: '#2E7D32'
+        });
+    </script>
 <?php endif; ?>
 
 <script>
@@ -2053,11 +2057,11 @@ if ($message): ?>
                 updateFormatDisplayForInput(input, true);
             });
         });
- 
+
         // Validasi input bobot
         document.querySelectorAll('.bobot').forEach(input => {
             $(input).tooltip(); // Init tooltip
-            input.addEventListener('change', function() {
+            input.addEventListener('change', function () {
                 let val = parseInt(this.value);
                 if (isNaN(val) || val < 5 || val % 5 !== 0) {
                     this.value = 5;
@@ -2069,6 +2073,24 @@ if ($message): ?>
                         showConfirmButton: false
                     });
                 }
+
+                // Cek total bobot
+                let totalBobot = 0;
+                document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(row => {
+                    totalBobot += parseFloat(row.querySelector('.bobot').value) || 0;
+                });
+
+                if (totalBobot > 130) {
+                    this.value = this.dataset.prevValue || 5; // Kembalikan ke nilai sebelumnya
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Total bobot keseluruhan tidak boleh lebih dari 130%.'
+                    });
+                    return;
+                }
+                
+                this.dataset.prevValue = this.value;
                 hitungTotal();
 
                 // Auto-save sama seperti kolom lain
@@ -2088,7 +2110,7 @@ if ($message): ?>
 
                 fetch('<?= base_url("Pegawai/simpanPenilaianBaris") ?>', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body })
                     .then(res => res.json()).then(res => { if (res.status !== 'success') console.error('Autosave bobot gagal', res); });
-                
+
                 autoSaveNilaiAkhir();
             });
         });
@@ -2156,6 +2178,17 @@ if ($message): ?>
     $('#form-chat').on('submit', function (e) {
         e.preventDefault();
         const formData = $(this).serialize();
+
+        let totalBobot = 0;
+        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(r => {
+            totalBobot += parseFloat(r.querySelector('.bobot').value) || 0;
+        });
+        totalBobot += parseFloat(bobot) || 0;
+
+        if (totalBobot > 130) {
+            Swal.fire('Gagal', 'Total bobot keseluruhan tidak boleh lebih dari 130%', 'error');
+            return;
+        }
 
         $.ajax({
             url: "<?= base_url('Pegawai/kirimCoachingPesan') ?>",
@@ -2596,31 +2629,31 @@ if ($message): ?>
     })();
 
     // ==========================================
-// LOGIC TAMBAH SASARAN & INDIKATOR
-// ==========================================
+    // LOGIC TAMBAH SASARAN & INDIKATOR
+    // ==========================================
 
-window.addSasaranRow = async function() {
-    // 1. Pilih Perspektif
-    const { value: perspektif } = await Swal.fire({
-        title: 'Pilih Perspektif',
-        input: 'select',
-        inputOptions: {
-            'Keuangan (F)': 'Keuangan (F)',
-            'Pelanggan (C)': 'Pelanggan (C)',
-            'Proses Internal (IP)': 'Proses Internal (IP)',
-            'Pembelajaran & Pertumbuhan (LG)': 'Pembelajaran & Pertumbuhan (LG)'
-        },
-        inputPlaceholder: 'Pilih Perspektif',
-        showCancelButton: true
-    });
+    window.addSasaranRow = async function () {
+        // 1. Pilih Perspektif
+        const { value: perspektif } = await Swal.fire({
+            title: 'Pilih Perspektif',
+            input: 'select',
+            inputOptions: {
+                'Keuangan (F)': 'Keuangan (F)',
+                'Pelanggan (C)': 'Pelanggan (C)',
+                'Proses Internal (IP)': 'Proses Internal (IP)',
+                'Pembelajaran & Pertumbuhan (LG)': 'Pembelajaran & Pertumbuhan (LG)'
+            },
+            inputPlaceholder: 'Pilih Perspektif',
+            showCancelButton: true
+        });
 
-    if (!perspektif) return;
+        if (!perspektif) return;
 
-    // Cari baris terakhir dari perspektif ini untuk insert after
-    let lastRow = $(`tr[data-perspektif="${perspektif}"]`).last();
-    
-    // Buat baris baru (Form Kosong)
-    let newRowHtml = `
+        // Cari baris terakhir dari perspektif ini untuk insert after
+        let lastRow = $(`tr[data-perspektif="${perspektif}"]`).last();
+
+        // Buat baris baru (Form Kosong)
+        let newRowHtml = `
         <tr class="new-row-input bg-light">
             <td colspan="2">
                 <small class="text-muted">Perspektif: ${perspektif}</small><br>
@@ -2637,79 +2670,90 @@ window.addSasaranRow = async function() {
         </tr>
     `;
 
-    if (lastRow.length > 0) {
-        lastRow.after(newRowHtml);
-    } else {
-        // Jika perspektif belum ada, taruh di paling bawah tbody
-        $('#tabel-penilaian tbody').append(newRowHtml);
-    }
-};
-
-window.saveNewSasaran = function(btn, perspektif) {
-    let row = $(btn).closest('tr');
-    let sasaran = row.find('.new-sasaran').val();
-    let bobot = row.find('.new-bobot').val();
-    let indikator = row.find('.new-indikator').val();
-    let target = row.find('.new-target').val();
-    let batas_waktu = row.find('.new-batas-waktu').val();
-
-    if(!sasaran || !indikator || !bobot) {
-        Swal.fire('Error', 'Sasaran, Indikator, dan Bobot wajib diisi', 'error');
-        return;
-    }
-
-    $.ajax({
-        url: '<?= base_url("Pegawai/simpan_sasaran_baru") ?>',
-        method: 'POST',
-        data: {
-            perspektif: perspektif,
-            sasaran: sasaran,
-            indikator: indikator,
-            bobot: bobot,
-            target: target,
-            batas_waktu: batas_waktu,
-            periode_awal: $('#periode_awal').val(),
-            periode_akhir: $('#periode_akhir').val()
-        },
-        success: function(res) {
-            let data = JSON.parse(res);
-            if(data.status == 'success') {
-                Swal.fire('Berhasil', 'Sasaran berhasil ditambahkan', 'success').then(() => location.reload());
-            } else {
-                Swal.fire('Gagal', 'Gagal menyimpan', 'error');
-            }
+        if (lastRow.length > 0) {
+            lastRow.after(newRowHtml);
+        } else {
+            // Jika perspektif belum ada, taruh di paling bawah tbody
+            $('#tabel-penilaian tbody').append(newRowHtml);
         }
-    });
-};
+    };
 
-window.addIndikatorRow = async function() {
-    // Ambil daftar sasaran unik dari tabel
-    let sasarans = {};
-    $('tr[data-sasaran-id]').each(function() {
-        let id = $(this).data('sasaran-id');
-        let nama = $(this).data('sasaran-nama'); 
-        if(id && nama) sasarans[id] = nama;
-    });
+    window.saveNewSasaran = function (btn, perspektif) {
+        let row = $(btn).closest('tr');
+        let sasaran = row.find('.new-sasaran').val();
+        let bobot = row.find('.new-bobot').val();
+        let indikator = row.find('.new-indikator').val();
+        let target = row.find('.new-target').val();
+        let batas_waktu = row.find('.new-batas-waktu').val();
 
-    if(Object.keys(sasarans).length === 0) {
-        Swal.fire('Info', 'Tidak ada sasaran tersedia. Tambahkan sasaran dulu.', 'info');
-        return;
-    }
+        if (!sasaran || !indikator || !bobot) {
+            Swal.fire('Error', 'Sasaran, Indikator, dan Bobot wajib diisi', 'error');
+            return;
+        }
 
-    const { value: sasaranId } = await Swal.fire({
-        title: 'Pilih Sasaran',
-        input: 'select',
-        inputOptions: sasarans,
-        inputPlaceholder: 'Pilih Sasaran',
-        showCancelButton: true
-    });
+        let totalBobot = 0;
+        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(r => {
+            totalBobot += parseFloat(r.querySelector('.bobot').value) || 0;
+        });
+        totalBobot += parseFloat(bobot) || 0;
 
-    if (!sasaranId) return;
+        if (totalBobot > 130) {
+            Swal.fire('Gagal', 'Total bobot keseluruhan tidak boleh lebih dari 130%', 'error');
+            return;
+        }
 
-    let lastRow = $(`tr[data-sasaran-id="${sasaranId}"]`).last();
-    let sasaranNama = sasarans[sasaranId];
+        $.ajax({
+            url: '<?= base_url("Pegawai/simpan_sasaran_baru") ?>',
+            method: 'POST',
+            data: {
+                perspektif: perspektif,
+                sasaran: sasaran,
+                indikator: indikator,
+                bobot: bobot,
+                target: target,
+                batas_waktu: batas_waktu,
+                periode_awal: $('#periode_awal').val(),
+                periode_akhir: $('#periode_akhir').val()
+            },
+            success: function (res) {
+                let data = JSON.parse(res);
+                if (data.status == 'success') {
+                    Swal.fire('Berhasil', 'Sasaran berhasil ditambahkan', 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Gagal', 'Gagal menyimpan', 'error');
+                }
+            }
+        });
+    };
 
-    let newRowHtml = `
+    window.addIndikatorRow = async function () {
+        // Ambil daftar sasaran unik dari tabel
+        let sasarans = {};
+        $('tr[data-sasaran-id]').each(function () {
+            let id = $(this).data('sasaran-id');
+            let nama = $(this).data('sasaran-nama');
+            if (id && nama) sasarans[id] = nama;
+        });
+
+        if (Object.keys(sasarans).length === 0) {
+            Swal.fire('Info', 'Tidak ada sasaran tersedia. Tambahkan sasaran dulu.', 'info');
+            return;
+        }
+
+        const { value: sasaranId } = await Swal.fire({
+            title: 'Pilih Sasaran',
+            input: 'select',
+            inputOptions: sasarans,
+            inputPlaceholder: 'Pilih Sasaran',
+            showCancelButton: true
+        });
+
+        if (!sasaranId) return;
+
+        let lastRow = $(`tr[data-sasaran-id="${sasaranId}"]`).last();
+        let sasaranNama = sasarans[sasaranId];
+
+        let newRowHtml = `
         <tr class="new-row-input bg-light">
             <td colspan="2" class="text-right"><small>Indikator Baru untuk: ${sasaranNama}</small></td>
             <td><input type="number" class="form-control form-control-sm new-bobot" placeholder="Bobot" min="5" step="5"></td>
@@ -2722,43 +2766,43 @@ window.addIndikatorRow = async function() {
             </td>
         </tr>
     `;
-    lastRow.after(newRowHtml);
-};
+        lastRow.after(newRowHtml);
+    };
 
-window.saveNewIndikator = function(btn, sasaranId) {
-    let row = $(btn).closest('tr');
-    let bobot = row.find('.new-bobot').val();
-    let indikator = row.find('.new-indikator').val();
-    let target = row.find('.new-target').val();
-    let batas_waktu = row.find('.new-batas-waktu').val();
+    window.saveNewIndikator = function (btn, sasaranId) {
+        let row = $(btn).closest('tr');
+        let bobot = row.find('.new-bobot').val();
+        let indikator = row.find('.new-indikator').val();
+        let target = row.find('.new-target').val();
+        let batas_waktu = row.find('.new-batas-waktu').val();
 
-    if(!indikator || !bobot) {
-        Swal.fire('Error', 'Indikator dan Bobot wajib diisi', 'error');
-        return;
-    }
-
-    $.ajax({
-        url: '<?= base_url("Pegawai/simpan_indikator_baru") ?>',
-        method: 'POST',
-        data: {
-            sasaran_id: sasaranId,
-            indikator: indikator,
-            bobot: bobot,
-            target: target,
-            batas_waktu: batas_waktu,
-            periode_awal: $('#periode_awal').val(),
-            periode_akhir: $('#periode_akhir').val()
-        },
-        success: function(res) {
-            let data = JSON.parse(res);
-            if(data.status == 'success') {
-                Swal.fire('Berhasil', 'Indikator berhasil ditambahkan', 'success').then(() => location.reload());
-            } else {
-                Swal.fire('Gagal', 'Gagal menyimpan', 'error');
-            }
+        if (!indikator || !bobot) {
+            Swal.fire('Error', 'Indikator dan Bobot wajib diisi', 'error');
+            return;
         }
-    });
-};
+
+        $.ajax({
+            url: '<?= base_url("Pegawai/simpan_indikator_baru") ?>',
+            method: 'POST',
+            data: {
+                sasaran_id: sasaranId,
+                indikator: indikator,
+                bobot: bobot,
+                target: target,
+                batas_waktu: batas_waktu,
+                periode_awal: $('#periode_awal').val(),
+                periode_akhir: $('#periode_akhir').val()
+            },
+            success: function (res) {
+                let data = JSON.parse(res);
+                if (data.status == 'success') {
+                    Swal.fire('Berhasil', 'Indikator berhasil ditambahkan', 'success').then(() => location.reload());
+                } else {
+                    Swal.fire('Gagal', 'Gagal menyimpan', 'error');
+                }
+            }
+        });
+    };
 
 </script>
 <style>

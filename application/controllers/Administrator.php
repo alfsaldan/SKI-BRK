@@ -3691,6 +3691,7 @@ class Administrator extends CI_Controller
         }
 
         $this->load->model('DataPegawai_model');
+        $this->load->model('pegawai/Ppk_model');
         $data['pegawai'] = $this->DataPegawai_model->getPegawaiByNik($nik);
 
         // Ambil data user yang login (MSDI/Admin) untuk nama di tanda tangan

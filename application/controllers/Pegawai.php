@@ -219,7 +219,9 @@ class Pegawai extends CI_Controller
         $data_indikator = [
             'sasaran_id' => $sasaran_id,
             'indikator' => $indikator,
-            'bobot' => $bobot
+            'bobot' => $bobot,
+            // Simpan indikator sebagai milik pegawai sehingga tidak NULL owner_nik
+            'owner_nik' => $nik
         ];
         $indikator_id = $this->Pegawai_model->insert_indikator($data_indikator);
 
@@ -254,7 +256,9 @@ class Pegawai extends CI_Controller
         $data_indikator = [
             'sasaran_id' => $sasaran_id,
             'indikator' => $indikator,
-            'bobot' => $bobot
+            'bobot' => $bobot,
+            // Tandai indikator ini sebagai milik pegawai sehingga tidak mengubah indikator default
+            'owner_nik' => $nik
         ];
         $indikator_id = $this->Pegawai_model->insert_indikator($data_indikator);
 
