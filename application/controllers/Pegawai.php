@@ -285,6 +285,73 @@ class Pegawai extends CI_Controller
         echo json_encode(['status' => 'success', 'message' => 'Indikator baru berhasil ditambahkan']);
     }
 
+    public function updateSasaran()
+    {
+        $id = $this->input->post('id');
+        $sasaran = $this->input->post('sasaran');
+
+        if (!$id || !$sasaran) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Data tidak lengkap.'
+            ]);
+            return;
+        }
+
+        $success = $this->Indikator_model->updateSasaranKerja($id, $sasaran);
+
+        if ($success) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Sasaran berhasil diupdate.'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Gagal mengupdate sasaran.'
+            ]);
+        }
+    }
+
+    public function updateIndikator()
+    {
+        $id = $this->input->post('id');
+        $indikator = $this->input->post('indikator');
+        $bobot = $this->input->post('bobot');
+
+        if (!$id || !$indikator || !$bobot) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Data tidak lengkap.'
+            ]);
+            return;
+        }
+
+        $success = $this->Indikator_model->updateIndikator($id, $indikator, $bobot);
+
+        if ($success) {
+            echo json_encode([
+                'success' => true,
+                'message' => 'Indikator berhasil diupdate.'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Gagal mengupdate indikator.'
+            ]);
+        }
+    }
+
+    public function deleteIndikatorAjax()
+    {
+        $id = $this->input->post('id');
+        if ($this->Indikator_model->deleteIndikator($id)) {
+            echo json_encode(['success' => true, 'message' => 'Indikator berhasil dihapus!']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gagal menghapus indikator.']);
+        }
+    }
+
     public function simpanPenilaianBaris()
     {
         $nik = $this->session->userdata('nik');
@@ -3498,4 +3565,5 @@ class Pegawai extends CI_Controller
         $this->session->set_flashdata('success', 'Status persetujuan Pegawai berhasil disimpan.');
         redirect('pegawai/ppk_pegawaievaluasi/' . $id_nilai_akhir);
     }
+    
 }

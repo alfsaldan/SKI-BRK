@@ -631,7 +631,14 @@
 
                                                             <?php if ($first_sas_cell) { ?>
                                                                 <td rowspan="<?= $sasaran_rows; ?>"
-                                                                    style="vertical-align:middle;background:#E3F2FD;"><?= $sasaran; ?></td>
+                                                                    style="vertical-align:middle;background:#E3F2FD;">
+                                                                    <div class="d-flex justify-content-between align-items-center">
+                                                                        <span><?= $sasaran; ?></span>
+                                                                        <?php if (!$is_locked && !$is_verified && !empty($i->sasaran_id)): ?>
+                                                                        <button type="button" class="btn btn-xs btn-outline-primary ml-1 p-1" onclick="editSasaran('<?= $i->sasaran_id ?>', this)" data-text="<?= htmlspecialchars($sasaran ?? '', ENT_QUOTES, 'UTF-8') ?>" data-toggle="tooltip" title="Edit Sasaran"><i class="mdi mdi-pencil"></i></button>
+                                                                        <?php endif; ?>
+                                                                    </div>
+                                                                </td>
                                                                 <?php $first_sas_cell = false;
                                                             } ?>
 
@@ -645,7 +652,17 @@
                                                                     title="<i class='mdi mdi-information-outline'></i><br>Minimal nilai 5 dan kelipatan 5"
                                                                     <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
                                                             </td>
-                                                            <td><?= $indik; ?></td>
+                                                            <td>
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <span><?= $indik; ?></span>
+                                                                    <?php if (!$is_locked && !$is_verified): ?>
+                                                                        <div class="d-flex">
+                                                                            <button type="button" class="btn btn-xs btn-outline-primary ml-1 p-1" onclick="editIndikator('<?= $id ?>', this)" data-text="<?= htmlspecialchars($indik ?? '', ENT_QUOTES, 'UTF-8') ?>" data-toggle="tooltip" title="Edit Indikator & Bobot"><i class="mdi mdi-pencil"></i></button>
+                                                                            <button type="button" class="btn btn-xs btn-outline-danger ml-1 p-1" onclick="deleteIndikator('<?= $id ?>')" data-toggle="tooltip" title="Hapus Indikator"><i class="mdi mdi-trash-can"></i></button>
+                                                                        </div>
+                                                                    <?php endif; ?>
+                                                                </div>
+                                                            </td>
 
                                                             <style>
                                                                 .currency-wrapper {
@@ -727,9 +744,9 @@
                                                             <td class="text-center align-middle">
                                                                 <?php if (!$is_locked && !$is_verified): ?>
                                                                     <button type="button"
-                                                                        class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
+                                                                        class="btn btn-sm btn-primary simpan-penilaian w-100">Simpan</button>
                                                                 <?php else: ?>
-                                                                    <button type="button" class="btn btn-sm btn-secondary"
+                                                                    <button type="button" class="btn btn-sm btn-secondary w-100"
                                                                         disabled>Terkunci</button>
                                                                 <?php endif; ?>
 
@@ -2633,6 +2650,16 @@ if ($message): ?>
     // ==========================================
 
     window.addSasaranRow = async function () {
+        let totalBobot = 0;
+        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(r => {
+            totalBobot += parseFloat(r.querySelector('.bobot').value) || 0;
+        });
+
+        if (totalBobot + 5 > 100) {
+            Swal.fire('Peringatan', 'Tidak bisa menambahkan sasaran baru, total bobot sudah maksimal. Kurangi bobot yang sudah ada terlebih dahulu.', 'warning');
+            return;
+        }
+
         // 1. Pilih Perspektif
         const { value: perspektif } = await Swal.fire({
             title: 'Pilih Perspektif',
@@ -2698,7 +2725,7 @@ if ($message): ?>
         totalBobot += parseFloat(bobot) || 0;
 
         if (totalBobot > 100) {
-            Swal.fire('Gagal', 'Total bobot keseluruhan tidak boleh lebih dari 100%', 'error');
+            Swal.fire('Gagal', 'Total bobot keseluruhan tidak boleh lebih dari 100%. Kurangi bobot yang sudah ada terlebih dahulu.', 'error');
             return;
         }
 
@@ -2727,6 +2754,16 @@ if ($message): ?>
     };
 
     window.addIndikatorRow = async function () {
+        let totalBobot = 0;
+        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(r => {
+            totalBobot += parseFloat(r.querySelector('.bobot').value) || 0;
+        });
+
+        if (totalBobot + 5 > 100) {
+            Swal.fire('Peringatan', 'Tidak bisa menambahkan indikator baru, total bobot sudah maksimal. Kurangi bobot yang sudah ada terlebih dahulu.', 'warning');
+            return;
+        }
+
         // Ambil daftar sasaran unik dari tabel
         let sasarans = {};
         $('tr[data-sasaran-id]').each(function () {
@@ -2781,6 +2818,17 @@ if ($message): ?>
             return;
         }
 
+        let totalBobot = 0;
+        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(r => {
+            totalBobot += parseFloat(r.querySelector('.bobot').value) || 0;
+        });
+        totalBobot += parseFloat(bobot) || 0;
+
+        if (totalBobot > 100) {
+            Swal.fire('Gagal', 'Total bobot keseluruhan tidak boleh lebih dari 100%. Kurangi bobot yang sudah ada terlebih dahulu.', 'error');
+            return;
+        }
+
         $.ajax({
             url: '<?= base_url("Pegawai/simpan_indikator_baru") ?>',
             method: 'POST',
@@ -2800,6 +2848,134 @@ if ($message): ?>
                 } else {
                     Swal.fire('Gagal', 'Gagal menyimpan', 'error');
                 }
+            }
+        });
+    };
+
+    window.editSasaran = async function(id, btn) {
+        let textLama = btn.getAttribute('data-text');
+        if (!id) {
+            Swal.fire('Error', 'ID Sasaran tidak ditemukan', 'error');
+            return;
+        }
+        const { value: sasaranBaru } = await Swal.fire({
+            title: 'Edit Sasaran Kerja',
+            input: 'textarea',
+            inputValue: textLama,
+            showCancelButton: true,
+            confirmButtonText: 'Simpan',
+            cancelButtonText: 'Batal',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Sasaran kerja tidak boleh kosong!'
+                }
+            }
+        });
+
+        if (sasaranBaru) {
+            $.ajax({
+                url: '<?= base_url("Pegawai/updateSasaran") ?>',
+                method: 'POST',
+                data: { id: id, sasaran: sasaranBaru },
+                success: function(res) {
+                    let data = JSON.parse(res);
+                    if (data.success) {
+                        Swal.fire('Berhasil', data.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Gagal', data.message, 'error');
+                    }
+                }
+            });
+        }
+    };
+
+    window.editIndikator = async function(id, btn) {
+        let textLama = btn.getAttribute('data-text');
+        let row = $(btn).closest('tr');
+        let bobotLama = row.find('.bobot').val();
+
+        const { value: formValues } = await Swal.fire({
+            title: 'Edit Indikator & Bobot',
+            html:
+                '<div class="form-group text-left"><label>Indikator</label><textarea id="swal-input-indikator" class="form-control" rows="3" placeholder="Nama Indikator"></textarea></div>' +
+                '<div class="form-group text-left mt-2"><label>Bobot (%)</label><input id="swal-input-bobot" class="form-control" type="number" placeholder="Bobot" value="' + bobotLama + '" min="5" step="5"></div>',
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Simpan',
+            cancelButtonText: 'Batal',
+            didOpen: () => {
+                document.getElementById('swal-input-indikator').value = textLama;
+            },
+            preConfirm: () => {
+                return [
+                    document.getElementById('swal-input-indikator').value,
+                    document.getElementById('swal-input-bobot').value
+                ]
+            }
+        });
+
+        if (formValues) {
+            let [indikatorBaru, bobotBaru] = formValues;
+            
+            if (!indikatorBaru || !bobotBaru) {
+                Swal.fire('Error', 'Indikator dan Bobot wajib diisi', 'error');
+                return;
+            }
+
+            // Hitung total bobot selain yang sedang diedit untuk validasi
+            let totalBobotLain = 0;
+            document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(r => {
+                if (r.dataset.id != id) {
+                    totalBobotLain += parseFloat(r.querySelector('.bobot').value) || 0;
+                }
+            });
+
+            if (totalBobotLain + parseFloat(bobotBaru) > 100) {
+                Swal.fire('Gagal', 'Total bobot keseluruhan tidak boleh lebih dari 100%', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: '<?= base_url("Pegawai/updateIndikator") ?>',
+                method: 'POST',
+                data: { id: id, indikator: indikatorBaru, bobot: bobotBaru },
+                success: function(res) {
+                    let data = JSON.parse(res);
+                    if (data.success) {
+                        Swal.fire('Berhasil', data.message, 'success').then(() => location.reload());
+                    } else {
+                        Swal.fire('Gagal', data.message, 'error');
+                    }
+                }
+            });
+        }
+    };
+
+    window.deleteIndikator = function(id) {
+        Swal.fire({
+            title: 'Hapus Indikator?',
+            text: "Indikator beserta penilaiannya akan dihapus dan tidak dapat dikembalikan!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '<?= base_url("Pegawai/deleteIndikatorAjax") ?>',
+                    method: 'POST',
+                    data: { id: id },
+                    success: function(res) {
+                        let data = JSON.parse(res);
+                        if (data.success) {
+                            Swal.fire('Terhapus!', data.message, 'success').then(() => location.reload());
+                        } else {
+                            Swal.fire('Gagal!', data.message, 'error');
+                        }
+                    }
+                });
             }
         });
     };
