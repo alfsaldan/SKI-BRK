@@ -43,11 +43,18 @@ class Auth extends CI_Controller
             return;
         }
 
+        // Cek apakah password masih menggunakan default (sama dengan NIK)
+        $must_change_password = false;
+        if (password_verify($user->nik, $user->password)) {
+            $must_change_password = true;
+        }
+
         // set session
         $this->session->set_userdata([
             'nik'       => $user->nik,
             'role'      => $user->role,
-            'logged_in' => TRUE
+            'logged_in' => TRUE,
+            'must_change_password' => $must_change_password
         ]);
 
         $this->session->set_flashdata('login_success', 'Selamat datang, ' . $user->nik);

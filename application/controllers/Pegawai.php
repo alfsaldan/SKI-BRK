@@ -59,6 +59,15 @@ class Pegawai extends CI_Controller
         ) {
             redirect('auth');
         }
+
+        // Cek apakah wajib ubah password default
+        $current_method = $this->router->fetch_method();
+        if ($this->session->userdata('role') === 'pegawai' && $this->session->userdata('must_change_password')) {
+            if (!in_array($current_method, ['datadiriPegawai', 'logout'])) {
+                $this->session->set_flashdata('warning_password', 'Anda wajib memperbarui password default (NIK) demi keamanan sebelum mengakses halaman lain.');
+                redirect('Pegawai/datadiriPegawai');
+            }
+        }
     }
 
     /**
@@ -810,16 +819,35 @@ class Pegawai extends CI_Controller
             $password = $this->input->post('password');
             $konfirmasi = $this->input->post('konfirmasi_password');
 
+            // Validasi Strong Password
+            $uppercase = preg_match('@[A-Z]@', $password);
+            $lowercase = preg_match('@[a-z]@', $password);
+            $number    = preg_match('@[0-9]@', $password);
+            $specialChars = preg_match('@[^\w]@', $password);
+
+            if (!$uppercase || !$lowercase || !$number || !$specialChars || strlen($password) < 8) {
+                $this->session->set_flashdata('error', 'Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, angka, dan karakter spesial!');
+                redirect('Pegawai/datadiriPegawai');
+                return;
+            }
+
             if (!empty($password) && $password === $konfirmasi) {
+                if ($password === $nik) {
+                    $this->session->set_flashdata('error', 'Password baru tidak boleh sama dengan NIK!');
+                    redirect('Pegawai/datadiriPegawai');
+                    return;
+                }
+
                 if ($this->DataDiri_model->updatePassword($nik, $password)) {
                     $this->session->set_flashdata('success', 'Password berhasil diperbarui!');
+                    $this->session->unset_userdata('must_change_password');
                 } else {
                     $this->session->set_flashdata('error', 'Gagal memperbarui password!');
                 }
             } else {
                 $this->session->set_flashdata('error', 'Password tidak sama atau kosong!');
             }
-            redirect('pegawai/datadiriPegawai');
+            redirect('Pegawai/datadiriPegawai');
         }
 
         $this->load->view('layoutpegawai/header', $data);

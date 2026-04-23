@@ -1341,8 +1341,8 @@ if ($message): ?>
                     pencapaian = (realisasi / target) * 100;
                 }
             }
-            // 🔹 Batas maksimal 130%
-            return Math.min(pencapaian, 130);
+            // 🔹 Batas maksimal 100%
+            return Math.min(pencapaian, 100);
         }
 
         function hitungNilai(pencapaian) {
@@ -1358,7 +1358,7 @@ if ($message): ?>
                 nilai = 3 + ((pencapaian - 90) / 20 * 0.5);
             } else if (pencapaian < 120) {
                 nilai = 3.5 + ((pencapaian - 110) / 10 * 1);
-            } else if (pencapaian < 130) {
+            } else if (pencapaian < 100) {
                 nilai = 4.5 + ((pencapaian - 120) / 10 * 0.5);
             } else {
                 nilai = 5;
@@ -1509,7 +1509,7 @@ if ($message): ?>
                 else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3) / 0.5) * 20;
                 else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5) / 1) * 10;
                 else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
-                else pencapaian = 130;
+                else pencapaian = 100;
             } else {
                 pencapaian = 0;
             }
@@ -2080,12 +2080,12 @@ if ($message): ?>
                     totalBobot += parseFloat(row.querySelector('.bobot').value) || 0;
                 });
 
-                if (totalBobot > 130) {
+                if (totalBobot > 100) {
                     this.value = this.dataset.prevValue || 5; // Kembalikan ke nilai sebelumnya
                     Swal.fire({
                         icon: 'error',
                         title: 'Gagal',
-                        text: 'Total bobot keseluruhan tidak boleh lebih dari 130%.'
+                        text: 'Total bobot keseluruhan tidak boleh lebih dari 100%.'
                     });
                     return;
                 }
@@ -2185,8 +2185,8 @@ if ($message): ?>
         });
         totalBobot += parseFloat(bobot) || 0;
 
-        if (totalBobot > 130) {
-            Swal.fire('Gagal', 'Total bobot keseluruhan tidak boleh lebih dari 130%', 'error');
+        if (totalBobot > 100) {
+            Swal.fire('Gagal', 'Total bobot keseluruhan tidak boleh lebih dari 100%', 'error');
             return;
         }
 
@@ -2427,7 +2427,7 @@ if ($message): ?>
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: 130,
+                        max: 100,
                         title: {
                             display: true,
                             text: 'Pencapaian (%)'
@@ -2697,8 +2697,8 @@ if ($message): ?>
         });
         totalBobot += parseFloat(bobot) || 0;
 
-        if (totalBobot > 130) {
-            Swal.fire('Gagal', 'Total bobot keseluruhan tidak boleh lebih dari 130%', 'error');
+        if (totalBobot > 100) {
+            Swal.fire('Gagal', 'Total bobot keseluruhan tidak boleh lebih dari 100%', 'error');
             return;
         }
 

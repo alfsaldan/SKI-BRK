@@ -42,6 +42,16 @@
                             </table>
                             <hr>
                             <h5 class="mb-3">Perbarui Password</h5>
+                            
+                            <div class="alert alert-info">
+                                <strong>Syarat Password Kuat:</strong><br>
+                                - Minimal 8 karakter<br>
+                                - Mengandung huruf besar (A-Z)<br>
+                                - Mengandung huruf kecil (a-z)<br>
+                                - Mengandung angka (0-9)<br>
+                                - Mengandung karakter spesial (contoh: @, #, $, dll)
+                            </div>
+
                             <form id="formPassword" method="post">
                                 <div class="form-group">
                                     <label>Password Baru</label>
@@ -49,7 +59,7 @@
                                         <input type="password" name="password" id="password" class="form-control"
                                             required>
                                         <div class="input-group-append">
-                                            <span class="input-group-text" onclick="togglePassword('password', this)">
+                                            <span class="input-group-text" onclick="togglePassword('password', this)" style="cursor: pointer;">
                                                 <i class="fe-eye"></i>
                                             </span>
                                         </div>
@@ -62,7 +72,7 @@
                                             class="form-control" required>
                                         <div class="input-group-append">
                                             <span class="input-group-text"
-                                                onclick="togglePassword('konfirmasi_password', this)">
+                                                onclick="togglePassword('konfirmasi_password', this)" style="cursor: pointer;">
                                                 <i class="fe-eye"></i>
                                             </span>
                                         </div>
@@ -83,6 +93,33 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<?php if ($this->session->userdata('must_change_password')): ?>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Wajib Ubah Password!',
+            text: 'Demi keamanan, silakan perbarui password Anda yang saat ini masih menggunakan NIK sebelum mengakses halaman lain.',
+            confirmButtonText: 'Mengerti',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        });
+    });
+</script>
+<?php elseif ($this->session->flashdata('warning_password')): ?>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Akses Ditolak',
+            text: '<?= $this->session->flashdata('warning_password'); ?>',
+            confirmButtonText: 'OK'
+        });
+    });
+</script>
+<?php endif; ?>
+
 <script>
     // 👁 Toggle lihat/sembunyi password
     function togglePassword(fieldId, el) {
@@ -101,6 +138,42 @@
 
     // 🔐 Konfirmasi sebelum submit form
     function konfirmasiUpdate() {
+        const password = document.getElementById('password').value;
+        const konfirmasi = document.getElementById('konfirmasi_password').value;
+
+        if (password.trim() === '') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Password tidak boleh kosong!'
+            });
+            return;
+        }
+        
+        // Validasi Strong Password (Client Side)
+        const uppercase = /[A-Z]/.test(password);
+        const lowercase = /[a-z]/.test(password);
+        const number = /[0-9]/.test(password);
+        const specialChars = /[^\w]/.test(password);
+
+        if (password.length < 8 || !uppercase || !lowercase || !number || !specialChars) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Password Lemah',
+                text: 'Password harus minimal 8 karakter, mengandung huruf besar, huruf kecil, angka, dan karakter spesial!'
+            });
+            return;
+        }
+
+        if (password !== konfirmasi) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: 'Password dan Konfirmasi Password tidak cocok!'
+            });
+            return;
+        }
+
         Swal.fire({
             title: 'Yakin perbarui password?',
             text: "Pastikan kamu mengingat password baru ini!",
