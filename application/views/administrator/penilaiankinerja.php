@@ -1231,19 +1231,51 @@
             const sesBtn = e.target.closest ? e.target.closest('#btn-sesuaikan-periode') : null;
             if (sesBtn) {
                 e.preventDefault();
-                const nik = getNik();
-                if (!nik) {
+                const awal = periodeAwalInput ? periodeAwalInput.value : '';
+                const akhir = periodeAkhirInput ? periodeAkhirInput.value : '';
+                
+                if (!awal || !akhir) {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'NIK kosong',
-                        text: 'Masukkan NIK terlebih dahulu',
+                        title: 'Peringatan',
+                        text: 'Periode awal dan akhir harus diisi',
                         confirmButtonColor: '#d33'
                     });
                     return;
                 }
-                const awal = periodeAwalInput ? periodeAwalInput.value : '';
-                const akhir = periodeAkhirInput ? periodeAkhirInput.value : '';
-                window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${encodeURIComponent(nik)}&awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`;
+
+                // Kirim request untuk menambahkan periode kosong ke tabel penilaian
+                fetch('<?= base_url("Administrator/tambahPeriodePenilaian") ?>', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status === 'success') {
+                        const nik = getNik();
+                        if (nik) {
+                            window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${encodeURIComponent(nik)}&awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`;
+                        } else {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil',
+                                text: 'Periode berhasil ditambahkan',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.href = `<?= base_url("Administrator/penilaiankinerja") ?>?awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`;
+                            });
+                        }
+                    } else {
+                        Swal.fire('Gagal', res.message || 'Gagal menambahkan periode', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error tambah periode:', err);
+                    Swal.fire('Error', 'Terjadi kesalahan server', 'error');
+                });
+                
                 return;
             }
         });
@@ -1378,11 +1410,7 @@
                     if (nik) {
                         window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${encodeURIComponent(nik)}&awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`;
                     } else {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'NIK kosong',
-                            text: 'Masukkan NIK terlebih dahulu!',
-                        });
+                        window.location.href = `<?= base_url("Administrator/penilaiankinerja") ?>?awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`;
                     }
 
                     if (infoPeriode) infoPeriode.textContent = `${new Date(awal).toLocaleDateString('id-ID', opt)} s/d ${new Date(akhir).toLocaleDateString('id-ID', opt)}`;

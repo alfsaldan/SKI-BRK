@@ -638,6 +638,38 @@ class Administrator extends CI_Controller
         }
     }
 
+    public function tambahPeriodePenilaian()
+    {
+        $awal = $this->input->post('awal');
+        $akhir = $this->input->post('akhir');
+
+        if (!$awal || !$akhir) {
+            echo json_encode(['status' => 'error', 'message' => 'Periode tidak lengkap']);
+            return;
+        }
+
+        // Cek apakah sudah ada periode tersebut di penilaian
+        $this->db->where('periode_awal', $awal);
+        $this->db->where('periode_akhir', $akhir);
+        $exists = $this->db->get('penilaian')->row();
+
+        if ($exists) {
+            echo json_encode(['status' => 'success', 'message' => 'Periode sudah ada']);
+        } else {
+            $inserted = $this->db->insert('penilaian', [
+                'periode_awal' => $awal,
+                'periode_akhir' => $akhir,
+                'status_penilaian' => 'belum dinilai'
+            ]);
+            
+            if ($inserted) {
+                echo json_encode(['status' => 'success', 'message' => 'Periode berhasil ditambahkan']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Gagal menambahkan periode ke database']);
+            }
+        }
+    }
+
     public function simpanNilaiAkhir()
     {
         $nik           = $this->input->post('nik');
