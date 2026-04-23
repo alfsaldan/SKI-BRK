@@ -2196,17 +2196,6 @@ if ($message): ?>
         e.preventDefault();
         const formData = $(this).serialize();
 
-        let totalBobot = 0;
-        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(r => {
-            totalBobot += parseFloat(r.querySelector('.bobot').value) || 0;
-        });
-        totalBobot += parseFloat(bobot) || 0;
-
-        if (totalBobot > 100) {
-            Swal.fire('Gagal', 'Total bobot keseluruhan tidak boleh lebih dari 100%', 'error');
-            return;
-        }
-
         $.ajax({
             url: "<?= base_url('Pegawai/kirimCoachingPesan') ?>",
             method: "POST",
