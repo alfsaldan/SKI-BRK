@@ -516,8 +516,8 @@
                                     </table>
                                 </div>
                                 <div class="d-flex justify-content-end align-items-center mt-2 gap-2">
-                                    <label for="status-semua" class="mb-0"><b>Ubah Semua Status:</b></label>
-                                    <select id="status-semua" class="form-select form-select-sm"
+                                    <label for="status-semua" class="mb-0" hidden><b>Ubah Semua Status:</b></label>
+                                    <select id="status-semua" class="form-select form-select-sm" hidden
                                         style="width: 180px; padding: 0.25rem 0.5rem;"
                                         data-locked="<?= $is_locked ? '1' : '0'; ?>"
                                         <?= $is_locked ? 'disabled' : ''; ?>>
@@ -525,7 +525,7 @@
                                         <option value="Ada Catatan">Ada Catatan</option>
                                         <option value="Disetujui">Disetujui</option>
                                     </select>
-                                    <button type="button" id="btn-simpan-semua" class="btn btn-success btn-sm"
+                                    <button type="button" id="btn-simpan-semua" class="btn btn-success btn-sm" hidden
                                         style="padding: 0.35rem 0.75rem;"
                                         <?= $is_locked ? 'disabled' : ''; ?>>
                                         Simpan Semua
@@ -1194,7 +1194,12 @@
             // Tambahkan baris ini agar total-sasaran sama dengan total-nilai-bobot
             document.getElementById('total-sasaran').textContent = formatAngka(totalNilai);
 
-            hitungNilaiAkhir();
+            // Jika ada Share KPI di UI, hitung nilai sasaran & nilai akhir berdasarkan share
+            if (document.getElementById('share-kpi-value')) {
+                try { hitungShareKPI(); } catch (e) { console.error('hitungShareKPI error', e); }
+            } else {
+                hitungNilaiAkhir();
+            }
         }
 
         function hitungNilaiAkhir() {

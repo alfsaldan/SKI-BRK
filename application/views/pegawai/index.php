@@ -645,11 +645,11 @@
                                                             <td class="text-center align-middle">
                                                                 <input type="number"
                                                                     class="form-control form-control-sm text-center bobot"
-                                                                    value="<?= $bobot; ?>" min="5" step="5" data-toggle="tooltip"
+                                                                    value="<?= $bobot; ?>" min="5" data-toggle="tooltip"
                                                                     data-prev-value="<?= $bobot; ?>"
                                                                     data-placement="bottom" data-html="true"
                                                                     data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
-                                                                    title="<i class='mdi mdi-information-outline'></i><br>Minimal nilai 5 dan kelipatan 5"
+                                                                    title="<i class='mdi mdi-information-outline'></i><br>Minimal nilai 5."
                                                                     <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
                                                             </td>
                                                             <td>
@@ -1099,7 +1099,10 @@
                 <!-- ================== FORM TAMBAH CATATAN ================== -->
                 <div class="card mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">Formulir feedback</h5>
+                        <h5 class="card-title">Formulir feedback
+                            <small> (antara pegawai dengan administrator MSDI)</small>
+
+                        </h5>
                         <form id="form-catatan-pegawai">
                             <input type="hidden" name="nik" id="nik" value="<?= $pegawai_detail->nik;
                             ; ?>">
@@ -1157,6 +1160,7 @@
                     <div class="card-body">
                         <h5 class="card-title mb-3">
                             <i class="fas fa-comments text-primary mr-2"></i> Aktivitas Coaching Kinerja
+                            <small> (antara pegawai dengan penilai 1 dan penilai 2)</small>
                         </h5>
 
                         <!-- Box Chat -->
@@ -1358,8 +1362,8 @@ if ($message): ?>
                     pencapaian = (realisasi / target) * 100;
                 }
             }
-            // 🔹 Batas maksimal 100%
-            return Math.min(pencapaian, 100);
+            // 🔹 Batas maksimal 130%
+            return Math.min(pencapaian, 130);
         }
 
         function hitungNilai(pencapaian) {
@@ -1526,7 +1530,7 @@ if ($message): ?>
                 else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3) / 0.5) * 20;
                 else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5) / 1) * 10;
                 else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
-                else pencapaian = 100;
+                else pencapaian = 130;
             } else {
                 pencapaian = 0;
             }
@@ -2080,12 +2084,12 @@ if ($message): ?>
             $(input).tooltip(); // Init tooltip
             input.addEventListener('change', function () {
                 let val = parseInt(this.value);
-                if (isNaN(val) || val < 5 || val % 5 !== 0) {
+                if (isNaN(val) || val < 5) {
                     this.value = 5;
                     Swal.fire({
                         icon: 'warning',
                         title: 'Perhatian',
-                        text: 'Bobot harus minimal 5 dan kelipatan 5.',
+                        text: 'Bobot harus minimal 5',
                         timer: 2000,
                         showConfirmButton: false
                     });
@@ -2433,7 +2437,7 @@ if ($message): ?>
                 scales: {
                     y: {
                         beginAtZero: true,
-                        max: 100,
+                        max: 130,
                         title: {
                             display: true,
                             text: 'Pencapaian (%)'
