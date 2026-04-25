@@ -43,7 +43,7 @@
                                         <thead class="thead-light">
                                             <tr>
                                                 <th>No</th>
-                                                <th>NIK</th>
+                                                <th>NIP</th>
                                                 <th>Nama</th>
                                                 <th>Role</th>
                                                 <th>Status</th>
@@ -105,7 +105,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>NIK</label>
+                        <label>NIP</label>
                         <input type="text" name="nik" class="form-control" required>
                     </div>
                     <div class="form-group">
@@ -147,7 +147,7 @@
                 <div class="modal-body">
                     <input type="hidden" name="id" id="edit_id">
                     <div class="form-group">
-                        <label>NIK</label>
+                        <label>NIP</label>
                         <input type="text" id="edit_nik" class="form-control" readonly>
                     </div>
                     <div class="form-group">

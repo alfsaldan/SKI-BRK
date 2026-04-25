@@ -66,7 +66,7 @@
                             <table id="table-verifikasi" class="table table-bordered table-striped" style="width:100%">
                                 <thead>
                                     <tr>
-                                        <th>NIK</th>
+                                        <th>NIP</th>
                                         <th>Nama</th>
                                         <th>Jabatan</th>
                                         <th>Status Penilaian</th>

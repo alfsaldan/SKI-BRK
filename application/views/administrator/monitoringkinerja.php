@@ -78,7 +78,7 @@
                                     <label class="text-dark font-weight-medium">Masukkan NIK Pegawai:</label>
                                     <input type="text" id="nik_input" name="nik" class="form-control mb-2"
                                         placeholder="Masukkan NIK Pegawai"
-                                        value="<?= isset($nik) ? htmlspecialchars($nik) : '' ?>" required>
+                                        value="<?= isset($nik) ? htmlspecialchars($nik) : '' ?>" required maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                                 </div>
 
                                 <div class="col-12 text-right">

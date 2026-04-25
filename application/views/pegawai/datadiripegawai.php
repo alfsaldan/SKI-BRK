@@ -24,7 +24,7 @@
                             </div>
                             <table class="table table-borderless">
                                 <tr>
-                                    <th>NIK</th>
+                                    <th>NIP</th>
                                     <td><?= isset($pegawai['nik']) ? $pegawai['nik'] : '-' ?></td>
                                 </tr>
                                 <tr>

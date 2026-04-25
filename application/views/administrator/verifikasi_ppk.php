@@ -50,7 +50,7 @@
                                 <thead>
                                     <tr>
                                         <th>NO</th>
-                                        <th>NIK</th>
+                                        <th>NIP</th>
                                         <th>Nama</th>
                                         <th>Jabatan</th>
                                         <th>Unit Kerja</th>
@@ -489,7 +489,7 @@
             var nik = $('#ppk_nik').val();
             Swal.fire({
                 title: 'Tersimpan',
-                text: 'Data PPK untuk NIK ' + nik + ' berhasil disimpan (statis).',
+                text: 'Data PPK untuk NIP ' + nik + ' berhasil disimpan (statis).',
                 icon: 'success',
                 timer: 900,
                 showConfirmButton: false

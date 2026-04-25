@@ -68,7 +68,7 @@
                             <input type="text" class="form-control" readonly value="<?= htmlspecialchars($pegawai_detail->nama_pegawai ?? '-', ENT_QUOTES, 'UTF-8') ?>">
                         </div>
                         <div class="col-md-6">
-                            <label class="fw-bold text-secondary">NIK</label>
+                            <label class="fw-bold text-secondary">NIP</label>
                             <input type="text" class="form-control" readonly value="<?= htmlspecialchars($pegawai_detail->nik ?? '-', ENT_QUOTES, 'UTF-8') ?>">
                         </div>
                         <div class="col-md-6">

@@ -73,7 +73,7 @@
                                     <thead class="thead-light">
                                         <tr>
                                             <th>No</th>
-                                            <th>NIK</th>
+                                            <th>NIP</th>
                                             <th>Nama</th>
                                             <th>Jabatan</th>
                                             <th>Jenis Unit</th>
@@ -131,8 +131,9 @@
                                 <strong>ℹ️ Catatan Import:</strong>
                                 <ul class="mb-0">
                                     <li>Gunakan template Excel resmi untuk format sesuai.</li>
-                                    <li>Kolom wajib: <code>NIK, Nama, Jabatan, Jenis Unit,Unit Kantor, Password</code>.</li>
-                                    <li><code>NIK</code> harus unik (tidak boleh duplikat).</li>
+                                    <li>Kolom wajib: <code>NIP, Nama, Jabatan, Jenis Unit,Unit Kantor, Password</code>.</li>
+                                    <li><code>NIP</code> harus unik (tidak boleh duplikat).</li>
+                                    <li><code>NIP</code> harus berupa angka (number only) dan maksimal 6 digit.</li>
                                     <li>Password minimal 6 karakter.</li>
                                     <li>File hanya mendukung <code>.xls</code> atau <code>.xlsx</code>.</li>
                                 </ul>
@@ -175,7 +176,8 @@
                             <div class="alert alert-warning mt-3">
                                 <strong>Catatan khusus Import Mutasi</strong>
                                 <ul class="mb-0">
-                                    <li>Format header yang diharapkan (dalam urutan kolom): <code>NIK, Jenis Unit, Unit Kantor, Jabatan Baru, Tanggal Mulai</code>.</li>
+                                    <li>Format header yang diharapkan (dalam urutan kolom): <code>NIP, Jenis Unit, Unit Kantor, Jabatan Baru, Tanggal Mulai</code>.</li>
+                                    <li><code>NIP</code> harus berupa angka (number only) dan maksimal 6 digit.</li>
                                     <li>Tanggal mulai bisa berupa tanggal teks (YYYY-MM-DD) atau serial tanggal Excel; sistem akan mencoba parsing otomatis.</li>
                                     <li>Import akan menutup riwayat jabatan lama (tgl_selesai = TanggalMulai - 1 hari) dan menambahkan riwayat baru serta memperbarui data di tabel <code>pegawai</code>.</li>
                                     <li>Pastikan Anda memiliki backup database sebelum melakukan import massal.</li>
@@ -202,8 +204,8 @@
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label>NIK</label>
-                        <input type="text" name="nik" class="form-control" required>
+                        <label>NIP</label>
+                        <input type="text" name="nik" class="form-control" required maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                     </div>
                     <div class="form-group col-md-6">
                         <label>Nama</label>

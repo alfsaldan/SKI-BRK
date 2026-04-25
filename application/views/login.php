@@ -245,7 +245,7 @@
             <div class="form-group mb-3 text-left">
                 <label for="nik"><b>NIP</b></label>
                 <input type="text" class="form-control" id="nik" name="nik" required maxlength="6"
-                    placeholder="Masukkan NIP Pegawai" value="<?= isset($nik) ? $nik : ''; ?>">
+                    placeholder="Masukkan NIP Pegawai" value="<?= isset($nik) ? $nik : ''; ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
             </div>
 
             <div class="form-group mb-4 position-relative">

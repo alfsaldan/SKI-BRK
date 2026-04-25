@@ -863,6 +863,16 @@ class Administrator extends CI_Controller
                 continue;
             }
 
+            if (!ctype_digit($nik)) {
+                $errors[] = "Baris $i: NIK '$nik' harus berupa angka (number only).";
+                continue;
+            }
+
+            if (strlen($nik) > 6) {
+                $errors[] = "Baris $i: NIK '$nik' maksimal 6 angka.";
+                continue;
+            }
+
             if ($this->db->get_where('pegawai', ['nik' => $nik])->row()) {
                 $errors[] = "Baris $i: NIK $nik sudah ada.";
                 continue;
@@ -994,6 +1004,16 @@ class Administrator extends CI_Controller
 
             if (empty($nik)) {
                 $errors[] = "Baris $i: NIK kosong.";
+                continue;
+            }
+
+            if (!ctype_digit($nik)) {
+                $errors[] = "Baris $i: NIP '$nik' harus berupa angka (number only).";
+                continue;
+            }
+
+            if (strlen($nik) > 6) {
+                $errors[] = "Baris $i: NIP '$nik' maksimal 6 angka.";
                 continue;
             }
 

@@ -570,7 +570,7 @@
                 html: `
                 <div class="text-start">
                     <p class="mb-1"><strong>Nama:</strong> ${pegawaiNama}</p>
-                    <p><strong>NIK:</strong> ${pegawaiNik}</p>
+                    <p><strong>NIP:</strong> ${pegawaiNik}</p>
                     <p class="text-muted small mb-0">
                         Apakah Anda yakin ingin menyetujui hasil penilaian ini?
                     </p>

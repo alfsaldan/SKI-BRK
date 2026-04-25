@@ -38,7 +38,7 @@
                     <div>
                         <h4 class="mb-1"><?= $pegawai->nama ?></h4>
                         <p class="mb-0 text-muted">
-                            <strong>NIK:</strong> <?= $pegawai->nik ?>
+                            <strong>NIP:</strong> <?= $pegawai->nik ?>
                         </p>
                     </div>
                 </div>

@@ -113,10 +113,10 @@
                 <div class="col-12 col-md-6 mb-0 d-flex">
                     <div class="card w-100">
                         <div class="card-body">
-                            <h5>Masukkan NIK Pegawai</h5>
+                            <h5>Masukkan NIP Pegawai</h5>
                             <form action="<?= base_url('Administrator/cariPenilaian'); ?>" method="post">
                                 <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai"
-                                    required>
+                                    required maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                                 <button type="submit" class="btn btn-success mt-2">Nilai</button>
                             </form>
                         </div>
@@ -140,7 +140,7 @@
                                         </h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">NIK</span>
+                                                <span class="text-dark font-weight-medium">NIP</span>
                                                 <span
                                                     class="badge badge-primary badge-pill"><?= $pegawai_detail->nik; ?></span>
                                             </li>
@@ -195,7 +195,7 @@
                                         </h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">NIK</span>
+                                                <span class="text-dark font-weight-medium">NIP</span>
                                                 <span
                                                     class="badge badge-info badge-pill"><?= $pegawai_detail->penilai1_nik ?? '-'; ?></span>
                                             </li>
@@ -217,7 +217,7 @@
                                         </h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">NIK</span>
+                                                <span class="text-dark font-weight-medium">NIP</span>
                                                 <span
                                                     class="badge badge-warning badge-pill"><?= $pegawai_detail->penilai2_nik ?? '-'; ?></span>
                                             </li>

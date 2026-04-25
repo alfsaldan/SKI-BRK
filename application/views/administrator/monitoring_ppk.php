@@ -50,7 +50,7 @@
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>NIK</th>
+                                        <th>NIP</th>
                                         <th>Nama</th>
                                         <th width="20%">Jabatan</th>
                                         <th width="20%">Unit Kantor</th>

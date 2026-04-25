@@ -48,7 +48,7 @@
                                             </div>
                                         </div>
                                         <div class="form-group row mb-2">
-                                            <label class="col-sm-4 col-form-label font-weight-medium">NIK</label>
+                                            <label class="col-sm-4 col-form-label font-weight-medium">NIP</label>
                                             <div class="col-sm-8">
                                                 <input type="text" class="form-control-plaintext" name="nik" value="<?= isset($pegawai->nik) ? $pegawai->nik : '-' ?>" readonly>
                                             </div>

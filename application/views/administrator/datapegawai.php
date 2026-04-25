@@ -23,10 +23,10 @@
                 <div class="col-12 col-md-6">
                     <div class="card">
                         <div class="card-body">
-                            <h5>Masukkan NIK Pegawai</h5>
+                            <h5>Masukkan NIP Pegawai</h5>
                             <form action="<?= base_url('Administrator/cariDataPegawai'); ?>" method="post">
-                                <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai"
-                                    required>
+                                <input type="text" name="nik" class="form-control" placeholder="Masukkan NIP Pegawai"
+                                    required oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                                 <button type="submit" class="btn btn-success mt-2">Cari</button>
                             </form>
                         </div>
@@ -46,7 +46,7 @@
                                         <h5 class="text-primary mb-3 font-weight-bold"><i class="mdi mdi-account-circle-outline mr-2"></i>Detail Pegawai</h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">NIK</span>
+                                                <span class="text-dark font-weight-medium">NIP</span>
                                                 <span class="badge badge-primary badge-pill"><?= $pegawai_detail->nik; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -120,7 +120,7 @@
                                         </h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">NIK</span>
+                                                <span class="text-dark font-weight-medium">NIP</span>
                                                 <span class="badge badge-info badge-pill"><?= $pegawai_detail->penilai1_nik ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -140,7 +140,7 @@
                                         </h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">NIK</span>
+                                                <span class="text-dark font-weight-medium">NIP</span>
                                                 <span class="badge badge-warning badge-pill"><?= $pegawai_detail->penilai2_nik ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
