@@ -582,6 +582,7 @@
 
                                                         // 🟢 Ambil status untuk Penilai 1 dari kolom `status`
                                                         $status = strtolower(trim($i->status ?? ''));
+                                                        $is_row_approved = ($status === 'disetujui');
 
                                                         // Logika untuk Status Penilai 1
                                                         $statusClass = 'badge badge-danger';
@@ -655,12 +656,12 @@
                                                                     data-html="true"
                                                                     data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
                                                                     title="<i class='mdi mdi-information-outline'></i><br>Minimal nilai 5."
-                                                                    <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
+                                                                    <?= ($is_locked || $is_verified || $is_row_approved) ? 'readonly' : ''; ?>>
                                                             </td>
                                                             <td>
                                                                 <div class="d-flex justify-content-between align-items-center">
                                                                     <span><?= $indik; ?></span>
-                                                                    <?php if (!$is_locked && !$is_verified): ?>
+                                                                    <?php if (!$is_locked && !$is_verified && !$is_row_approved): ?>
                                                                         <div class="d-flex">
                                                                             <button type="button"
                                                                                 class="btn btn-xs btn-outline-primary ml-1 p-1"
@@ -709,18 +710,18 @@
                                                                 <div class="currency-wrapper">
                                                                     <input type="text" class="form-control target-input text-center"
                                                                         style="min-width:150px;" value="<?= $i->target ?? ''; ?>"
-                                                                        <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
+                                                                        <?= ($is_locked || $is_verified || $is_row_approved) ? 'readonly' : ''; ?>>
                                                                     <div class="format-currency text-muted small"></div>
                                                                 </div>
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <input type="date" class="form-control batas-waktu"
                                                                     style="min-width:120px;" value="<?= $i->batas_waktu ?? ''; ?>"
-                                                                    <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
+                                                                    <?= ($is_locked || $is_verified || $is_row_approved) ? 'readonly' : ''; ?>>
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <div class="currency-wrapper">
-                                                                    <?php if (!$is_locked && !$is_verified): ?>
+                                                                    <?php if (!$is_locked && !$is_verified && !$is_row_approved): ?>
                                                                         <input type="text" class="form-control text-center realisasi-input"
                                                                             value="<?= $i->realisasi ?? ''; ?>" style="min-width:150px;">
                                                                     <?php else: ?>
@@ -756,7 +757,7 @@
                                                                 <span class="<?= $status2Class; ?>"><?= $status2Text; ?></span>
                                                             </td>
                                                             <td class="text-center align-middle">
-                                                                <?php if (!$is_locked && !$is_verified): ?>
+                                                                <?php if (!$is_locked && !$is_verified && !$is_row_approved): ?>
                                                                     <button type="button"
                                                                         class="btn btn-sm btn-primary simpan-penilaian w-100">Simpan</button>
                                                                 <?php else: ?>

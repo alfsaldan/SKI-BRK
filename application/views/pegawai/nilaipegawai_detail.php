@@ -382,6 +382,9 @@
                                                         $indik = $i->indikator ?? '';
                                                         $subtotal_bobot_perspektif += $bobot;
 
+                                                        $status = strtolower(trim($i->status ?? ''));
+                                                        $is_row_approved = ($status === 'disetujui');
+
                                                         $statusClass = 'text-secondary';
                                                         $statusText = 'Belum Dinilai';
                                             ?>
@@ -442,7 +445,7 @@
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <div class="currency-wrapper">
-                                                                    <?php if (!$is_locked): ?>
+                                                                    <?php if (!$is_locked && !$is_row_approved): ?>
                                                                         <input type="text" class="form-control text-center realisasi-input"
                                                                             value="<?= $i->realisasi ?? ''; ?>"
                                                                             style="min-width:150px;">
@@ -1385,6 +1388,19 @@
         }
         });
 
+        const isLockedGlobally = <?= $is_locked ? 'true' : 'false' ?>;
+        if (!isLockedGlobally) {
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.addEventListener('change', function() {
+                    const row = this.closest('tr');
+                    const realisasiInput = row.querySelector('.realisasi-input');
+                    if (realisasiInput) {
+                        realisasiInput.readOnly = (this.value === 'Disetujui');
+                    }
+                });
+            });
+        }
+
         function simpanStatus(id, status, realisasi, pencapaian, nilai, nilai_dibobot) {
             fetch("<?= base_url('Pegawai/updateStatus'); ?>", {
                     method: "POST",
@@ -1423,7 +1439,12 @@
                 })
                 .then(res => res.json())
                 .then(data => {
-                    if (data.success) document.querySelectorAll('.status-select').forEach(s => s.value = status);
+                    if (data.success) {
+                        document.querySelectorAll('.status-select').forEach(s => {
+                            s.value = status;
+                            s.dispatchEvent(new Event('change'));
+                        });
+                    }
                     Swal.fire({
                         icon: data.success ? 'success' : 'error',
                         title: data.message,
