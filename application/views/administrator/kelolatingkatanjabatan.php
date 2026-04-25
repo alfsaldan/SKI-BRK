@@ -149,14 +149,14 @@
 
                     <div class="mb-2">
                         <label>Penilai I</label>
-                        <select name="penilai1_jabatan" id="penilai1_jabatan" class="form-control">
+                        <select name="penilai1_jabatan" id="penilai1_jabatan" class="form-control select2-penilai">
                             <option value="">-- Pilih Penilai I --</option>
                         </select>
                     </div>
 
                     <div class="mb-2">
                         <label>Penilai II</label>
-                        <select name="penilai2_jabatan" id="penilai2_jabatan" class="form-control">
+                        <select name="penilai2_jabatan" id="penilai2_jabatan" class="form-control select2-penilai">
                             <option value="">-- Pilih Penilai II --</option>
                         </select>
                     </div>
@@ -495,6 +495,21 @@
                         });
                         $('#penilai1_jabatan').html(options);
                         $('#penilai2_jabatan').html(options);
+                        
+                        // Inisialisasi Select2 untuk penilai
+                        $('#penilai1_jabatan, #penilai2_jabatan').select2({
+                            theme: 'bootstrap4',
+                            width: '100%',
+                            placeholder: 'Pilih penilai',
+                            allowClear: true,
+                            minimumResultsForSearch: 0,
+                            dropdownParent: $('#modalMapping'),
+                            language: {
+                                noResults: function() {
+                                    return 'Tidak ada hasil yang cocok';
+                                }
+                            }
+                        });
                     });
 
                     $('#modalMapping').modal('show');
@@ -534,6 +549,21 @@
 
                         $('#penilai1_jabatan').html(options1);
                         $('#penilai2_jabatan').html(options2);
+                        
+                        // Inisialisasi Select2 untuk penilai dengan nilai terpilih
+                        $('#penilai1_jabatan, #penilai2_jabatan').select2({
+                            theme: 'bootstrap4',
+                            width: '100%',
+                            placeholder: 'Pilih penilai',
+                            allowClear: true,
+                            minimumResultsForSearch: 0,
+                            dropdownParent: $('#modalMapping'),
+                            language: {
+                                noResults: function() {
+                                    return 'Tidak ada hasil yang cocok';
+                                }
+                            }
+                        });
                     });
 
                     $('#modalMapping').modal('show');

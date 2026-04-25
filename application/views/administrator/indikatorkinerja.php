@@ -26,7 +26,7 @@
                             <h4 class="header-title mb-3">Filter Indikator Kinerja</h4>
                             <form action="<?= base_url('Administrator/indikatorKinerja'); ?>" method="get">
                                 <label>Unit Kantor</label>
-                                <select name="unit_kerja" id="unit_kerja_filter" class="form-control mb-2" required>
+                                <select name="unit_kerja" id="unit_kerja_filter" class="form-control mb-2 select2" required>
                                     <option value="">-- Pilih Unit Kantor --</option>
                                     <?php foreach ($unit_kerja as $uk): ?>
                                         <option value="<?= $uk->unit_kerja; ?>" <?= ($unit_kerja_terpilih == $uk->unit_kerja) ? 'selected' : ''; ?>>
@@ -35,7 +35,7 @@
                                     <?php endforeach; ?>
                                 </select>
                                 <label>Jabatan</label>
-                                <select name="jabatan" id="jabatan_filter" class="form-control mb-2" required>
+                                <select name="jabatan" id="jabatan_filter" class="form-control mb-2 select2" required>
                                     <option value="">-- Pilih Jabatan --</option>
                                     <?php if ($jabatan_terpilih): ?>
                                         <option value="<?= $jabatan_terpilih; ?>" selected><?= $jabatan_terpilih; ?>
@@ -253,38 +253,7 @@
         });
     }
 
-    // 🔹 Load Jabatan by Unit
-    document.getElementById('unit_kerja_filter').addEventListener('change', function() {
-        const unit_kerja = this.value;
-        const jabatanSelect = document.getElementById('jabatan_filter');
-
-        jabatanSelect.innerHTML = '<option value="">-- Loading... --</option>';
-        jabatanSelect.disabled = true;
-
-        if (unit_kerja) {
-            fetch(`<?= base_url('Administrator/getJabatanByUnit?unit_kerja='); ?>${unit_kerja}`)
-                .then(response => response.json())
-                .then(data => {
-                    jabatanSelect.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
-                    data.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item.jabatan;
-                        option.textContent = item.jabatan;
-                        jabatanSelect.appendChild(option);
-                    });
-                    jabatanSelect.disabled = false;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    jabatanSelect.innerHTML = '<option value="">-- Gagal memuat data --</option>';
-                    jabatanSelect.disabled = false;
-                });
-        } else {
-            jabatanSelect.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
-            jabatanSelect.disabled = false;
-        }
-    });
-
+    // Function recalcBobot tetap sama
     function recalcBobot() {
         let grandTotal = 0;
 
@@ -311,6 +280,58 @@
 
     // 🔹 Jalankan saat halaman selesai load
     $(document).ready(function() {
+        // Inisialisasi Select2 untuk filter
+        $('#unit_kerja_filter, #jabatan_filter').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            placeholder: 'Pilih opsi',
+            allowClear: true,
+            minimumResultsForSearch: 0, // Tampilkan search box dari awal
+            language: {
+                noResults: function() {
+                    return 'Tidak ada hasil yang cocok';
+                }
+            }
+        });
+
+        // 🔹 Load Jabatan by Unit dengan Select2
+        $('#unit_kerja_filter').on('change', function() {
+            const unit_kerja = $(this).val();
+            const $jabatanSelect = $('#jabatan_filter');
+
+            // Set loading state
+            $jabatanSelect.html('<option value="">-- Loading... --</option>').trigger('change');
+
+            if (unit_kerja) {
+                fetch(`<?= base_url('Administrator/getJabatanByUnit?unit_kerja='); ?>${unit_kerja}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Clear dan set opsi default
+                        $jabatanSelect.html('<option value="">-- Pilih Jabatan --</option>');
+                        
+                        // Tambahkan data jabatan
+                        if (data && data.length > 0) {
+                            data.forEach(item => {
+                                $jabatanSelect.append($('<option></option>')
+                                    .attr('value', item.jabatan)
+                                    .text(item.jabatan));
+                            });
+                        }
+                        
+                        // Refresh Select2
+                        $jabatanSelect.trigger('change');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        $jabatanSelect.html('<option value="">-- Gagal memuat data --</option>')
+                            .trigger('change');
+                    });
+            } else {
+                $jabatanSelect.html('<option value="">-- Pilih Jabatan --</option>')
+                    .trigger('change');
+            }
+        });
+
         recalcBobot();
     });
 
