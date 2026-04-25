@@ -284,7 +284,7 @@
                                                 class="mdi mdi-account-circle-outline mr-2"></i>Detail Pegawai</h5>
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">NIP</span>
+                                                <span class="text-dark font-weight-medium">NIK</span>
                                                 <span
                                                     class="badge badge-primary badge-pill"><?= $pegawai_detail->nik; ?></span>
                                             </li>
@@ -377,7 +377,7 @@
 
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                <span class="text-dark font-weight-medium">NIP</span>
+                                                <span class="text-dark font-weight-medium">NIK</span>
                                                 <span class="badge badge-info badge-pill">
                                                     <?= $pegawai_detail->penilai1_nik ?? '-' ?>
                                                 </span>
@@ -582,7 +582,6 @@
 
                                                         // 🟢 Ambil status untuk Penilai 1 dari kolom `status`
                                                         $status = strtolower(trim($i->status ?? ''));
-                                                        $is_row_approved = ($status === 'disetujui');
 
                                                         // Logika untuk Status Penilai 1
                                                         $statusClass = 'badge badge-danger';
@@ -656,12 +655,12 @@
                                                                     data-html="true"
                                                                     data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
                                                                     title="<i class='mdi mdi-information-outline'></i><br>Minimal nilai 5."
-                                                                    <?= ($is_locked || $is_verified || $is_row_approved) ? 'readonly' : ''; ?>>
+                                                                    <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
                                                             </td>
                                                             <td>
                                                                 <div class="d-flex justify-content-between align-items-center">
                                                                     <span><?= $indik; ?></span>
-                                                                    <?php if (!$is_locked && !$is_verified && !$is_row_approved): ?>
+                                                                    <?php if (!$is_locked && !$is_verified): ?>
                                                                         <div class="d-flex">
                                                                             <button type="button"
                                                                                 class="btn btn-xs btn-outline-primary ml-1 p-1"
@@ -710,18 +709,18 @@
                                                                 <div class="currency-wrapper">
                                                                     <input type="text" class="form-control target-input text-center"
                                                                         style="min-width:150px;" value="<?= $i->target ?? ''; ?>"
-                                                                        <?= ($is_locked || $is_verified || $is_row_approved) ? 'readonly' : ''; ?>>
+                                                                        <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
                                                                     <div class="format-currency text-muted small"></div>
                                                                 </div>
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <input type="date" class="form-control batas-waktu"
                                                                     style="min-width:120px;" value="<?= $i->batas_waktu ?? ''; ?>"
-                                                                    <?= ($is_locked || $is_verified || $is_row_approved) ? 'readonly' : ''; ?>>
+                                                                    <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <div class="currency-wrapper">
-                                                                    <?php if (!$is_locked && !$is_verified && !$is_row_approved): ?>
+                                                                    <?php if (!$is_locked && !$is_verified): ?>
                                                                         <input type="text" class="form-control text-center realisasi-input"
                                                                             value="<?= $i->realisasi ?? ''; ?>" style="min-width:150px;">
                                                                     <?php else: ?>
@@ -751,13 +750,21 @@
 
 
                                                             <td class="text-center align-middle">
-                                                                <span class="<?= $statusClass; ?>"><?= $statusText; ?></span>
+                                                                <?php if ($statusText === 'Ada Catatan'): ?>
+                                                                    <a href="javascript:void(0);" class="<?= $statusClass; ?>" onclick="lihatCatatan('<?= $id ?>', '<?= $pegawai_detail->penilai1_nik ?? '' ?>')"><?= $statusText; ?></a>
+                                                                <?php else: ?>
+                                                                    <span class="<?= $statusClass; ?>"><?= $statusText; ?></span>
+                                                                <?php endif; ?>
                                                             </td>
                                                             <td class="text-center align-middle">
-                                                                <span class="<?= $status2Class; ?>"><?= $status2Text; ?></span>
+                                                                <?php if ($status2Text === 'Ada Catatan'): ?>
+                                                                    <a href="javascript:void(0);" class="<?= $status2Class; ?>" onclick="lihatCatatan('<?= $id ?>', '<?= $pegawai_detail->penilai2_nik ?? '' ?>')"><?= $status2Text; ?></a>
+                                                                <?php else: ?>
+                                                                    <span class="<?= $status2Class; ?>"><?= $status2Text; ?></span>
+                                                                <?php endif; ?>
                                                             </td>
                                                             <td class="text-center align-middle">
-                                                                <?php if (!$is_locked && !$is_verified && !$is_row_approved): ?>
+                                                                <?php if (!$is_locked && !$is_verified): ?>
                                                                     <button type="button"
                                                                         class="btn btn-sm btn-primary simpan-penilaian w-100">Simpan</button>
                                                                 <?php else: ?>
@@ -801,6 +808,32 @@
                                                 <td colspan="3"></td>
                                             </tr>
                                         </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Lihat Catatan Indikator -->
+                <div class="modal fade" id="modalLihatCatatan" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning">
+                                <h5 class="modal-title text-white">Catatan Penilai</h5>
+                                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="tabel-catatan-indikator">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th>Tanggal</th>
+                                                <th>Penilai</th>
+                                                <th>Catatan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
                                     </table>
                                 </div>
                             </div>
@@ -3011,6 +3044,40 @@ if ($message): ?>
         });
     };
 
+    window.lihatCatatan = function (indikatorId, nikPenilai = '') {
+        $.ajax({
+            url: '<?= base_url("Pegawai/getCatatanIndikator") ?>',
+            method: 'POST',
+            data: { indikator_id: indikatorId, nik_penilai: nikPenilai },
+            dataType: 'json',
+            success: function (res) {
+                let tbody = $('#tabel-catatan-indikator tbody');
+                tbody.empty();
+                if (res.success && res.data.length > 0) {
+                    res.data.forEach(function (c) {
+                        // Format date
+                        let date = new Date(c.tanggal);
+                        let tgl = String(date.getDate()).padStart(2, '0') + '-' + 
+                                  String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                                  date.getFullYear() + ' ' + 
+                                  String(date.getHours()).padStart(2, '0') + ':' + 
+                                  String(date.getMinutes()).padStart(2, '0');
+                        
+                        tbody.append(`
+                            <tr>
+                                <td>${tgl}</td>
+                                <td>${c.nama_penilai || '-'}</td>
+                                <td>${c.catatan}</td>
+                            </tr>
+                        `);
+                    });
+                } else {
+                    tbody.append('<tr><td colspan="3" class="text-center">Tidak ada catatan ditemukan.</td></tr>');
+                }
+                $('#modalLihatCatatan').modal('show');
+            }
+        });
+    };
 </script>
 <style>
     /* Kustomisasi untuk tooltip kuning */

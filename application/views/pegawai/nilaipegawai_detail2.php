@@ -347,7 +347,7 @@
                                                         $statusClass = 'text-secondary';
                                                         $statusText = 'Belum Dinilai';
                                             ?>
-                                                        <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>" data-perspektif="<?= $persp; ?>"
+                                                        <tr data-id="<?= $id; ?>" data-indikator-id="<?= $i->indikator_id; ?>" data-bobot="<?= $bobot; ?>" data-perspektif="<?= $persp; ?>"
                                                             data-indikator="<?= htmlspecialchars($indik, ENT_QUOTES, 'UTF-8'); ?>"
                                                             data-status2="<?= htmlspecialchars($i->status2 ?? '', ENT_QUOTES); ?>">
                                                             <?php if ($first_persp_cell) { ?>
@@ -1269,14 +1269,19 @@
         // ===== Bulk helpers and save helper =====
         let bulkMode = false;
         let bulkIds = [];
+        let bulkIndikatorIds = [];
 
-        function performBulkSave(ids, status, catatan = '') {
+        function performBulkSave(ids, status, catatan = '', indikator_ids = [], nik_pegawai = '') {
             const csrfName = '<?= $this->security->get_csrf_token_name() ?>';
             const csrfHash = '<?= $this->security->get_csrf_hash() ?>';
             const params = new URLSearchParams();
             params.append('ids', ids.join(','));
             params.append('status', status);
-            if (catatan) params.append('catatan', catatan);
+            if (catatan) {
+                params.append('catatan', catatan);
+                params.append('indikator_ids', indikator_ids.join(','));
+                params.append('nik_pegawai', nik_pegawai);
+            }
             if (csrfName && csrfHash) params.append(csrfName, csrfHash);
 
             const btn = document.getElementById('btn-simpan-semua');
@@ -1360,6 +1365,7 @@
                 }
 
                 const ids = rows.map(r => r.dataset.id).filter(Boolean);
+                const indikator_ids = rows.map(r => r.dataset.indikatorId).filter(Boolean);
 
                 const confirmation = await Swal.fire({
                     title: `Simpan status "${status}" untuk ${ids.length} indikator (Penilai 2)?`,
@@ -1373,6 +1379,7 @@
 
                 if (status === 'Ada Catatan') {
                     bulkIds = ids.slice();
+                    bulkIndikatorIds = indikator_ids.slice();
                     bulkMode = true;
                     document.getElementById('indikator_id').value = '';
                     document.getElementById('catatan').value = '';
@@ -1443,8 +1450,32 @@
 
             // Jika bulkMode (di-set sebelumnya) maka server endpoint berbeda -> handled elsewhere
             if (typeof bulkMode !== 'undefined' && bulkMode) {
-                // biarkan flow bulk tetap seperti sebelumnya (blok lain sudah menangani)
-                // jika ingin, Anda bisa trigger click simpan semua disini
+                const nik_pegawai = $('#nik').val() || '';
+                performBulkSave(bulkIds, 'Ada Catatan', catatan, bulkIndikatorIds, nik_pegawai).then(res => {
+                    if (res.ok && res.data && res.data.success) {
+                        $('#form-catatan')[0].reset();
+                        $('#modalCatatan').modal('hide');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: res.data.message || 'Status dan catatan penilai 2 disimpan'
+                        }).then(() => location.reload());
+                    } else {
+                        const detail = res.data?.message || 'Respons tidak valid dari server';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: detail
+                        });
+                    }
+                }).catch(err => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Gagal berkomunikasi dengan server'
+                    });
+                });
+                return; // stop here
             }
 
             // Kirim via AJAX jQuery, minta JSON explicit

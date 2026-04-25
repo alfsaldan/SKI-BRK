@@ -165,6 +165,21 @@ class Pegawai_model extends CI_Model
         }
     }
 
+    // Ambil catatan berdasarkan indikator_id dan nik_pegawai
+    public function getCatatanByIndikator($nik, $indikator_id, $nik_penilai = null)
+    {
+        $this->db->select('c.*, p.nama as nama_penilai');
+        $this->db->from('catatan_penilai c');
+        $this->db->join('pegawai p', 'p.nik = c.nik_penilai', 'left');
+        $this->db->where('c.nik_pegawai', $nik);
+        $this->db->where('c.indikator_id', $indikator_id);
+        if (!empty($nik_penilai)) {
+            $this->db->where('c.nik_penilai', $nik_penilai);
+        }
+        $this->db->order_by('c.tanggal', 'DESC');
+        return $this->db->get()->result();
+    }
+
     // Simpan catatan pegawai
     public function tambahCatatan($data)
     {

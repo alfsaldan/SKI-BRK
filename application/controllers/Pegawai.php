@@ -981,6 +981,7 @@ class Pegawai extends CI_Controller
         $nik_pegawai = $this->input->post('nik_pegawai');
         $nik_penilai = $this->session->userdata('nik');
         $catatan = $this->input->post('catatan');
+        $indikator_id = $this->input->post('indikator_id');
 
         if (!$catatan) {
             echo json_encode(['success' => false, 'message' => 'Catatan kosong']);
@@ -990,6 +991,7 @@ class Pegawai extends CI_Controller
         $data = [
             'nik_pegawai' => $nik_pegawai,
             'nik_penilai' => $nik_penilai,
+            'indikator_id' => $indikator_id,
             'catatan' => $catatan,
             'tanggal' => date('Y-m-d H:i:s')
         ];
@@ -1032,6 +1034,22 @@ class Pegawai extends CI_Controller
             'success' => (bool)$insert,
             'message' => $insert ? 'Catatan berhasil ditambahkan' : 'Gagal menyimpan catatan'
         ]);
+    }
+
+    public function getCatatanIndikator()
+    {
+        $nik = $this->session->userdata('nik');
+        $indikator_id = $this->input->post('indikator_id');
+        $nik_penilai = $this->input->post('nik_penilai');
+
+        $this->load->model('pegawai/Pegawai_model');
+        $catatan = $this->Pegawai_model->getCatatanByIndikator($nik, $indikator_id, $nik_penilai);
+
+        if ($catatan) {
+            echo json_encode(['success' => true, 'data' => $catatan]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Tidak ada catatan']);
+        }
     }
 
     public function getPegawaiSatuUnit($nik)
@@ -2385,6 +2403,9 @@ class Pegawai extends CI_Controller
 
         $ids = $this->input->post('ids');
         $status = $this->input->post('status');
+        $catatan = $this->input->post('catatan');
+        $nik_pegawai = $this->input->post('nik_pegawai');
+        $indikator_ids = $this->input->post('indikator_ids');
 
         if (empty($ids) || $status === null) {
             echo json_encode(['success' => false, 'message' => 'Data tidak lengkap']);
@@ -2404,6 +2425,18 @@ class Pegawai extends CI_Controller
         $ok = $this->Nilai_model->updateStatusAllPenilai2($ids_array, $status, $penilai2_nik);
 
         if ($ok) {
+            if ($status === 'Ada Catatan' && !empty($catatan) && !empty($indikator_ids) && !empty($nik_pegawai)) {
+                $ind_ids_array = array_filter(array_map('trim', explode(',', $indikator_ids)));
+                foreach ($ind_ids_array as $ind_id) {
+                    $this->Nilai_model->tambahCatatan([
+                        'nik_pegawai' => $nik_pegawai,
+                        'nik_penilai' => $penilai2_nik,
+                        'indikator_id' => $ind_id,
+                        'catatan' => $catatan,
+                        'tanggal' => date('Y-m-d H:i:s')
+                    ]);
+                }
+            }
             echo json_encode(['success' => true, 'message' => 'Semua status2 berhasil diupdate']);
         } else {
             $dbErr = $this->db->error();

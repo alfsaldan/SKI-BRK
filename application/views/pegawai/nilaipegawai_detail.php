@@ -388,7 +388,7 @@
                                                         $statusClass = 'text-secondary';
                                                         $statusText = 'Belum Dinilai';
                                             ?>
-                                                        <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>" data-perspektif="<?= $persp; ?>"
+                                                        <tr data-id="<?= $id; ?>" data-indikator-id="<?= $i->indikator_id; ?>" data-bobot="<?= $bobot; ?>" data-perspektif="<?= $persp; ?>"
                                                             data-indikator="<?= htmlspecialchars($indik, ENT_QUOTES, 'UTF-8'); ?>">
                                                             <?php if ($first_persp_cell) { ?>
                                                                 <td rowspan="<?= $persp_rows; ?>" style="vertical-align:middle;font-weight:600;background:#C8E6C9;"><?= $persp; ?></td>
@@ -550,6 +550,7 @@
                                     <h5 class="modal-title">Tambah Catatan</h5>
                                 </div>
                                 <div class="modal-body">
+                                    <input type="hidden" id="penilaian_id" name="penilaian_id">
                                     <input type="hidden" id="indikator_id" name="indikator_id">
                                     <div class="form-group">
                                         <label for="catatan">Catatan</label>
@@ -1358,6 +1359,7 @@
             btn.addEventListener('click', function() {
                 const row = this.closest('tr');
                 const id = row.dataset.id;
+                const indikator_id = row.dataset.indikatorId;
 
                 const status = row.querySelector('.status-select').value;
                 const realisasi = row.querySelector('.realisasi-input')?.value || '';
@@ -1369,8 +1371,9 @@
                     // buka modal catatan
                     $('#modalCatatan').modal('show');
 
-                    // simpan indikator_id di hidden input
-                    document.getElementById('indikator_id').value = id;
+                    // simpan penilaian_id dan indikator_id di hidden input
+                    document.getElementById('penilaian_id').value = id;
+                    document.getElementById('indikator_id').value = indikator_id;
 
                     return; // stop di sini, tunggu submit catatan
                 }
@@ -1532,6 +1535,7 @@
                 e.preventDefault();
 
                 const catatan = $('#catatan').val().trim();
+                const penilaian_id = $('#penilaian_id').val();
                 const indikator_id = $('#indikator_id').val();
 
                 if (catatan === '') {
@@ -1578,7 +1582,7 @@
                             }
 
                             // update status indikator jika ada (tanpa menunggu)
-                            simpanStatus(indikator_id, "Ada Catatan", "", "", "", "");
+                            simpanStatus(penilaian_id, "Ada Catatan", "", "", "", "");
 
                             // reset form & tutup modal
                             $('#form-catatan')[0].reset();
