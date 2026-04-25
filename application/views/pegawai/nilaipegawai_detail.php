@@ -1039,22 +1039,27 @@
                 return list.some(k => new RegExp(`\\b${k}\\b`, "i").test(text));
             };
 
-            if (target <= 999) {
-                // 🔹 Rumus 2 (default untuk target ≤ 3 digit)
-                pencapaian = (realisasi / target) * 100;
-            } else {
                 // 🔹 Target > 3 digit → pilih rumus 1 atau 3 berdasarkan kata kunci indikator
                 if (containsKeyword(keywords.rumus1, indikatorText)) {
                     // Rumus 1 → biasanya indikator biaya/beban
                     pencapaian = ((target + (target - realisasi)) / target) * 100;
+                    if (pencapaian < 0) {
+                    pencapaian = 0; // pastikan tidak negatif 
+                }
                 } else if (containsKeyword(keywords.rumus3, indikatorText)) {
                     // Rumus 3 → biasanya indikator outstanding/pertumbuhan
                     pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
+                    if (pencapaian < 0) {
+                    pencapaian = 0; // pastikan tidak negatif 
+                }
                 } else {
                     // fallback default (anggap rumus 2)
                     pencapaian = (realisasi / target) * 100;
+                    if (pencapaian < 0) {
+                    pencapaian = 0; // pastikan tidak negatif 
                 }
-            }
+                }
+    
             // 🔹 Batas maksimal 130%
             return Math.min(pencapaian, 130);
         }

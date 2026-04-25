@@ -126,7 +126,10 @@
                     $grouped = [];
                     if (!empty($penilaian)) {
                         foreach ($penilaian as $row) {
-                            $pers = $row->perspektif ?? 'Lainnya';
+                            $pers = trim($row->perspektif ?? '');
+                            if (empty($pers)) {
+                                continue; // Abaikan baris jika perspektif kosong
+                            }
                             $sas = $row->sasaran_kerja ?? '-';
                             if (!isset($grouped[$pers])) $grouped[$pers] = [];
                             if (!isset($grouped[$pers][$sas])) $grouped[$pers][$sas] = [];

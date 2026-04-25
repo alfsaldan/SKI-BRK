@@ -479,15 +479,22 @@ class Penilaian_model extends CI_Model
 
     public function cekSemuaDisetujui($nik, $awal, $akhir)
     {
-        $this->db->from('penilaian');
-        $this->db->where('nik', $nik);
-        $this->db->where('periode_awal', $awal);
-        $this->db->where('periode_akhir', $akhir);
+        $this->db->from('penilaian p');
+        $this->db->join('indikator i', 'p.indikator_id = i.id', 'left');
+        $this->db->join('sasaran_kerja sk', 'i.sasaran_id = sk.id', 'left');
+
+        $this->db->where('p.nik', $nik);
+        $this->db->where('p.periode_awal', $awal);
+        $this->db->where('p.periode_akhir', $akhir);
+
+        // Abaikan indikator yang tidak memiliki perspektif (perspektif kosong)
+        $this->db->where('sk.perspektif IS NOT NULL');
+        $this->db->where("TRIM(sk.perspektif) !=", "");
 
         // jika ada status atau status2 yang belum disetujui
         $this->db->group_start();
-        $this->db->where('status !=', 'disetujui');
-        $this->db->or_where('status2 !=', 'disetujui');
+        $this->db->where('p.status !=', 'disetujui');
+        $this->db->or_where('p.status2 !=', 'disetujui');
         $this->db->group_end();
 
         $count = $this->db->count_all_results();

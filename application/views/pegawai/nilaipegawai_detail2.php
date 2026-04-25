@@ -958,7 +958,7 @@
             };
             const containsKeyword = (list, text) => list.some(k => new RegExp(`\\b${k}\\b`, "i").test(text));
 
-            if (target <= 999) return (realisasi / (target || 1)) * 100;
+            if (target <= 0.999) return (realisasi / (target || 1)) * 100;
             if (containsKeyword(keywords.rumus1, indikatorText)) return ((target + (target - realisasi)) / target) * 100;
             if (containsKeyword(keywords.rumus3, indikatorText)) return ((realisasi - target) / Math.abs(target || 1) + 1) * 100;
             return (realisasi / (target || 1)) * 100;

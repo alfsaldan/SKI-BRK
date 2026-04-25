@@ -545,7 +545,7 @@
                                             <tr>
                                                 <th>Perspektif</th>
                                                 <th>Sasaran Kerja</th>
-                    
+
                                                 <th class="text-center" style="min-width: 120px;">Bobot (%)</th>
                                                 <th>Indikator</th>
                                                 <th class="text-center" style="width: 120px;">Target</th>
@@ -635,7 +635,12 @@
                                                                     <div class="d-flex justify-content-between align-items-center">
                                                                         <span><?= $sasaran; ?></span>
                                                                         <?php if (!$is_locked && !$is_verified && !empty($i->sasaran_id)): ?>
-                                                                        <button type="button" class="btn btn-xs btn-outline-primary ml-1 p-1" onclick="editSasaran('<?= $i->sasaran_id ?>', this)" data-text="<?= htmlspecialchars($sasaran ?? '', ENT_QUOTES, 'UTF-8') ?>" data-toggle="tooltip" title="Edit Sasaran"><i class="mdi mdi-pencil"></i></button>
+                                                                            <button type="button"
+                                                                                class="btn btn-xs btn-outline-primary ml-1 p-1"
+                                                                                onclick="editSasaran('<?= $i->sasaran_id ?>', this)"
+                                                                                data-text="<?= htmlspecialchars($sasaran ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                                                                data-toggle="tooltip" title="Edit Sasaran"><i
+                                                                                    class="mdi mdi-pencil"></i></button>
                                                                         <?php endif; ?>
                                                                     </div>
                                                                 </td>
@@ -646,8 +651,8 @@
                                                                 <input type="number"
                                                                     class="form-control form-control-sm text-center bobot"
                                                                     value="<?= $bobot; ?>" min="5" data-toggle="tooltip"
-                                                                    data-prev-value="<?= $bobot; ?>"
-                                                                    data-placement="bottom" data-html="true"
+                                                                    data-prev-value="<?= $bobot; ?>" data-placement="bottom"
+                                                                    data-html="true"
                                                                     data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
                                                                     title="<i class='mdi mdi-information-outline'></i><br>Minimal nilai 5."
                                                                     <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
@@ -657,8 +662,17 @@
                                                                     <span><?= $indik; ?></span>
                                                                     <?php if (!$is_locked && !$is_verified): ?>
                                                                         <div class="d-flex">
-                                                                            <button type="button" class="btn btn-xs btn-outline-primary ml-1 p-1" onclick="editIndikator('<?= $id ?>', this)" data-text="<?= htmlspecialchars($indik ?? '', ENT_QUOTES, 'UTF-8') ?>" data-toggle="tooltip" title="Edit Indikator & Bobot"><i class="mdi mdi-pencil"></i></button>
-                                                                            <button type="button" class="btn btn-xs btn-outline-danger ml-1 p-1" onclick="deleteIndikator('<?= $id ?>')" data-toggle="tooltip" title="Hapus Indikator"><i class="mdi mdi-trash-can"></i></button>
+                                                                            <button type="button"
+                                                                                class="btn btn-xs btn-outline-primary ml-1 p-1"
+                                                                                onclick="editIndikator('<?= $id ?>', this)"
+                                                                                data-text="<?= htmlspecialchars($indik ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                                                                                data-toggle="tooltip" title="Edit Indikator & Bobot"><i
+                                                                                    class="mdi mdi-pencil"></i></button>
+                                                                            <button type="button"
+                                                                                class="btn btn-xs btn-outline-danger ml-1 p-1"
+                                                                                onclick="deleteIndikator('<?= $id ?>')"
+                                                                                data-toggle="tooltip" title="Hapus Indikator"><i
+                                                                                    class="mdi mdi-trash-can"></i></button>
                                                                         </div>
                                                                     <?php endif; ?>
                                                                 </div>
@@ -1346,22 +1360,45 @@ if ($message): ?>
                 return list.some(k => new RegExp(`\\b${k}\\b`, "i").test(text));
             };
 
-            if (target <= 999) {
-                // 🔹 Rumus 2 (default untuk target ≤ 3 digit)
-                pencapaian = (realisasi / target) * 100;
+
+            // 🔹 Target > 3 digit → pilih rumus 1 atau 3 berdasarkan kata kunci indikator
+            if (containsKeyword(keywords.rumus1, indikatorText)) {
+                // Rumus 1 → biasanya indikator biaya/beban
+                pencapaian = ((target + (target - realisasi)) / target) * 100;
+                if (pencapaian < 0) {
+                    pencapaian = 0; // pastikan tidak negatif 
+                }
+            } else if (containsKeyword(keywords.rumus3, indikatorText)) {
+                // Rumus 3 → biasanya indikator outstanding/pertumbuhan
+                pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
+                if (pencapaian < 0) {
+                    pencapaian = 0; // pastikan tidak negatif 
+                }
             } else {
-                // 🔹 Target > 3 digit → pilih rumus 1 atau 3 berdasarkan kata kunci indikator
-                if (containsKeyword(keywords.rumus1, indikatorText)) {
-                    // Rumus 1 → biasanya indikator biaya/beban
-                    pencapaian = ((target + (target - realisasi)) / target) * 100;
-                } else if (containsKeyword(keywords.rumus3, indikatorText)) {
-                    // Rumus 3 → biasanya indikator outstanding/pertumbuhan
-                    pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
-                } else {
-                    // fallback default (anggap rumus 2)
-                    pencapaian = (realisasi / target) * 100;
+                // fallback default (anggap rumus 2)
+                pencapaian = (realisasi / target) * 100;
+                if (pencapaian < 0) {
+                    pencapaian = 0; // pastikan tidak negatif 
                 }
             }
+
+
+            // if (target <= 999) {
+            //     // 🔹 Rumus 2 (default untuk target ≤ 3 digit)
+            //     pencapaian = (realisasi / target) * 100;
+            // } else {
+            //     // 🔹 Target > 3 digit → pilih rumus 1 atau 3 berdasarkan kata kunci indikator
+            //     if (containsKeyword(keywords.rumus1, indikatorText)) {
+            //         // Rumus 1 → biasanya indikator biaya/beban
+            //         pencapaian = ((target + (target - realisasi)) / target) * 100;
+            //     } else if (containsKeyword(keywords.rumus3, indikatorText)) {
+            //         // Rumus 3 → biasanya indikator outstanding/pertumbuhan
+            //         pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
+            //     } else {
+            //         // fallback default (anggap rumus 2)
+            //         pencapaian = (realisasi / target) * 100;
+            //     }
+            // }
             // 🔹 Batas maksimal 130%
             return Math.min(pencapaian, 130);
         }
@@ -1379,7 +1416,7 @@ if ($message): ?>
                 nilai = 3 + ((pencapaian - 90) / 20 * 0.5);
             } else if (pencapaian < 120) {
                 nilai = 3.5 + ((pencapaian - 110) / 10 * 1);
-            } else if (pencapaian < 100) {
+            } else if (pencapaian < 130) {
                 nilai = 4.5 + ((pencapaian - 120) / 10 * 0.5);
             } else {
                 nilai = 5;
@@ -2110,7 +2147,7 @@ if ($message): ?>
                     });
                     return;
                 }
-                
+
                 this.dataset.prevValue = this.value;
                 hitungTotal();
 
@@ -2845,7 +2882,7 @@ if ($message): ?>
         });
     };
 
-    window.editSasaran = async function(id, btn) {
+    window.editSasaran = async function (id, btn) {
         let textLama = btn.getAttribute('data-text');
         if (!id) {
             Swal.fire('Error', 'ID Sasaran tidak ditemukan', 'error');
@@ -2870,7 +2907,7 @@ if ($message): ?>
                 url: '<?= base_url("Pegawai/updateSasaran") ?>',
                 method: 'POST',
                 data: { id: id, sasaran: sasaranBaru },
-                success: function(res) {
+                success: function (res) {
                     let data = JSON.parse(res);
                     if (data.success) {
                         Swal.fire('Berhasil', data.message, 'success').then(() => location.reload());
@@ -2882,7 +2919,7 @@ if ($message): ?>
         }
     };
 
-    window.editIndikator = async function(id, btn) {
+    window.editIndikator = async function (id, btn) {
         let textLama = btn.getAttribute('data-text');
         let row = $(btn).closest('tr');
         let bobotLama = row.find('.bobot').val();
@@ -2909,7 +2946,7 @@ if ($message): ?>
 
         if (formValues) {
             let [indikatorBaru, bobotBaru] = formValues;
-            
+
             if (!indikatorBaru || !bobotBaru) {
                 Swal.fire('Error', 'Indikator dan Bobot wajib diisi', 'error');
                 return;
@@ -2932,7 +2969,7 @@ if ($message): ?>
                 url: '<?= base_url("Pegawai/updateIndikator") ?>',
                 method: 'POST',
                 data: { id: id, indikator: indikatorBaru, bobot: bobotBaru },
-                success: function(res) {
+                success: function (res) {
                     let data = JSON.parse(res);
                     if (data.success) {
                         Swal.fire('Berhasil', data.message, 'success').then(() => location.reload());
@@ -2944,7 +2981,7 @@ if ($message): ?>
         }
     };
 
-    window.deleteIndikator = function(id) {
+    window.deleteIndikator = function (id) {
         Swal.fire({
             title: 'Hapus Indikator?',
             text: "Indikator beserta penilaiannya akan dihapus dan tidak dapat dikembalikan!",
@@ -2960,7 +2997,7 @@ if ($message): ?>
                     url: '<?= base_url("Pegawai/deleteIndikatorAjax") ?>',
                     method: 'POST',
                     data: { id: id },
-                    success: function(res) {
+                    success: function (res) {
                         let data = JSON.parse(res);
                         if (data.success) {
                             Swal.fire('Terhapus!', data.message, 'success').then(() => location.reload());

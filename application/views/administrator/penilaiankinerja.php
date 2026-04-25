@@ -2,18 +2,25 @@
     <style>
         /* Kustomisasi untuk tooltip kuning */
         .tooltip-kuning .tooltip-inner {
-            background-color: #ffc800ff !important; /* Warna kuning muda, !important untuk prioritas */
+            background-color: #ffc800ff !important;
+            /* Warna kuning muda, !important untuk prioritas */
             color: #ffffffff;
             border: 1px solid #ffc800ff;
-            max-width: 300px; /* Lebar maksimal tooltip */
-            padding: 8px 12px; /* Sedikit padding */
-            text-align: center; /* Rata kiri agar ikon dan teks rapi */
-            border-radius: .2rem; /* Menyamakan radius sudut */
+            max-width: 300px;
+            /* Lebar maksimal tooltip */
+            padding: 8px 12px;
+            /* Sedikit padding */
+            text-align: center;
+            /* Rata kiri agar ikon dan teks rapi */
+            border-radius: .2rem;
+            /* Menyamakan radius sudut */
         }
+
         /* Mengatur warna panah tooltip */
         .tooltip-kuning.bs-tooltip-bottom .arrow::before {
             border-bottom-color: #ffc800ff !important;
         }
+
         /* Jarak antara ikon dan teks */
         .tooltip-kuning .tooltip-inner i {
             margin-right: 8px;
@@ -32,7 +39,8 @@
                                 <li class="breadcrumb-item active">Penilaian Kinerja</li>
                             </ol>
                         </div>
-                        <h4 class="page-title"><i class="mdi mdi-account-edit mr-2 text-primary"></i> Penilaian Kinerja Pegawai</h4>
+                        <h4 class="page-title"><i class="mdi mdi-account-edit mr-2 text-primary"></i> Penilaian Kinerja
+                            Pegawai</h4>
                     </div>
                 </div>
             </div>
@@ -55,7 +63,7 @@
                                             $val = $p->periode_awal . "|" . $p->periode_akhir;
                                             $text = date('d M Y', strtotime($p->periode_awal)) . " s/d " . date('d M Y', strtotime($p->periode_akhir));
                                             $selected = ($periode_awal == $p->periode_awal && $periode_akhir == $p->periode_akhir) ? 'selected' : '';
-                                        ?>
+                                            ?>
                                             <option value="<?= $val ?>" <?= $selected ?>><?= $text ?></option>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
@@ -107,7 +115,8 @@
                         <div class="card-body">
                             <h5>Masukkan NIK Pegawai</h5>
                             <form action="<?= base_url('Administrator/cariPenilaian'); ?>" method="post">
-                                <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai" required>
+                                <input type="text" name="nik" class="form-control" placeholder="Masukkan NIK Pegawai"
+                                    required>
                                 <button type="submit" class="btn btn-success mt-2">Nilai</button>
                             </form>
                         </div>
@@ -132,7 +141,8 @@
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">NIK</span>
-                                                <span class="badge badge-primary badge-pill"><?= $pegawai_detail->nik; ?></span>
+                                                <span
+                                                    class="badge badge-primary badge-pill"><?= $pegawai_detail->nik; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Nama</span>
@@ -186,7 +196,8 @@
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">NIK</span>
-                                                <span class="badge badge-info badge-pill"><?= $pegawai_detail->penilai1_nik ?? '-'; ?></span>
+                                                <span
+                                                    class="badge badge-info badge-pill"><?= $pegawai_detail->penilai1_nik ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Nama</span>
@@ -194,7 +205,8 @@
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Jabatan</span>
-                                                <span class="text-dark"><?= $pegawai_detail->penilai1_jabatan ?? '-'; ?></span>
+                                                <span
+                                                    class="text-dark"><?= $pegawai_detail->penilai1_jabatan ?? '-'; ?></span>
                                             </li>
                                         </ul>
                                     </div>
@@ -206,7 +218,8 @@
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">NIK</span>
-                                                <span class="badge badge-warning badge-pill"><?= $pegawai_detail->penilai2_nik ?? '-'; ?></span>
+                                                <span
+                                                    class="badge badge-warning badge-pill"><?= $pegawai_detail->penilai2_nik ?? '-'; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Nama</span>
@@ -214,7 +227,8 @@
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Jabatan</span>
-                                                <span class="text-dark"><?= $pegawai_detail->penilai2_jabatan ?? '-'; ?></span>
+                                                <span
+                                                    class="text-dark"><?= $pegawai_detail->penilai2_jabatan ?? '-'; ?></span>
                                             </li>
                                         </ul>
                                     </div>
@@ -294,32 +308,34 @@
                                                         $status = strtolower(trim($i->status ?? ''));
 
                                                         $statusClass = 'badge badge-danger';
-                                                        $statusText  = 'Belum Dinilai';
+                                                        $statusText = 'Belum Dinilai';
 
                                                         switch ($status) {
                                                             case 'ada catatan':
                                                                 $statusClass = 'badge badge-warning';
-                                                                $statusText  = 'Ada Catatan';
+                                                                $statusText = 'Ada Catatan';
                                                                 break;
                                                             case 'disetujui':
                                                                 $statusClass = 'badge badge-success';
-                                                                $statusText  = 'Disetujui';
+                                                                $statusText = 'Disetujui';
                                                                 break;
                                                         }
-                                            ?>
+                                                        ?>
                                                         <tr data-id="<?= $id; ?>" data-bobot="<?= $bobot; ?>"
-                                                            data-perspektif="<?= $persp; ?>" data-indikator="<?= htmlspecialchars($indik, ENT_QUOTES, 'UTF-8'); ?>">
+                                                            data-perspektif="<?= $persp; ?>"
+                                                            data-indikator="<?= htmlspecialchars($indik, ENT_QUOTES, 'UTF-8'); ?>">
                                                             <?php if ($first_persp_cell) { ?>
                                                                 <td rowspan="<?= $persp_rows; ?>"
                                                                     style="vertical-align:middle;font-weight:600;background:#C8E6C9;">
-                                                                    <?= $persp; ?></td>
-                                                            <?php $first_persp_cell = false;
+                                                                    <?= $persp; ?>
+                                                                </td>
+                                                                <?php $first_persp_cell = false;
                                                             } ?>
 
                                                             <?php if ($first_sas_cell) { ?>
                                                                 <td rowspan="<?= $sasaran_rows; ?>"
                                                                     style="vertical-align:middle;background:#E3F2FD;"><?= $sasaran; ?></td>
-                                                            <?php $first_sas_cell = false;
+                                                                <?php $first_sas_cell = false;
                                                             } ?>
 
                                                             <td class="text-center align-middle"><?= $bobot; ?>
@@ -357,36 +373,37 @@
                                                             <!-- Target -->
                                                             <td class="text-center align-middle">
                                                                 <div class="currency-wrapper">
-                                                                    <input type="text"
-                                                                        class="form-control target-input text-center"
-                                                                        style="min-width:150px;"
-                                                                        value="<?= $i->target ?? ''; ?>">
+                                                                    <input type="text" class="form-control target-input text-center"
+                                                                        style="min-width:150px;" value="<?= $i->target ?? ''; ?>">
                                                                     <div class="format-currency text-muted small"></div>
                                                                 </div>
                                                             </td>
 
                                                             <td class="text-center align-middle">
-                                                                <input type="date" class="form-control batas-waktu" style="min-width:120px;"
-                                                                    value="<?= $i->batas_waktu ?? ''; ?>">
+                                                                <input type="date" class="form-control batas-waktu"
+                                                                    style="min-width:120px;" value="<?= $i->batas_waktu ?? ''; ?>">
                                                             </td>
 
                                                             <td class="text-center align-middle">
                                                                 <div class="currency-wrapper">
-                                                                    <input type="text"
-                                                                        class="form-control realisasi-input text-center"
-                                                                        style="min-width:150px;"
-                                                                        value="<?= $i->realisasi ?? ''; ?>">
+                                                                    <input type="text" class="form-control realisasi-input text-center"
+                                                                        style="min-width:150px;" value="<?= $i->realisasi ?? ''; ?>">
                                                                     <div class="format-currency text-muted small"></div>
                                                                 </div>
                                                             </td>
 
-                                                            <td class="text-center align-middle"><input type="text" style="min-width:60px;"
-                                                                    class="form-control form-control-sm text-center pencapaian-output" readonly>
-                                                            </td>
-                                                            <td class="text-center align-middle"><input type="text" style="min-width:50px;"
-                                                                    class="form-control form-control-sm text-center nilai-output" readonly></td>
                                                             <td class="text-center align-middle"><input type="text"
-                                                                    class="form-control form-control-sm text-center nilai-bobot-output" readonly>
+                                                                    style="min-width:60px;"
+                                                                    class="form-control form-control-sm text-center pencapaian-output"
+                                                                    readonly>
+                                                            </td>
+                                                            <td class="text-center align-middle"><input type="text"
+                                                                    style="min-width:50px;"
+                                                                    class="form-control form-control-sm text-center nilai-output"
+                                                                    readonly></td>
+                                                            <td class="text-center align-middle"><input type="text"
+                                                                    class="form-control form-control-sm text-center nilai-bobot-output"
+                                                                    readonly>
                                                             </td>
 
                                                             <td class="text-center align-middle">
@@ -397,7 +414,7 @@
                                                                     class="btn btn-sm btn-primary simpan-penilaian">Simpan</button>
                                                             </td>
                                                         </tr>
-                                                <?php
+                                                        <?php
                                                     }
                                                 }
                                                 ?>
@@ -412,7 +429,7 @@
                                                     <td class="text-center"><span class="subtotal-nilai-bobot">0.00</span></td>
                                                     <td colspan="2"></td>
                                                 </tr>
-                                            <?php
+                                                <?php
                                             }
                                             if (!$printed_any) { ?>
                                                 <tr>
@@ -466,17 +483,17 @@
                                             // Pastikan $budaya_nilai selalu array
                                             $budaya_nilai = $budaya_nilai ?? [];
 
-                                            if (!empty($budaya)) :
-                                                foreach ($budaya as $b) :
+                                            if (!empty($budaya)):
+                                                foreach ($budaya as $b):
                                                     // Pastikan $b adalah array jika diambil dari DB object
-                                                    $b_data = is_object($b) ? (array)$b : $b;
+                                                    $b_data = is_object($b) ? (array) $b : $b;
                                                     $panduanList = json_decode($b_data['panduan_perilaku'], true);
 
-                                                    if (is_array($panduanList)) :
-                                                        foreach ($panduanList as $pIndex => $p) :
+                                                    if (is_array($panduanList)):
+                                                        foreach ($panduanList as $pIndex => $p):
                                                             // Key sesuai format JSON nilai_budaya
                                                             $nilaiKey = "budaya_{$no}_{$pIndex}";
-                                                            $nilai = isset($budaya_nilai[$nilaiKey]) ? (int)$budaya_nilai[$nilaiKey] : 0;
+                                                            $nilai = isset($budaya_nilai[$nilaiKey]) ? (int) $budaya_nilai[$nilaiKey] : 0;
 
                                                             // Mapping label dan warna
                                                             switch ($nilai) {
@@ -504,7 +521,7 @@
                                                                     $labelNilai = "<span class='text-muted fst-italic'>Belum Dinilai</span>";
                                                                     $color = "";
                                                             }
-                                            ?>
+                                                            ?>
                                                             <tr>
                                                                 <?php if ($pIndex === 0): ?>
                                                                     <td class="text-center align-middle" rowspan="<?= count($panduanList); ?>">
@@ -526,12 +543,12 @@
                                                                     ?>
                                                                 </td>
                                                             </tr>
-                                            <?php
+                                                            <?php
                                                         endforeach;
                                                         $no++;
                                                     endif;
                                                 endforeach;
-                                            else :
+                                            else:
                                                 echo '<tr><td colspan="4" class="text-center text-muted">Data penilaian budaya belum tersedia.</td></tr>';
                                             endif;
                                             ?>
@@ -571,8 +588,7 @@
                                 </td>
                                 <td>x Bobot % Sasaran Kerja</td>
                                 <td>
-                                    <input type="text" id="bobot-sasaran"
-                                        class="form-control form-control-sm text-center"
+                                    <input type="text" id="bobot-sasaran" class="form-control form-control-sm text-center"
                                         value="95%" readonly>
                                 </td>
                                 <td class="text-center" id="nilai-sasaran">
@@ -586,8 +602,7 @@
                                 </td>
                                 <td>x Bobot % Budaya Perusahaan</td>
                                 <td>
-                                    <input type="text" id="bobot-budaya"
-                                        class="form-control form-control-sm text-center"
+                                    <input type="text" id="bobot-budaya" class="form-control form-control-sm text-center"
                                         value="5%" readonly>
                                 </td>
                                 <td class="text-center" id="nilai-budaya">
@@ -597,37 +612,24 @@
                             <tr>
                                 <th>Share KPI</th>
                                 <td class="text-center" id="share-kpi">
-                                    <input type="text"
-                                        id="share-kpi-value"
-                                        class="form-control form-control-sm text-center"
-                                        min="0"
-                                        max="5"
-                                        value="<?= $nilai_akhir['share_kpi_value'] ?? 0 ?>"
+                                    <input type="text" id="share-kpi-value" class="form-control form-control-sm text-center"
+                                        min="0" max="5" value="<?= $nilai_akhir['share_kpi_value'] ?? 0 ?>"
                                         oninput="if(this.value > 5) this.value = 5; if(this.value < 0) this.value = 0; hitungShareKPI()"
-                                        data-toggle="tooltip"
-                                        data-placement="bottom"
-                                        data-html="true"
-                                        data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>' 
-                                        title="<i class='mdi mdi-information-outline'></i><br>Pastikan nilai share KPI sesuai dengan data KPI Direksi"
-                                        >
+                                        data-toggle="tooltip" data-placement="bottom" data-html="true"
+                                        data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+                                        title="<i class='mdi mdi-information-outline'></i><br>Pastikan nilai share KPI sesuai dengan data KPI Direksi">
                                 </td>
                                 <td>x Bobot % Share KPI</td>
                                 <td>
                                     <div class="input-group input-group-sm" style="width: 100%;">
-                                        <input type="number"
-                                            id="bobot-share-kpi"
-                                            class="form-control f
+                                        <input type="number" id="bobot-share-kpi" class="form-control f
                                             orm-control-sm text-center"
-                                            value="<?= $nilai_akhir['bobot_share_kpi'] ?? 0 ?>"
-                                            min="0"
-                                            max="95"
+                                            value="<?= $nilai_akhir['bobot_share_kpi'] ?? 0 ?>" min="0" max="95"
                                             style="height: 30px;"
                                             oninput="if(this.value > 95) this.value = 95; if(this.value < 0) this.value = 0; hitungShareKPI()"
-                                            data-toggle="tooltip"
-                                        data-placement="bottom"
-                                        data-html="true"
-                                        data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>' 
-                                        title="<i class='mdi mdi-information-outline'></i><br>Pastikan bobot share KPI sesuai dengan data KPI Direksi">
+                                            data-toggle="tooltip" data-placement="bottom" data-html="true"
+                                            data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
+                                            title="<i class='mdi mdi-information-outline'></i><br>Pastikan bobot share KPI sesuai dengan data KPI Direksi">
                                         <span class="input-group-text" style="height: 30px; line-height: 1;">%</span>
                                     </div>
                                 </td>
@@ -647,10 +649,8 @@
                                     <small>(diisi 1 jika melakukan fraud, 0 jika tidak)</small>
                                 </th>
                                 <td>
-                                    <input type="number" min="0" max="1"
-                                        class="form-control form-control-sm text-center"
-                                        id="fraud-input"
-                                        value="<?= $nilai_akhir['fraud'] ?? 0 ?>">
+                                    <input type="number" min="0" max="1" class="form-control form-control-sm text-center"
+                                        id="fraud-input" value="<?= $nilai_akhir['fraud'] ?? 0 ?>">
                                 </td>
                             </tr>
                             <tr>
@@ -660,14 +660,8 @@
                                 </th>
                                 <td>
                                     <div class="input-group input-group-sm">
-                                        <input
-                                            type="number"
-                                            name="koefisien"
-                                            id="koefisien-input"
-                                            class="form-control text-center"
-                                            max="100"
-                                            min="70"
-                                            step="5"
+                                        <input type="number" name="koefisien" id="koefisien-input"
+                                            class="form-control text-center" max="100" min="70" step="5"
                                             value="<?= isset($nilai_akhir['koefisien']) ? htmlspecialchars($nilai_akhir['koefisien']) : 100 ?>"
                                             required>
                                         <div class="input-group-append">
@@ -825,7 +819,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // ---------------------------
         // Elemen (safe getters)
         // ---------------------------
@@ -871,15 +865,24 @@
             };
             const containsKeyword = (list, text) => list.some(k => new RegExp(`\\b${k}\\b`, "i").test(text));
             let pencapaian = 0;
-            if (target <= 999) {
+            if (target <= 0.999) {
                 pencapaian = (realisasi / target) * 100;
             } else {
                 if (containsKeyword(keywords.rumus1, indikatorText)) {
                     pencapaian = ((target + (target - realisasi)) / target) * 100;
+                    if (pencapaian < 0) {
+                        pencapaian = 0; // pastikan tidak negatif 
+                    }
                 } else if (containsKeyword(keywords.rumus3, indikatorText)) {
                     pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
+                    if (pencapaian < 0) {
+                        pencapaian = 0; // pastikan tidak negatif 
+                    }
                 } else {
                     pencapaian = (realisasi / target) * 100;
+                    if (pencapaian < 0) {
+                        pencapaian = 0; // pastikan tidak negatif 
+                    }
                 }
             }
             return Math.min(pencapaian, 130);
@@ -1077,7 +1080,7 @@
         }
 
         if (koefInput) {
-            koefInput.addEventListener('blur', function() {
+            koefInput.addEventListener('blur', function () {
                 let val = parseFloat(this.value);
                 if (isNaN(val)) val = 100; // jika kosong, default 100
                 if (val < 70) val = 70;
@@ -1104,9 +1107,9 @@
                 elPredikat.textContent = predikat;
                 elPredikat.className = (predikat === "Excellent") ? "text-success font-weight-bold" :
                     (predikat === "Very Good") ? "text-success" :
-                    (predikat === "Good") ? "text-primary" :
-                    (predikat === "Fair") ? "text-warning" :
-                    (predikat === "Minus") ? "text-danger" : "text-dark";
+                        (predikat === "Good") ? "text-primary" :
+                            (predikat === "Fair") ? "text-warning" :
+                                (predikat === "Minus") ? "text-danger" : "text-dark";
             }
 
             // Pencapaian akhir
@@ -1135,7 +1138,7 @@
         // ---------------------------
         // Delegasi input (aman untuk elemen dinamis)
         // ---------------------------
-        document.addEventListener('input', function(e) {
+        document.addEventListener('input', function (e) {
             if (e.target && (e.target.matches('.target-input') || e.target.matches('.realisasi-input') || e.target.id === 'fraud-input')) {
                 hitungTotal();
             }
@@ -1152,7 +1155,7 @@
         // ---------------------------
         // Delegasi klik untuk: simpan per baris, sesuaikan periode (button), dan simpan nilai akhir
         // ---------------------------
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             // 1) Simpan per baris (.simpan-penilaian)
             const simpanBtn = e.target.closest ? e.target.closest('.simpan-penilaian') : null;
             if (simpanBtn) {
@@ -1181,12 +1184,12 @@
                 const body = `nik=${encodeURIComponent(nik)}&indikator_id=${encodeURIComponent(indikator_id)}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`;
 
                 fetch('<?= base_url("Administrator/simpanPenilaianBaris") ?>', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body
-                    }).then(r => r.json())
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body
+                }).then(r => r.json())
                     .then(res => {
                         if (res && res.status === 'success') {
                             Swal.fire({
@@ -1233,7 +1236,7 @@
                 e.preventDefault();
                 const awal = periodeAwalInput ? periodeAwalInput.value : '';
                 const akhir = periodeAkhirInput ? periodeAkhirInput.value : '';
-                
+
                 if (!awal || !akhir) {
                     Swal.fire({
                         icon: 'warning',
@@ -1250,32 +1253,32 @@
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: `awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`
                 })
-                .then(r => r.json())
-                .then(res => {
-                    if (res.status === 'success') {
-                        const nik = getNik();
-                        if (nik) {
-                            window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${encodeURIComponent(nik)}&awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`;
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.status === 'success') {
+                            const nik = getNik();
+                            if (nik) {
+                                window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${encodeURIComponent(nik)}&awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`;
+                            } else {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil',
+                                    text: 'Periode berhasil ditambahkan',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.href = `<?= base_url("Administrator/penilaiankinerja") ?>?awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`;
+                                });
+                            }
                         } else {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: 'Periode berhasil ditambahkan',
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => {
-                                window.location.href = `<?= base_url("Administrator/penilaiankinerja") ?>?awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`;
-                            });
+                            Swal.fire('Gagal', res.message || 'Gagal menambahkan periode', 'error');
                         }
-                    } else {
-                        Swal.fire('Gagal', res.message || 'Gagal menambahkan periode', 'error');
-                    }
-                })
-                .catch(err => {
-                    console.error('Error tambah periode:', err);
-                    Swal.fire('Error', 'Terjadi kesalahan server', 'error');
-                });
-                
+                    })
+                    .catch(err => {
+                        console.error('Error tambah periode:', err);
+                        Swal.fire('Error', 'Terjadi kesalahan server', 'error');
+                    });
+
                 return;
             }
         });
@@ -1284,7 +1287,7 @@
         // Simpan nilai akhir (tombol khusus)
         // ---------------------------
         if (btnSimpanNilaiAkhir) {
-            btnSimpanNilaiAkhir.addEventListener('click', function() {
+            btnSimpanNilaiAkhir.addEventListener('click', function () {
                 const nik = getNik();
                 const periode_awal = periodeAwalInput ? periodeAwalInput.value : '';
                 const periode_akhir = periodeAkhirInput ? periodeAkhirInput.value : '';
@@ -1322,67 +1325,67 @@
                 });
 
                 Promise.all(promises).then(results => {
-                        if (results.some(r => r.status !== 'success')) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Gagal',
-                                text: 'Ada baris yang gagal disimpan. Cek kembali inputnya.',
-                                confirmButtonColor: '#d33'
-                            });
-                            return;
-                        }
+                    if (results.some(r => r.status !== 'success')) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal',
+                            text: 'Ada baris yang gagal disimpan. Cek kembali inputnya.',
+                            confirmButtonColor: '#d33'
+                        });
+                        return;
+                    }
 
-                        // 🔹 Ambil semua nilai akhir dari DOM
-                        const nilai_sasaran = document.getElementById('total-sasaran')?.textContent || '';
-                        const nilai_budaya = document.getElementById('rata-budaya')?.textContent || '';
-                        const total_nilai = document.getElementById('total-nilai')?.textContent || '';
-                        const fraud = document.getElementById('fraud-input')?.value || '';
-                        const nilai_akhir = document.getElementById('nilai-akhir')?.textContent || '';
-                        const predikat = document.getElementById('predikat')?.textContent || '';
-                        const pencapaian = document.getElementById('pencapaian-akhir')?.textContent || '';
-                        const koefisien = document.getElementById('koefisien-input')?.value || 100; // 🟢 Tambahan ini
-                        const share_kpi_value = document.getElementById('share-kpi-value')?.value || ''; // 🟢 Ambil nilai mentah
-                        const bobot_share_kpi = document.getElementById('bobot-share-kpi')?.value || '';
-                        // juga ambil bobot sasaran & bobot budaya (nilai tanpa %)
-                        const bobot_sasaran = (document.getElementById('bobot-sasaran')?.value || '').toString().replace('%','') || '';
-                        const bobot_budaya = (document.getElementById('bobot-budaya')?.value || '').toString().replace('%','') || '';
+                    // 🔹 Ambil semua nilai akhir dari DOM
+                    const nilai_sasaran = document.getElementById('total-sasaran')?.textContent || '';
+                    const nilai_budaya = document.getElementById('rata-budaya')?.textContent || '';
+                    const total_nilai = document.getElementById('total-nilai')?.textContent || '';
+                    const fraud = document.getElementById('fraud-input')?.value || '';
+                    const nilai_akhir = document.getElementById('nilai-akhir')?.textContent || '';
+                    const predikat = document.getElementById('predikat')?.textContent || '';
+                    const pencapaian = document.getElementById('pencapaian-akhir')?.textContent || '';
+                    const koefisien = document.getElementById('koefisien-input')?.value || 100; // 🟢 Tambahan ini
+                    const share_kpi_value = document.getElementById('share-kpi-value')?.value || ''; // 🟢 Ambil nilai mentah
+                    const bobot_share_kpi = document.getElementById('bobot-share-kpi')?.value || '';
+                    // juga ambil bobot sasaran & bobot budaya (nilai tanpa %)
+                    const bobot_sasaran = (document.getElementById('bobot-sasaran')?.value || '').toString().replace('%', '') || '';
+                    const bobot_budaya = (document.getElementById('bobot-budaya')?.value || '').toString().replace('%', '') || '';
 
-                        // 🔹 Simpan nilai akhir + koefisien
-                        fetch('<?= base_url("Administrator/simpanNilaiAkhir") ?>', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/x-www-form-urlencoded'
-                                },
-                                body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&bobot_sasaran=${encodeURIComponent(bobot_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&bobot_budaya=${encodeURIComponent(bobot_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}&koefisien=${encodeURIComponent(koefisien)}&share_kpi_value=${encodeURIComponent(share_kpi_value)}&bobot_share_kpi=${encodeURIComponent(bobot_share_kpi)}`
-                            })
-                            .then(r => r.json())
-                            .then(res => {
-                                if (res && res.status === 'success') {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Berhasil',
-                                        text: 'Semua nilai berhasil disimpan',
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Gagal',
-                                        text: (res && res.message) || 'Gagal menyimpan nilai akhir',
-                                        confirmButtonColor: '#d33'
-                                    });
-                                }
-                            })
-                            .catch(err => {
-                                console.error('simpanNilaiAkhir error', err);
+                    // 🔹 Simpan nilai akhir + koefisien
+                    fetch('<?= base_url("Administrator/simpanNilaiAkhir") ?>', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `nik=${encodeURIComponent(nik)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}&nilai_sasaran=${encodeURIComponent(nilai_sasaran)}&bobot_sasaran=${encodeURIComponent(bobot_sasaran)}&nilai_budaya=${encodeURIComponent(nilai_budaya)}&bobot_budaya=${encodeURIComponent(bobot_budaya)}&total_nilai=${encodeURIComponent(total_nilai)}&fraud=${encodeURIComponent(fraud)}&nilai_akhir=${encodeURIComponent(nilai_akhir)}&pencapaian=${encodeURIComponent(pencapaian)}&predikat=${encodeURIComponent(predikat)}&koefisien=${encodeURIComponent(koefisien)}&share_kpi_value=${encodeURIComponent(share_kpi_value)}&bobot_share_kpi=${encodeURIComponent(bobot_share_kpi)}`
+                    })
+                        .then(r => r.json())
+                        .then(res => {
+                            if (res && res.status === 'success') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Berhasil',
+                                    text: 'Semua nilai berhasil disimpan',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            } else {
                                 Swal.fire({
                                     icon: 'error',
-                                    title: 'Error',
-                                    text: 'Terjadi kesalahan server'
+                                    title: 'Gagal',
+                                    text: (res && res.message) || 'Gagal menyimpan nilai akhir',
+                                    confirmButtonColor: '#d33'
                                 });
+                            }
+                        })
+                        .catch(err => {
+                            console.error('simpanNilaiAkhir error', err);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Terjadi kesalahan server'
                             });
-                    })
+                        });
+                })
                     .catch(err => {
                         console.error('Promise.all save rows error', err);
                         Swal.fire({
@@ -1397,7 +1400,7 @@
         // Periode select -> tampilkan info atau manual
         // ---------------------------
         if (periodeSelect) {
-            periodeSelect.addEventListener('change', function() {
+            periodeSelect.addEventListener('change', function () {
                 const value = this.value;
                 if (value && value !== 'baru') {
                     const [awal, akhir] = value.split('|');
@@ -1461,15 +1464,15 @@
                 })
                 .catch(err => console.error('getLockStatus error', err));
 
-            lockCheckbox.addEventListener('change', function() {
+            lockCheckbox.addEventListener('change', function () {
                 const isLocked = this.checked ? 1 : 0;
                 fetch('<?= base_url("Administrator/setLockStatus") ?>', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `periode_awal=${encodeURIComponent(lockAwalVal)}&periode_akhir=${encodeURIComponent(lockAkhirVal)}&lock_input=${isLocked}`
-                    }).then(r => r.json())
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `periode_awal=${encodeURIComponent(lockAwalVal)}&periode_akhir=${encodeURIComponent(lockAkhirVal)}&lock_input=${isLocked}`
+                }).then(r => r.json())
                     .then(data => {
                         if (data && data.status === 'success') {
                             Swal.fire({
@@ -1510,15 +1513,15 @@
                 })
                 .catch(err => console.error('getLockStatus2 error', err));
 
-            lockCheckbox2.addEventListener('change', function() {
+            lockCheckbox2.addEventListener('change', function () {
                 const isLocked = this.checked ? 1 : 0;
                 fetch('<?= base_url("Administrator/setLockStatus2") ?>', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: `periode_awal=${encodeURIComponent(lockAwalVal)}&periode_akhir=${encodeURIComponent(lockAkhirVal)}&lock_input2=${isLocked}`
-                    })
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `periode_awal=${encodeURIComponent(lockAwalVal)}&periode_akhir=${encodeURIComponent(lockAkhirVal)}&lock_input2=${isLocked}`
+                })
                     .then(r => r.json())
                     .then(data => {
                         if (data && data.status === 'success') {
@@ -1611,8 +1614,8 @@
             // Ambil nilai Share KPI dan bobotnya untuk disimpan
             const share_kpi_value = document.getElementById('share-kpi-value')?.value || ''; // 🟢 Ambil nilai mentah
             const bobot_share_kpi = document.getElementById('bobot-share-kpi')?.value || '';
-            const bobot_sasaran = (document.getElementById('bobot-sasaran')?.value || '').toString().replace('%','') || '';
-            const bobot_budaya = (document.getElementById('bobot-budaya')?.value || '').toString().replace('%','') || '';
+            const bobot_sasaran = (document.getElementById('bobot-sasaran')?.value || '').toString().replace('%', '') || '';
+            const bobot_budaya = (document.getElementById('bobot-budaya')?.value || '').toString().replace('%', '') || '';
 
             fetch('<?= base_url("Administrator/simpanNilaiAkhir") ?>', {
                 method: 'POST',
@@ -1628,14 +1631,14 @@
             ['.target-input', '.realisasi-input', 'input[type="date"]'].forEach(selector => {
                 const input = row.querySelector(selector);
                 if (input) {
-                    input.addEventListener('change', function() {
+                    input.addEventListener('change', function () {
                         hitungTotal();
                         autoSaveBaris(row);
                         autoSaveNilaiAkhir();
                     });
                     // Untuk realisasi, juga autosave saat input (biar responsif)
                     if (selector === '.realisasi-input') {
-                        input.addEventListener('input', function() {
+                        input.addEventListener('input', function () {
                             hitungTotal();
                             autoSaveBaris(row);
                             autoSaveNilaiAkhir();
@@ -1647,13 +1650,13 @@
 
         // Event autosave untuk fraud dan koefisien
         if (fraudInput) {
-            fraudInput.addEventListener('input', function() {
+            fraudInput.addEventListener('input', function () {
                 hitungNilaiAkhir();
                 autoSaveNilaiAkhir();
             });
         }
         if (koefInput) {
-            koefInput.addEventListener('input', function() {
+            koefInput.addEventListener('input', function () {
                 updatePredikatDanPencapaian();
                 autoSaveNilaiAkhir();
             });
