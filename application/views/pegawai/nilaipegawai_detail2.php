@@ -1500,12 +1500,11 @@
                     Swal.close();
                     if (data && data.success) {
                         const now = new Date();
-                        const tanggal =
-                            String(now.getDate()).padStart(2, '0') + '-' +
-                            String(now.getMonth() + 1).padStart(2, '0') + '-' +
-                            now.getFullYear() + ' ' +
-                            String(now.getHours()).padStart(2, '0') + ':' +
-                            String(now.getMinutes()).padStart(2, '0');
+                        const tanggal = now.toLocaleString('en-GB', {
+                            timeZone: 'Asia/Jakarta',
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit', hour12: false
+                        }).replace(/,/g, '').replace(/\//g, '-');
 
                         if (typeof tableCatatan !== 'undefined' && tableCatatan) {
                             tableCatatan.row.add(['', data.nama_penilai || '-', catatan, tanggal]).draw(false);

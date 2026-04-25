@@ -751,14 +751,24 @@
 
                                                             <td class="text-center align-middle">
                                                                 <?php if ($statusText === 'Ada Catatan'): ?>
-                                                                    <a href="javascript:void(0);" class="<?= $statusClass; ?>" onclick="lihatCatatan('<?= $id ?>', '<?= $pegawai_detail->penilai1_nik ?? '' ?>')"><?= $statusText; ?></a>
+                                                                    <a href="javascript:void(0);"
+                                                                        class="<?= $statusClass; ?> px-2 py-1 shadow-sm badge-btn-catatan"
+                                                                        data-toggle="tooltip" title="Klik untuk melihat catatan"
+                                                                        onclick="lihatCatatan('<?= $id ?>', '<?= $pegawai_detail->penilai1_nik ?? '' ?>')">
+                                                                        <i class="mdi mdi-eye-outline mr-1"></i><?= $statusText; ?>
+                                                                    </a>
                                                                 <?php else: ?>
                                                                     <span class="<?= $statusClass; ?>"><?= $statusText; ?></span>
                                                                 <?php endif; ?>
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <?php if ($status2Text === 'Ada Catatan'): ?>
-                                                                    <a href="javascript:void(0);" class="<?= $status2Class; ?>" onclick="lihatCatatan('<?= $id ?>', '<?= $pegawai_detail->penilai2_nik ?? '' ?>')"><?= $status2Text; ?></a>
+                                                                    <a href="javascript:void(0);"
+                                                                        class="<?= $status2Class; ?> px-2 py-1 shadow-sm badge-btn-catatan"
+                                                                        data-toggle="tooltip" title="Klik untuk melihat catatan"
+                                                                        onclick="lihatCatatan('<?= $id ?>', '<?= $pegawai_detail->penilai2_nik ?? '' ?>')">
+                                                                        <i class="mdi mdi-eye-outline mr-1"></i><?= $status2Text; ?>
+                                                                    </a>
                                                                 <?php else: ?>
                                                                     <span class="<?= $status2Class; ?>"><?= $status2Text; ?></span>
                                                                 <?php endif; ?>
@@ -1850,14 +1860,13 @@ if ($message): ?>
                             showConfirmButton: false
                         });
 
-                        // tanggal sekarang DD-MM-YYYY HH:MM
+                        // tanggal sekarang DD-MM-YYYY HH:MM (Asia/Jakarta)
                         const now = new Date();
-                        const tanggal =
-                            String(now.getDate()).padStart(2, '0') + '-' +
-                            String(now.getMonth() + 1).padStart(2, '0') + '-' +
-                            now.getFullYear() + ' ' +
-                            String(now.getHours()).padStart(2, '0') + ':' +
-                            String(now.getMinutes()).padStart(2, '0');
+                        const tanggal = now.toLocaleString('en-GB', {
+                            timeZone: 'Asia/Jakarta',
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit', hour12: false
+                        }).replace(/,/g, '').replace(/\//g, '-');
 
                         // tambahkan row baru — kalau DataTable tersedia gunakan API, kalau tidak append manual
                         if (tableCatatanPegawai) {
@@ -3055,14 +3064,23 @@ if ($message): ?>
                 tbody.empty();
                 if (res.success && res.data.length > 0) {
                     res.data.forEach(function (c) {
-                        // Format date
-                        let date = new Date(c.tanggal);
-                        let tgl = String(date.getDate()).padStart(2, '0') + '-' + 
-                                  String(date.getMonth() + 1).padStart(2, '0') + '-' + 
-                                  date.getFullYear() + ' ' + 
-                                  String(date.getHours()).padStart(2, '0') + ':' + 
-                                  String(date.getMinutes()).padStart(2, '0');
-                        
+                            // Format date ke WIB (Asia/Jakarta)
+                            let tgl = c.tanggal;
+                            if (tgl) {
+                                let parts = tgl.split(' ');
+                                if (parts.length === 2) {
+                                    let dateParts = parts[0].split('-');
+                                    let timeParts = parts[1].split(':');
+                                    let utcDate = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2], timeParts[0], timeParts[1], timeParts[2] || 0));
+                                    
+                                    tgl = utcDate.toLocaleString('en-GB', {
+                                        timeZone: 'Asia/Jakarta',
+                                        day: '2-digit', month: '2-digit', year: 'numeric',
+                                        hour: '2-digit', minute: '2-digit', hour12: false
+                                    }).replace(/,/g, '').replace(/\//g, '-');
+                                }
+                            }
+
                         tbody.append(`
                             <tr>
                                 <td>${tgl}</td>
@@ -3104,5 +3122,18 @@ if ($message): ?>
     /* Jarak antara ikon dan teks */
     .tooltip-kuning .tooltip-inner i {
         margin-right: 8px;
+    }
+
+    /* Animasi tombol lihat catatan */
+    .badge-btn-catatan {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        display: inline-block;
+        text-decoration: none !important;
+    }
+
+    .badge-btn-catatan:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+        cursor: pointer;
     }
 </style>
