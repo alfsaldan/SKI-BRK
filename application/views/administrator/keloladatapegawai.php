@@ -254,3 +254,55 @@
         </form>
     </div>
 </div>
+
+<!-- =============================== -->
+<!-- JAVASCRIPT CUSTOM PENCARIAN     -->
+<!-- =============================== -->
+<script>
+    (function() {
+        var initCustomSearch = function() {
+            if (!window.jQuery || !window.jQuery.fn || !window.jQuery.fn.DataTable) return false;
+
+            $(function() {
+                function setupSearch(api) {
+                    var $searchInput = $('#datatable-pegawai_filter input');
+                    if ($searchInput.length === 0) return;
+                    
+                    // Hapus event bawaan DataTables (mencegah search otomatis saat ngetik)
+                    $searchInput.unbind();
+                    
+                    // Cegah duplikasi tombol jika script berjalan dua kali
+                    if ($('#datatable-pegawai_filter .btn-cari-custom').length === 0) {
+                        var $searchButton = $('<button type="button" class="btn btn-primary btn-sm ml-2 btn-cari-custom"><i class="fas fa-search"></i> Cari</button>');
+                        
+                        // Klik tombol cari untuk memproses pencarian
+                        $searchButton.click(function() {
+                            api.search($searchInput.val()).draw();
+                        });
+                        
+                        // Tekan Enter untuk memproses pencarian
+                        $searchInput.bind('keyup', function(e) {
+                            if(e.keyCode == 13) {
+                                api.search(this.value).draw();
+                            }
+                        });
+                        
+                        $('#datatable-pegawai_filter').append($searchButton);
+                    }
+                }
+
+                // Tunggu sampai tabel diinisialisasi oleh script template (misal dari footer)
+                $('#datatable-pegawai').on('init.dt', function(e, settings) {
+                    setupSearch(new $.fn.dataTable.Api(settings));
+                });
+            });
+
+            return true;
+        };
+
+        if (!initCustomSearch()) {
+            var iv = setInterval(function() { if (initCustomSearch()) clearInterval(iv); }, 100);
+            setTimeout(function() { clearInterval(iv); }, 5000);
+        }
+    })();
+</script>

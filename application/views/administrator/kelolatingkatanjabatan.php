@@ -35,7 +35,7 @@
                     </div>
 
                     <!-- Tabel -->
-                    <table class="table table-bordered" id="dt-cabang">
+                    <table class="table table-bordered" id="dt-cabang" style="width: 100%;">
                         <thead>
                             <tr>
                                 <th width="5%">No</th>
@@ -70,7 +70,7 @@
                             <button class="btn btn-success btn-sm" id="btn-tambah-unit"><i class="fas fa-plus"></i> Tambah Unit</button>
                         </div>
                     </div>
-                    <table class="table table-bordered" id="dt-unit">
+                    <table class="table table-bordered" id="dt-unit" style="width: 100%;">
                         <thead>
                             <tr>
                                 <th width="5%">No</th>
@@ -79,9 +79,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td colspan="3" class="text-center">Memuat...</td>
-                            </tr>
                         </tbody>
                     </table>
                     <button class="btn btn-secondary mt-2" id="btn-back-cabang">Kembali ke Cabang</button>
@@ -93,7 +90,7 @@
                 <div class="card-body">
                     <h5 class="mb-3">Mapping Jabatan di Unit <span id="label-unit"></span></h5>
                     <button class="btn btn-success mb-2" id="btn-tambah-mapping">+ Tambah Mapping</button>
-                    <table class="table table-bordered" id="dt-mapping">
+                    <table class="table table-bordered" id="dt-mapping" style="width: 100%;">
                         <thead>
                             <tr>
                                 <th>No</th>
@@ -105,9 +102,6 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td colspan="6" class="text-center">Pilih unit terlebih dahulu</td>
-                            </tr>
                         </tbody>
                     </table>
                     <button class="btn btn-secondary mt-2" id="btn-back-unit">Kembali ke Unit</button>
@@ -245,11 +239,12 @@
 
             // semua kode asli di dalam $(function(){ ... }) dipindahkan ke sini
             $(function() {
+                var dtCabang = null, dtUnit = null, dtMapping = null;
                 try {
                     // =================== DataTables Kode Cabang ===================
                     if ($('#dt-cabang').length) {
                         console.log("✅ DataTables dt-cabang Init Started...");
-                        $('#dt-cabang').DataTable({
+                        dtCabang = $('#dt-cabang').DataTable({
                             responsive: true,
                             pageLength: 5,
                             lengthMenu: [
@@ -272,6 +267,30 @@
                                     previous: "Sebelumnya",
                                     next: "Berikutnya"
                                 }
+                            },
+                            initComplete: function() {
+                                var api = this.api();
+                                var $searchInput = $('#dt-cabang_filter input');
+                                // Hapus event pencarian bawaan (keyup, search, input)
+                                $searchInput.unbind();
+                                
+                                // Buat tombol Cari
+                                var $searchButton = $('<button type="button" class="btn btn-primary btn-sm ml-2"><i class="fas fa-search"></i> Cari</button>');
+                                
+                                // Panggil pencarian saat tombol diklik
+                                $searchButton.click(function() {
+                                    api.search($searchInput.val()).draw();
+                                });
+                                
+                                // Tambahkan juga event agar saat tekan 'Enter' langsung mencari
+                                $searchInput.bind('keyup', function(e) {
+                                    if(e.keyCode == 13) {
+                                        api.search(this.value).draw();
+                                    }
+                                });
+                                
+                                // Sisipkan tombol di sebelah input pencarian
+                                $('#dt-cabang_filter').append($searchButton);
                             }
                         });
                         console.log("✅ DataTables dt-cabang berhasil diinisialisasi");
@@ -280,7 +299,7 @@
                     // =================== DataTables Kode Unit ===================
                     if ($('#dt-unit').length) {
                         console.log("✅ DataTables dt-unit Init Started...");
-                        $('#dt-unit').DataTable({
+                        dtUnit = $('#dt-unit').DataTable({
                             responsive: true,
                             pageLength: 5,
                             lengthMenu: [
@@ -303,6 +322,30 @@
                                     previous: "Sebelumnya",
                                     next: "Berikutnya"
                                 }
+                            },
+                            initComplete: function() {
+                                var api = this.api();
+                                var $searchInput = $('#dt-unit_filter input');
+                                // Hapus event pencarian bawaan (keyup, search, input)
+                                $searchInput.unbind();
+                                
+                                // Buat tombol Cari
+                                var $searchButton = $('<button type="button" class="btn btn-primary btn-sm ml-2"><i class="fas fa-search"></i> Cari</button>');
+                                
+                                // Panggil pencarian saat tombol diklik
+                                $searchButton.click(function() {
+                                    api.search($searchInput.val()).draw();
+                                });
+                                
+                                // Tambahkan juga event agar saat tekan 'Enter' langsung mencari
+                                $searchInput.bind('keyup', function(e) {
+                                    if(e.keyCode == 13) {
+                                        api.search(this.value).draw();
+                                    }
+                                });
+                                
+                                // Sisipkan tombol di sebelah input pencarian
+                                $('#dt-unit_filter').append($searchButton);
                             }
                         });
                         console.log("✅ DataTables dt-unit berhasil diinisialisasi");
@@ -311,7 +354,7 @@
                     // =================== DataTables Mapping Jabatan ===================
                     if ($('#dt-mapping').length) {
                         console.log("✅ DataTables dt-mapping Init Started...");
-                        $('#dt-mapping').DataTable({
+                        dtMapping = $('#dt-mapping').DataTable({
                             responsive: true,
                             pageLength: 5,
                             lengthMenu: [
@@ -334,6 +377,30 @@
                                     previous: "Sebelumnya",
                                     next: "Berikutnya"
                                 }
+                            },
+                            initComplete: function() {
+                                var api = this.api();
+                                var $searchInput = $('#dt-mapping_filter input');
+                                // Hapus event pencarian bawaan (keyup, search, input)
+                                $searchInput.unbind();
+                                
+                                // Buat tombol Cari
+                                var $searchButton = $('<button type="button" class="btn btn-primary btn-sm ml-2"><i class="fas fa-search"></i> Cari</button>');
+                                
+                                // Panggil pencarian saat tombol diklik
+                                $searchButton.click(function() {
+                                    api.search($searchInput.val()).draw();
+                                });
+                                
+                                // Tambahkan juga event agar saat tekan 'Enter' langsung mencari
+                                $searchInput.bind('keyup', function(e) {
+                                    if(e.keyCode == 13) {
+                                        api.search(this.value).draw();
+                                    }
+                                });
+                                
+                                // Sisipkan tombol di sebelah input pencarian
+                                $('#dt-mapping_filter').append($searchButton);
                             }
                         });
                         console.log("✅ DataTables dt-mapping berhasil diinisialisasi");
@@ -342,9 +409,9 @@
                 } catch (err) {
                     console.error('DataTables init gagal:', err);
                     // fallback: tetap pasang event handler tanpa DataTables
-                    var dtCabang = null,
-                        dtUnit = null,
-                        dtMapping = null;
+                    dtCabang = null;
+                    dtUnit = null;
+                    dtMapping = null;
                 }
 
                 // ================= STEP 1: PILIH CABANG =================
@@ -357,6 +424,10 @@
                     $('#card-unit').removeClass('d-none');
                     $('#card-mapping').addClass('d-none');
                     $('#card-cabang').hide();
+
+                    if (dtUnit) {
+                        dtUnit.columns.adjust().responsive.recalc();
+                    }
 
                     if (dtUnit && dtUnit.clear) {
                         dtUnit.clear().row.add(['', 'Memuat...', '']).draw();
@@ -416,6 +487,10 @@
                     $('#kodeCabang').val(kode_cabang);
                     $('#card-mapping').removeClass('d-none');
                     $('#card-unit').hide();
+
+                    if (dtMapping) {
+                        dtMapping.columns.adjust().responsive.recalc();
+                    }
 
                     loadMapping(encodeURIComponent(kode_unit));
                 });
@@ -745,6 +820,9 @@
                             $('#card-unit').removeClass('d-none');
                             $('#card-mapping').addClass('d-none');
                             $('#card-cabang').hide();
+                            if (dtUnit) {
+                                dtUnit.columns.adjust().responsive.recalc();
+                            }
                             // load units for cabang
                             $.getJSON('<?= base_url("administrator/getKodeUnit/") ?>' + encodeURIComponent(cabang), function(data) {
                                 // reuse the same rendering logic as .btn-atur-cabang click
@@ -782,6 +860,9 @@
                                     $('#kodeUnit').val(unit);
                                     $('#card-mapping').removeClass('d-none');
                                     $('#card-unit').hide();
+                                    if (dtMapping) {
+                                        dtMapping.columns.adjust().responsive.recalc();
+                                    }
                                     loadMapping(encodeURIComponent(unit));
                                 }
                             }).fail(function() {
@@ -796,6 +877,9 @@
                             $('#card-mapping').removeClass('d-none');
                             $('#card-unit').addClass('d-none');
                             $('#card-cabang').hide();
+                            if (dtMapping) {
+                                dtMapping.columns.adjust().responsive.recalc();
+                            }
                             loadMapping(encodeURIComponent(unit));
                         }
                     } catch (e) {
