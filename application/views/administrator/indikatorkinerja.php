@@ -42,7 +42,14 @@
                                         </option>
                                     <?php endif; ?>
                                 </select>
-                                <button type="submit" class="btn btn-info mt-2">Tampilkan Data</button>
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-info">
+                                        <i class="fas fa-search"></i> Tampilkan Data
+                                    </button>
+                                    <button type="button" class="btn btn-success" id="btnUploadExcel" style="display:none;">
+                                        <i class="fas fa-file-excel"></i> Upload Excel
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -250,6 +257,35 @@
             sasaranWrapper.style.display = 'block';
             submitBtn.style.display = 'inline-block';
             showBtn.style.display = 'none';
+        });
+
+        // 🔹 Show/hide Upload Excel button based on selections
+        function checkUploadButton() {
+            const unit = $('#unit_kerja_filter').val();
+            const jab = $('#jabatan_filter').val();
+            if (unit && jab) $('#btnUploadExcel').show();
+            else $('#btnUploadExcel').hide();
+        }
+
+        // run at load
+        checkUploadButton();
+
+        $('#unit_kerja_filter, #jabatan_filter').on('change', function() {
+            checkUploadButton();
+        });
+
+        // Open modal and set context when upload clicked
+        $(document).on('click', '#btnUploadExcel', function() {
+            var unit = $('#unit_kerja_filter').val();
+            var jab = $('#jabatan_filter').val();
+            $('#modalUploadExcel [name="unit_kerja"]').val(unit);
+            $('#modalUploadExcel [name="jabatan"]').val(jab);
+            // reset modal form
+            $('#modalUploadExcel #formUploadExcel')[0].reset();
+            $('#modalUploadExcel #stepUpload').show();
+            $('#modalUploadExcel #stepPreview').hide();
+            $('#modalUploadExcel #stepSuccess').hide();
+            $('#modalUploadExcel').modal('show');
         });
     }
 
@@ -664,3 +700,4 @@
         }
     }, true); // pakai true biar event blur bisa ditangkap
 </script>
+<?php if (file_exists(APPPATH . 'views/administrator/modal_upload_excel.php')) include(APPPATH . 'views/administrator/modal_upload_excel.php'); ?>

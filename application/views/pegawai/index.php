@@ -330,16 +330,10 @@
                                                             continue;
                                                         }
 
-                                                        $is_tahunan = (date('m-d', strtotime($p->periode_awal)) == '01-01' && date('m-d', strtotime($p->periode_akhir)) == '12-31');
                                                         $value = $p->periode_awal . '|' . $p->periode_akhir;
-                                                        $label = '';
                                                         $selected = '';
 
-                                                        if ($is_tahunan) {
-                                                            $label = 'Rekap Tahun ' . date('Y', strtotime($p->periode_awal));
-                                                        } else {
-                                                            $label = formatTanggalIndonesia($p->periode_awal, $bulan_indonesia) . ' s/d ' . formatTanggalIndonesia($p->periode_akhir, $bulan_indonesia);
-                                                        }
+                                                        $label = formatTanggalIndonesia($p->periode_awal, $bulan_indonesia) . ' s/d ' . formatTanggalIndonesia($p->periode_akhir, $bulan_indonesia);
 
                                                         // Logika pemilihan yang disederhanakan
                                                         if ($periode_awal === $p->periode_awal && $periode_akhir === $p->periode_akhir) {
@@ -615,6 +609,8 @@
                                                                 $status2Text = 'Disetujui';
                                                                 break;
                                                         }
+
+                                                        $is_row_approved = ($status === 'disetujui');
                                                         ?>
 
                                                         <tr data-id="<?= $id; ?>" data-sasaran-id="<?= $i->sasaran_id ?? '' ?>"
@@ -634,7 +630,7 @@
                                                                     style="vertical-align:middle;background:#E3F2FD;">
                                                                     <div class="d-flex justify-content-between align-items-center">
                                                                         <span><?= $sasaran; ?></span>
-                                                                        <?php if (!$is_locked && !$is_verified && !empty($i->sasaran_id)): ?>
+                                                                        <?php if (!$is_locked && !$is_verified && !$is_row_approved && !empty($i->sasaran_id)): ?>
                                                                             <button type="button"
                                                                                 class="btn btn-xs btn-outline-primary ml-1 p-1"
                                                                                 onclick="editSasaran('<?= $i->sasaran_id ?>', this)"
@@ -655,12 +651,12 @@
                                                                     data-html="true"
                                                                     data-template='<div class="tooltip tooltip-kuning" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>'
                                                                     title="<i class='mdi mdi-information-outline'></i><br>Minimal nilai 5."
-                                                                    <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
+                                                                    <?= ($is_locked || $is_verified || $is_row_approved) ? 'readonly' : ''; ?>>
                                                             </td>
                                                             <td>
                                                                 <div class="d-flex justify-content-between align-items-center">
                                                                     <span><?= $indik; ?></span>
-                                                                    <?php if (!$is_locked && !$is_verified): ?>
+                                                                    <?php if (!$is_locked && !$is_verified && !$is_row_approved): ?>
                                                                         <div class="d-flex">
                                                                             <button type="button"
                                                                                 class="btn btn-xs btn-outline-primary ml-1 p-1"
@@ -709,18 +705,18 @@
                                                                 <div class="currency-wrapper">
                                                                     <input type="text" class="form-control target-input text-center"
                                                                         style="min-width:150px;" value="<?= $i->target ?? ''; ?>"
-                                                                        <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
+                                                                        <?= ($is_locked || $is_verified || $is_row_approved) ? 'readonly' : ''; ?>>
                                                                     <div class="format-currency text-muted small"></div>
                                                                 </div>
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <input type="date" class="form-control batas-waktu"
                                                                     style="min-width:120px;" value="<?= $i->batas_waktu ?? ''; ?>"
-                                                                    <?= ($is_locked || $is_verified) ? 'readonly' : ''; ?>>
+                                                                    <?= ($is_locked || $is_verified || $is_row_approved) ? 'readonly' : ''; ?>>
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <div class="currency-wrapper">
-                                                                    <?php if (!$is_locked && !$is_verified): ?>
+                                                                    <?php if (!$is_locked && !$is_verified && !$is_row_approved): ?>
                                                                         <input type="text" class="form-control text-center realisasi-input"
                                                                             value="<?= $i->realisasi ?? ''; ?>" style="min-width:150px;">
                                                                     <?php else: ?>
@@ -774,7 +770,7 @@
                                                                 <?php endif; ?>
                                                             </td>
                                                             <td class="text-center align-middle">
-                                                                <?php if (!$is_locked && !$is_verified): ?>
+                                                                <?php if (!$is_locked && !$is_verified && !$is_row_approved): ?>
                                                                     <button type="button"
                                                                         class="btn btn-sm btn-primary simpan-penilaian w-100">Simpan</button>
                                                                 <?php else: ?>

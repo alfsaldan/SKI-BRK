@@ -87,9 +87,6 @@
 <!-- App js -->
 <script src="<?= base_url('assets/js/app.min.js') ?>"></script>
 
-<!--Form Wizard-->
-<script src="<?= base_url('assets/libs/jquery-steps/jquery.steps.min.js') ?>"></script>
-
 <script src="<?= base_url('assets/libs/jquery-validation/jquery.validate.min.js') ?>"></script>
 
 <!-- Init js-->

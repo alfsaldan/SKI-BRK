@@ -38,8 +38,6 @@
     <link href="<?= base_url('assets/css/app.min.css') ?>" rel="stylesheet" type="text/css" />
 
     <script src="<?= base_url('assets/js/jquery.min.js') ?>"></script>
-    <script src="<?= base_url('assets/libs/jquery-steps/jquery.steps.min.js') ?>"></script>
-    <link href="<?= base_url('assets/libs/jquery-steps/jquery.steps.css') ?>" rel="stylesheet">
 
 
     <!-- Custom CSS Navbar & Sidebar -->

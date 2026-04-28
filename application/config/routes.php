@@ -17,6 +17,10 @@ $route['administrator_renstra/kpi_indikatorkinerja'] = 'Administrator_Renstra/kp
 $route['administrator_renstra/kpi_penilaiankinerja'] = 'Administrator_Renstra/kpi_penilaianKinerja';
 $route['superadmin/getKodeUnit/(:any)'] = 'superadmin/getKodeUnit/$1';
 $route['superadmin/getMappingJabatan/(:any)'] = 'superadmin/getMappingJabatan/$1';
+// Excel import endpoints
+$route['ExcelImport/uploadIndikatorKinerja'] = 'ExcelImport/uploadIndikatorKinerja';
+$route['ExcelImport/saveParsedData'] = 'ExcelImport/saveParsedData';
+$route['ExcelImport/downloadTemplate'] = 'ExcelImport/downloadTemplate';
 
 
 $route['404_override'] = '';
