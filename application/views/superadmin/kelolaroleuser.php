@@ -110,7 +110,15 @@
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" name="password" class="form-control" required>
+                        <div class="input-group">
+                            <input type="password" name="password" id="add_password" class="form-control" required>
+                            <div class="input-group-append">
+                                <span class="input-group-text" style="cursor: pointer;" onclick="togglePassword('add_password', this)">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Password minimal 8 karakter, mengandung huruf besar, kecil, angka, dan simbol.</small>
                     </div>
                     <div class="form-group">
                         <label>Role</label>
@@ -155,8 +163,16 @@
                         <input type="text" id="edit_nama" class="form-control" readonly>
                     </div>
                     <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" name="password" class="form-control" >
+                        <label>Password <small>(Kosongkan jika tidak diubah)</small></label>
+                        <div class="input-group">
+                            <input type="password" name="password" id="edit_password" class="form-control">
+                            <div class="input-group-append">
+                                <span class="input-group-text" style="cursor: pointer;" onclick="togglePassword('edit_password', this)">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Jika diisi, wajib minimal 8 karakter, huruf besar, kecil, angka, dan simbol.</small>
                     </div>
                     <div class="form-group">
                         <label>Role</label>
@@ -181,5 +197,47 @@
             </form>
         </div>
     </div>
+
+<script>
+    // Fungsi toggle lihat/sembunyi password
+    function togglePassword(fieldId, el) {
+        const input = document.getElementById(fieldId);
+        const icon = el.querySelector("i");
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
+
+    // Validasi Strong Password saat form disubmit
+    $(document).ready(function() {
+        function validateStrongPassword(password) {
+            const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+            return regex.test(password);
+        }
+
+        $('#tambahUserModal form, #editUserModal form').on('submit', function(e) {
+            const formId = $(this).closest('.modal').attr('id');
+            const passInput = formId === 'tambahUserModal' ? $('#add_password').val() : $('#edit_password').val();
+            
+            // Jika edit dan password kosong, biarkan lolos karena berarti tidak diubah
+            if (formId === 'editUserModal' && passInput === '') return;
+
+            if (!validateStrongPassword(passInput)) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Password Lemah!',
+                    text: 'Password wajib minimal 8 karakter, serta mengandung huruf besar, huruf kecil, angka, dan karakter spesial/simbol.'
+                });
+            }
+        });
+    });
+</script>
 
     

@@ -848,15 +848,19 @@ class Administrator extends CI_Controller
         $errors = [];
 
         foreach ($sheetData as $i => $row) {
-            if ($i == 1)
-                continue; // skip header
+            if ($i == 1) continue; // skip header
 
-            $nik = trim($row['A']);
-            $nama = trim($row['B']);
-            $jabatan = trim($row['C']);
-            $unit_kerja = trim($row['D']);
-            $unit_kantor = trim($row['E']);
-            $password_plain = trim($row['F']);
+            $nik = trim($row['A'] ?? '');
+            $nama = trim($row['B'] ?? '');
+            $jabatan = trim($row['C'] ?? '');
+            $unit_kerja = trim($row['D'] ?? '');
+            $unit_kantor = trim($row['E'] ?? '');
+            $password_plain = trim($row['F'] ?? '');
+
+            // Skip jika baris ini benar-benar kosong (menghindari error NIK kosong karena format sel Excel kosong terbaca)
+            if (empty($nik) && empty($nama) && empty($jabatan) && empty($unit_kerja)) {
+                continue;
+            }
 
             if (empty($nik)) {
                 $errors[] = "Baris $i: NIK kosong.";
@@ -864,23 +868,42 @@ class Administrator extends CI_Controller
             }
 
             if (!ctype_digit($nik)) {
-                $errors[] = "Baris $i: NIK '$nik' harus berupa angka (number only).";
+                $errors[] = "Baris $i: NIK &quot;" . htmlspecialchars($nik) . "&quot; harus berupa angka (number only).";
                 continue;
             }
 
             if (strlen($nik) > 6) {
-                $errors[] = "Baris $i: NIK '$nik' maksimal 6 angka.";
+                $errors[] = "Baris $i: NIK &quot;" . htmlspecialchars($nik) . "&quot; maksimal 6 angka.";
                 continue;
             }
 
             if ($this->db->get_where('pegawai', ['nik' => $nik])->row()) {
-                $errors[] = "Baris $i: NIK $nik sudah ada.";
+                $errors[] = "Baris $i: NIK &quot;" . htmlspecialchars($nik) . "&quot; sudah ada.";
+                continue;
+            }
+
+            if (empty($nama)) {
+                $errors[] = "Baris $i: Nama kosong.";
+                continue;
+            }
+
+            if (empty($jabatan)) {
+                $errors[] = "Baris $i: Jabatan kosong.";
+                continue;
+            }
+
+            if (empty($unit_kerja)) {
+                $errors[] = "Baris $i: Unit Kerja kosong.";
+                continue;
+            }
+
+            if (empty($unit_kantor)) {
+                $errors[] = "Baris $i: Unit Kantor kosong.";
                 continue;
             }
 
             if (empty($password_plain)) {
-                $errors[] = "Baris $i: Password kosong.";
-                continue;
+                $password_plain = $nik; // 🔹 Set default password ke NIK jika kosong
             }
 
             $password_hashed = password_hash($password_plain, PASSWORD_DEFAULT);
@@ -914,7 +937,10 @@ class Administrator extends CI_Controller
         }
 
         if (!empty($errors)) {
-            $this->session->set_flashdata('warning', implode("<br>", $errors));
+            // Membungkus pesan error ke dalam div scrollable & menghindari Javascript Syntax Error akibat single quote
+            $error_html = '<div style="max-height: 250px; overflow-y: auto; text-align: left; font-size: 13px; background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;"><strong>Detail Error:</strong><br>' . implode('<br>', $errors) . '</div>';
+            $error_html = str_replace(["\r", "\n", "'"], [" ", " ", "\\'"], $error_html);
+            $this->session->set_flashdata('warning', $error_html);
         }
 
         if (empty($rows) && empty($errors)) {
@@ -996,11 +1022,16 @@ class Administrator extends CI_Controller
         foreach ($sheetData as $i => $row) {
             if ($i == 1) continue;
 
-            $nik = trim($row['A']);
-            $unit_kerja = trim($row['B']);
-            $unit_kantor = trim($row['C']);
-            $jabatan_baru = trim($row['D']);
-            $tgl_mulai_raw = $row['E'];
+            $nik = trim($row['A'] ?? '');
+            $unit_kerja = trim($row['B'] ?? '');
+            $unit_kantor = trim($row['C'] ?? '');
+            $jabatan_baru = trim($row['D'] ?? '');
+            $tgl_mulai_raw = $row['E'] ?? '';
+
+            // Skip jika baris ini benar-benar kosong
+            if (empty($nik) && empty($unit_kerja) && empty($jabatan_baru)) {
+                continue;
+            }
 
             if (empty($nik)) {
                 $errors[] = "Baris $i: NIK kosong.";
@@ -1008,18 +1039,38 @@ class Administrator extends CI_Controller
             }
 
             if (!ctype_digit($nik)) {
-                $errors[] = "Baris $i: NIP '$nik' harus berupa angka (number only).";
+                $errors[] = "Baris $i: NIK &quot;" . htmlspecialchars($nik) . "&quot; harus berupa angka (number only).";
                 continue;
             }
 
             if (strlen($nik) > 6) {
-                $errors[] = "Baris $i: NIP '$nik' maksimal 6 angka.";
+                $errors[] = "Baris $i: NIK &quot;" . htmlspecialchars($nik) . "&quot; maksimal 6 angka.";
                 continue;
             }
 
             $pegawai = $this->DataPegawai_model->getPegawaiByNik($nik);
             if (!$pegawai) {
-                $errors[] = "Baris $i: NIK $nik tidak ditemukan.";
+                $errors[] = "Baris $i: NIK &quot;" . htmlspecialchars($nik) . "&quot; tidak ditemukan.";
+                continue;
+            }
+
+            if (empty($unit_kerja)) {
+                $errors[] = "Baris $i: Jenis Unit kosong.";
+                continue;
+            }
+
+            if (empty($unit_kantor)) {
+                $errors[] = "Baris $i: Unit Kantor kosong.";
+                continue;
+            }
+
+            if (empty($jabatan_baru)) {
+                $errors[] = "Baris $i: Jabatan Baru kosong.";
+                continue;
+            }
+
+            if (empty($tgl_mulai_raw)) {
+                $errors[] = "Baris $i: Tanggal Mulai kosong.";
                 continue;
             }
 
@@ -1047,7 +1098,7 @@ class Administrator extends CI_Controller
                 $this->DataPegawai_model->tambahRiwayatJabatan($nik, $jabatan_baru, $unit_kerja, $unit_kantor, $tgl_mulai);
                 $successCount++;
             } catch (Exception $e) {
-                $errors[] = "Baris $i: Gagal menyimpan mutasi - " . $e->getMessage();
+                $errors[] = "Baris $i: Gagal menyimpan mutasi - " . htmlspecialchars($e->getMessage());
             }
         }
 
@@ -1055,7 +1106,9 @@ class Administrator extends CI_Controller
             $this->session->set_flashdata('success', "$successCount data mutasi berhasil diproses.");
         }
         if (!empty($errors)) {
-            $this->session->set_flashdata('warning', implode('<br>', $errors));
+            $error_html = '<div style="max-height: 250px; overflow-y: auto; text-align: left; font-size: 13px; background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;"><strong>Detail Error:</strong><br>' . implode('<br>', $errors) . '</div>';
+            $error_html = str_replace(["\r", "\n", "'"], [" ", " ", "\\'"], $error_html);
+            $this->session->set_flashdata('warning', $error_html);
         }
 
         redirect('Administrator/kelolaDataPegawai');
