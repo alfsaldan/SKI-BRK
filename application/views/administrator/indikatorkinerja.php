@@ -13,7 +13,8 @@
                                 <li class="breadcrumb-item active">Indikator Kinerja</li>
                             </ol>
                         </div>
-                        <h4 class="page-title"><i class="mdi mdi-target-account mr-2 text-primary"></i> Indikator Kinerja Pegawai</h4>
+                        <h4 class="page-title"><i class="mdi mdi-target-account mr-2 text-primary"></i> Indikator
+                            Kinerja Pegawai</h4>
                     </div>
                 </div>
             </div>
@@ -26,7 +27,8 @@
                             <h4 class="header-title mb-3">Filter Indikator Kinerja</h4>
                             <form action="<?= base_url('Administrator/indikatorKinerja'); ?>" method="get">
                                 <label>Unit Kantor</label>
-                                <select name="unit_kerja" id="unit_kerja_filter" class="form-control mb-2 select2" required>
+                                <select name="unit_kerja" id="unit_kerja_filter" class="form-control mb-2 select2"
+                                    required>
                                     <option value="">-- Pilih Unit Kantor --</option>
                                     <?php foreach ($unit_kerja as $uk): ?>
                                         <option value="<?= $uk->unit_kerja; ?>" <?= ($unit_kerja_terpilih == $uk->unit_kerja) ? 'selected' : ''; ?>>
@@ -46,7 +48,8 @@
                                     <button type="submit" class="btn btn-info">
                                         <i class="fas fa-search"></i> Tampilkan Data
                                     </button>
-                                    <button type="button" class="btn btn-success" id="btnUploadExcel" style="display:none;">
+                                    <button type="button" class="btn btn-success" id="btnUploadExcel"
+                                        style="display:none;">
                                         <i class="fas fa-file-excel"></i> Upload Excel
                                     </button>
                                 </div>
@@ -244,8 +247,8 @@
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/js/jquery-3.6.0.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 
 <script>
     const showBtn = document.getElementById('showSasaranBtn');
@@ -270,12 +273,12 @@
         // run at load
         checkUploadButton();
 
-        $('#unit_kerja_filter, #jabatan_filter').on('change', function() {
+        $('#unit_kerja_filter, #jabatan_filter').on('change', function () {
             checkUploadButton();
         });
 
         // Open modal and set context when upload clicked
-        $(document).on('click', '#btnUploadExcel', function() {
+        $(document).on('click', '#btnUploadExcel', function () {
             var unit = $('#unit_kerja_filter').val();
             var jab = $('#jabatan_filter').val();
             $('#modalUploadExcel [name="unit_kerja"]').val(unit);
@@ -293,7 +296,7 @@
     function recalcBobot() {
         let grandTotal = 0;
 
-        $("tr.perspektif-row").each(function() {
+        $("tr.perspektif-row").each(function () {
             let perspektifRow = $(this);
             let subtotalRow = perspektifRow.nextAll("tr.subtotal-row").first();
 
@@ -301,7 +304,7 @@
             // ambil semua indikator di antara perspektif ini sampai subtotalnya
             let indikatorRows = subtotalRow.prevUntil(perspektifRow, "tr.indikator-row");
 
-            indikatorRows.each(function() {
+            indikatorRows.each(function () {
                 let bobot = parseFloat($(this).find(".bobot-text").text()) || 0;
                 subtotal += bobot;
             });
@@ -315,7 +318,7 @@
 
 
     // 🔹 Jalankan saat halaman selesai load
-    $(document).ready(function() {
+    $(document).ready(function () {
         // Inisialisasi Select2 untuk filter
         $('#unit_kerja_filter, #jabatan_filter').select2({
             theme: 'bootstrap4',
@@ -324,14 +327,14 @@
             allowClear: true,
             minimumResultsForSearch: 0, // Tampilkan search box dari awal
             language: {
-                noResults: function() {
+                noResults: function () {
                     return 'Tidak ada hasil yang cocok';
                 }
             }
         });
 
         // 🔹 Load Jabatan by Unit dengan Select2
-        $('#unit_kerja_filter').on('change', function() {
+        $('#unit_kerja_filter').on('change', function () {
             const unit_kerja = $(this).val();
             const $jabatanSelect = $('#jabatan_filter');
 
@@ -344,7 +347,7 @@
                     .then(data => {
                         // Clear dan set opsi default
                         $jabatanSelect.html('<option value="">-- Pilih Jabatan --</option>');
-                        
+
                         // Tambahkan data jabatan
                         if (data && data.length > 0) {
                             data.forEach(item => {
@@ -353,7 +356,7 @@
                                     .text(item.jabatan));
                             });
                         }
-                        
+
                         // Refresh Select2
                         $jabatanSelect.trigger('change');
                     })
@@ -372,14 +375,14 @@
     });
 
     // 🔹 Trigger recalc saat ada perubahan bobot
-    $(document).on("input change", ".bobot-text", function() {
+    $(document).on("input change", ".bobot-text", function () {
         recalcBobot();
     });
 
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         // 🔹 Tambah indikator baru
-        $(document).on('click', '.addIndikator', function() {
+        $(document).on('click', '.addIndikator', function () {
             let newRow = `
                 <div class="row mt-2 indikator-row">
                     <div class="col-md-6">
@@ -397,12 +400,12 @@
     });
 
 
-    $(document).on("click", ".remove-row", function() {
+    $(document).on("click", ".remove-row", function () {
         $(this).closest(".indikator-row").remove();
     });
 
     // 🔹 Edit indikator
-    $(document).on('click', '.editBtn', function(e) {
+    $(document).on('click', '.editBtn', function (e) {
         let row = $(this).closest('tr');
         let indikatorText = row.find('.indikator-text').text().replace(/^\d+\.\s/, '');
         let bobotText = row.find('.bobot-text').text();
@@ -424,7 +427,7 @@
     });
 
     // 🔹 Edit sasaran
-    $(document).on('click', '.editSasaranBtn', function(e) {
+    $(document).on('click', '.editSasaranBtn', function (e) {
         let row = $(this).closest('tr');
         let sasaranText = row.find('.sasaran-text').text().trim();
         let sasaranId = row.data('id');
@@ -444,14 +447,14 @@
     });
 
     // 🔹 Cancel edit
-    $(document).on('click', '.cancelBtn', function() {
+    $(document).on('click', '.cancelBtn', function () {
         let row = $(this).closest('tr');
         row.html(row.data('original'));
         row.removeData('original');
     });
 
     // 🔹 Save indikator (pakai AJAX) dengan cek total bobot
-    $(document).on('click', '.saveBtn', function() {
+    $(document).on('click', '.saveBtn', function () {
         let row = $(this).closest('tr');
         let id = row.data('id');
         let indikator = row.find('.indikatorInput').val();
@@ -459,7 +462,7 @@
 
         // Hitung total bobot dari semua indikator
         let totalBobot = 0;
-        $("tr.indikator-row").each(function() {
+        $("tr.indikator-row").each(function () {
             if ($(this).data('id') != id) { // kecuali yang sedang diedit
                 totalBobot += parseFloat($(this).find(".bobot-text").text()) || 0;
             }
@@ -482,7 +485,7 @@
                 bobot: bobot
             },
             dataType: "json",
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     Swal.fire({
                         icon: 'success',
@@ -512,7 +515,7 @@
                     });
                 }
             },
-            error: function() {
+            error: function () {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -524,7 +527,7 @@
 
 
     // 🔹 Save sasaran (pakai AJAX)
-    $(document).on('click', '.saveSasaranBtn', function() {
+    $(document).on('click', '.saveSasaranBtn', function () {
         let row = $(this).closest('tr');
         let id = row.data('id');
         let sasaran = row.find('.sasaranInput').val();
@@ -537,7 +540,7 @@
                 sasaran: sasaran
             },
             dataType: "json",
-            success: function(response) {
+            success: function (response) {
                 if (response.success) {
                     Swal.fire({
                         icon: 'success',
@@ -563,7 +566,7 @@
                     });
                 }
             },
-            error: function() {
+            error: function () {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -575,13 +578,13 @@
 
 
     // 🔹 Simpan Sasaran via AJAX
-    $("#submitSasaranBtn").on("click", function() {
+    $("#submitSasaranBtn").on("click", function () {
         $.ajax({
             url: "<?= base_url('Administrator/saveSasaranAjax'); ?>",
             method: "POST",
             data: $("#formSasaran").serialize(),
             dataType: "json",
-            success: function(res) {
+            success: function (res) {
                 if (res.success) {
                     Swal.fire("Berhasil", res.message, "success").then(() => {
                         location.reload();
@@ -590,24 +593,24 @@
                     Swal.fire("Gagal", res.message, "error");
                 }
             },
-            error: function() {
+            error: function () {
                 Swal.fire("Error", "Tidak bisa menghubungi server", "error");
             }
         });
     });
 
     // 🔹 Simpan Indikator via AJAX dengan cek total bobot
-    $("#submitIndikatorBtn").on("click", function() {
+    $("#submitIndikatorBtn").on("click", function () {
         // Hitung total bobot saat ini
         let totalBobot = 0;
 
         // ambil semua bobot yang sudah ada di tabel
-        $("tr.indikator-row").each(function() {
+        $("tr.indikator-row").each(function () {
             totalBobot += parseFloat($(this).find(".bobot-text").text()) || 0;
         });
 
         // ambil semua input bobot baru dari form
-        $("#formIndikator input[name='bobot[]']").each(function() {
+        $("#formIndikator input[name='bobot[]']").each(function () {
             totalBobot += parseFloat($(this).val()) || 0;
         });
 
@@ -623,7 +626,7 @@
             method: "POST",
             data: $("#formIndikator").serialize(),
             dataType: "json",
-            success: function(res) {
+            success: function (res) {
                 if (res.success) {
                     Swal.fire("Berhasil", res.message, "success").then(() => {
                         location.reload();
@@ -632,7 +635,7 @@
                     Swal.fire("Gagal", res.message, "error");
                 }
             },
-            error: function() {
+            error: function () {
                 Swal.fire("Error", "Tidak bisa menghubungi server", "error");
             }
         });
@@ -641,7 +644,7 @@
 
 
     // 🔹 Delete indikator (pakai AJAX, no refresh)
-    $(document).on("click", ".deleteBtn", function(e) {
+    $(document).on("click", ".deleteBtn", function (e) {
         e.preventDefault(); // cegah link/submit default
 
         let row = $(this).closest("tr");
@@ -663,7 +666,7 @@
                         id: id
                     },
                     dataType: "json",
-                    success: function(response) {
+                    success: function (response) {
                         if (response.success) {
                             Swal.fire({
                                 icon: "success",
@@ -679,14 +682,14 @@
                             Swal.fire("Gagal!", response.message, "error");
                         }
                     },
-                    error: function() {
+                    error: function () {
                         Swal.fire("Error!", "Terjadi kesalahan saat menghapus.", "error");
                     }
                 });
             }
         });
     });
-    document.addEventListener("blur", function(e) {
+    document.addEventListener("blur", function (e) {
         if (e.target.classList.contains("bobotInput")) {
             let val = parseInt(e.target.value, 10);
 
@@ -700,4 +703,5 @@
         }
     }, true); // pakai true biar event blur bisa ditangkap
 </script>
-<?php if (file_exists(APPPATH . 'views/administrator/modal_upload_excel.php')) include(APPPATH . 'views/administrator/modal_upload_excel.php'); ?>
+<?php if (file_exists(APPPATH . 'views/administrator/modal_upload_excel.php'))
+    include(APPPATH . 'views/administrator/modal_upload_excel.php'); ?>

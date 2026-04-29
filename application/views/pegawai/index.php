@@ -711,7 +711,8 @@
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <input type="date" class="form-control batas-waktu"
-                                                                    style="min-width:120px;" value="<?= $i->batas_waktu ?? ''; ?>"
+                                                                    style="min-width:120px;" value="<?= ($i->batas_waktu && $i->batas_waktu != '0000-00-00') ? $i->batas_waktu : ''; ?>"
+                                                                    style="min-width:120px;" value="<?= (!empty($i->batas_waktu) && strpos($i->batas_waktu, '0000') === false) ? date('Y-m-d', strtotime($i->batas_waktu)) : ''; ?>"
                                                                     <?= ($is_locked || $is_verified || $is_row_approved) ? 'readonly' : ''; ?>>
                                                             </td>
                                                             <td class="text-center align-middle">
@@ -1241,11 +1242,10 @@
 <!-- End Page Content here -->
 <!-- ============================================================== -->
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/jquery.dataTables.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/dataTables.responsive.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/jquery-3.6.0.min.js') ?>"></script>
 <?php
 // flash message (jika ada)
 $message = $this->session->flashdata('message');
@@ -2401,7 +2401,7 @@ if ($message): ?>
 <!-- ======================= -->
 <!-- SCRIPT -->
 <!-- ======================= -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="<?= base_url('assets/libs/chart-js/chart.js') ?>"></script>
 <script>
     // Fungsi untuk mendapatkan warna berdasarkan predikat
     function getPredikatColor(predikat) {

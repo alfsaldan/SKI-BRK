@@ -381,7 +381,7 @@
 
                                                             <td class="text-center align-middle">
                                                                 <input type="date" class="form-control batas-waktu"
-                                                                    style="min-width:120px;" value="<?= $i->batas_waktu ?? ''; ?>">
+                                                                    style="min-width:120px;" value="<?= ($i->batas_waktu && $i->batas_waktu != '0000-00-00') ? $i->batas_waktu : ''; ?>">
                                                             </td>
 
                                                             <td class="text-center align-middle">
@@ -803,7 +803,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 
 <?php if (isset($message) && !empty($message)): ?>
     <script>
@@ -817,7 +817,6 @@
 <?php endif; ?>
 
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // ---------------------------

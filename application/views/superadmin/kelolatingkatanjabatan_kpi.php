@@ -165,7 +165,7 @@
 <!-- =============================== -->
 <!-- JAVASCRIPT -->
 <!-- =============================== -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 <script>
     (function() {
         // tunggu jQuery + DataTables tersedia. retry sampai 5s.

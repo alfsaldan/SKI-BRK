@@ -28,7 +28,6 @@
     <link href="<?= base_url('assets/css/icons.min.css') ?>" rel="stylesheet" type="text/css" />
     <link href="<?= base_url('assets/css/app.min.css') ?>" rel="stylesheet" type="text/css" />
 
-    <script src="<?= base_url('assets/js/jquery.min.js') ?>"></script>
 
     <style>
         /* Sidebar container */

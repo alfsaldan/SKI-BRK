@@ -115,7 +115,8 @@
                             <!-- UNIT KANTOR -->
                             <div class="form-group col-md-4">
                                 <label>Unit Kantor</label>
-                                <select name="unit_kantor" id="unitKantorSelect" class="form-control select2" required disabled>
+                                <select name="unit_kantor" id="unitKantorSelect" class="form-control select2" required
+                                    disabled>
                                     <option value="">Pilih Unit Kantor</option>
                                 </select>
                             </div>
@@ -123,7 +124,8 @@
                             <!-- JABATAN -->
                             <div class="form-group col-md-4">
                                 <label>Jabatan Baru</label>
-                                <select name="jabatan" id="jabatanSelect" class="form-control select2" required disabled>
+                                <select name="jabatan" id="jabatanSelect" class="form-control select2" required
+                                    disabled>
                                     <option value="">Pilih Jabatan</option>
                                 </select>
                             </div>
@@ -143,16 +145,12 @@
 
             <div class="card-body text-right">
                 <a href="<?= base_url('Administrator/toggleStatusPegawai/' . $pegawai->nik . '/nonaktif') ?>"
-                    class="btn btn-danger btn-toggle-status"
-                    data-action="nonaktif"
-                    data-nik="<?= $pegawai->nik ?>">
+                    class="btn btn-danger btn-toggle-status" data-action="nonaktif" data-nik="<?= $pegawai->nik ?>">
                     <i class="fas fa-user-slash"></i> Nonaktifkan
                 </a>
 
                 <a href="<?= base_url('Administrator/toggleStatusPegawai/' . $pegawai->nik . '/aktif') ?>"
-                    class="btn btn-success btn-toggle-status"
-                    data-action="aktif"
-                    data-nik="<?= $pegawai->nik ?>">
+                    class="btn btn-success btn-toggle-status" data-action="aktif" data-nik="<?= $pegawai->nik ?>">
                     <i class="fas fa-user-check"></i> Aktifkan
                 </a>
             </div>
@@ -171,14 +169,14 @@
 </div>
 
 <!-- CSS Select2 -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="<?= base_url('assets/libs/select2/select2.min.css') ?>" rel="stylesheet" type="text/css" />
 <!-- jQuery & JS Select2 -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="<?= base_url('assets/js/jquery-3.6.0.min.js') ?>"></script>
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         // ketika unit kerja dipilih
-        $('#unitKerjaSelect').change(function() {
+        $('#unitKerjaSelect').change(function () {
             const unitKerja = $(this).val();
             $('#unitKantorSelect').prop('disabled', true).html('<option value="">Loading...</option>');
             $('#jabatanSelect').prop('disabled', true).html('<option value="">Pilih Jabatan</option>');
@@ -186,10 +184,10 @@
             if (unitKerja) {
                 $.post('<?= base_url("Administrator/getUnitKantorByUnitKerja") ?>', {
                     unit_kerja: unitKerja
-                }, function(data) {
+                }, function (data) {
                     let options = '<option value="">Pilih Unit Kantor</option>';
                     data = JSON.parse(data);
-                    data.forEach(function(item) {
+                    data.forEach(function (item) {
                         options += `<option value="${item.unit_kantor}">${item.unit_kantor}</option>`;
                     });
                     $('#unitKantorSelect').html(options).prop('disabled', false);
@@ -200,17 +198,17 @@
         });
 
         // ketika unit kantor dipilih
-        $('#unitKantorSelect').change(function() {
+        $('#unitKantorSelect').change(function () {
             const unitKantor = $(this).val();
             $('#jabatanSelect').prop('disabled', true).html('<option value="">Loading...</option>');
 
             if (unitKantor) {
                 $.post('<?= base_url("Administrator/getJabatanByUnitKantor") ?>', {
                     unit_kantor: unitKantor
-                }, function(data) {
+                }, function (data) {
                     let options = '<option value="">Pilih Jabatan</option>';
                     data = JSON.parse(data);
-                    data.forEach(function(item) {
+                    data.forEach(function (item) {
                         options += `<option value="${item.jabatan}">${item.jabatan}</option>`;
                     });
                     $('#jabatanSelect').html(options).prop('disabled', false);
@@ -222,11 +220,11 @@
     });
 </script>
 
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    $(document).ready(function() {
-        $('.btn-toggle-status').click(function(e) {
+    $(document).ready(function () {
+        $('.btn-toggle-status').click(function (e) {
             e.preventDefault();
 
             let nik = $(this).data('nik'); // ✅ sekarang ada data-nik
@@ -256,7 +254,7 @@
                         url: url,
                         type: 'POST',
                         dataType: 'json',
-                        success: function(res) {
+                        success: function (res) {
                             if (res.status === 'success') {
                                 Swal.fire({
                                     icon: 'success',
@@ -271,7 +269,7 @@
                                 Swal.fire('Error', res.message, 'error');
                             }
                         },
-                        error: function() {
+                        error: function () {
                             Swal.fire('Error', 'Terjadi kesalahan server', 'error');
                         }
                     });

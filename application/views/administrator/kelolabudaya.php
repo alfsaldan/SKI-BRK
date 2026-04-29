@@ -9,7 +9,7 @@
                 <div class="col-12">
                     <div class="page-title-box d-flex justify-content-between align-items-center">
                         <h3 class="page-title">
-                             <i class="mdi mdi-white-balance-sunny mr-2 text-primary"></i> Kelola Budaya
+                            <i class="mdi mdi-white-balance-sunny mr-2 text-primary"></i> Kelola Budaya
                         </h3>
                         <ol class="breadcrumb m-0">
                             <li class="breadcrumb-item"><a href="#">KPI Online-BRKS</a></li>
@@ -18,7 +18,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Tombol Tambah -->
             <button class="btn btn-success mb-3 shadow-sm" id="btnTambah">
                 <i class="mdi mdi-plus"></i> Tambah Budaya
@@ -47,7 +47,8 @@
             </div>
 
             <!-- Modal Tambah/Edit -->
-            <div class="modal fade" id="modalBudaya" tabindex="-1" role="dialog" aria-labelledby="modalBudayaLabel" aria-hidden="true">
+            <div class="modal fade" id="modalBudaya" tabindex="-1" role="dialog" aria-labelledby="modalBudayaLabel"
+                aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content shadow">
                         <form id="formBudaya">
@@ -60,16 +61,19 @@
 
                                 <div class="form-group">
                                     <label><strong>Perilaku Utama</strong></label>
-                                    <input type="text" class="form-control" name="perilaku_utama" id="perilaku_utama" placeholder="Masukkan perilaku utama..." required>
+                                    <input type="text" class="form-control" name="perilaku_utama" id="perilaku_utama"
+                                        placeholder="Masukkan perilaku utama..." required>
                                 </div>
 
                                 <div class="form-group">
                                     <label><strong>Panduan Perilaku</strong></label>
                                     <div id="panduanContainer">
                                         <div class="input-group mb-2 panduan-item">
-                                            <input type="text" name="panduan_perilaku[]" class="form-control" placeholder="Isi panduan perilaku..." required>
+                                            <input type="text" name="panduan_perilaku[]" class="form-control"
+                                                placeholder="Isi panduan perilaku..." required>
                                             <div class="input-group-append">
-                                                <button type="button" class="btn btn-danger removePanduan">&times;</button>
+                                                <button type="button"
+                                                    class="btn btn-danger removePanduan">&times;</button>
                                             </div>
                                         </div>
                                     </div>
@@ -92,15 +96,15 @@
 </div>
 
 <!-- JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/js/jquery-3.6.0.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         loadBudaya();
 
         // Tambah panduan baru
-        $(document).on('click', '#addPanduan', function() {
+        $(document).on('click', '#addPanduan', function () {
             $('#panduanContainer').append(`
                 <div class="input-group mb-2 panduan-item">
                     <input type="text" name="panduan_perilaku[]" class="form-control" placeholder="Isi panduan perilaku..." required>
@@ -112,12 +116,12 @@
         });
 
         // Hapus panduan input
-        $(document).on('click', '.removePanduan', function() {
+        $(document).on('click', '.removePanduan', function () {
             $(this).closest('.panduan-item').remove();
         });
 
         // Modal tambah
-        $('#btnTambah').on('click', function() {
+        $('#btnTambah').on('click', function () {
             $('#modalBudayaLabel').text('Tambah Budaya');
             $('#formBudaya')[0].reset();
             $('#id_budaya').val('');
@@ -133,14 +137,14 @@
         });
 
         // Simpan (Tambah/Edit)
-        $('#formBudaya').submit(function(e) {
+        $('#formBudaya').submit(function (e) {
             e.preventDefault();
             $.ajax({
                 url: '<?= base_url("Administrator/simpanBudayaAjax") ?>',
                 type: 'POST',
                 data: $(this).serialize(),
                 dataType: 'json',
-                success: function(res) {
+                success: function (res) {
                     if (res.status === 'success') {
                         Swal.fire({
                             icon: 'success',
@@ -159,14 +163,14 @@
                         });
                     }
                 },
-                error: function() {
+                error: function () {
                     Swal.fire('Error', 'Terjadi kesalahan saat menyimpan data', 'error');
                 }
             });
         });
 
         // Edit data
-        $(document).on('click', '.editBudaya', function() {
+        $(document).on('click', '.editBudaya', function () {
             const id = $(this).data('id');
             const nama = $(this).data('nama');
             const panduan = JSON.parse($(this).attr('data-panduan'));
@@ -188,7 +192,7 @@
         });
 
         // Hapus data
-        $(document).on('click', '.hapusBudaya', function() {
+        $(document).on('click', '.hapusBudaya', function () {
             const id = $(this).data('id');
             Swal.fire({
                 title: 'Yakin hapus data ini?',
@@ -205,7 +209,7 @@
                         url: '<?= base_url("Administrator/hapusBudayaAjax/") ?>' + id,
                         type: 'GET',
                         dataType: 'json',
-                        success: function(res) {
+                        success: function (res) {
                             Swal.fire({
                                 icon: res.status === 'success' ? 'success' : 'error',
                                 title: res.title,
@@ -215,7 +219,7 @@
                             });
                             setTimeout(() => loadBudaya(), 800);
                         },
-                        error: function() {
+                        error: function () {
                             Swal.fire('Error', 'Tidak dapat menghapus data', 'error');
                         }
                     });
@@ -229,7 +233,7 @@
                 url: '<?= base_url("Administrator/getBudaya") ?>',
                 type: 'GET',
                 dataType: 'json',
-                success: function(data) {
+                success: function (data) {
                     let html = '';
                     let no = 1;
                     data.forEach(b => {
@@ -258,7 +262,7 @@
                     });
                     $('#tabelBudaya tbody').html(html);
                 },
-                error: function() {
+                error: function () {
                     $('#tabelBudaya tbody').html('<tr><td colspan="4" class="text-center text-danger">Gagal memuat data</td></tr>');
                 }
             });

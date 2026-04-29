@@ -137,13 +137,13 @@
 <!-- ============================================================== -->
 
 <!-- DataTables JS & CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<link rel="stylesheet" href="<?= base_url('assets/libs/datatables/jquery.dataTables.min.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/libs/datatables/responsive.dataTables.min.css') ?>">
+<script src="<?= base_url('assets/js/jquery-3.6.4.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/jquery.dataTables.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/dataTables.responsive.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     $(document).ready(function() {

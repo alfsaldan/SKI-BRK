@@ -169,7 +169,7 @@
     });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="<?= base_url('assets/libs/chart-js/apexcharts.js') ?>"></script>
 <script>
     var optionsTargetRealisasi = {
         chart: {
@@ -232,7 +232,7 @@
     chartDonut.render();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 
 <script>
     <?php if ($this->session->flashdata('message')):
@@ -306,7 +306,7 @@
     });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 <script>
     <?php if ($this->session->flashdata('success')): ?>
         Swal.fire({
@@ -333,7 +333,7 @@
     <?php endif; ?>
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         <?php if ($this->session->flashdata('success')): ?>
@@ -366,7 +366,7 @@
 </script>
 
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 <script>
     $(document).on('click', '.btn-delete', function(e) {
         e.preventDefault();

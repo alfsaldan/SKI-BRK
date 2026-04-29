@@ -50,13 +50,14 @@
                             $label = date('d M Y', strtotime($p->periode_awal)) . ' - ' . date('d M Y', strtotime($p->periode_akhir));
                             $val = $p->periode_awal . '|' . $p->periode_akhir;
                             $sel = ((isset($selected_awal) && isset($selected_akhir)) && $selected_awal == $p->periode_awal && $selected_akhir == $p->periode_akhir) ? 'selected' : '';
-                        ?>
+                            ?>
                             <option value="<?= $val ?>" <?= $sel ?>><?= $label ?></option>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <?php $def_awal = $selected_awal ?? date('Y-01-01');
                         $def_akhir = $selected_akhir ?? date('Y-12-31'); ?>
-                        <option value="<?= $def_awal . '|' . $def_akhir ?>">Default (<?= $def_awal ?> - <?= $def_akhir ?>)</option>
+                        <option value="<?= $def_awal . '|' . $def_akhir ?>">Default (<?= $def_awal ?> - <?= $def_akhir ?>)
+                        </option>
                     <?php endif; ?>
                 </select>
                 <button id="btn_refresh" class="btn btn-primary w-100">
@@ -75,7 +76,8 @@
                             </div>
                             <div class="wigdet-two-content">
                                 <p class="m-0 text-uppercase text-white">Total Pegawai</p>
-                                <h2 class="text-white"><span data-plugin="counterup"><?= $total_pegawai ?? 0 ?></span></h2>
+                                <h2 class="text-white"><span data-plugin="counterup"><?= $total_pegawai ?? 0 ?></span>
+                                </h2>
                             </div>
                         </div>
                     </div>
@@ -148,7 +150,7 @@
                                     <!-- Dropdown Cabang -->
                                     <select id="filter-unit" class="form-control mb-2 me-2">
                                         <option value="">Pilih Cabang</option>
-                                        <?php foreach ($this->Administrator_model->getCabangList() as $cb) : ?>
+                                        <?php foreach ($this->Administrator_model->getCabangList() as $cb): ?>
                                             <option value="<?= $cb->kode_cabang ?>">
                                                 <?= $cb->unit_kantor ?> (<?= $cb->kode_cabang ?>)
                                             </option>
@@ -177,11 +179,12 @@
 <!-- ============================================================== -->
 
 <!-- DataTables JS/CSS harus sudah tersedia di template -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="<?= base_url('assets/libs/datatables/jquery.dataTables.min.css') ?>">
+<script src="<?= base_url('assets/libs/datatables/jquery.dataTables.min.js') ?>"></script>
+
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Restore periode dari URL
         (function restoreSelectedPeriodFromUrl() {
             const params = new URLSearchParams(window.location.search);
@@ -200,7 +203,7 @@
         })();
 
         // Tombol Refresh untuk reload dengan parameter awal|akhir
-        document.getElementById('btn_refresh').addEventListener('click', function() {
+        document.getElementById('btn_refresh').addEventListener('click', function () {
             const val = document.getElementById('filter_periode').value;
             if (val) {
                 const parts = val.split('|');
@@ -224,7 +227,7 @@
             },
             dataLabels: {
                 enabled: true,
-                formatter: function(val) {
+                formatter: function (val) {
                     return val.toFixed(1) + "%";
                 }
             }
@@ -235,17 +238,16 @@
 </script>
 
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="<?= base_url('assets/js/jquery-3.6.0.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/flot/jquery.flot.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/flot/jquery.flot.categories.min.js') ?>"></script>
+
 <script>
     var jq36 = jQuery.noConflict(true);
 </script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/flot/0.8.3/jquery.flot.categories.min.js"></script>
-
 <!-- Script Grafik -->
 <script>
-    jq36(document).ready(function() {
+    jq36(document).ready(function () {
         var ticks = [
             [0, "Minus"],
             [1, "Fair"],
@@ -258,7 +260,7 @@
 
         // 🟢 Fungsi render chart reusable
         function renderChart(data) {
-            var barSeries = data.map(function(item, i) {
+            var barSeries = data.map(function (item, i) {
                 return {
                     label: item[0],
                     data: [
@@ -275,7 +277,7 @@
 
             var lineSeries = {
                 label: "Trend",
-                data: data.map(function(item, i) {
+                data: data.map(function (item, i) {
                     return [i, item[1]];
                 }),
                 lines: {
@@ -306,20 +308,20 @@
         }
 
         // 🟢 1️⃣ Tampilkan grafik awal (semua data)
-        jq36.getJSON("<?= base_url('administrator/get_grafik_all') ?>", function(data) {
+        jq36.getJSON("<?= base_url('administrator/get_grafik_all') ?>", function (data) {
             renderChart(data);
         });
 
         // 🟢 2️⃣ Load daftar cabang
-        $.getJSON("<?= base_url('administrator/get_unit_kantor_list') ?>", function(data) {
+        $.getJSON("<?= base_url('administrator/get_unit_kantor_list') ?>", function (data) {
             var $cabang = $("#filter-unit");
-            $.each(data, function(i, item) {
+            $.each(data, function (i, item) {
                 $cabang.append(`<option value="${item.kode_cabang}">${item.unit_kantor}</option>`);
             });
         });
 
         // 🟢 3️⃣ Saat cabang dipilih
-        jq36("#filter-unit").on("change", function() {
+        jq36("#filter-unit").on("change", function () {
             var kode_cabang = $(this).val();
             var $unit = $("#filter-unitkantor");
             $unit.empty().append('<option value="">Konsolidasi</option>');
@@ -332,8 +334,8 @@
             }
 
             // Ambil daftar unit kantor berdasarkan cabang
-            $.getJSON("<?= base_url('administrator/get_unit_kantor/') ?>" + kode_cabang, function(data) {
-                $.each(data, function(i, item) {
+            $.getJSON("<?= base_url('administrator/get_unit_kantor/') ?>" + kode_cabang, function (data) {
+                $.each(data, function (i, item) {
                     $unit.append(`<option value="${item.kode_unit}">${item.unit_kantor}</option>`);
                 });
             });
@@ -343,7 +345,7 @@
         });
 
         // 🟢 4️⃣ Saat unit kantor dipilih → tampil grafik spesifik unit
-        $("#filter-unitkantor").on("change", function() {
+        $("#filter-unitkantor").on("change", function () {
             var kode_unit = $(this).val();
             var kode_cabang = $("#filter-unit").val();
 
@@ -372,7 +374,7 @@
             "z-index": 10000
         }).appendTo("body");
 
-        $("#grafik-nilai-pegawai").bind("plothover", function(event, pos, item) {
+        $("#grafik-nilai-pegawai").bind("plothover", function (event, pos, item) {
             if (item) {
                 var x = Number(item.datapoint[0]);
                 var y = item.datapoint[1];
@@ -391,7 +393,7 @@
 </script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const btnShow = document.getElementById('btn_show_filter');
         const btnClose = document.getElementById('btn_close_filter');
         const popup = document.getElementById('filter_popup');
@@ -405,14 +407,14 @@
         });
 
         // klik di luar popup = tutup
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (!popup.contains(e.target) && !btnShow.contains(e.target)) {
                 popup.style.display = 'none';
             }
         });
 
         // Tombol Refresh
-        document.getElementById('btn_refresh').addEventListener('click', function() {
+        document.getElementById('btn_refresh').addEventListener('click', function () {
             const val = document.getElementById('filter_periode').value;
             if (val) {
                 const parts = val.split('|');

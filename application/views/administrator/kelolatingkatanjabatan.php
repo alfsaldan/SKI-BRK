@@ -5,7 +5,7 @@
     <div class="content">
         <div class="container-fluid">
 
-           <!-- Judul Halaman -->
+            <!-- Judul Halaman -->
             <div class="row">
                 <div class="col-12">
                     <div class="page-title-box d-flex justify-content-between align-items-center">
@@ -30,7 +30,8 @@
                             Daftar Kode Cabang
                         </h5>
                         <div>
-                            <button class="btn btn-success btn-sm" id="btn-tambah-cabang"><i class="fas fa-plus"></i> Tambah Cabang</button>
+                            <button class="btn btn-success btn-sm" id="btn-tambah-cabang"><i class="fas fa-plus"></i>
+                                Tambah Cabang</button>
                         </div>
                     </div>
 
@@ -50,9 +51,14 @@
                                     <td><?= $no++; ?></td>
                                     <td><?= htmlspecialchars($row->kode_cabang) . ' - ' . ($row->unit_kantor ?? '') ?></td>
                                     <td>
-                                        <button class="btn btn-primary btn-sm btn-atur-cabang" data-cabang="<?= htmlspecialchars($row->kode_cabang) ?>">Atur</button>
-                                        <button class="btn btn-warning btn-sm btn-edit-cabang" data-cabang="<?= htmlspecialchars($row->kode_cabang) ?>" data-unit_kantor="<?= htmlspecialchars($row->unit_kantor ?? '') ?>" data-unit_kerja="<?= htmlspecialchars($row->unit_kerja ?? '') ?>">Ubah</button>
-                                        <button class="btn btn-danger btn-sm btn-hapus-cabang" data-cabang="<?= htmlspecialchars($row->kode_cabang) ?>">Hapus</button>
+                                        <button class="btn btn-primary btn-sm btn-atur-cabang"
+                                            data-cabang="<?= htmlspecialchars($row->kode_cabang) ?>">Atur</button>
+                                        <button class="btn btn-warning btn-sm btn-edit-cabang"
+                                            data-cabang="<?= htmlspecialchars($row->kode_cabang) ?>"
+                                            data-unit_kantor="<?= htmlspecialchars($row->unit_kantor ?? '') ?>"
+                                            data-unit_kerja="<?= htmlspecialchars($row->unit_kerja ?? '') ?>">Ubah</button>
+                                        <button class="btn btn-danger btn-sm btn-hapus-cabang"
+                                            data-cabang="<?= htmlspecialchars($row->kode_cabang) ?>">Hapus</button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -67,7 +73,8 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0">Daftar Kode Unit di Cabang <span id="label-cabang"></span></h5>
                         <div>
-                            <button class="btn btn-success btn-sm" id="btn-tambah-unit"><i class="fas fa-plus"></i> Tambah Unit</button>
+                            <button class="btn btn-success btn-sm" id="btn-tambah-unit"><i class="fas fa-plus"></i>
+                                Tambah Unit</button>
                         </div>
                     </div>
                     <table class="table table-bordered" id="dt-unit" style="width: 100%;">
@@ -230,15 +237,15 @@
 <!-- =============================== -->
 <!-- JAVASCRIPT -->
 <!-- =============================== -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 <script>
-    (function() {
+    (function () {
         // tunggu jQuery + DataTables tersedia. retry sampai 5s.
-        var tryRun = function() {
+        var tryRun = function () {
             if (!window.jQuery || !window.jQuery.fn || !window.jQuery.fn.DataTable) return false;
 
             // semua kode asli di dalam $(function(){ ... }) dipindahkan ke sini
-            $(function() {
+            $(function () {
                 var dtCabang = null, dtUnit = null, dtMapping = null;
                 try {
                     // =================== DataTables Kode Cabang ===================
@@ -268,27 +275,27 @@
                                     next: "Berikutnya"
                                 }
                             },
-                            initComplete: function() {
+                            initComplete: function () {
                                 var api = this.api();
                                 var $searchInput = $('#dt-cabang_filter input');
                                 // Hapus event pencarian bawaan (keyup, search, input)
                                 $searchInput.unbind();
-                                
+
                                 // Buat tombol Cari
                                 var $searchButton = $('<button type="button" class="btn btn-primary btn-sm ml-2"><i class="fas fa-search"></i> Cari</button>');
-                                
+
                                 // Panggil pencarian saat tombol diklik
-                                $searchButton.click(function() {
+                                $searchButton.click(function () {
                                     api.search($searchInput.val()).draw();
                                 });
-                                
+
                                 // Tambahkan juga event agar saat tekan 'Enter' langsung mencari
-                                $searchInput.bind('keyup', function(e) {
-                                    if(e.keyCode == 13) {
+                                $searchInput.bind('keyup', function (e) {
+                                    if (e.keyCode == 13) {
                                         api.search(this.value).draw();
                                     }
                                 });
-                                
+
                                 // Sisipkan tombol di sebelah input pencarian
                                 $('#dt-cabang_filter').append($searchButton);
                             }
@@ -323,27 +330,27 @@
                                     next: "Berikutnya"
                                 }
                             },
-                            initComplete: function() {
+                            initComplete: function () {
                                 var api = this.api();
                                 var $searchInput = $('#dt-unit_filter input');
                                 // Hapus event pencarian bawaan (keyup, search, input)
                                 $searchInput.unbind();
-                                
+
                                 // Buat tombol Cari
                                 var $searchButton = $('<button type="button" class="btn btn-primary btn-sm ml-2"><i class="fas fa-search"></i> Cari</button>');
-                                
+
                                 // Panggil pencarian saat tombol diklik
-                                $searchButton.click(function() {
+                                $searchButton.click(function () {
                                     api.search($searchInput.val()).draw();
                                 });
-                                
+
                                 // Tambahkan juga event agar saat tekan 'Enter' langsung mencari
-                                $searchInput.bind('keyup', function(e) {
-                                    if(e.keyCode == 13) {
+                                $searchInput.bind('keyup', function (e) {
+                                    if (e.keyCode == 13) {
                                         api.search(this.value).draw();
                                     }
                                 });
-                                
+
                                 // Sisipkan tombol di sebelah input pencarian
                                 $('#dt-unit_filter').append($searchButton);
                             }
@@ -378,27 +385,27 @@
                                     next: "Berikutnya"
                                 }
                             },
-                            initComplete: function() {
+                            initComplete: function () {
                                 var api = this.api();
                                 var $searchInput = $('#dt-mapping_filter input');
                                 // Hapus event pencarian bawaan (keyup, search, input)
                                 $searchInput.unbind();
-                                
+
                                 // Buat tombol Cari
                                 var $searchButton = $('<button type="button" class="btn btn-primary btn-sm ml-2"><i class="fas fa-search"></i> Cari</button>');
-                                
+
                                 // Panggil pencarian saat tombol diklik
-                                $searchButton.click(function() {
+                                $searchButton.click(function () {
                                     api.search($searchInput.val()).draw();
                                 });
-                                
+
                                 // Tambahkan juga event agar saat tekan 'Enter' langsung mencari
-                                $searchInput.bind('keyup', function(e) {
-                                    if(e.keyCode == 13) {
+                                $searchInput.bind('keyup', function (e) {
+                                    if (e.keyCode == 13) {
                                         api.search(this.value).draw();
                                     }
                                 });
-                                
+
                                 // Sisipkan tombol di sebelah input pencarian
                                 $('#dt-mapping_filter').append($searchButton);
                             }
@@ -415,7 +422,7 @@
                 }
 
                 // ================= STEP 1: PILIH CABANG =================
-                $(document).on('click', '.btn-atur-cabang', function() {
+                $(document).on('click', '.btn-atur-cabang', function () {
                     var kode_cabang = $(this).data('cabang');
                     if (!kode_cabang) return;
 
@@ -435,34 +442,34 @@
                         $('#dt-unit tbody').html('<tr><td colspan="3" class="text-center">Memuat...</td></tr>');
                     }
 
-                    $.getJSON('<?= base_url("administrator/getKodeUnit/") ?>' + encodeURIComponent(kode_cabang), function(data) {
-                            if (dtUnit && dtUnit.clear) {
-                                dtUnit.clear();
-                                if (data.length) {
-                                    data.forEach(function(row, i) {
-                                        dtUnit.row.add([
-                                            i + 1,
-                                            row.kode_unit + ' - ' + (row.unit_kantor ?? ''),
-                                            `<button class="btn btn-info btn-sm btn-atur-unit" data-unit="${row.kode_unit}" data-cabang="${kode_cabang}">Atur</button>
+                    $.getJSON('<?= base_url("administrator/getKodeUnit/") ?>' + encodeURIComponent(kode_cabang), function (data) {
+                        if (dtUnit && dtUnit.clear) {
+                            dtUnit.clear();
+                            if (data.length) {
+                                data.forEach(function (row, i) {
+                                    dtUnit.row.add([
+                                        i + 1,
+                                        row.kode_unit + ' - ' + (row.unit_kantor ?? ''),
+                                        `<button class="btn btn-info btn-sm btn-atur-unit" data-unit="${row.kode_unit}" data-cabang="${kode_cabang}">Atur</button>
                                              <button class="btn btn-warning btn-sm btn-edit-unit" data-unit="${row.kode_unit}" data-cabang="${kode_cabang}" data-unit_kantor="${row.unit_kantor || ''}" data-unit_kerja="${row.unit_kerja || ''}">Ubah</button>
                                              <button class="btn btn-danger btn-sm btn-hapus-unit" data-unit="${row.kode_unit}" data-cabang="${kode_cabang}">Hapus</button>`
-                                        ]).draw(false);
-                                    });
-                                } else {
-                                    dtUnit.row.add(['', 'Tidak ada unit', '']).draw();
-                                }
+                                    ]).draw(false);
+                                });
                             } else {
-                                var html = '';
-                                if (data.length) {
-                                    data.forEach(function(row, i) {
-                                        html += '<tr><td>' + (i + 1) + '</td><td>' + row.kode_unit + ' - ' + (row.unit_kantor || '') + '</td><td><button class="btn btn-info btn-sm btn-atur-unit" data-unit="' + row.kode_unit + '" data-cabang="' + kode_cabang + '">Atur</button> <button class="btn btn-warning btn-sm btn-edit-unit" data-unit="' + row.kode_unit + '" data-cabang="' + kode_cabang + '" data-unit_kantor="' + (row.unit_kantor || '') + '" data-unit_kerja="' + (row.unit_kerja || '') + '">Ubah</button> <button class="btn btn-danger btn-sm btn-hapus-unit" data-unit="' + row.kode_unit + '" data-cabang="' + kode_cabang + '">Hapus</button></td></tr>';
-                                    });
-                                } else {
-                                    html = '<tr><td colspan="3" class="text-center">Tidak ada unit</td></tr>';
-                                }
-                                $('#dt-unit tbody').html(html);
+                                dtUnit.row.add(['', 'Tidak ada unit', '']).draw();
                             }
-                    }).fail(function() {
+                        } else {
+                            var html = '';
+                            if (data.length) {
+                                data.forEach(function (row, i) {
+                                    html += '<tr><td>' + (i + 1) + '</td><td>' + row.kode_unit + ' - ' + (row.unit_kantor || '') + '</td><td><button class="btn btn-info btn-sm btn-atur-unit" data-unit="' + row.kode_unit + '" data-cabang="' + kode_cabang + '">Atur</button> <button class="btn btn-warning btn-sm btn-edit-unit" data-unit="' + row.kode_unit + '" data-cabang="' + kode_cabang + '" data-unit_kantor="' + (row.unit_kantor || '') + '" data-unit_kerja="' + (row.unit_kerja || '') + '">Ubah</button> <button class="btn btn-danger btn-sm btn-hapus-unit" data-unit="' + row.kode_unit + '" data-cabang="' + kode_cabang + '">Hapus</button></td></tr>';
+                                });
+                            } else {
+                                html = '<tr><td colspan="3" class="text-center">Tidak ada unit</td></tr>';
+                            }
+                            $('#dt-unit tbody').html(html);
+                        }
+                    }).fail(function () {
                         if (dtUnit && dtUnit.clear) {
                             dtUnit.clear().row.add(['', 'Gagal memuat unit', '']).draw();
                         } else {
@@ -471,13 +478,13 @@
                     });
                 });
 
-                $('#btn-back-cabang').on('click', function() {
+                $('#btn-back-cabang').on('click', function () {
                     $('#card-unit').addClass('d-none');
                     $('#card-cabang').show();
                 });
 
                 // ================= STEP 2: PILIH UNIT =================
-                $(document).on('click', '.btn-atur-unit', function() {
+                $(document).on('click', '.btn-atur-unit', function () {
                     var kode_unit = $(this).data('unit');
                     var kode_cabang = $(this).data('cabang');
                     if (!kode_unit) return;
@@ -503,11 +510,11 @@
                         $('#dt-mapping tbody').html('<tr><td colspan="6" class="text-center">Memuat...</td></tr>');
                     }
 
-                    $.getJSON('<?= base_url("administrator/getMappingJabatan/") ?>' + kode_unit, function(data) {
+                    $.getJSON('<?= base_url("administrator/getMappingJabatan/") ?>' + kode_unit, function (data) {
                         if (dtMapping && dtMapping.row) {
                             dtMapping.clear();
                             if (data.length) {
-                                data.forEach(function(row, i) {
+                                data.forEach(function (row, i) {
                                     dtMapping.row.add([
                                         i + 1,
                                         row.jabatan,
@@ -531,7 +538,7 @@
                         } else {
                             var html = '';
                             if (data.length) {
-                                data.forEach(function(row, i) {
+                                data.forEach(function (row, i) {
                                     html += '<tr><td>' + (i + 1) + '</td><td>' + row.jabatan + '</td><td>' + row.jenis_penilaian + '</td><td>' + (row.penilai1_jabatan || '-') + '</td><td>' + (row.penilai2_jabatan || '-') + '</td><td><button class="btn btn-warning btn-sm btn-edit-mapping" data-id="' + row.id + '" data-jabatan="' + row.jabatan + '" data-jenis="' + row.jenis_penilaian + '" data-penilai1="' + (row.penilai1_jabatan || '') + '" data-penilai2="' + (row.penilai2_jabatan || '') + '" data-unit="' + row.unit_kerja + '" data-cabang="' + row.kode_cabang + '">Ubah</button> <button class="btn btn-danger btn-sm btn-hapus-mapping" data-id="' + row.id + '">Hapus</button></td></tr>';
                                 });
                             } else {
@@ -539,7 +546,7 @@
                             }
                             $('#dt-mapping tbody').html(html);
                         }
-                    }).fail(function() {
+                    }).fail(function () {
                         if (dtMapping && dtMapping.clear) {
                             dtMapping.clear().row.add(['', 'Gagal memuat data', '', '', '', '']).draw();
                         } else {
@@ -548,13 +555,13 @@
                     });
                 }
 
-                $('#btn-back-unit').on('click', function() {
+                $('#btn-back-unit').on('click', function () {
                     $('#card-mapping').addClass('d-none');
                     $('#card-unit').show();
                 });
 
                 // ================= STEP 4: TAMBAH / EDIT MAPPING =================
-                $('#btn-tambah-mapping').on('click', function() {
+                $('#btn-tambah-mapping').on('click', function () {
                     $('#formMapping')[0].reset();
                     $('#idMapping').val('');
                     $('#unitKerja').val($('#label-unit').text());
@@ -563,14 +570,14 @@
 
                     // Load penilai dari unit yang sama
                     var kode_unit = $('#kodeUnit').val();
-                    $.getJSON('<?= base_url("administrator/getMappingJabatanEdit/") ?>' + kode_unit, function(data) {
+                    $.getJSON('<?= base_url("administrator/getMappingJabatanEdit/") ?>' + kode_unit, function (data) {
                         var options = '<option value="">-- Pilih Penilai --</option>';
-                        data.forEach(function(row) {
+                        data.forEach(function (row) {
                             options += `<option value="${row.jabatan}">${row.jabatan}</option>`;
                         });
                         $('#penilai1_jabatan').html(options);
                         $('#penilai2_jabatan').html(options);
-                        
+
                         // Inisialisasi Select2 untuk penilai
                         $('#penilai1_jabatan, #penilai2_jabatan').select2({
                             theme: 'bootstrap4',
@@ -580,7 +587,7 @@
                             minimumResultsForSearch: 0,
                             dropdownParent: $('#modalMapping'),
                             language: {
-                                noResults: function() {
+                                noResults: function () {
                                     return 'Tidak ada hasil yang cocok';
                                 }
                             }
@@ -592,7 +599,7 @@
 
 
                 // Edit Mapping (diperbaiki)
-                $(document).on('click', '.btn-edit-mapping', function() {
+                $(document).on('click', '.btn-edit-mapping', function () {
                     var id = $(this).data('id');
                     var jabatan = $(this).data('jabatan');
                     var jenis = $(this).data('jenis');
@@ -611,11 +618,11 @@
                     $('#jenis_penilaian').val(jenis);
 
                     // Load semua penilai untuk select
-                    $.getJSON('<?= base_url("administrator/getMappingJabatanEdit/") ?>' + kode_unit, function(data) {
+                    $.getJSON('<?= base_url("administrator/getMappingJabatanEdit/") ?>' + kode_unit, function (data) {
                         var options1 = '<option value="">-- Pilih Penilai I --</option>';
                         var options2 = '<option value="">-- Pilih Penilai II --</option>';
 
-                        data.forEach(function(row) {
+                        data.forEach(function (row) {
                             var sel1 = (row.jabatan === penilai1) ? ' selected' : '';
                             var sel2 = (row.jabatan === penilai2) ? ' selected' : '';
                             options1 += `<option value="${row.jabatan}"${sel1}>${row.jabatan}</option>`;
@@ -624,7 +631,7 @@
 
                         $('#penilai1_jabatan').html(options1);
                         $('#penilai2_jabatan').html(options2);
-                        
+
                         // Inisialisasi Select2 untuk penilai dengan nilai terpilih
                         $('#penilai1_jabatan, #penilai2_jabatan').select2({
                             theme: 'bootstrap4',
@@ -634,7 +641,7 @@
                             minimumResultsForSearch: 0,
                             dropdownParent: $('#modalMapping'),
                             language: {
-                                noResults: function() {
+                                noResults: function () {
                                     return 'Tidak ada hasil yang cocok';
                                 }
                             }
@@ -646,7 +653,7 @@
 
 
                 // Hapus Mapping
-                $(document).on('click', '.btn-hapus-mapping', function() {
+                $(document).on('click', '.btn-hapus-mapping', function () {
                     var id = $(this).data('id');
                     Swal.fire({
                         title: 'Yakin ingin menghapus?',
@@ -659,14 +666,14 @@
                         cancelButtonText: 'Batal'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            $.post('<?= base_url("administrator/hapusPenilaiMapping/") ?>' + id, function() {
+                            $.post('<?= base_url("administrator/hapusPenilaiMapping/") ?>' + id, function () {
                                 Swal.fire(
                                     'Terhapus!',
                                     'Data berhasil dihapus.',
                                     'success'
                                 );
                                 loadMapping($('#label-unit').text());
-                            }).fail(function() {
+                            }).fail(function () {
                                 Swal.fire(
                                     'Gagal!',
                                     'Gagal menghapus data.',
@@ -678,11 +685,11 @@
                 });
 
                 // Simpan Mapping (Tambah/Edit)
-                $('#formMapping').on('submit', function(e) {
+                $('#formMapping').on('submit', function (e) {
                     e.preventDefault();
                     var id = $('#idMapping').val();
                     var url = id ? '<?= base_url("administrator/editPenilaiMapping/") ?>' + id : '<?= base_url("administrator/tambahPenilaiMapping") ?>';
-                    $.post(url, $(this).serialize(), function() {
+                    $.post(url, $(this).serialize(), function () {
                         $('#modalMapping').modal('hide');
                         Swal.fire({
                             icon: 'success',
@@ -692,7 +699,7 @@
                             showConfirmButton: false
                         });
                         loadMapping($('#label-unit').text());
-                    }).fail(function() {
+                    }).fail(function () {
                         Swal.fire({
                             icon: 'error',
                             title: 'Gagal',
@@ -702,13 +709,13 @@
                 });
 
                 // ======= Cabang CRUD handlers =======
-                $('#btn-tambah-cabang').on('click', function() {
+                $('#btn-tambah-cabang').on('click', function () {
                     $('#formCabang')[0].reset();
                     $('#c_kode_cabang').prop('readonly', false);
                     $('#modalCabang').modal('show');
                 });
 
-                $(document).on('click', '.btn-edit-cabang', function() {
+                $(document).on('click', '.btn-edit-cabang', function () {
                     var kode = $(this).data('cabang');
                     var unit_kantor = $(this).data('unit_kantor') || '';
                     var unit_kerja = $(this).data('unit_kerja') || '';
@@ -718,39 +725,39 @@
                     $('#modalCabang').modal('show');
                 });
 
-                $(document).on('click', '.btn-hapus-cabang', function() {
+                $(document).on('click', '.btn-hapus-cabang', function () {
                     var kode = $(this).data('cabang');
                     Swal.fire({
                         title: 'Hapus Cabang?',
                         text: 'Semua unit dan mapping di cabang ini akan dihapus',
                         icon: 'warning',
                         showCancelButton: true
-                    }).then(function(res) {
+                    }).then(function (res) {
                         if (res.isConfirmed) {
-                            $.post('<?= base_url("administrator/hapusCabang/") ?>' + encodeURIComponent(kode), function(resp) {
+                            $.post('<?= base_url("administrator/hapusCabang/") ?>' + encodeURIComponent(kode), function (resp) {
                                 location.reload();
-                            }).fail(function() { Swal.fire('Gagal', 'Gagal menghapus cabang', 'error'); });
+                            }).fail(function () { Swal.fire('Gagal', 'Gagal menghapus cabang', 'error'); });
                         }
                     });
                 });
 
-                $('#formCabang').on('submit', function(e) {
+                $('#formCabang').on('submit', function (e) {
                     e.preventDefault();
                     var kode = $('#c_kode_cabang').val();
                     var url = '<?= base_url("administrator/tambahCabang") ?>';
                     if ($('#c_kode_cabang').prop('readonly')) {
                         url = '<?= base_url("administrator/editCabang") ?>';
                     }
-                    $.post(url, $(this).serialize()).done(function() { 
+                    $.post(url, $(this).serialize()).done(function () {
                         // ensure after reload we stay on Cabang step
-                        try { sessionStorage.setItem('kelola_step', 'cabang'); } catch (e) {}
-                        $('#modalCabang').modal('hide'); 
-                        location.reload(); 
-                    }).fail(function() { Swal.fire('Gagal', 'Gagal menyimpan cabang', 'error'); });
+                        try { sessionStorage.setItem('kelola_step', 'cabang'); } catch (e) { }
+                        $('#modalCabang').modal('hide');
+                        location.reload();
+                    }).fail(function () { Swal.fire('Gagal', 'Gagal menyimpan cabang', 'error'); });
                 });
 
                 // ======= Unit CRUD handlers =======
-                $('#btn-tambah-unit').on('click', function() {
+                $('#btn-tambah-unit').on('click', function () {
                     $('#formUnit')[0].reset();
                     var kode_cabang = $('#label-cabang').text();
                     $('#u_kode_cabang').val(kode_cabang);
@@ -758,7 +765,7 @@
                     $('#modalUnit').modal('show');
                 });
 
-                $(document).on('click', '.btn-edit-unit', function() {
+                $(document).on('click', '.btn-edit-unit', function () {
                     var kode = $(this).data('unit');
                     var cabang = $(this).data('cabang');
                     var unit_kantor = $(this).data('unit_kantor') || '';
@@ -770,29 +777,29 @@
                     $('#modalUnit').modal('show');
                 });
 
-                $(document).on('click', '.btn-hapus-unit', function() {
+                $(document).on('click', '.btn-hapus-unit', function () {
                     var kode = $(this).data('unit');
                     var cabang = $(this).data('cabang');
-                    Swal.fire({ title: 'Hapus Unit?', text: 'Semua mapping di unit ini akan dihapus', icon: 'warning', showCancelButton: true }).then(function(res) {
+                    Swal.fire({ title: 'Hapus Unit?', text: 'Semua mapping di unit ini akan dihapus', icon: 'warning', showCancelButton: true }).then(function (res) {
                         if (res.isConfirmed) {
-                            $.post('<?= base_url("administrator/hapusUnit/") ?>' + encodeURIComponent(cabang) + '/' + encodeURIComponent(kode), function() { 
-                                try { sessionStorage.setItem('kelola_step', 'unit'); sessionStorage.setItem('kelola_cabang', cabang); } catch (e) {}
-                                location.reload(); 
-                            }).fail(function() { Swal.fire('Gagal', 'Gagal menghapus unit', 'error'); });
+                            $.post('<?= base_url("administrator/hapusUnit/") ?>' + encodeURIComponent(cabang) + '/' + encodeURIComponent(kode), function () {
+                                try { sessionStorage.setItem('kelola_step', 'unit'); sessionStorage.setItem('kelola_cabang', cabang); } catch (e) { }
+                                location.reload();
+                            }).fail(function () { Swal.fire('Gagal', 'Gagal menghapus unit', 'error'); });
                         }
                     });
                 });
 
-                $('#formUnit').on('submit', function(e) {
+                $('#formUnit').on('submit', function (e) {
                     e.preventDefault();
                     var readonly = $('#u_kode_unit').prop('readonly');
                     var url = readonly ? '<?= base_url("administrator/editUnit") ?>' : '<?= base_url("administrator/tambahUnit") ?>';
-                    $.post(url, $(this).serialize()).done(function() { 
+                    $.post(url, $(this).serialize()).done(function () {
                         // after adding/editing unit, return to unit list for the cabang
-                        try { sessionStorage.setItem('kelola_step', 'unit'); sessionStorage.setItem('kelola_cabang', $('#u_kode_cabang').val()); } catch (e) {}
-                        $('#modalUnit').modal('hide'); 
-                        location.reload(); 
-                    }).fail(function() { Swal.fire('Gagal', 'Gagal menyimpan unit', 'error'); });
+                        try { sessionStorage.setItem('kelola_step', 'unit'); sessionStorage.setItem('kelola_cabang', $('#u_kode_cabang').val()); } catch (e) { }
+                        $('#modalUnit').modal('hide');
+                        location.reload();
+                    }).fail(function () { Swal.fire('Gagal', 'Gagal menyimpan unit', 'error'); });
                 });
 
                 // Restore last step after a reload (if sessionStorage has data)
@@ -824,12 +831,12 @@
                                 dtUnit.columns.adjust().responsive.recalc();
                             }
                             // load units for cabang
-                            $.getJSON('<?= base_url("administrator/getKodeUnit/") ?>' + encodeURIComponent(cabang), function(data) {
+                            $.getJSON('<?= base_url("administrator/getKodeUnit/") ?>' + encodeURIComponent(cabang), function (data) {
                                 // reuse the same rendering logic as .btn-atur-cabang click
                                 if (dtUnit && dtUnit.clear) {
                                     dtUnit.clear();
                                     if (data.length) {
-                                        data.forEach(function(row, i) {
+                                        data.forEach(function (row, i) {
                                             dtUnit.row.add([
                                                 i + 1,
                                                 row.kode_unit + ' - ' + (row.unit_kantor ?? ''),
@@ -844,7 +851,7 @@
                                 } else {
                                     var html = '';
                                     if (data.length) {
-                                        data.forEach(function(row, i) {
+                                        data.forEach(function (row, i) {
                                             html += '<tr><td>' + (i + 1) + '</td><td>' + row.kode_unit + ' - ' + (row.unit_kantor || '') + '</td><td><button class="btn btn-info btn-sm btn-atur-unit" data-unit="' + row.kode_unit + '" data-cabang="' + cabang + '">Atur</button> <button class="btn btn-warning btn-sm btn-edit-unit" data-unit="' + row.kode_unit + '" data-cabang="' + cabang + '" data-unit_kantor="' + (row.unit_kantor || '') + '" data-unit_kerja="' + (row.unit_kerja || '') + '">Ubah</button> <button class="btn btn-danger btn-sm btn-hapus-unit" data-unit="' + row.kode_unit + '" data-cabang="' + cabang + '">Hapus</button></td></tr>';
                                         });
                                     } else {
@@ -865,7 +872,7 @@
                                     }
                                     loadMapping(encodeURIComponent(unit));
                                 }
-                            }).fail(function() {
+                            }).fail(function () {
                                 // failed to load units, fallback to cabang view
                                 $('#card-unit').addClass('d-none');
                                 $('#card-cabang').show();
@@ -895,10 +902,10 @@
         };
 
         if (!tryRun()) {
-            var iv = setInterval(function() {
+            var iv = setInterval(function () {
                 if (tryRun()) clearInterval(iv);
             }, 50);
-            setTimeout(function() {
+            setTimeout(function () {
                 clearInterval(iv);
             }, 5000);
         }

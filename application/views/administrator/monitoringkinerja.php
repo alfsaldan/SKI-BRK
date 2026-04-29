@@ -12,7 +12,8 @@
                                 <li class="breadcrumb-item active">Monitoring Kinerja Bulanan</li>
                             </ol>
                         </div>
-                        <h4 class="page-title"><i class="mdi mdi-clipboard-pulse-outline mr-2 text-primary"></i> Monitoring Kinerja Bulanan</h4>
+                        <h4 class="page-title"><i class="mdi mdi-clipboard-pulse-outline mr-2 text-primary"></i>
+                            Monitoring Kinerja Bulanan</h4>
                     </div>
                 </div>
             </div>
@@ -24,7 +25,8 @@
                             <h5 class="text-primary font-weight-bold mb-3">
                                 <i class="mdi mdi-calendar-month-outline mr-2"></i> Pilih Periode Bulanan & Pegawai
                             </h5>
-                            <form id="formMonitoring" action="<?= base_url('Administrator/cariPenilaianBulanan'); ?>" method="post" class="row">
+                            <form id="formMonitoring" action="<?= base_url('Administrator/cariPenilaianBulanan'); ?>"
+                                method="post" class="row">
 
                                 <!-- Pilih Bulan -->
                                 <div class="col-md-4 mb-3">
@@ -52,7 +54,7 @@
                                             $akhir = date('Y-m-t', strtotime($awal));
                                             $val = "$awal|$akhir";
                                             $selected = (isset($periode_awal) && isset($periode_akhir) && $periode_awal == $awal && $periode_akhir == $akhir) ? 'selected' : '';
-                                        ?>
+                                            ?>
                                             <option value="<?= $val ?>" <?= $selected ?>>
                                                 <?= $namaBulan ?>
                                             </option>
@@ -78,7 +80,8 @@
                                     <label class="text-dark font-weight-medium">Masukkan NIK Pegawai:</label>
                                     <input type="text" id="nik_input" name="nik" class="form-control mb-2"
                                         placeholder="Masukkan NIK Pegawai"
-                                        value="<?= isset($nik) ? htmlspecialchars($nik) : '' ?>" required maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                                        value="<?= isset($nik) ? htmlspecialchars($nik) : '' ?>" required maxlength="6"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                                 </div>
 
                                 <div class="col-12 text-right">
@@ -108,25 +111,31 @@
                                 <canvas id="grafikKinerja" height="90"></canvas>
                                 <!-- Keterangan Predikat & Skala (Horizontal) -->
                                 <div class="mt-1 pt-3 border-top">
-                                    <div class="d-flex flex-wrap align-items-center justify-content-center" style="gap: 1rem; font-size: 0.8rem;">
+                                    <div class="d-flex flex-wrap align-items-center justify-content-center"
+                                        style="gap: 1rem; font-size: 0.8rem;">
                                         <div class="d-flex align-items-center">
-                                            <span style="width: 12px; height: 12px; background-color: #dc3545; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                            <span
+                                                style="width: 12px; height: 12px; background-color: #dc3545; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
                                             <small><strong>Minus</strong> (&lt;80%)</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <span style="width: 12px; height: 12px; background-color: #ffc107; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                            <span
+                                                style="width: 12px; height: 12px; background-color: #ffc107; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
                                             <small><strong>Fair</strong> (80% - &lt;90%)</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <span style="width: 12px; height: 12px; background-color: #17a2b8; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                            <span
+                                                style="width: 12px; height: 12px; background-color: #17a2b8; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
                                             <small><strong>Good</strong> (90% - &lt;110%)</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <span style="width: 12px; height: 12px; background-color: #28a745; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                            <span
+                                                style="width: 12px; height: 12px; background-color: #28a745; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
                                             <small><strong>Very Good</strong> (110% - &lt;120%)</small>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <span style="width: 12px; height: 12px; background-color: #198754; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
+                                            <span
+                                                style="width: 12px; height: 12px; background-color: #198754; border-radius: 50%; display: inline-block; margin-right: 8px;"></span>
                                             <small><strong>Excellent</strong> (120% - 130%)</small>
                                         </div>
                                     </div>
@@ -151,7 +160,8 @@
                                         <ul class="list-group list-group-flush">
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">NIK</span>
-                                                <span class="badge badge-primary badge-pill"><?= $pegawai_detail->nik; ?></span>
+                                                <span
+                                                    class="badge badge-primary badge-pill"><?= $pegawai_detail->nik; ?></span>
                                             </li>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span class="text-dark font-weight-medium">Nama</span>
@@ -237,7 +247,8 @@
                                                 ?>
 
                                                 <?php foreach ($order as $persp): ?>
-                                                    <?php if (empty($grouped[$persp])) continue; ?>
+                                                    <?php if (empty($grouped[$persp]))
+                                                        continue; ?>
                                                     <?php
                                                     $persp_rows = count_rows($grouped[$persp]);
                                                     $first_persp_cell = true;
@@ -297,17 +308,20 @@
                                                         <td colspan="3">Sub Total <?= $persp; ?></td>
                                                         <td class="text-center"><?= $subtotal_bobot; ?></td>
                                                         <td colspan="5" class="text-center">Sub Total Nilai Dibobot</td>
-                                                        <td class="text-center"><?= number_format(round($subtotal_nilai, 2), 2); ?></td>
+                                                        <td class="text-center"><?= number_format(round($subtotal_nilai, 2), 2); ?>
+                                                        </td>
                                                     </tr>
                                                 <?php endforeach; ?>
                                             <?php else: ?>
                                                 <tr>
-                                                    <td colspan="10" class="text-center">Belum ada data penilaian untuk pegawai ini</td>
+                                                    <td colspan="10" class="text-center">Belum ada data penilaian untuk pegawai
+                                                        ini</td>
                                                 </tr>
                                             <?php endif; ?>
                                         </tbody>
                                         <?php if (!empty($penilaian_pegawai)): ?>
-                                            <tfoot style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
+                                            <tfoot
+                                                style="background-color:#2E7D32;color:#fff;font-weight:bold;text-align:center;">
                                                 <tr>
                                                     <td colspan="3">Total</td>
                                                     <td><?= array_sum(array_column($penilaian_pegawai, 'bobot')); ?></td>
@@ -356,17 +370,17 @@
                                             // Pastikan $budaya_nilai selalu array
                                             $budaya_nilai = $budaya_nilai ?? [];
 
-                                            if (!empty($budaya)) :
-                                                foreach ($budaya as $b) :
+                                            if (!empty($budaya)):
+                                                foreach ($budaya as $b):
                                                     // Pastikan $b adalah array jika diambil dari DB object
-                                                    $b_data = is_object($b) ? (array)$b : $b;
+                                                    $b_data = is_object($b) ? (array) $b : $b;
                                                     $panduanList = json_decode($b_data['panduan_perilaku'], true);
 
-                                                    if (is_array($panduanList)) :
-                                                        foreach ($panduanList as $pIndex => $p) :
+                                                    if (is_array($panduanList)):
+                                                        foreach ($panduanList as $pIndex => $p):
                                                             // Key sesuai format JSON nilai_budaya
                                                             $nilaiKey = "budaya_{$no}_{$pIndex}";
-                                                            $nilai = isset($budaya_nilai[$nilaiKey]) ? (int)$budaya_nilai[$nilaiKey] : 0;
+                                                            $nilai = isset($budaya_nilai[$nilaiKey]) ? (int) $budaya_nilai[$nilaiKey] : 0;
 
                                                             // Mapping label dan warna
                                                             switch ($nilai) {
@@ -394,7 +408,7 @@
                                                                     $labelNilai = "<span class='text-muted fst-italic'>Belum Dinilai</span>";
                                                                     $color = "";
                                                             }
-                                            ?>
+                                                            ?>
                                                             <tr>
                                                                 <?php if ($pIndex === 0): ?>
                                                                     <td class="text-center align-middle" rowspan="<?= count($panduanList); ?>">
@@ -416,12 +430,12 @@
                                                                     ?>
                                                                 </td>
                                                             </tr>
-                                            <?php
+                                                            <?php
                                                         endforeach;
                                                         $no++;
                                                     endif;
                                                 endforeach;
-                                            else :
+                                            else:
                                                 echo '<tr><td colspan="4" class="text-center text-muted">Data penilaian budaya belum tersedia.</td></tr>';
                                             endif;
                                             ?>
@@ -454,21 +468,21 @@
 
                         <?php
                         // 🔹 Pastikan data aman
-                        $total_skor      = number_format(round(floatval($total_nilai ?? 0), 2), 2);
-                        $avg_budaya      = $rata_rata_budaya ?? 0;
+                        $total_skor = number_format(round(floatval($total_nilai ?? 0), 2), 2);
+                        $avg_budaya = $rata_rata_budaya ?? 0;
                         $share_kpi_value = $share_kpi_value ?? 0;
-                        $bobot_sasaran   = $bobot_sasaran;
-                        $bobot_budaya    = $bobot_budaya;
+                        $bobot_sasaran = $bobot_sasaran;
+                        $bobot_budaya = $bobot_budaya;
                         $bobot_share_kpi = $bobot_share_kpi;
-                        $nilai_sasaran   = $total_skor * $bobot_sasaran / 100;
-                        $nilai_budaya    = $avg_budaya * $bobot_budaya / 100;
-                        $nilai_kpi       = $share_kpi_value * $bobot_share_kpi / 100;
-                        $total_nilai     = $nilai_sasaran + $nilai_budaya + $nilai_kpi;
-                        $fraud           = $fraud ?? 0;
-                        $koefisien       = $koefisien ?? 100;
+                        $nilai_sasaran = $total_skor * $bobot_sasaran / 100;
+                        $nilai_budaya = $avg_budaya * $bobot_budaya / 100;
+                        $nilai_kpi = $share_kpi_value * $bobot_share_kpi / 100;
+                        $total_nilai = $nilai_sasaran + $nilai_budaya + $nilai_kpi;
+                        $fraud = $fraud ?? 0;
+                        $koefisien = $koefisien ?? 100;
                         $nilai_akhir_value = ($fraud == 1) ? ($total_nilai - 1) : $total_nilai;
-                        $pencapaian_pct  = floatval(str_replace('%', '', $monitoring_bulanan->pencapaian_akhir ?? 0));
-                        $predikat        = $nilai_akhir->predikat ?? 'Minus (M)';
+                        $pencapaian_pct = floatval(str_replace('%', '', $monitoring_bulanan->pencapaian_akhir ?? 0));
+                        $predikat = $nilai_akhir->predikat ?? 'Minus (M)';
                         ?>
 
                         <!-- Bagian Atas: Perhitungan -->
@@ -477,21 +491,21 @@
                                 <th>Total Nilai Sasaran Kerja</th>
                                 <td class="text-center"><?= number_format($total_skor, 2) ?></td>
                                 <td>x Bobot % Sasaran Kerja</td>
-                                <td class="text-center"><?= $bobot_sasaran?>%</td>
+                                <td class="text-center"><?= $bobot_sasaran ?>%</td>
                                 <td class="text-center"><?= number_format($nilai_sasaran, 2) ?></td>
                             </tr>
                             <tr>
                                 <th>Rata-rata Nilai Internalisasi Budaya</th>
                                 <td class="text-center"><?= number_format($avg_budaya, 2) ?></td>
                                 <td>x Bobot % Budaya Perusahaan</td>
-                                <td class="text-center"><?= $bobot_budaya?>%</td>
+                                <td class="text-center"><?= $bobot_budaya ?>%</td>
                                 <td class="text-center"><?= number_format($nilai_budaya, 2) ?></td>
                             </tr>
                             <tr>
                                 <th>Share KPI</th>
                                 <td class="text-center"><?= number_format($share_kpi_value, 2) ?></td>
                                 <td>x Bobot % Share KPI</td>
-                                <td class="text-center"><?= $bobot_share_kpi?>%</td>
+                                <td class="text-center"><?= $bobot_share_kpi ?>%</td>
                                 <td class="text-center"><?= number_format($nilai_kpi, 2) ?></td>
                             </tr>
                             <tr>
@@ -515,7 +529,7 @@
                         $predikat = "";
                         $predikatClass = "";
                         $koef = $koefisien ? $koefisien / 100 : 1; // default 1 jika koefisien tidak ada
-
+                    
                         if ($nilai_akhir_value === "Tidak ada nilai") {
                             $predikat = "Tidak ada yudisium/predikat";
                             $predikatClass = "text-dark";
@@ -614,18 +628,18 @@
 </div>
 
 <!-- load sweetalert -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
+<script src="<?= base_url('assets/libs/chart-js/chart.js') ?>"></script>
 
 <!-- minimal CSS/JS untuk formatting dan autosave per baris (view-only formatting, autosave tetap kirim angka mentah) -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const periodeSelect = document.getElementById('periode_select');
         const nikInput = document.getElementById('nik_input');
         const form = document.getElementById('formMonitoring');
 
         if (periodeSelect && form) {
-            periodeSelect.addEventListener('change', function() {
+            periodeSelect.addEventListener('change', function () {
                 const nikInputAtas = document.getElementById('nik_input');
                 const nikHidden = document.getElementById('nik'); // dari detail pegawai
                 const nik = nikHidden ? nikHidden.value.trim() : (nikInputAtas ? nikInputAtas.value.trim() : '');
@@ -674,20 +688,20 @@
                 el.value = formatRpDisplay(raw0);
                 el.classList.add('hide-text');
             }
-            el.addEventListener('focus', function() {
+            el.addEventListener('focus', function () {
                 el.value = el.dataset.raw || '';
                 el.classList.remove('hide-text');
                 try {
                     el.setSelectionRange(el.value.length, el.value.length);
-                } catch (e) {}
+                } catch (e) { }
             });
-            el.addEventListener('input', function() {
+            el.addEventListener('input', function () {
                 var cleaned = cleanNumericString(el.value);
                 setRaw(el, cleaned);
                 // trigger calculation
                 if (window.hitungTotal) window.hitungTotal();
             });
-            el.addEventListener('blur', function() {
+            el.addEventListener('blur', function () {
                 var cleaned = cleanNumericString(el.value);
                 setRaw(el, cleaned);
                 var v = parseFloat(cleaned || 0);
@@ -705,7 +719,7 @@
         }
 
         // attach to all existing inputs
-        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(function(row) {
+        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(function (row) {
             attach(row.querySelector('.target-input'), row);
             attach(row.querySelector('.realisasi-input'), row);
         });
@@ -713,9 +727,9 @@
         // observe new rows
         var tbody = document.querySelector('#tabel-penilaian tbody');
         if (tbody) {
-            new MutationObserver(function(muts) {
-                muts.forEach(function(m) {
-                    m.addedNodes && m.addedNodes.forEach(function(n) {
+            new MutationObserver(function (muts) {
+                muts.forEach(function (m) {
+                    m.addedNodes && m.addedNodes.forEach(function (n) {
                         if (n.nodeType === 1) {
                             attach(n.querySelector('.target-input'), n);
                             attach(n.querySelector('.realisasi-input'), n);
@@ -753,7 +767,7 @@
         }
 
         // read-only view: format currency display for any displayed inputs (no autosave)
-        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(function(row) {
+        document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(function (row) {
             const display = row.querySelector('.format-currency');
             const input = row.querySelector('.realisasi-input');
             if (input && display) {
@@ -768,7 +782,7 @@
             }
         });
 
-        <?php if (isset($message) && !empty($message)) : ?>
+        <?php if (isset($message) && !empty($message)): ?>
             Swal.fire({
                 icon: '<?= $message['type'] === 'success' ? 'success' : 'error' ?>',
                 title: '<?= ucfirst($message['type']) ?>',
@@ -786,7 +800,7 @@
         $bulanList = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
         $pencapaian_bulanan = array_fill(0, 12, 0); // Gunakan null untuk data kosong
         $predikat_bulanan = array_fill(0, 12, null); // Gunakan null untuk data kosong
-
+        
         if (!empty($monitoring_bulanan_tahun)) {
             foreach ($monitoring_bulanan_tahun as $mb) {
                 $idx = intval($mb->bulan) - 1;
@@ -952,7 +966,7 @@
                             },
                             ticks: {
                                 stepSize: 10,
-                                callback: function(value) {
+                                callback: function (value) {
                                     return value + '%';
                                 }
                             }

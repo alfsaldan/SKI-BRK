@@ -401,7 +401,7 @@
                                                                 </div>
                                                             </td>
                                                             <td class="text-center align-middle" style="min-width:120px;">
-                                                                <?= $i->batas_waktu ? date('d-m-Y', strtotime($i->batas_waktu)) : '-'; ?>
+                                                                <?= (!empty($i->batas_waktu) && strpos($i->batas_waktu, '0000') === false) ? date('d-m-Y', strtotime($i->batas_waktu)) : '-'; ?>
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <div class="currency-wrapper">
@@ -906,9 +906,9 @@
 </div>
 
 <!-- Script di bawah -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/jquery.dataTables.min.js') ?>"></script>
+<script src="<?= base_url('assets/libs/datatables/dataTables.responsive.min.js') ?>"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

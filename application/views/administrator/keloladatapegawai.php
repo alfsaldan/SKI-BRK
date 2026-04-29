@@ -131,7 +131,8 @@
                                 <strong>ℹ️ Catatan Import:</strong>
                                 <ul class="mb-0">
                                     <li>Gunakan template Excel resmi untuk format sesuai.</li>
-                                    <li>Kolom wajib: <code>NIP, Nama, Jabatan, Jenis Unit,Unit Kantor, Password</code>.</li>
+                                    <li>Kolom wajib: <code>NIP, Nama, Jabatan, Jenis Unit,Unit Kantor, Password</code>.
+                                    </li>
                                     <li><code>NIP</code> harus unik (tidak boleh duplikat).</li>
                                     <li><code>NIP</code> harus berupa angka (number only) dan maksimal 6 digit.</li>
                                     <li>Password minimal 6 karakter.</li>
@@ -152,11 +153,14 @@
 
                             <div class="row">
                                 <div class="col-md-8">
-                                    <form action="<?= base_url('Administrator/importMutasiPegawai') ?>" method="post" enctype="multipart/form-data">
+                                    <form action="<?= base_url('Administrator/importMutasiPegawai') ?>" method="post"
+                                        enctype="multipart/form-data">
                                         <div class="input-group input-group-sm">
                                             <div class="custom-file">
-                                                <input type="file" name="file_excel_mutasi" class="custom-file-input" id="fileExcelMutasiCard" required>
-                                                <label class="custom-file-label" for="fileExcelMutasiCard">Pilih File Mutasi (.xls/.xlsx)</label>
+                                                <input type="file" name="file_excel_mutasi" class="custom-file-input"
+                                                    id="fileExcelMutasiCard" required>
+                                                <label class="custom-file-label" for="fileExcelMutasiCard">Pilih File
+                                                    Mutasi (.xls/.xlsx)</label>
                                             </div>
                                             <div class="input-group-append">
                                                 <button type="submit" class="btn btn-info">
@@ -167,7 +171,8 @@
                                     </form>
                                 </div>
                                 <div class="col-md-4 text-right">
-                                    <a href="<?= base_url('Administrator/downloadTemplateMutasiPegawai') ?>" class="btn btn-secondary btn-sm">
+                                    <a href="<?= base_url('Administrator/downloadTemplateMutasiPegawai') ?>"
+                                        class="btn btn-secondary btn-sm">
                                         <i class="fas fa-file-download"></i> Download Template Mutasi
                                     </a>
                                 </div>
@@ -176,10 +181,14 @@
                             <div class="alert alert-warning mt-3">
                                 <strong>Catatan khusus Import Mutasi</strong>
                                 <ul class="mb-0">
-                                    <li>Format header yang diharapkan (dalam urutan kolom): <code>NIP, Jenis Unit, Unit Kantor, Jabatan Baru, Tanggal Mulai</code>.</li>
+                                    <li>Format header yang diharapkan (dalam urutan kolom):
+                                        <code>NIP, Jenis Unit, Unit Kantor, Jabatan Baru, Tanggal Mulai</code>.</li>
                                     <li><code>NIP</code> harus berupa angka (number only) dan maksimal 6 digit.</li>
-                                    <li>Tanggal mulai bisa berupa tanggal teks (YYYY-MM-DD) atau serial tanggal Excel; sistem akan mencoba parsing otomatis.</li>
-                                    <li>Import akan menutup riwayat jabatan lama (tgl_selesai = TanggalMulai - 1 hari) dan menambahkan riwayat baru serta memperbarui data di tabel <code>pegawai</code>.</li>
+                                    <li>Tanggal mulai bisa berupa tanggal teks (YYYY-MM-DD) atau serial tanggal Excel;
+                                        sistem akan mencoba parsing otomatis.</li>
+                                    <li>Import akan menutup riwayat jabatan lama (tgl_selesai = TanggalMulai - 1 hari)
+                                        dan menambahkan riwayat baru serta memperbarui data di tabel
+                                        <code>pegawai</code>.</li>
                                     <li>Pastikan Anda memiliki backup database sebelum melakukan import massal.</li>
                                     <li>Hanya file <code>.xls</code> atau <code>.xlsx</code> yang didukung.</li>
                                 </ul>
@@ -205,7 +214,8 @@
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label>NIP</label>
-                        <input type="text" name="nik" class="form-control" required maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                        <input type="text" name="nik" class="form-control" required maxlength="6"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                     </div>
                     <div class="form-group col-md-6">
                         <label>Nama</label>
@@ -245,7 +255,8 @@
                 <!-- Debug panel (temporary) -->
                 <div id="modalDebugPanel" style="display:none; margin-top:10px;">
                     <label>Debug response (temporary):</label>
-                    <pre id="modalDebug" style="background:#f8f9fa; border:1px solid #ddd; padding:8px; max-height:200px; overflow:auto;"></pre>
+                    <pre id="modalDebug"
+                        style="background:#f8f9fa; border:1px solid #ddd; padding:8px; max-height:200px; overflow:auto;"></pre>
                 </div>
             </div>
             <div class="modal-footer">
@@ -259,40 +270,40 @@
 <!-- JAVASCRIPT CUSTOM PENCARIAN     -->
 <!-- =============================== -->
 <script>
-    (function() {
-        var initCustomSearch = function() {
+    (function () {
+        var initCustomSearch = function () {
             if (!window.jQuery || !window.jQuery.fn || !window.jQuery.fn.DataTable) return false;
 
-            $(function() {
+            $(function () {
                 function setupSearch(api) {
                     var $searchInput = $('#datatable-pegawai_filter input');
                     if ($searchInput.length === 0) return;
-                    
+
                     // Hapus event bawaan DataTables (mencegah search otomatis saat ngetik)
                     $searchInput.unbind();
-                    
+
                     // Cegah duplikasi tombol jika script berjalan dua kali
                     if ($('#datatable-pegawai_filter .btn-cari-custom').length === 0) {
                         var $searchButton = $('<button type="button" class="btn btn-primary btn-sm ml-2 btn-cari-custom"><i class="fas fa-search"></i> Cari</button>');
-                        
+
                         // Klik tombol cari untuk memproses pencarian
-                        $searchButton.click(function() {
+                        $searchButton.click(function () {
                             api.search($searchInput.val()).draw();
                         });
-                        
+
                         // Tekan Enter untuk memproses pencarian
-                        $searchInput.bind('keyup', function(e) {
-                            if(e.keyCode == 13) {
+                        $searchInput.bind('keyup', function (e) {
+                            if (e.keyCode == 13) {
                                 api.search(this.value).draw();
                             }
                         });
-                        
+
                         $('#datatable-pegawai_filter').append($searchButton);
                     }
                 }
 
                 // Tunggu sampai tabel diinisialisasi oleh script template (misal dari footer)
-                $('#datatable-pegawai').on('init.dt', function(e, settings) {
+                $('#datatable-pegawai').on('init.dt', function (e, settings) {
                     setupSearch(new $.fn.dataTable.Api(settings));
                 });
             });
@@ -301,8 +312,8 @@
         };
 
         if (!initCustomSearch()) {
-            var iv = setInterval(function() { if (initCustomSearch()) clearInterval(iv); }, 100);
-            setTimeout(function() { clearInterval(iv); }, 5000);
+            var iv = setInterval(function () { if (initCustomSearch()) clearInterval(iv); }, 100);
+            setTimeout(function () { clearInterval(iv); }, 5000);
         }
     })();
 </script>

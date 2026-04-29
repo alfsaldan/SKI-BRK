@@ -141,7 +141,8 @@ date_default_timezone_set('Asia/Jakarta');
 </div>
 
 <!-- Script Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="<?= base_url('assets/libs/chart-js/chart.js') ?>"></script>
+
 <script>
     // 🔹 Format waktu update
     const now = new Date();

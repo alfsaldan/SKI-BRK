@@ -368,8 +368,7 @@
 
 <!-- Bootstrap & jQuery -->
 
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-
+<script src="<?= base_url('assets/libs/bootstrap/bootstrap.bundle.min.js') ?>"></script>
 <script>
   $(document).ready(function() {
     // semua collapse tertutup awalnya

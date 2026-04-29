@@ -92,7 +92,7 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 
 <?php if ($this->session->userdata('must_change_password')): ?>
 <script>

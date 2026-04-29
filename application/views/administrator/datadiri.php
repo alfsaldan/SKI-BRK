@@ -32,7 +32,8 @@
                                 </tr>
                                 <tr>
                                     <th>Unit Kantor</th>
-                                    <td><?= isset($pegawai['unit_kerja']) ? $pegawai['unit_kerja'] : '-' ?> <?= isset($pegawai['unit_kantor']) ? $pegawai['unit_kantor'] : '-' ?></td>
+                                    <td><?= isset($pegawai['unit_kerja']) ? $pegawai['unit_kerja'] : '-' ?>
+                                        <?= isset($pegawai['unit_kantor']) ? $pegawai['unit_kantor'] : '-' ?></td>
                                 </tr>
                             </table>
 
@@ -79,7 +80,8 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 <!-- Alert pesan sukses/gagal -->
 <?php if ($this->session->flashdata('success')): ?>
     <div class="alert alert-success" id="flashMessage">
@@ -92,7 +94,7 @@
 <?php endif; ?>
 
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     // 👁 Toggle lihat/sembunyi password
     function togglePassword(fieldId, el) {

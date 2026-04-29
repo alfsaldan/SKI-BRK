@@ -11,8 +11,7 @@
     <link href="<?= base_url('assets/css/bootstrap.min.css'); ?>" rel="stylesheet" />
     <link href="<?= base_url('assets/css/icons.min.css'); ?>" rel="stylesheet" />
     <link href="<?= base_url('assets/css/app.min.css'); ?>" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <link href="<?= base_url('assets/css/css2.css'); ?>" rel="stylesheet" />
     <style>
         /* 🌿 Background */
         body {
@@ -245,7 +244,8 @@
             <div class="form-group mb-3 text-left">
                 <label for="nik"><b>NIP</b></label>
                 <input type="text" class="form-control" id="nik" name="nik" required maxlength="6"
-                    placeholder="Masukkan NIP Pegawai" value="<?= isset($nik) ? $nik : ''; ?>" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                    placeholder="Masukkan NIP Pegawai" value="<?= isset($nik) ? $nik : ''; ?>"
+                    oninput="this.value = this.value.replace(/[^0-9]/g, '');">
             </div>
 
             <div class="form-group mb-4 position-relative">
@@ -271,7 +271,7 @@
         // 👁️ Toggle Password Visibility
         const toggle = document.querySelector('.toggle-password');
         if (toggle) {
-            toggle.addEventListener('click', function() {
+            toggle.addEventListener('click', function () {
                 const passwordInput = document.querySelector('#password');
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordInput.setAttribute('type', type);

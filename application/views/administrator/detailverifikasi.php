@@ -10,7 +10,8 @@
                 <div class="col-12">
                     <div class="page-title-box d-flex justify-content-between align-items-center">
                         <h3 class="page-title">
-                            <i class="mdi mdi-clipboard-check-outline mr-2 text-primary"></i> Detail Verifikasi Penilaian Pegawai
+                            <i class="mdi mdi-clipboard-check-outline mr-2 text-primary"></i> Detail Verifikasi
+                            Penilaian Pegawai
                         </h3>
                         <ol class="breadcrumb m-0">
                             <li class="breadcrumb-item"><a href="#">KPI Online-BRKS</a></li>
@@ -24,7 +25,8 @@
             <!-- Pilih Periode (untuk menyesuaikan periode yang dilihat) -->
             <div class="row mb-3">
                 <div class="col-12">
-                    <form id="form-periode" method="get" action="<?= base_url('Administrator/detailVerifikasi/' . ($pegawai_detail->nik ?? '')) ?>">
+                    <form id="form-periode" method="get"
+                        action="<?= base_url('Administrator/detailVerifikasi/' . ($pegawai_detail->nik ?? '')) ?>">
                         <div class="d-flex gap-2 align-items-center">
                             <label class="mb-0">Pilih Periode:</label>
                             <select id="select_periode" class="form-control" style="max-width:350px;">
@@ -33,13 +35,15 @@
                                         $val = $p->periode_awal . '|' . $p->periode_akhir;
                                         $label = date('d M Y', strtotime($p->periode_awal)) . ' - ' . date('d M Y', strtotime($p->periode_akhir));
                                         $selected = ($selected_awal == $p->periode_awal && $selected_akhir == $p->periode_akhir) ? 'selected' : '';
-                                    ?>
+                                        ?>
                                         <option value="<?= $val ?>" <?= $selected ?>><?= $label ?></option>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </select>
-                            <input type="hidden" name="awal" id="form_awal" value="<?= htmlspecialchars($selected_awal ?? '', ENT_QUOTES) ?>">
-                            <input type="hidden" name="akhir" id="form_akhir" value="<?= htmlspecialchars($selected_akhir ?? '', ENT_QUOTES) ?>">
+                            <input type="hidden" name="awal" id="form_awal"
+                                value="<?= htmlspecialchars($selected_awal ?? '', ENT_QUOTES) ?>">
+                            <input type="hidden" name="akhir" id="form_akhir"
+                                value="<?= htmlspecialchars($selected_akhir ?? '', ENT_QUOTES) ?>">
                             <button type="submit" class="btn btn-outline-primary">Terapkan</button>
                         </div>
                     </form>
@@ -131,8 +135,10 @@
                                 continue; // Abaikan baris jika perspektif kosong
                             }
                             $sas = $row->sasaran_kerja ?? '-';
-                            if (!isset($grouped[$pers])) $grouped[$pers] = [];
-                            if (!isset($grouped[$pers][$sas])) $grouped[$pers][$sas] = [];
+                            if (!isset($grouped[$pers]))
+                                $grouped[$pers] = [];
+                            if (!isset($grouped[$pers][$sas]))
+                                $grouped[$pers][$sas] = [];
                             $grouped[$pers][$sas][] = $row;
                         }
                     }
@@ -177,7 +183,7 @@
                     if (!function_exists('statusColor')) {
                         function statusColor($s)
                         {
-                            $s = strtolower(trim((string)$s));
+                            $s = strtolower(trim((string) $s));
                             if ($s === 'disetujui') {
                                 return 'text-success';
                             } elseif ($s === 'ada catatan' || $s === 'catatan') {
@@ -214,8 +220,9 @@
                                 <?php $no = 1;
                                 foreach ($grouped as $pers => $sasList):
                                     $pers_rowspan = 0;
-                                    foreach ($sasList as $sas => $items) $pers_rowspan += count($items);
-                                ?>
+                                    foreach ($sasList as $sas => $items)
+                                        $pers_rowspan += count($items);
+                                    ?>
                                     <?php $firstPers = true; ?>
                                     <?php foreach ($sasList as $sas => $items): ?>
                                         <?php $sas_rowspan = count($items);
@@ -224,14 +231,16 @@
                                             <tr>
                                                 <td><?= $no++ ?></td>
                                                 <?php if ($firstPers): ?>
-                                                    <td rowspan="<?= $pers_rowspan ?>" class="text-start align-middle" style="background-color:#eaf6ea; color:#0a6b2b; font-weight:600;">
+                                                    <td rowspan="<?= $pers_rowspan ?>" class="text-start align-middle"
+                                                        style="background-color:#eaf6ea; color:#0a6b2b; font-weight:600;">
                                                         <?= htmlspecialchars($pers) ?>
                                                     </td>
                                                     <?php $firstPers = false; ?>
                                                 <?php endif; ?>
 
                                                 <?php if ($firstSas): ?>
-                                                    <td rowspan="<?= $sas_rowspan ?>" class="text-start align-middle" style="background-color:#eef8ff;">
+                                                    <td rowspan="<?= $sas_rowspan ?>" class="text-start align-middle"
+                                                        style="background-color:#eef8ff;">
                                                         <?= htmlspecialchars($sas) ?>
                                                     </td>
                                                     <?php $firstSas = false; ?>
@@ -263,7 +272,8 @@
 
                                                 <td class="text-center align-middle"><?= number_format($it->pencapaian ?? 0, 2) ?></td>
                                                 <td class="text-center align-middle"><?= number_format($it->nilai ?? 0, 2) ?></td>
-                                                <td class="text-center align-middle"><?= number_format($it->nilai_dibobot ?? 0, 2) ?></td>
+                                                <td class="text-center align-middle"><?= number_format($it->nilai_dibobot ?? 0, 2) ?>
+                                                </td>
 
                                                 <td class="<?= statusColor($it->status ?? '') ?> text-center align-middle">
                                                     <?= htmlspecialchars(($it->status ?? 'Belum Dinilai')) ?>
@@ -332,17 +342,17 @@
                                         // Pastikan $budaya_nilai selalu array
                                         $budaya_nilai = $budaya_nilai ?? [];
 
-                                        if (!empty($budaya)) :
-                                            foreach ($budaya as $b) :
+                                        if (!empty($budaya)):
+                                            foreach ($budaya as $b):
                                                 // Pastikan $b adalah array jika diambil dari DB object
-                                                $b_data = is_object($b) ? (array)$b : $b;
+                                                $b_data = is_object($b) ? (array) $b : $b;
                                                 $panduanList = json_decode($b_data['panduan_perilaku'], true);
 
-                                                if (is_array($panduanList)) :
-                                                    foreach ($panduanList as $pIndex => $p) :
+                                                if (is_array($panduanList)):
+                                                    foreach ($panduanList as $pIndex => $p):
                                                         // Key sesuai format JSON nilai_budaya
                                                         $nilaiKey = "budaya_{$no}_{$pIndex}";
-                                                        $nilai = isset($budaya_nilai[$nilaiKey]) ? (int)$budaya_nilai[$nilaiKey] : 0;
+                                                        $nilai = isset($budaya_nilai[$nilaiKey]) ? (int) $budaya_nilai[$nilaiKey] : 0;
 
                                                         // Mapping label dan warna
                                                         switch ($nilai) {
@@ -370,7 +380,7 @@
                                                                 $labelNilai = "<span class='text-muted fst-italic'>Belum Dinilai</span>";
                                                                 $color = "";
                                                         }
-                                        ?>
+                                                        ?>
                                                         <tr>
                                                             <?php if ($pIndex === 0): ?>
                                                                 <td class="text-center align-middle" rowspan="<?= count($panduanList); ?>">
@@ -392,12 +402,12 @@
                                                                 ?>
                                                             </td>
                                                         </tr>
-                                        <?php
+                                                        <?php
                                                     endforeach;
                                                     $no++;
                                                 endif;
                                             endforeach;
-                                        else :
+                                        else:
                                             echo '<tr><td colspan="4" class="text-center text-muted">Data penilaian budaya belum tersedia.</td></tr>';
                                         endif;
                                         ?>
@@ -431,20 +441,20 @@
 
                     <?php
                     // Pastikan variabel dari controller
-                    $total_skor     = $nilai_akhir['nilai_sasaran'] ?? 0;
-                    $avg_budaya     = number_format($rata_rata_budaya ?? 0, 2);
+                    $total_skor = $nilai_akhir['nilai_sasaran'] ?? 0;
+                    $avg_budaya = number_format($rata_rata_budaya ?? 0, 2);
                     $share_kpi_value = $nilai_akhir['share_kpi_value'] ?? 0;
-                    $bobot_sasaran  = $nilai_akhir['bobot_sasaran'] ?? 95;
-                    $bobot_budaya   = $nilai_akhir['bobot_budaya'] ?? 5;
+                    $bobot_sasaran = $nilai_akhir['bobot_sasaran'] ?? 95;
+                    $bobot_budaya = $nilai_akhir['bobot_budaya'] ?? 5;
                     $bobot_share_kpi = $nilai_akhir['bobot_share_kpi'] ?? 0;
-                    $nilai_sasaran  = $total_skor * $bobot_sasaran / 100;
-                    $nilai_budaya   = $avg_budaya * $bobot_budaya / 100;
-                    $nilai_kpi      = $share_kpi_value * $bobot_share_kpi / 100;
-                    $total_nilai    = $nilai_akhir['total_nilai'] ?? $nilai_sasaran + $nilai_budaya + $nilai_kpi;
+                    $nilai_sasaran = $total_skor * $bobot_sasaran / 100;
+                    $nilai_budaya = $avg_budaya * $bobot_budaya / 100;
+                    $nilai_kpi = $share_kpi_value * $bobot_share_kpi / 100;
+                    $total_nilai = $nilai_akhir['total_nilai'] ?? $nilai_sasaran + $nilai_budaya + $nilai_kpi;
                     $pencapaian_pct = floatval(str_replace('%', '', $nilai_akhir['pencapaian'] ?? 0));
-                    $predikat       = $nilai_akhir['predikat'] ?? 'Minus (M)';
-                    $fraud          = $nilai_akhir['fraud'] ?? 0;
-                    $koefisien      = $nilai_akhir['koefisien'] ?? 100;
+                    $predikat = $nilai_akhir['predikat'] ?? 'Minus (M)';
+                    $fraud = $nilai_akhir['fraud'] ?? 0;
+                    $koefisien = $nilai_akhir['koefisien'] ?? 100;
                     ?>
 
                     <div class="row">
@@ -455,7 +465,8 @@
                                     <td style="width:140px; text-align:right;"><?= number_format($total_skor, 2) ?></td>
                                     <td style="width:160px; text-align:center;">x Bobot % Sasaran Kerja</td>
                                     <td style="width:100px; text-align:right;"><?= $bobot_sasaran ?>%</td>
-                                    <td style="width:140px; text-align:right;"><?= number_format($nilai_sasaran, 2) ?></td>
+                                    <td style="width:140px; text-align:right;"><?= number_format($nilai_sasaran, 2) ?>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td>Rata-rata Nilai Internalisasi Budaya</td>
@@ -473,18 +484,21 @@
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="text-right fw-bold">Total Nilai</td>
-                                    <td class="fw-bold" style="text-align:right;"><?= number_format($total_nilai, 2) ?></td>
+                                    <td class="fw-bold" style="text-align:right;"><?= number_format($total_nilai, 2) ?>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="text-right fw-bold">Status Fraud
                                         <br>
-                                        <span class="text-muted small">(1 jika melakukan fraud, 0 jika tidak melakukan fraud)</span>
+                                        <span class="text-muted small">(1 jika melakukan fraud, 0 jika tidak melakukan
+                                            fraud)</span>
                                     </td>
                                     <td class="fw-bold text-danger" style="text-align:right;"><?= $fraud ?></td>
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="text-right fw-bold">Koefisien Penilaian</td>
-                                    <td class="fw-bold" style="text-align:right;"><?= number_format($koefisien, 0) ?>%</td>
+                                    <td class="fw-bold" style="text-align:right;"><?= number_format($koefisien, 0) ?>%
+                                    </td>
                             </table>
                         </div>
 
@@ -492,13 +506,15 @@
                             <div class="mb-3">
                                 <div class="border rounded p-3 bg-light text-center">
                                     <h6 class="fw-bold">Nilai Akhir</h6>
-                                    <div class="display-6 text-success fw-bolder"><?= number_format($total_nilai, 2) ?></div>
+                                    <div class="display-6 text-success fw-bolder"><?= number_format($total_nilai, 2) ?>
+                                    </div>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <div class="border rounded p-3 bg-light text-center">
                                     <h6 class="fw-bold">Pencapaian Akhir</h6>
-                                    <div class="display-6 text-success fw-bolder"><?= number_format($pencapaian_pct, 2) ?>%</div>
+                                    <div class="display-6 text-success fw-bolder">
+                                        <?= number_format($pencapaian_pct, 2) ?>%</div>
                                 </div>
                             </div>
                             <div class="bg-success text-white rounded p-3 text-center">
@@ -515,7 +531,8 @@
                 <?php
                 $verifLabel = ($status_penilaian === 'disetujui') ? 'Ubah Verifikasi' : 'Verifikasi Penilaian';
                 ?>
-                <button id="btn-verifikasi" class="btn btn-lg <?= ($status_penilaian === 'disetujui') ? 'btn-warning' : 'btn-success' ?> shadow px-4 py-2 rounded-pill">
+                <button id="btn-verifikasi"
+                    class="btn btn-lg <?= ($status_penilaian === 'disetujui') ? 'btn-warning' : 'btn-success' ?> shadow px-4 py-2 rounded-pill">
                     <i class="mdi mdi-check-circle-outline"></i> <?= $verifLabel ?>
                 </button>
                 <a href="<?= base_url('Administrator/verifikasi_penilaian') ?>"
@@ -531,9 +548,10 @@
 <!-- ============================== -->
 <!-- 💬 JAVASCRIPT VERIFIKASI PENILAIAN -->
 <!-- ============================== -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
+
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         const btnVerifikasi = document.getElementById("btn-verifikasi");
         if (!btnVerifikasi) return;
 
@@ -564,7 +582,7 @@
         if (selectPeriode) selectPeriode.addEventListener('change', syncPeriodeInputs);
         if (formPeriode) formPeriode.addEventListener('submit', syncPeriodeInputs);
 
-        btnVerifikasi.addEventListener("click", function() {
+        btnVerifikasi.addEventListener("click", function () {
             Swal.fire({
                 title: 'Setujui Penilaian Ini?',
                 html: `
@@ -625,12 +643,12 @@
             }
 
             fetch("<?= base_url('administrator/verifikasiPenilaian') ?>", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: `nik=${pegawaiNik}&status=${status}&awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`
-                })
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: `nik=${pegawaiNik}&status=${status}&awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {

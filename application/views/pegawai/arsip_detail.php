@@ -199,7 +199,7 @@
                                                 </td>
 
                                                 <td class="text-center align-middle" style="min-width: 110px;">
-                                                    <?= htmlspecialchars($it->batas_waktu ?? '-') ?>
+                                                    <?= (!empty($it->batas_waktu) && strpos($it->batas_waktu, '0000') === false) ? date('d-m-Y', strtotime($it->batas_waktu)) : '-'; ?>
                                                 </td>
 
                                                 <td class="text-center align-middle" style="min-width: 150px;">

@@ -40,9 +40,9 @@
 <script src="<?= base_url('assets/js/vendor.min.js') ?>"></script>
 
 <!-- CSS Select2 -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap4-theme@1.0.0/dist/select2-bootstrap4.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<link rel="stylesheet" href="<?= base_url('assets/libs/select2/select2.min.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/libs/select2/select2-bootstrap4.min.css') ?>">
+<script src="<?= base_url('assets/libs/select2/select2.min.js') ?>"></script>
 <!-- Bootstrap select plugin -->
 <!-- Small Select2 CSS tweaks to match Bootstrap form-control -->
 <style>
@@ -208,7 +208,7 @@
     });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="<?= base_url('assets/libs/chart-js/apexcharts.js') ?>"></script>
 <script>
     var optionsTargetRealisasi = {
         chart: {
@@ -247,7 +247,7 @@
     chartTargetRealisasi.render();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 
 <script>
     <?php if ($this->session->flashdata('message')):
@@ -351,7 +351,7 @@
     });
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 <script>
     <?php if ($this->session->flashdata('success')): ?>
         Swal.fire({
@@ -378,7 +378,7 @@
     <?php endif; ?>
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         <?php if ($this->session->flashdata('success')): ?>
@@ -411,7 +411,7 @@
 </script>
 
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 <script>
     $(document).on('click', '.btn-delete', function(e) {
         e.preventDefault();

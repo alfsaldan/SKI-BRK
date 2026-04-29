@@ -201,7 +201,7 @@
 
 
 <!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 
 <script>
     // Tampilkan SweetAlert kalau ada flashdata dari server

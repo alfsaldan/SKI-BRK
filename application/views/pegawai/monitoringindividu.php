@@ -274,7 +274,7 @@
                                                                     <?= ($i->target >= 1000) ? 'Rp. ' . number_format($i->target, 0, ',', '.') : htmlspecialchars($i->target ?? 0); ?>
                                                                 </td>
                                                                 <td class="text-center align-middle" style="min-width:110px;">
-                                                                    <?= htmlspecialchars($i->batas_waktu ?? '-') ?>
+                                                                    <?= (!empty($i->batas_waktu) && strpos($i->batas_waktu, '0000') === false) ? date('d-m-Y', strtotime($i->batas_waktu)) : '-'; ?>
                                                                 </td>
 
                                                                 <style>
@@ -653,9 +653,9 @@
 </div>
 
 <!-- load sweetalert -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
+<script src="<?= base_url('assets/libs/chart-js/chart.js') ?>"></script>
+<script src="<?= base_url('assets/libs/chart-js/chartjs-plugin-annotation.min.js') ?>"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {

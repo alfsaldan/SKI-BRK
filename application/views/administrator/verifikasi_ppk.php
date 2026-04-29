@@ -33,20 +33,22 @@
                                             $label = date('d M Y', strtotime($p->periode_awal)) . ' - ' . date('d M Y', strtotime($p->periode_akhir));
                                             $val = $p->periode_awal . '|' . $p->periode_akhir;
                                             $sel = ((isset($selected_awal) && isset($selected_akhir)) && $selected_awal == $p->periode_awal && $selected_akhir == $p->periode_akhir) ? 'selected' : '';
-                                        ?>
+                                            ?>
                                             <option value="<?= $val ?>" <?= $sel ?>><?= $label ?></option>
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <?php $def_awal = isset($selected_awal) ? $selected_awal : date('Y') . '-10-01';
                                         $def_akhir = isset($selected_akhir) ? $selected_akhir : date('Y') . '-12-31'; ?>
-                                        <option value="<?= $def_awal . '|' . $def_akhir ?>">Default (<?= $def_awal ?> - <?= $def_akhir ?>)</option>
+                                        <option value="<?= $def_awal . '|' . $def_akhir ?>">Default (<?= $def_awal ?> -
+                                            <?= $def_akhir ?>)</option>
                                     <?php endif; ?>
                                 </select>
 
                                 <button id="btn_refresh" class="btn btn-primary">Refresh</button>
                             </div>
 
-                            <table id="table-verifikasi-ppk" class="table table-bordered table-striped" style="width:100%">
+                            <table id="table-verifikasi-ppk" class="table table-bordered table-striped"
+                                style="width:100%">
                                 <thead>
                                     <tr>
                                         <th>NO</th>
@@ -111,7 +113,8 @@
     <div class="modal-dialog modal-md modal-dialog-centered" role="document">
         <div class="modal-content">
             <form id="syarat-form">
-                <div class="modal-header" style="background:linear-gradient(90deg,#28a745,#12b35a);color:#fff;border-bottom:0">
+                <div class="modal-header"
+                    style="background:linear-gradient(90deg,#28a745,#12b35a);color:#fff;border-bottom:0">
                     <h5 class="modal-title"><i class="mdi mdi-file-edit-outline mr-2"></i> Form Syarat PPK</h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -145,8 +148,10 @@
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
 
-            <div class="modal-header" style="background:linear-gradient(90deg,#28a745,#12b35a);color:#fff;border-bottom:0">
-                <h5 class="modal-title"><i class="mdi mdi-clipboard-text-outline mr-2"></i> Program Peningkatan Kinerja (PPK)</h5>
+            <div class="modal-header"
+                style="background:linear-gradient(90deg,#28a745,#12b35a);color:#fff;border-bottom:0">
+                <h5 class="modal-title"><i class="mdi mdi-clipboard-text-outline mr-2"></i> Program Peningkatan Kinerja
+                    (PPK)</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -165,7 +170,8 @@
                             <div class="col-12 mb-0">
                                 <div class="card card-body p-2">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <div><strong>Soal <?= $i ?>.</strong> Deskripsi singkat soal PPK nomor <?= $i ?>.</div>
+                                        <div><strong>Soal <?= $i ?>.</strong> Deskripsi singkat soal PPK nomor <?= $i ?>.
+                                        </div>
 
                                         <div>
                                             <div class="btn-group btn-group-toggle" data-toggle="buttons" role="group">
@@ -198,13 +204,13 @@
 </div>
 
 
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" href="<?= base_url('assets/libs/datatables/jquery.dataTables.min.css') ?>">
+<script src="<?= base_url('assets/libs/datatables/jquery.dataTables.min.js') ?>"></script>
 <!-- SweetAlert2 for nicer confirmation dialogs -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
 
         (function restoreSelectedPeriodFromUrl() {
             const params = new URLSearchParams(window.location.search);
@@ -231,7 +237,7 @@
             serverSide: false,
             ajax: {
                 url: '<?= site_url('Administrator/getVerifikasiPPKData') ?>',
-                data: function(d) {
+                data: function (d) {
                     const v = document.getElementById('filter_periode').value || '';
                     const parts = v.split('|');
                     d.awal = parts[0] || '';
@@ -239,76 +245,76 @@
                 }
             },
             columns: [{
-                    data: null,
-                    className: 'text-center',
-                    render: function(data, type, row, meta) {
-                        return meta.row + 1;
-                    },
-                    orderable: false,
-                    searchable: false
+                data: null,
+                className: 'text-center',
+                render: function (data, type, row, meta) {
+                    return meta.row + 1;
                 },
-                {
-                    data: 'nik'
-                },
-                {
-                    data: 'nama'
-                },
-                {
-                    data: 'jabatan'
-                },
-                {
-                    data: 'unit_kantor'
-                },
-                {
-                    data: 'predikat',
-                    className: 'text-center',
-                    render: function(data) {
-                        if (!data) return '';
-                        try {
-                            if (String(data).toLowerCase() === 'minus') {
-                                return `<span class="badge bg-danger">${data}</span>`;
-                            }
-                        } catch (e) {
-                            // fallback
+                orderable: false,
+                searchable: false
+            },
+            {
+                data: 'nik'
+            },
+            {
+                data: 'nama'
+            },
+            {
+                data: 'jabatan'
+            },
+            {
+                data: 'unit_kantor'
+            },
+            {
+                data: 'predikat',
+                className: 'text-center',
+                render: function (data) {
+                    if (!data) return '';
+                    try {
+                        if (String(data).toLowerCase() === 'minus') {
+                            return `<span class="badge bg-danger">${data}</span>`;
                         }
-                        return `<span class="badge bg-secondary">${data}</span>`;
+                    } catch (e) {
+                        // fallback
                     }
-                },
-                // {
-                //     // placeholder column for PPK eligibility status; updated dynamically
-                //     data: null,
-                //     render: function(data, type, row) {
-                //         const nik = row.nik || '';
-                //         // Prefer server-provided flag when available to avoid flicker on refresh
-                //         if (typeof row.ppk_eligible !== 'undefined') {
-                //             if (parseInt(row.ppk_eligible) === 1) {
-                //                 return `<span class="ppk-status" data-nik="${nik}"><span class="badge bg-success">Aktif</span></span>`;
-                //             }
-                //             return `<span class="ppk-status" data-nik="${nik}"><span class="badge bg-secondary">Tidak Aktif</span></span>`;
-                //         }
-                //         // fallback: placeholder until client-side logic computes status
-                //         return `<span class="ppk-status" data-nik="${nik}">-</span>`;
-                //     },
-                //     orderable: false,
-                //     searchable: false,
-                //     width: '120px'
-                // },
-                {
-                    data: 'penilai1'
-                },
-                {
-                    data: 'action',
-                    render: function(data, type, row, meta) {
-                        const v = document.getElementById('filter_periode').value || '';
-                        const parts = v.split('|');
-                        const awal = encodeURIComponent(parts[0] || '');
-                        const akhir = encodeURIComponent(parts[1] || '');
-                        // Return a button that opens a modal with static PPK form
-                        return `<button type="button" class="btn btn-sm btn-primary btn-cek-syarat" data-nik="${row.nik}" data-awal="${awal}" data-akhir="${akhir}" data-action="${data}">Cek Syarat</button>`;
-                    },
-                    orderable: false,
-                    searchable: false
+                    return `<span class="badge bg-secondary">${data}</span>`;
                 }
+            },
+            // {
+            //     // placeholder column for PPK eligibility status; updated dynamically
+            //     data: null,
+            //     render: function(data, type, row) {
+            //         const nik = row.nik || '';
+            //         // Prefer server-provided flag when available to avoid flicker on refresh
+            //         if (typeof row.ppk_eligible !== 'undefined') {
+            //             if (parseInt(row.ppk_eligible) === 1) {
+            //                 return `<span class="ppk-status" data-nik="${nik}"><span class="badge bg-success">Aktif</span></span>`;
+            //             }
+            //             return `<span class="ppk-status" data-nik="${nik}"><span class="badge bg-secondary">Tidak Aktif</span></span>`;
+            //         }
+            //         // fallback: placeholder until client-side logic computes status
+            //         return `<span class="ppk-status" data-nik="${nik}">-</span>`;
+            //     },
+            //     orderable: false,
+            //     searchable: false,
+            //     width: '120px'
+            // },
+            {
+                data: 'penilai1'
+            },
+            {
+                data: 'action',
+                render: function (data, type, row, meta) {
+                    const v = document.getElementById('filter_periode').value || '';
+                    const parts = v.split('|');
+                    const awal = encodeURIComponent(parts[0] || '');
+                    const akhir = encodeURIComponent(parts[1] || '');
+                    // Return a button that opens a modal with static PPK form
+                    return `<button type="button" class="btn btn-sm btn-primary btn-cek-syarat" data-nik="${row.nik}" data-awal="${awal}" data-akhir="${akhir}" data-action="${data}">Cek Syarat</button>`;
+                },
+                orderable: false,
+                searchable: false
+            }
             ],
             pageLength: 25,
             lengthMenu: [
@@ -329,18 +335,18 @@
             }
         });
 
-        document.getElementById('btn_refresh').addEventListener('click', function() {
+        document.getElementById('btn_refresh').addEventListener('click', function () {
             table.ajax.reload();
         });
 
         const selFilter = document.getElementById('filter_periode');
-        if (selFilter) selFilter.addEventListener('change', function() {
+        if (selFilter) selFilter.addEventListener('change', function () {
             table.ajax.reload();
         });
 
         // after table draw, update PPK status column for visible rows
         // Only run client-side recompute for rows where server didn't supply ppk_eligible
-        table.on('draw', function() {
+        table.on('draw', function () {
             try {
                 const rows = table.rows({
                     page: 'current'
@@ -365,9 +371,9 @@
 
 <script>
     // PPK modal interactions (static)
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // delegate click for dynamic DataTable buttons
-        $(document).on('click', '.btn-cek-syarat', function(e) {
+        $(document).on('click', '.btn-cek-syarat', function (e) {
             e.preventDefault();
             const nik = $(this).data('nik') || '';
             // reset form
@@ -377,13 +383,13 @@
             $('#ppkModal').modal('show');
         });
 
-        $('#ppk-save').on('click', function() {
+        $('#ppk-save').on('click', function () {
             // If the modal was rendered dynamically (from syarat_ppk), validate based on actual radio groups
             const $dyn = $('#ppk-form-dynamic');
             if ($dyn.length > 0) {
                 // collect unique radio group names in order
                 const names = [];
-                $dyn.find('input[type=radio]').each(function() {
+                $dyn.find('input[type=radio]').each(function () {
                     const n = $(this).attr('name');
                     if (names.indexOf(n) === -1) names.push(n);
                 });
@@ -414,19 +420,20 @@
                 savePromise.then((res) => {
                     // All answered — show brief success and close. Responses already saved per-toggle.
                     const nik = $('#ppk_nik').val();
-                    
+
                     // recompute eligibility on client from DOM and apply immediately
                     try {
                         const answers = {};
-                        names.forEach(function(nm) {
+                        names.forEach(function (nm) {
                             const val = $dyn.find('input[name="' + nm + '"]:checked').val();
                             const id = nm.replace(/^ppk_q_/, '');
                             answers[id] = val;
                         });
                         // build syarats array stub from DOM order to compute eligibility
                         const syarats = [];
-                        $dyn.find('.card.card-body p-2, .col-12.mb-2').each(function(idx) {
-                            /* noop to preserve potential order */ });
+                        $dyn.find('.card.card-body p-2, .col-12.mb-2').each(function (idx) {
+                            /* noop to preserve potential order */
+});
                         // compute eligible: all answers === 'ya'
                         let ok = true;
                         for (const k in answers) {
@@ -448,7 +455,7 @@
                         showConfirmButton: false
                     });
 
-                    setTimeout(function() {
+                    setTimeout(function () {
                         $('#ppkModal').modal('hide');
                     }, 1500);
                 }).catch(err => {
@@ -461,15 +468,15 @@
                         timer: 1500,
                         showConfirmButton: false
                     });
-                    setTimeout(function() { $('#ppkModal').modal('hide'); }, 1500);
+                    setTimeout(function () { $('#ppkModal').modal('hide'); }, 1500);
                 });
-                
+
                 return;
             }
 
             // Fallback: old static form handling — validate whatever static groups exist on page
             const radioGroups = [];
-            $('#ppk-form input[type=radio]').each(function() {
+            $('#ppk-form input[type=radio]').each(function () {
                 const nm = $(this).attr('name');
                 if (radioGroups.indexOf(nm) === -1) radioGroups.push(nm);
             });
@@ -494,7 +501,7 @@
                 timer: 900,
                 showConfirmButton: false
             });
-            setTimeout(function() {
+            setTimeout(function () {
                 $('#ppkModal').modal('hide');
             }, 900);
         });
@@ -537,7 +544,7 @@
             filterOnce();
 
             // observe future changes and re-filter if needed
-            const mo = new MutationObserver(function(muts) {
+            const mo = new MutationObserver(function (muts) {
                 let changed = false;
                 for (const m of muts) {
                     if (m.type === 'childList' && m.addedNodes.length > 0) {
@@ -559,7 +566,7 @@
         }
     })();
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
 
         // expose CSRF if available
         window.CSRF = {
@@ -573,41 +580,41 @@
             serverSide: false,
             ajax: {
                 url: '<?= site_url("Administrator/getSyaratPPK") ?>',
-                dataSrc: function(json) {
+                dataSrc: function (json) {
                     // If controller returns { data: [...] } or raw array
                     return json.data || json;
                 }
             },
             columns: [{
-                    data: null,
-                    render: function(data, type, row, meta) {
-                        return meta.row + 1;
-                    },
-                    width: '80px',
-                    orderable: false,
-                    searchable: false
+                data: null,
+                render: function (data, type, row, meta) {
+                    return meta.row + 1;
                 },
-                {
-                    data: 'syarat'
-                },
-                {
-                    data: null,
-                    render: function(data, type, row) {
-                        return `
+                width: '80px',
+                orderable: false,
+                searchable: false
+            },
+            {
+                data: 'syarat'
+            },
+            {
+                data: null,
+                render: function (data, type, row) {
+                    return `
                         <button class="btn btn-sm btn-warning btn-edit-syarat" data-id="${row.id_ppk}"><i class="mdi mdi-pencil"></i></button>
                         <button class="btn btn-sm btn-danger btn-delete-syarat" data-id="${row.id_ppk}"><i class="mdi mdi-delete"></i></button>
                     `;
-                    },
-                    orderable: false,
-                    searchable: false
-                }
+                },
+                orderable: false,
+                searchable: false
+            }
             ],
             pageLength: 10,
             lengthChange: false
         });
 
         // Open add form
-        $('#btn_add_syarat').on('click', function() {
+        $('#btn_add_syarat').on('click', function () {
             $('#form_id_ppk').val('');
             $('#form_syarat').val('');
             $('#syarat-form-alert').addClass('d-none').text('');
@@ -615,13 +622,13 @@
         });
 
         // Edit button (delegate)
-        $(document).on('click', '.btn-edit-syarat', function() {
+        $(document).on('click', '.btn-edit-syarat', function () {
             const id = $(this).data('id');
             // fetch single (or reuse table row)
             $.get('<?= site_url("Administrator/getSyaratPPK") ?>', {
-                    id_ppk: id
-                })
-                .done(function(res) {
+                id_ppk: id
+            })
+                .done(function (res) {
                     const row = (res.data && res.data[0]) || (Array.isArray(res) && res[0]) || null;
                     if (!row) {
                         Swal.fire('Gagal', 'Data syarat tidak ditemukan', 'warning');
@@ -631,13 +638,13 @@
                     $('#form_syarat').val(row.syarat);
                     $('#syarat-form-alert').addClass('d-none').text('');
                     $('#syaratFormModal').modal('show');
-                }).fail(function() {
+                }).fail(function () {
                     Swal.fire('Gagal', 'Gagal mengambil data syarat', 'error');
                 });
         });
 
         // Delete button (uses SweetAlert2)
-        $(document).on('click', '.btn-delete-syarat', function() {
+        $(document).on('click', '.btn-delete-syarat', function () {
             const id = $(this).data('id');
             if (!id) return;
 
@@ -685,7 +692,7 @@
         });
 
         // Save add/edit form
-        $('#syarat-form').on('submit', function(e) {
+        $('#syarat-form').on('submit', function (e) {
             e.preventDefault();
             const id = $('#form_id_ppk').val();
             const syarat = $('#form_syarat').val().trim();
@@ -731,7 +738,7 @@
         // ---- Cek Syarat (PPK modal) dynamic loading ----
         // override existing handler to load syarat from DB and per-pegawai responses
         $(document).off('click', '.btn-cek-syarat'); // remove previous static handler if present
-        $(document).on('click', '.btn-cek-syarat', function(e) {
+        $(document).on('click', '.btn-cek-syarat', function (e) {
             e.preventDefault();
             const nik = $(this).data('nik') || '';
             $('#ppk_nik').val(nik);
@@ -774,12 +781,12 @@
             html += '<form id="ppk-form-dynamic"><input type="hidden" id="ppk_nik" name="ppk_nik" value="' + nik + '">';
             html += '<div class="mb-3">Jawablah pertanyaan berikut dengan memilih salah satu opsi:</div>';
             html += '<div class="row">';
-            syarats.forEach(function(s, idx) {
+            syarats.forEach(function (s, idx) {
                 const answer = answers[s.id_ppk] || ''; // 'ya'|'tidak' or ''
                 html += `<div class="col-12 mb-2">
                         <div class="card card-body p-2">
                             <div class="d-flex justify-content-between align-items-center">
-                                <div><strong>Soal ${idx+1}.</strong> ${escapeHtml(s.syarat)}</div>
+                                <div><strong>Soal ${idx + 1}.</strong> ${escapeHtml(s.syarat)}</div>
                                 <div>
                                     <div class="btn-group btn-group-toggle" data-toggle="buttons" role="group" aria-label="PPK opsi">
                                         <label class="btn btn-sm btn-outline-danger ${answer === 'tidak' ? 'active' : ''}">
@@ -794,7 +801,7 @@
                         </div>
                     </div>`;
             });
-            
+
             // Container for Tahap Input (hidden by default, shown if eligible)
             html += `<div id="ppk-tahap-container" class="col-12 mt-3" style="display:none;">
                         <div class="card card-body bg-light">
@@ -809,7 +816,7 @@
             $('#ppkModal .modal-body').html(html);
 
             // attach change handlers: save per-toggle immediately
-            $('#ppk-form-dynamic input[type=radio]').on('change', function() {
+            $('#ppk-form-dynamic input[type=radio]').on('change', function () {
                 const name = $(this).attr('name'); // ppk_q_{id_ppk}
                 const id_ppk = name.replace(/^ppk_q_/, '');
                 const val = $(this).val();
@@ -817,7 +824,7 @@
             });
 
             // attach change handler for tahap: auto-save
-            $('#ppk_tahap_input').on('change', function() {
+            $('#ppk_tahap_input').on('change', function () {
                 savePpkTahap(nik, $(this).val());
             });
 
@@ -875,7 +882,7 @@
         // Variable to debounce/prevent duplicate saves
         var _lastTahapSave = { nik: null, val: null, ts: 0 };
 
-        window.savePpkTahap = function(nik, val) {
+        window.savePpkTahap = function (nik, val) {
             // Prevent double save within short time (e.g. blur + click race condition)
             var now = new Date().getTime();
             if (_lastTahapSave.nik === nik && _lastTahapSave.val === val && (now - _lastTahapSave.ts) < 1000) {
@@ -887,12 +894,12 @@
             params.append('nik', nik);
             params.append('tahap', val);
             if (window.CSRF && window.CSRF.name) params.append(window.CSRF.name, window.CSRF.hash);
-            
+
             return fetch('<?= site_url("Administrator/savePpkTahap") ?>', {
                 method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: params.toString()
-            }).then(r=>r.json()).catch(e=>{
+            }).then(r => r.json()).catch(e => {
                 console.error(e);
                 return { success: false };
             });
@@ -916,7 +923,7 @@
 
         // apply PPK status badge to table row for a nik
         // if `eligible` is null, we will re-fetch data (responses & syarats) to decide
-        window.applyPpkStatusToTable = function(nik, eligible) {
+        window.applyPpkStatusToTable = function (nik, eligible) {
             if (!nik) return;
             const $cell = $(`.ppk-status[data-nik="${nik}"]`);
             if (!$cell || $cell.length === 0) return;
@@ -951,7 +958,7 @@
 
         // helper to escape html
         function escapeHtml(text) {
-            return String(text).replace(/[&<>"'\/]/g, function(s) {
+            return String(text).replace(/[&<>"'\/]/g, function (s) {
                 const entityMap = {
                     '&': '&amp;',
                     '<': '&lt;',

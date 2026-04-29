@@ -15,7 +15,7 @@
     <link href="<?= base_url('assets/libs/bootstrap-select/bootstrap-select.min.css') ?>" rel="stylesheet"
         type="text/css" />
     <!-- Table datatable css -->
-    <link href="<?= base_url(' assets/libs/datatables/dataTables.bootstrap4.min.css') ?>" rel="stylesheet"
+    <link href="<?= base_url('assets/libs/datatables/dataTables.bootstrap4.min.css') ?>" rel="stylesheet"
         type="text/css" />
     <link href="<?= base_url('assets/libs/datatables/responsive.bootstrap4.min.css') ?>" rel="stylesheet"
         type="text/css" />
