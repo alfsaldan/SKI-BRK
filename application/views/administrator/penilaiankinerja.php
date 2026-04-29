@@ -25,6 +25,24 @@
         .tooltip-kuning .tooltip-inner i {
             margin-right: 8px;
         }
+
+        /* Custom Scrollable Table untuk Form Penilaian */
+        .table-scrollable {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        #tabel-penilaian thead th {
+            position: sticky;
+            top: 0;
+            z-index: 15;
+            background-color: #2E7D32 !important;
+        }
+        #tabel-penilaian tfoot td {
+            position: sticky;
+            bottom: 0;
+            z-index: 15;
+            background-color: #2E7D32 !important;
+        }
     </style>
     <div class="content">
         <div class="container-fluid">
@@ -266,7 +284,7 @@
                                 <h5 class="text-success font-weight-bold mb-3">
                                     <i class="mdi mdi-star-circle mr-2"></i> Form Penilaian Sasaran Kerja
                                 </h5>
-                                <div class="table-responsive">
+                                <div class="table-responsive table-scrollable">
                                     <table class="table table-bordered" id="tabel-penilaian">
                                         <thead style="background-color:#2E7D32;color:#fff;text-align:center;">
                                             <tr>
