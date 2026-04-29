@@ -11,14 +11,21 @@
     <link rel="shortcut icon" href="<?= base_url('assets/images/LogoKapalBRK.png') ?>">
 
     <!-- Bootstrap select plugins -->
-    <link href="<?= base_url('assets/libs/bootstrap-select/bootstrap-select.min.css') ?>" rel="stylesheet" type="text/css" />
-    <link href="<?= base_url('assets/libs/datatables/dataTables.bootstrap4.min.css') ?>" rel="stylesheet" type="text/css" />
-    <link href="<?= base_url('assets/libs/datatables/responsive.bootstrap4.min.css') ?>" rel="stylesheet" type="text/css" />
-    <link href="<?= base_url('assets/libs/datatables/buttons.bootstrap4.min.css') ?>" rel="stylesheet" type="text/css" />
-    <link href="<?= base_url('assets/libs/datatables/fixedHeader.bootstrap4.min.css') ?>" rel="stylesheet" type="text/css" />
-    <link href="<?= base_url('assets/libs/datatables/scroller.bootstrap4.min.css') ?>" rel="stylesheet" type="text/css" />
+    <link href="<?= base_url('assets/libs/bootstrap-select/bootstrap-select.min.css') ?>" rel="stylesheet"
+        type="text/css" />
+    <link href="<?= base_url('assets/libs/datatables/dataTables.bootstrap4.min.css') ?>" rel="stylesheet"
+        type="text/css" />
+    <link href="<?= base_url('assets/libs/datatables/responsive.bootstrap4.min.css') ?>" rel="stylesheet"
+        type="text/css" />
+    <link href="<?= base_url('assets/libs/datatables/buttons.bootstrap4.min.css') ?>" rel="stylesheet"
+        type="text/css" />
+    <link href="<?= base_url('assets/libs/datatables/fixedHeader.bootstrap4.min.css') ?>" rel="stylesheet"
+        type="text/css" />
+    <link href="<?= base_url('assets/libs/datatables/scroller.bootstrap4.min.css') ?>" rel="stylesheet"
+        type="text/css" />
     <link href="<?= base_url('assets/libs/datatables/dataTables.colVis.css') ?>" rel="stylesheet" type="text/css" />
-    <link href="<?= base_url('assets/libs/datatables/fixedColumns.bootstrap4.min.css') ?>" rel="stylesheet" type="text/css" />
+    <link href="<?= base_url('assets/libs/datatables/fixedColumns.bootstrap4.min.css') ?>" rel="stylesheet"
+        type="text/css" />
 
     <!-- c3 plugin css -->
     <link rel="stylesheet" type="text/css" href="<?= base_url('assets/libs/c3/c3.min.css') ?>">
@@ -27,6 +34,7 @@
     <link href="<?= base_url('assets/css/bootstrap.min.css') ?>" rel="stylesheet" type="text/css" />
     <link href="<?= base_url('assets/css/icons.min.css') ?>" rel="stylesheet" type="text/css" />
     <link href="<?= base_url('assets/css/app.min.css') ?>" rel="stylesheet" type="text/css" />
+    <script src="<?= base_url('assets/js/jquery.min.js') ?>"></script>
 
 
     <style>
@@ -286,8 +294,8 @@
         <!-- ========== Left Sidebar Start ========== -->
         <?php
         $activeController = strtolower($this->uri->segment(1, ''));
-        $activeMethod     = strtolower($this->uri->segment(2, ''));
-        $role             = $this->session->userdata('role');
+        $activeMethod = strtolower($this->uri->segment(2, ''));
+        $role = $this->session->userdata('role');
         ?>
         <div class="left-side-menu">
             <div class="slimscroll-menu">
@@ -297,7 +305,8 @@
                         <?php if ($role == 'administrator'): ?>
                             <li class="menu-title">Halaman Utama</li>
 
-                            <li class="<?= ($activeController == 'administrator' && $activeMethod == '') ? 'active' : '' ?>">
+                            <li
+                                class="<?= ($activeController == 'administrator' && $activeMethod == '') ? 'active' : '' ?>">
                                 <a href="<?= base_url('administrator') ?>">
                                     <i class="fe-airplay"></i>
                                     <span> Dashboard </span>
@@ -324,43 +333,50 @@
                                     <span> Fitur Utama </span>
                                     <span class="menu-arrow"></span>
                                 </a>
-                                <ul class="nav-first-level <?= $fiturUtamaActive ? 'in' : '' ?>" aria-expanded="<?= $fiturUtamaActive ? 'true' : 'false' ?>">
-                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['keloladatapegawai', 'detailpegawai'])) ? 'active' : '' ?>">
+                                <ul class="nav-first-level <?= $fiturUtamaActive ? 'in' : '' ?>"
+                                    aria-expanded="<?= $fiturUtamaActive ? 'true' : 'false' ?>">
+                                    <li
+                                        class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['keloladatapegawai', 'detailpegawai'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/keloladatapegawai') ?>">
                                             <i class="mdi mdi-account-card-details"></i>
                                             <span>Kelola Data Pegawai</span>
                                         </a>
                                     </li>
 
-                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['indikatorkinerja'])) ? 'active' : '' ?>">
+                                    <li
+                                        class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['indikatorkinerja'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/indikatorkinerja') ?>">
                                             <i class="mdi mdi-target-account"></i>
                                             <span> Indikator Kinerja </span>
                                         </a>
                                     </li>
 
-                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['penilaiankinerja', 'caripenilaian'])) ? 'active' : '' ?>">
+                                    <li
+                                        class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['penilaiankinerja', 'caripenilaian'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/penilaiankinerja') ?>">
                                             <i class="mdi mdi-account-edit"></i>
                                             <span> Penilaian Kinerja </span>
                                         </a>
                                     </li>
 
-                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['verifikasi_penilaian', 'detailverifikasi'])) ? 'active' : '' ?>">
+                                    <li
+                                        class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['verifikasi_penilaian', 'detailverifikasi'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/verifikasi_penilaian') ?>">
                                             <i class="mdi mdi-clipboard-check-outline"></i>
                                             <span> Verifikasi Penilaian </span>
                                         </a>
                                     </li>
 
-                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['datapegawai', 'caridatapegawai'])) ? 'active' : '' ?>">
+                                    <li
+                                        class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['datapegawai', 'caridatapegawai'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/datapegawai') ?>">
                                             <i class="mdi mdi-account-card-details"></i>
                                             <span> Cek Kinerja Pegawai </span>
                                         </a>
                                     </li>
 
-                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['monitoringkinerja', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
+                                    <li
+                                        class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['monitoringkinerja', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/monitoringkinerja') ?>">
                                             <i class="mdi mdi-clipboard-pulse"></i>
                                             <span> Monitoring Kinerja </span>
@@ -381,15 +397,18 @@
                                     <span> Peningkatan Kinerja </span>
                                     <span class="menu-arrow"></span>
                                 </a>
-                                <ul class="nav-first-level <?= $peningkatanKinerjaActive ? 'in' : '' ?>" aria-expanded="<?= $peningkatanKinerjaActive ? 'true' : 'false' ?>">
-                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['verifikasi_ppk'])) ? 'active' : '' ?>">
+                                <ul class="nav-first-level <?= $peningkatanKinerjaActive ? 'in' : '' ?>"
+                                    aria-expanded="<?= $peningkatanKinerjaActive ? 'true' : 'false' ?>">
+                                    <li
+                                        class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['verifikasi_ppk'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/verifikasi_ppk') ?>">
                                             <i class="mdi mdi-account-group"></i>
                                             <span> Verifikasi PPK </span>
                                         </a>
                                     </li>
 
-                                    <li class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['monitoring_ppk', 'ppk_msdiformulir', 'ppk_msdievaluasi'])) ? 'active' : '' ?>">
+                                    <li
+                                        class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['monitoring_ppk', 'ppk_msdiformulir', 'ppk_msdievaluasi'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/monitoring_ppk') ?>">
                                             <i class="mdi mdi-account-badge-alert-outline"></i>
                                             <span> Monitoring PPK </span>
@@ -409,15 +428,18 @@
                                     <span> Lainnya </span>
                                     <span class="menu-arrow"></span>
                                 </a>
-                                <ul class="nav-second-level <?= $lainnyaActive ? 'in' : '' ?>" aria-expanded="<?= $lainnyaActive ? 'true' : 'false' ?>">
-                                    <li class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolatingkatanjabatan') ? 'active' : '' ?>">
+                                <ul class="nav-second-level <?= $lainnyaActive ? 'in' : '' ?>"
+                                    aria-expanded="<?= $lainnyaActive ? 'true' : 'false' ?>">
+                                    <li
+                                        class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolatingkatanjabatan') ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/kelolatingkatanjabatan') ?>">
                                             <i class="mdi mdi-briefcase"></i>
                                             <span>Kelola Jabatan </span>
                                         </a>
                                     </li>
 
-                                    <li class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolabudaya') ? 'active' : '' ?>">
+                                    <li
+                                        class="<?= ($activeController == 'administrator' && $activeMethod == 'kelolabudaya') ? 'active' : '' ?>">
                                         <a href="<?= base_url('administrator/kelolabudaya') ?>">
                                             <i class="mdi mdi-white-balance-sunny"></i>
                                             <span>Kelola Budaya</span>
@@ -445,26 +467,31 @@
                                 <span> Halaman Pegawai </span>
                                 <span class="menu-arrow"></span>
                             </a>
-                            <ul class="nav-second-level <?= $halamanPegawaiActive ? 'in' : '' ?>" aria-expanded="<?= $halamanPegawaiActive ? 'true' : 'false' ?>">
-                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['', 'index'])) ? 'active' : '' ?>">
+                            <ul class="nav-second-level <?= $halamanPegawaiActive ? 'in' : '' ?>"
+                                aria-expanded="<?= $halamanPegawaiActive ? 'true' : 'false' ?>">
+                                <li
+                                    class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['', 'index'])) ? 'active' : '' ?>">
                                     <a href="<?= base_url('pegawai') ?>">
                                         <i class="mdi mdi-account"></i>
                                         <span> Kinerja Individu </span>
                                     </a>
                                 </li>
-                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['rekapnilaipegawai', 'arsipdetail'])) ? 'active' : '' ?>">
+                                <li
+                                    class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['rekapnilaipegawai', 'arsipdetail'])) ? 'active' : '' ?>">
                                     <a href="<?= base_url('pegawai/rekapnilaipegawai') ?>">
                                         <i class="mdi mdi-file-chart"></i>
                                         <span> Rekap KPI Individu </span>
                                     </a>
                                 </li>
-                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['monitoringindividu', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
+                                <li
+                                    class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['monitoringindividu', 'caripenilaianbulanan'])) ? 'active' : '' ?>">
                                     <a href="<?= base_url('pegawai/monitoringindividu') ?>">
                                         <i class="mdi mdi-clipboard-pulse-outline"></i>
                                         <span> Monitoring Individu </span>
                                     </a>
                                 </li>
-                                <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_pegawai', 'ppk_pegawaiformulir', 'ppk_pegawaievaluasi'])) ? 'active' : '' ?>">
+                                <li
+                                    class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_pegawai', 'ppk_pegawaiformulir', 'ppk_pegawaievaluasi'])) ? 'active' : '' ?>">
                                     <a href="<?= base_url('pegawai/ppk_pegawai') ?>">
                                         <i class="mdi mdi-account-badge-alert-outline"></i>
                                         <span> Program PPK </span>
@@ -509,14 +536,17 @@
                                     <span> Halaman Penilai </span>
                                     <span class="menu-arrow"></span>
                                 </a>
-                                <ul class="nav-second-level <?= $halamanPenilaiActive ? 'in' : '' ?>" aria-expanded="<?= $halamanPenilaiActive ? 'true' : 'false' ?>">
-                                    <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['nilaipegawai', 'nilaipegawaidetail', 'nilaipegawaidetail2'])) ? 'active' : '' ?>">
+                                <ul class="nav-second-level <?= $halamanPenilaiActive ? 'in' : '' ?>"
+                                    aria-expanded="<?= $halamanPenilaiActive ? 'true' : 'false' ?>">
+                                    <li
+                                        class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['nilaipegawai', 'nilaipegawaidetail', 'nilaipegawaidetail2'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('pegawai/nilaipegawai') ?>">
                                             <i class="mdi mdi-account-edit"></i>
                                             <span> Nilai Pegawai </span>
                                         </a>
                                     </li>
-                                    <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_penilai', 'ppk_penilaiformulir', 'ppk_pimpinanformulir', 'ppk_penilaievaluasi', 'ppk_pimpinanevaluasi'])) ? 'active' : '' ?>">
+                                    <li
+                                        class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_penilai', 'ppk_penilaiformulir', 'ppk_pimpinanformulir', 'ppk_penilaievaluasi', 'ppk_pimpinanevaluasi'])) ? 'active' : '' ?>">
                                         <a href="<?= base_url('pegawai/ppk_penilai') ?>">
                                             <i class="mdi mdi-account-badge-alert"></i>
                                             <span> Nilai PPK </span>
@@ -536,10 +566,10 @@
 
     <script>
         // Pastikan dropdown tetap terbuka ketika parent menu aktif
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Force buka semua dropdown yang memiliki item child aktif
             const activeParents = document.querySelectorAll('#sidebar-menu li.active > ul');
-            activeParents.forEach(function(dropdown) {
+            activeParents.forEach(function (dropdown) {
                 dropdown.classList.add('in');
                 dropdown.style.display = 'block';
                 dropdown.setAttribute('aria-expanded', 'true');

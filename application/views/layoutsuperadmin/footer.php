@@ -44,8 +44,10 @@
 
 <!-- App js -->
 <script src="<?= base_url('assets/js/app.min.js') ?>"></script>
-
 <script src="<?= base_url('assets/libs/jquery-validation/jquery.validate.min.js') ?>"></script>
+
+<!-- jQuery Steps plugin (Wajib untuk form wizard) -->
+<script src="<?= base_url('assets/libs/jquery-steps/jquery.steps.min.js') ?>"></script>
 
 <!-- Init js-->
 <script src="<?= base_url('assets/js/pages/form-wizard.init.js') ?>"></script>

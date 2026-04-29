@@ -47,8 +47,10 @@
 
 <!--Form Wizard-->
 <script src="<?= base_url('assets/libs/jquery-steps/jquery.steps.min.js') ?>"></script>
-
 <script src="<?= base_url('assets/libs/jquery-validation/jquery.validate.min.js') ?>"></script>
+
+<!-- jQuery Steps plugin (Wajib untuk form wizard) -->
+<script src="<?= base_url('assets/libs/jquery-steps/jquery.steps.min.js') ?>"></script>
 
 <!-- Init js-->
 <script src="<?= base_url('assets/js/pages/form-wizard.init.js') ?>"></script>
@@ -109,11 +111,13 @@
     const sasaranWrapper = document.getElementById('sasaranWrapper');
     const submitBtn = document.getElementById('submitSasaranBtn');
 
-    showBtn.addEventListener('click', () => {
-        sasaranWrapper.style.display = 'block'; // tampilkan input
-        submitBtn.style.display = 'inline-block'; // tampilkan tombol submit
-        showBtn.style.display = 'none'; // sembunyikan tombol tambah
-    });
+    if (showBtn) {
+        showBtn.addEventListener('click', () => {
+            sasaranWrapper.style.display = 'block'; // tampilkan input
+            submitBtn.style.display = 'inline-block'; // tampilkan tombol submit
+            showBtn.style.display = 'none'; // sembunyikan tombol tambah
+        });
+    }
 </script>
 <!-- Script JS -->
 <script>
@@ -204,8 +208,11 @@
         }
     };
 
-    var chartTargetRealisasi = new ApexCharts(document.querySelector("#chart-target-vs-realisasi"), optionsTargetRealisasi);
-    chartTargetRealisasi.render();
+    var chartContainer = document.querySelector("#chart-target-vs-realisasi");
+    if (chartContainer) {
+        var chartTargetRealisasi = new ApexCharts(chartContainer, optionsTargetRealisasi);
+        chartTargetRealisasi.render();
+    }
 </script>
 
 <script>
@@ -228,8 +235,11 @@
         }
     };
 
-    var chartDonut = new ApexCharts(document.querySelector("#donut-charts"), optionsDonut);
-    chartDonut.render();
+    var donutContainer = document.querySelector("#donut-charts");
+    if (donutContainer) {
+        var chartDonut = new ApexCharts(donutContainer, optionsDonut);
+        chartDonut.render();
+    }
 </script>
 
 <script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>

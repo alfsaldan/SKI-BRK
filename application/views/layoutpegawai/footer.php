@@ -47,6 +47,8 @@
 
 <script src="<?= base_url('assets/libs/jquery-validation/jquery.validate.min.js') ?>"></script>
 
+<!-- jQuery Steps plugin (Wajib untuk form wizard) -->
+<script src="<?= base_url('assets/libs/jquery-steps/jquery.steps.min.js') ?>"></script>
 <!-- Init js-->
 <script src="<?= base_url('assets/js/pages/form-wizard.init.js') ?>"></script>
 
@@ -93,11 +95,13 @@
     const sasaranWrapper = document.getElementById('sasaranWrapper');
     const submitBtn = document.getElementById('submitSasaranBtn');
 
-    showBtn.addEventListener('click', () => {
-        sasaranWrapper.style.display = 'block'; // tampilkan input
-        submitBtn.style.display = 'inline-block'; // tampilkan tombol submit
-        showBtn.style.display = 'none'; // sembunyikan tombol tambah
-    });
+    if (showBtn) {
+        showBtn.addEventListener('click', () => {
+            sasaranWrapper.style.display = 'block'; // tampilkan input
+            submitBtn.style.display = 'inline-block'; // tampilkan tombol submit
+            showBtn.style.display = 'none'; // sembunyikan tombol tambah
+        });
+    }
 </script>
 <!-- Script JS -->
 <script>

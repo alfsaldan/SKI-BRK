@@ -312,14 +312,6 @@
             renderChart(data);
         });
 
-        // 🟢 2️⃣ Load daftar cabang
-        $.getJSON("<?= base_url('administrator/get_unit_kantor_list') ?>", function (data) {
-            var $cabang = $("#filter-unit");
-            $.each(data, function (i, item) {
-                $cabang.append(`<option value="${item.kode_cabang}">${item.unit_kantor}</option>`);
-            });
-        });
-
         // 🟢 3️⃣ Saat cabang dipilih
         jq36("#filter-unit").on("change", function () {
             var kode_cabang = $(this).val();
