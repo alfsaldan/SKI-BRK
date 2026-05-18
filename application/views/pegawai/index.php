@@ -1217,11 +1217,7 @@
                                             </tr>
                                             <?php
                                         endforeach;
-                                    else: ?>
-                                        <tr>
-                                            <td colspan="3" class="text-center">Belum ada catatan</td>
-                                        </tr>
-                                    <?php endif; ?>
+                                    endif; ?>
                                 </tbody>
                             </table>
                         </div>
