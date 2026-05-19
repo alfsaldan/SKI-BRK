@@ -51,10 +51,168 @@ class ExcelImport extends CI_Controller {
         $sheet  = $spreadsheet->getActiveSheet();
         $parsed = $this->parseIndikatorSheet($sheet);
 
+        $totalBobot = array_sum($parsed['summary'] ?? []);
+        if ($totalBobot > 100) {
+            @unlink($dest);
+            return $this->jsonError("Total bobot keseluruhan ({$totalBobot}%) tidak boleh melebihi 100%. Silakan sesuaikan ulang.");
+        }
+
         $parsed['context']  = ['unit_kerja' => $unit, 'jabatan' => $jabatan];
         $parsed['tmp_file'] = 'uploads/temp/' . $tmpName;
 
         echo json_encode($parsed);
+    }
+
+    /**
+     * AJAX endpoint: upload Excel for a specific employee, parse and return preview JSON
+     */
+    public function uploadIndikatorKinerjaPegawai()
+    {
+        if (!isset($_FILES['excel_file']) || $_FILES['excel_file']['error'] !== UPLOAD_ERR_OK) {
+            return $this->jsonError('File tidak ditemukan atau gagal diupload.');
+        }
+
+        // Get context from POST data
+        $unit    = $this->input->post('unit_kerja');
+        $jabatan = $this->input->post('jabatan');
+        $nik     = $this->input->post('nik');
+
+        if (empty($nik) || empty($unit) || empty($jabatan)) {
+            return $this->jsonError('Konteks pegawai (NIK, Unit, Jabatan) tidak lengkap.');
+        }
+
+        $fileTmp  = $_FILES['excel_file']['tmp_name'];
+        $fileName = $_FILES['excel_file']['name'];
+        $ext      = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        if (!in_array($ext, ['xls', 'xlsx'])) {
+            return $this->jsonError('Format file tidak didukung. Gunakan .xls atau .xlsx');
+        }
+
+        $tmpDir  = FCPATH . 'uploads/temp/';
+        if (!is_dir($tmpDir)) @mkdir($tmpDir, 0755, true);
+        $tmpName = 'indikator_upload_pegawai_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+        $dest    = $tmpDir . $tmpName;
+        if (!move_uploaded_file($fileTmp, $dest)) {
+            return $this->jsonError('Gagal menyimpan file sementara.');
+        }
+
+        try {
+            $reader      = IOFactory::createReaderForFile($dest);
+            $spreadsheet = $reader->load($dest);
+        } catch (Exception $e) {
+            @unlink($dest);
+            return $this->jsonError('File Excel gagal dibaca: ' . $e->getMessage());
+        }
+
+        $sheet  = $spreadsheet->getActiveSheet();
+        $parsed = $this->parseIndikatorSheet($sheet);
+
+        $totalBobot = array_sum($parsed['summary'] ?? []);
+        if ($totalBobot > 100) {
+            @unlink($dest);
+            return $this->jsonError("Total bobot keseluruhan ({$totalBobot}%) tidak boleh melebihi 100%. Silakan sesuaikan ulang.");
+        }
+
+        // Add employee context to the parsed data
+        $parsed['context']  = ['unit_kerja' => $unit, 'jabatan' => $jabatan, 'nik' => $nik];
+        $parsed['tmp_file'] = 'uploads/temp/' . $tmpName;
+
+        echo json_encode($parsed);
+    }
+
+    /**
+     * Save parsed data to DB for a specific employee (owner_nik).
+     */
+    public function saveParsedDataPegawai()
+    {
+        $input = file_get_contents('php://input');
+        if (empty($input)) return $this->jsonError('Tidak ada data untuk disimpan.');
+
+        $payload = json_decode($input, true);
+        if (!$payload || !isset($payload['data'])) {
+            return $this->jsonError('Format data tidak valid.');
+        }
+
+        $context = $payload['context'] ?? [];
+        $unit    = $context['unit_kerja'] ?? null;
+        $jabatan = $context['jabatan']    ?? null;
+        $nik     = $context['nik']        ?? null;
+
+        if (empty($nik) || empty($unit) || empty($jabatan)) {
+            return $this->jsonError('Konteks pegawai (NIK, Unit, Jabatan) tidak lengkap untuk menyimpan data.');
+        }
+
+        $data     = $payload['data'];
+        $errors   = [];
+        $inserted = ['sasaran' => 0, 'indikator' => 0, 'duplicates' => 0];
+
+        $this->db->trans_start();
+
+        foreach ($data as $perspektif => $sasaranList) {
+            foreach ($sasaranList as $sasaranText => $indikators) {
+                // Check for existing sasaran specific to this employee
+                $sasaranRow = $this->db->get_where('sasaran_kerja', [
+                    'unit_kerja'    => $unit,
+                    'jabatan'       => $jabatan,
+                    'perspektif'    => $perspektif,
+                    'sasaran_kerja' => $sasaranText,
+                    'owner_nik'     => $nik, // Employee specific
+                ])->row();
+
+                if ($sasaranRow) {
+                    $sasaran_id = $sasaranRow->id;
+                } else {
+                    $this->db->insert('sasaran_kerja', [
+                        'unit_kerja'    => $unit,
+                        'jabatan'       => $jabatan,
+                        'perspektif'    => $perspektif,
+                        'sasaran_kerja' => $sasaranText,
+                        'owner_nik'     => $nik, // Employee specific
+                    ]);
+                    $sasaran_id = $this->db->insert_id();
+                    $inserted['sasaran']++;
+                }
+
+                foreach ($indikators as $ind) {
+                    // Check for existing indicator under this sasaran
+                    $exists = $this->db->get_where('indikator', [
+                        'sasaran_id' => $sasaran_id,
+                        'indikator'  => $ind['indikator'],
+                        'owner_nik'  => $nik, // Employee specific
+                    ])->row();
+
+                    if ($exists) { $inserted['duplicates']++; continue; }
+
+                    $ok = $this->db->insert('indikator', [
+                        'sasaran_id'  => $sasaran_id,
+                        'indikator'   => $ind['indikator'],
+                        'bobot'       => $ind['bobot'],
+                        'owner_nik'   => $nik, // Employee specific
+                    ]);
+
+                    if ($ok) $inserted['indikator']++;
+                    else $errors[] = "Gagal menyimpan indikator: {$ind['indikator']}";
+                }
+            }
+        }
+
+        $this->db->trans_complete();
+
+        if (!$this->db->trans_status()) {
+            return $this->jsonError('Terjadi kesalahan saat menyimpan data ke database.');
+        }
+
+        // Clean up temp file
+        if (isset($payload['tmp_file']) && file_exists(FCPATH . $payload['tmp_file'])) {
+            @unlink(FCPATH . $payload['tmp_file']);
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Data berhasil disimpan.',
+            'result'  => $inserted,
+            'errors'  => $errors,
+        ]);
     }
 
     /**

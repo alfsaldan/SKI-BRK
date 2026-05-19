@@ -123,12 +123,14 @@
         max-height: 600px;
         overflow-y: auto;
     }
+
     #tabel-penilaian thead th {
         position: sticky;
         top: 0;
         z-index: 15;
         background-color: #2E7D32 !important;
     }
+
     #tabel-penilaian tfoot td {
         position: sticky;
         bottom: 0;
@@ -549,6 +551,9 @@
                                                 class="mdi mdi-plus"></i> Tambah Sasaran</button>
                                         <button class="btn btn-secondary btn-sm" onclick="addIndikatorRow()"><i
                                                 class="mdi mdi-plus"></i> Tambah Indikator</button>
+                                        <button type="button" id="btnUploadExcelPegawai" class="btn btn-success btn-sm ml-2">
+                                            <i class="mdi mdi-file-excel"></i> Upload Indikator & Sasaran Awal
+                                        </button>
                                     </div>
                                 <?php endif; ?>
                                 <div class="table-responsive table-scrollable">
@@ -729,8 +734,10 @@
                                                             </td>
                                                             <td class="text-center align-middle">
                                                                 <input type="date" class="form-control batas-waktu"
-                                                                    style="min-width:120px;" value="<?= ($i->batas_waktu && $i->batas_waktu != '0000-00-00') ? $i->batas_waktu : ''; ?>"
-                                                                    style="min-width:120px;" value="<?= (!empty($i->batas_waktu) && strpos($i->batas_waktu, '0000') === false) ? date('Y-m-d', strtotime($i->batas_waktu)) : ''; ?>"
+                                                                    style="min-width:120px;"
+                                                                    value="<?= ($i->batas_waktu && $i->batas_waktu != '0000-00-00') ? $i->batas_waktu : ''; ?>"
+                                                                    style="min-width:120px;"
+                                                                    value="<?= (!empty($i->batas_waktu) && strpos($i->batas_waktu, '0000') === false) ? date('Y-m-d', strtotime($i->batas_waktu)) : ''; ?>"
                                                                     <?= ($is_locked || $is_verified || $is_row_approved) ? 'readonly' : ''; ?>>
                                                             </td>
                                                             <td class="text-center align-middle">
@@ -1256,6 +1263,68 @@
 <!-- End Page Content here -->
 <!-- ============================================================== -->
 
+<!-- Modal Upload Excel -->
+<div class="modal fade" id="modalUploadExcelPegawai" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Indikator Kinerja Pegawai</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Step 1: Upload -->
+                <div id="stepUploadPegawai">
+                    <p>Silakan pilih file Excel (.xls atau .xlsx) sesuai dengan template yang disediakan.</p>
+                    <!-- NOTE: Please adjust the template path -->
+                    <a href="<?= base_url('uploads/templates/Template_UploadDataIndikator_Perunit_jabatan.xlsx') ?>"
+                        class="btn btn-sm btn-info mb-3"><i class="mdi mdi-download"></i> Download Template</a>
+                    <form id="formUploadExcelPegawai" enctype="multipart/form-data">
+                        <input type="hidden" name="nik" value="<?= $pegawai_detail->nik ?? '' ?>">
+                        <input type="hidden" name="unit_kerja" value="<?= $pegawai_detail->unit_kerja ?? '' ?>">
+                        <input type="hidden" name="jabatan" value="<?= $pegawai_detail->jabatan ?? '' ?>">
+                        <div class="form-group">
+                            <label for="excel_file_pegawai">Pilih File Excel</label>
+                            <input type="file" class="form-control-file" id="excel_file_pegawai" name="excel_file"
+                                accept=".xls,.xlsx" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Upload dan Preview</button>
+                    </form>
+                </div>
+
+                <!-- Step 2: Preview -->
+                <div id="stepPreviewPegawai" style="display:none;">
+                    <h5><i class="mdi mdi-file-find-outline"></i> Preview Data</h5>
+                    <p>Berikut adalah data yang berhasil diparsing dari file Excel. Periksa kembali sebelum menyimpan.
+                    </p>
+                    <div id="preview-table-container-pegawai" class="table-responsive" style="max-height: 400px;"></div>
+                    <div id="preview-summary-pegawai" class="mt-3"></div>
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-secondary" id="btn-back-to-upload-pegawai">Kembali</button>
+                        <button type="button" class="btn btn-success" id="btn-save-parsed-pegawai">Simpan Data ke
+                            Database</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Success -->
+                <div id="stepSuccessPegawai" style="display:none;">
+                    <div class="text-center">
+                        <i class="mdi mdi-check-circle-outline text-success" style="font-size: 4rem;"></i>
+                        <h4 class="mt-2">Upload Berhasil!</h4>
+                        <p id="success-message-pegawai"></p>
+                        <button type="button" class="btn btn-primary" onclick="location.reload()">Tutup dan Muat
+                            Ulang</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- End Page Content here -->
+<!-- ============================================================== -->
+
 <script src="<?= base_url('assets/libs/sweetalert2/sweetalert2@11.js') ?>"></script>
 <script src="<?= base_url('assets/libs/datatables/jquery.dataTables.min.js') ?>"></script>
 <script src="<?= base_url('assets/libs/datatables/dataTables.responsive.min.js') ?>"></script>
@@ -1275,6 +1344,169 @@ if ($message): ?>
 <?php endif; ?>
 
 <script>
+    // JS for Excel Upload
+    $(document).ready(function () {
+        // Show modal on button click
+        $('#btnUploadExcelPegawai').on('click', function () {
+            // Reset modal to step 1
+            $('#formUploadExcelPegawai')[0].reset();
+            $('#stepUploadPegawai').show();
+            $('#stepPreviewPegawai').hide();
+            $('#stepSuccessPegawai').hide();
+            $('#modalUploadExcelPegawai').modal('show');
+        });
+
+        // Back button from preview to upload
+        $('#btn-back-to-upload-pegawai').on('click', function () {
+            $('#stepUploadPegawai').show();
+            $('#stepPreviewPegawai').hide();
+        });
+
+        // Handle form submission for upload and preview
+        $('#formUploadExcelPegawai').on('submit', function (e) {
+            e.preventDefault();
+            var formData = new FormData(this);
+
+            Swal.fire({
+                title: 'Mengunggah file...',
+                text: 'Mohon tunggu, file sedang diproses.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '<?= base_url("ExcelImport/uploadIndikatorKinerjaPegawai") ?>',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                success: function (response) {
+                    Swal.close();
+                    if (response && response.data) {
+                        // Store parsed data
+                        $('#btn-save-parsed-pegawai').data('parsed-data', response);
+
+                        // Build preview table
+                        let tableHtml = '<table class="table table-bordered">';
+                        tableHtml += '<thead style="background-color:#2E7D32; color:#fff; text-align:center;"><tr><th style="width:25%;">Perspektif</th><th style="width:30%;">Sasaran Kerja</th><th style="width:35%;">Indikator</th><th style="width:10%;">Bobot (%)</th></tr></thead><tbody>';
+
+                        if (Object.keys(response.data).length === 0) {
+                            tableHtml += '<tr><td colspan="4" class="text-center">Tidak ada data valid yang ditemukan di file.</td></tr>';
+                        } else {
+                            let grandTotal = 0;
+                            const perspektif_order = [
+                                "Keuangan (F)",
+                                "Pelanggan (C)",
+                                "Proses Internal (IP)",
+                                "Pembelajaran & Pertumbuhan (LG)"
+                            ];
+
+                            const dataKeys = Object.keys(response.data);
+                            dataKeys.sort((a, b) => {
+                                const posA = perspektif_order.indexOf(a);
+                                const posB = perspektif_order.indexOf(b);
+                                return (posA === -1 ? 99 : posA) - (posB === -1 ? 99 : posB);
+                            });
+
+                            dataKeys.forEach(persp => {
+                                const sasaranList = response.data[persp];
+                                tableHtml += `<tr style="background-color:#C8E6C9; font-weight:bold;"><td colspan="4">${persp}</td></tr>`;
+
+                                let subtotal = 0;
+                                let noSasaran = 1;
+                                for (const sasaran in sasaranList) {
+                                    tableHtml += `<tr style="background-color:#BBDEFB; font-weight:bold;"><td></td><td colspan="3">${noSasaran++}. ${sasaran}</td></tr>`;
+
+                                    const indikatorList = sasaranList[sasaran];
+                                    let noIndikator = 1;
+                                    indikatorList.forEach(ind => {
+                                        subtotal += parseFloat(ind.bobot) || 0;
+                                        tableHtml += `<tr>`;
+                                        tableHtml += `<td></td>`; // empty for perspektif
+                                        tableHtml += `<td></td>`; // empty for sasaran
+                                        tableHtml += `<td>${noIndikator++}. ${ind.indikator}</td>`;
+                                        tableHtml += `<td class="text-center">${ind.bobot}</td>`;
+                                        tableHtml += `</tr>`;
+                                    });
+                                }
+                                grandTotal += subtotal;
+                                tableHtml += `<tr style="background-color:#E0E0E0; font-weight:bold;"><td colspan="3" class="text-right">Sub Total Bobot ${persp}</td><td class="text-center">${subtotal.toFixed(2)}</td></tr>`;
+                            });
+
+                            tableHtml += `<tr style="background-color:#9CCC65; font-weight:bold;"><td colspan="3" class="text-right">TOTAL BOBOT KESELURUHAN</td><td class="text-center">${grandTotal.toFixed(2)}</td></tr>`;
+                        }
+                        tableHtml += '</tbody></table>';
+                        $('#preview-table-container-pegawai').html(tableHtml);
+
+                        // Build summary
+                        let summaryHtml = '<h6>Ringkasan:</h6>';
+                        if (response.errors && response.errors.length > 0) {
+                            summaryHtml += '<div class="alert alert-danger mt-2"><strong>Ditemukan Error saat parsing:</strong><br>' + response.errors.join('<br>') + '</div>';
+                        } else {
+                            summaryHtml += '<p class="text-success">Tidak ada error ditemukan. Data siap untuk disimpan.</p>';
+                        }
+                        $('#preview-summary-pegawai').html(summaryHtml);
+
+                        // Switch to preview step
+                        $('#stepUploadPegawai').hide();
+                        $('#stepPreviewPegawai').show();
+                    } else {
+                        Swal.fire('Gagal', response.message || 'Gagal memproses file Excel.', 'error');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Swal.close();
+                    Swal.fire('Error', 'Terjadi kesalahan saat mengunggah file. ' + error, 'error');
+                }
+            });
+        });
+
+        // Handle saving parsed data
+        $('#btn-save-parsed-pegawai').on('click', function () {
+            const parsedData = $(this).data('parsed-data');
+            if (!parsedData) {
+                Swal.fire('Error', 'Tidak ada data untuk disimpan.', 'error');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Menyimpan data...',
+                text: 'Mohon tunggu, data sedang disimpan ke database.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '<?= base_url("ExcelImport/saveParsedDataPegawai") ?>',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(parsedData),
+                dataType: 'json',
+                success: function (response) {
+                    Swal.close();
+                    if (response && response.success) {
+                        let result = response.result;
+                        let msg = `Berhasil! ${result.sasaran} sasaran baru, ${result.indikator} indikator baru ditambahkan. Ditemukan ${result.duplicates} duplikat.`;
+                        $('#success-message-pegawai').text(msg);
+                        $('#stepPreviewPegawai').hide();
+                        $('#stepSuccessPegawai').show();
+                    } else {
+                        Swal.fire('Gagal', response.message || 'Gagal menyimpan data.', 'error');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Swal.close();
+                    Swal.fire('Error', 'Terjadi kesalahan saat menyimpan data. ' + error, 'error');
+                }
+            });
+        });
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         // Cek jika ada parameter periode_changed di URL untuk notifikasi
         const urlParams = new URLSearchParams(window.location.search);
@@ -3074,22 +3306,22 @@ if ($message): ?>
                 tbody.empty();
                 if (res.success && res.data.length > 0) {
                     res.data.forEach(function (c) {
-                            // Format date ke WIB (Asia/Jakarta)
-                            let tgl = c.tanggal;
-                            if (tgl) {
-                                let parts = tgl.split(' ');
-                                if (parts.length === 2) {
-                                    let dateParts = parts[0].split('-');
-                                    let timeParts = parts[1].split(':');
-                                    let utcDate = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2], timeParts[0], timeParts[1], timeParts[2] || 0));
-                                    
-                                    tgl = utcDate.toLocaleString('en-GB', {
-                                        timeZone: 'Asia/Jakarta',
-                                        day: '2-digit', month: '2-digit', year: 'numeric',
-                                        hour: '2-digit', minute: '2-digit', hour12: false
-                                    }).replace(/,/g, '').replace(/\//g, '-');
-                                }
+                        // Format date ke WIB (Asia/Jakarta)
+                        let tgl = c.tanggal;
+                        if (tgl) {
+                            let parts = tgl.split(' ');
+                            if (parts.length === 2) {
+                                let dateParts = parts[0].split('-');
+                                let timeParts = parts[1].split(':');
+                                let utcDate = new Date(Date.UTC(dateParts[0], dateParts[1] - 1, dateParts[2], timeParts[0], timeParts[1], timeParts[2] || 0));
+
+                                tgl = utcDate.toLocaleString('en-GB', {
+                                    timeZone: 'Asia/Jakarta',
+                                    day: '2-digit', month: '2-digit', year: 'numeric',
+                                    hour: '2-digit', minute: '2-digit', hour12: false
+                                }).replace(/,/g, '').replace(/\//g, '-');
                             }
+                        }
 
                         tbody.append(`
                             <tr>
