@@ -1117,44 +1117,14 @@ class Administrator extends CI_Controller
     // Download template Mutasi Pegawai
     public function downloadTemplateMutasiPegawai()
     {
-        // Generate the template on the fly to ensure header/order matches expected import format
-        try {
-            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
-
-            // Header in the exact order we expect: Nik, Jenis Unit, Unit Kantor, Jabatan Baru, Tanggal Mulai
-            $header = ['Nik', 'Jenis Unit', 'Unit Kantor', 'Jabatan Baru', 'Tanggal Mulai'];
-            $sheet->fromArray($header, NULL, 'A1');
-            $sheet->getStyle('A1:E1')->getFont()->setBold(true);
-
-            // Set some reasonable column widths
-            $sheet->getColumnDimension('A')->setWidth(20);
-            $sheet->getColumnDimension('B')->setWidth(30);
-            $sheet->getColumnDimension('C')->setWidth(25);
-            $sheet->getColumnDimension('D')->setWidth(25);
-            $sheet->getColumnDimension('E')->setWidth(18);
-
-            // Make the tanggal column use ISO date format as a hint
-            $sheet->getStyle('E')->getNumberFormat()->setFormatCode('yyyy-mm-dd');
-
-            $filename = 'template_mutasipegawai.xlsx';
-            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header('Content-Disposition: attachment;filename="' . $filename . '"');
-            header('Cache-Control: max-age=0');
-
-            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-            $writer->save('php://output');
-            exit;
-        } catch (\Exception $e) {
-            // fallback to file on disk if generation fails
-            $this->load->helper('download');
-            $path = FCPATH . 'uploads/template_mutasipegawai.xlsx';
-            if (file_exists($path)) {
-                force_download($path, NULL);
-            } else {
-                $this->session->set_flashdata('error', 'Gagal membuat template mutasi dan file fallback tidak ditemukan: ' . $e->getMessage());
-                redirect('Administrator/kelolaDataPegawai');
-            }
+        $this->load->helper('download');
+        $path = FCPATH . 'uploads/template_mutasi_pegawai.xlsx';
+        
+        if (file_exists($path)) {
+            force_download($path, NULL);
+        } else {
+            $this->session->set_flashdata('error', 'Template mutasi pegawai tidak ditemukan di folder uploads.');
+            redirect('Administrator/kelolaDataPegawai');
         }
     }
 
