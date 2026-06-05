@@ -508,10 +508,16 @@ class Pegawai_model extends CI_Model
                     $data_tahun->rata_nilai_sasaran = round($total_bobot_nilai_sasaran / $total_hari, 2);
                     $data_tahun->rata_nilai_budaya  = round($total_bobot_nilai_budaya / $total_hari, 2);
                     $data_tahun->rata_total_nilai   = round($total_bobot_total_nilai / $total_hari, 2);
-                    $nilai_akhir_rata_rata          = round($total_bobot_nilai_akhir / $total_hari, 2);
-                    $data_tahun->rata_nilai_akhir   = $nilai_akhir_rata_rata;
-                    $data_tahun->rata_pencapaian    = $this->_hitungPencapaianTahunan($nilai_akhir_rata_rata, $koefisien_tahunan);
-                    $data_tahun->predikat_tahunan   = $this->_hitungPredikatTahunan($nilai_akhir_rata_rata, $koefisien_tahunan);
+
+                    // Hitung nilai akhir rata-rata tanpa pembulatan untuk kalkulasi
+                    $nilai_akhir_rata_rata_unrounded = $total_bobot_nilai_akhir / $total_hari;
+
+                    // Simpan nilai yang sudah dibulatkan untuk ditampilkan
+                    $data_tahun->rata_nilai_akhir   = round($nilai_akhir_rata_rata_unrounded, 2);
+
+                    // Gunakan nilai yang belum dibulatkan untuk menghitung pencapaian dan predikat
+                    $data_tahun->rata_pencapaian    = $this->_hitungPencapaianTahunan($nilai_akhir_rata_rata_unrounded, $koefisien_tahunan);
+                    $data_tahun->predikat_tahunan   = $this->_hitungPredikatTahunan($nilai_akhir_rata_rata_unrounded, $koefisien_tahunan);
                 }
             }
 
