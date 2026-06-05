@@ -918,11 +918,6 @@
                                                     <td><?= $tgl->format('d-m-Y H:i') ?></td>
                                                 </tr>
                                             <?php endforeach; ?>
-                                            <?php if (empty($catatan_list)) : ?>
-                                                <tr>
-                                                    <td colspan="4" class="text-center">Belum ada catatan</td>
-                                                </tr>
-                                            <?php endif; ?>
                                         </tbody>
                                     </table>
                                 </div>

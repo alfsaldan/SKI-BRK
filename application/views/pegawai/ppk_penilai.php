@@ -118,8 +118,6 @@
                                                         </td>
                                                     </tr>
                                                     <?php endforeach; ?>
-                                                <?php else: ?>
-                                                    <tr><td colspan="8" class="text-center">Tidak ada data PPK untuk dinilai.</td></tr>
                                                 <?php endif; ?>
                                             </tbody>
                                         </table>
@@ -206,8 +204,6 @@
                                                         </td>
                                                     </tr>
                                                     <?php endforeach; ?>
-                                                <?php else: ?>
-                                                    <tr><td colspan="8" class="text-center">Tidak ada data PPK di unit ini.</td></tr>
                                                 <?php endif; ?>
                                             </tbody>
                                         </table>
