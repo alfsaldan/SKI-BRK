@@ -67,6 +67,28 @@
                         </span>
                     <?php endif; ?>
 
+                    <div>
+                    <?php
+                    $bukti_file = '';
+                    if (!empty($penilaian)) {
+                        foreach ($penilaian as $row) {
+                            if (!empty($row->bukti)) {
+                                $bukti_file = $row->bukti;
+                                break;
+                            }
+                        }
+                    }
+                    ?>
+                    <?php if (!empty($bukti_file)): ?>
+                        <a href="<?= base_url('uploads/bukti/' . htmlspecialchars($bukti_file, ENT_QUOTES, 'UTF-8')) ?>" target="_blank" class="btn btn-outline-info btn-sm shadow-sm font-weight-bold">
+                            <i class="mdi mdi-download"></i> Unduh Bukti Kinerja
+                        </a>
+                    <?php else: ?>
+                        <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm" disabled>
+                            <i class="mdi mdi-file-hidden"></i> Belum Ada Bukti
+                        </button>
+                    <?php endif; ?>
+                    </div>
                 </div>
             </div>
 

@@ -528,7 +528,8 @@ class Penilaian_model extends CI_Model
             p.nilai, 
             p.nilai_dibobot,
             p.status,
-            p.status2
+            p.status2,
+            p.bukti
         ')
             ->from('penilaian p')
             ->join('indikator i', 'i.id = p.indikator_id', 'left')

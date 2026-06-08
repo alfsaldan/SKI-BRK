@@ -3598,5 +3598,87 @@ class Pegawai extends CI_Controller
         $this->session->set_flashdata('success', 'Status persetujuan Pegawai berhasil disimpan.');
         redirect('pegawai/ppk_pegawaievaluasi/' . $id_nilai_akhir);
     }
-    
+
+    public function uploadBukti()
+    {
+        $nik = $this->session->userdata('nik');
+        $periode_awal = $this->input->post('periode_awal');
+        $periode_akhir = $this->input->post('periode_akhir');
+        $unit_kantor = $this->input->post('unit_kantor') ?? 'unit';
+
+        // sanitize unit_kantor for filename
+        $unit_kantor_clean = preg_replace('/[^A-Za-z0-9\-]/', '', str_replace(' ', '', $unit_kantor));
+
+        if (empty($nik) || empty($periode_awal) || empty($periode_akhir)) {
+            echo json_encode(['status' => 'error', 'message' => 'Data tidak lengkap']);
+            return;
+        }
+
+        $config['upload_path']   = './uploads/bukti/';
+        $config['allowed_types'] = 'pdf';
+        $config['max_size']      = 10240; // 10MB limit (or what is suitable)
+        
+        $tahun = date('Y', strtotime($periode_awal));
+        $random = rand(1000, 9999);
+        $filename = "{$nik}_{$unit_kantor_clean}_{$tahun}_{$random}";
+        
+        $config['file_name'] = $filename;
+
+        $this->load->library('upload', $config);
+
+        if (!$this->upload->do_upload('bukti_pdf')) {
+            echo json_encode(['status' => 'error', 'message' => $this->upload->display_errors('', '')]);
+        } else {
+            $data = $this->upload->data();
+            $file_name = $data['file_name'];
+            $full_path = $data['full_path'];
+            
+            // --- FITUR KOMPRESI PDF OTOMATIS (Menggunakan Ghostscript) ---
+            // Mengecek apakah server menggunakan OS Windows atau Linux
+            $is_windows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
+            $gs_command = $is_windows ? 'gswin64c' : 'gs';
+            
+            // Mengecek apakah Ghostscript tersedia di environment/PATH server
+            $output = [];
+            $return_var = -1;
+            if ($is_windows) {
+                exec("where {$gs_command} 2>nul", $output, $return_var);
+            } else {
+                exec("which {$gs_command} 2>/dev/null", $output, $return_var);
+            }
+            
+            // Jika Ghostscript tersedia, lakukan proses kompresi
+            if ($return_var === 0) {
+                $compressed_path = $data['file_path'] . 'compressed_' . $file_name;
+                
+                // Parameter Ghostscript untuk kompresi PDF
+                // dPDFSETTINGS=/screen -> Kualitas rendah (Dikhususkan untuk layar, file sangat kecil)
+                // dPDFSETTINGS=/ebook -> Kualitas menengah (Cocok untuk teks dan gambar umum)
+                $cmd = "{$gs_command} -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -dNOPAUSE -dQUIET -dBATCH -sOutputFile=" . escapeshellarg($compressed_path) . " " . escapeshellarg($full_path);
+                
+                exec($cmd, $output_compress, $return_var_compress);
+                
+                // Jika kompresi sukses dan file output terbentuk
+                if ($return_var_compress === 0 && file_exists($compressed_path)) {
+                    // Validasi: Pastikan ukuran hasil kompresi lebih kecil dari aslinya
+                    if (filesize($compressed_path) < filesize($full_path)) {
+                        unlink($full_path); // Hapus file yang asli (yang ukurannya besar)
+                        rename($compressed_path, $full_path); // Rename file yang sudah dikompresi ke nama asli
+                    } else {
+                        // Jika hasil kompresi ternyata malah lebih besar, buang hasil kompresi dan simpan yang asli
+                        unlink($compressed_path);
+                    }
+                }
+            }
+            // -------------------------------------------------------------
+
+            // Update ke database penilaian
+            $this->db->where('nik', $nik);
+            $this->db->where('periode_awal', $periode_awal);
+            $this->db->where('periode_akhir', $periode_akhir);
+            $this->db->update('penilaian', ['bukti' => $file_name]);
+
+            echo json_encode(['status' => 'success', 'message' => 'File bukti berhasil diupload.', 'file_name' => $file_name]);
+        }
+    }
 }

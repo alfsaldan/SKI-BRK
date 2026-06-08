@@ -545,6 +545,9 @@
                                     style="background-color:#217346; color:#fff;">
                                     <i class="mdi mdi-file-excel"></i> Download Excel
                                 </a>
+                                <button type="button" class="btn btn-primary mt-2 mb-2 font-weight-bold ml-2" data-toggle="modal" data-target="#modalUploadBukti">
+                                    <i class="mdi mdi-upload"></i> Upload Bukti PDF
+                                </button>
                                 <?php if (!$is_locked && !$is_verified): ?>
                                     <div class="mb-3">
                                         <button class="btn btn-info btn-sm mr-2" onclick="addSasaranRow()"><i
@@ -3338,7 +3341,109 @@ if ($message): ?>
             }
         });
     };
+
+    // Script for Upload Bukti
+    $(document).ready(function() {
+        $('#btnSubmitUploadBukti').click(function(e) {
+            e.preventDefault();
+            
+            var formData = new FormData();
+            var file = $('#bukti_pdf')[0].files[0];
+            
+            if (!file) {
+                Swal.fire('Peringatan', 'Silakan pilih file PDF terlebih dahulu.', 'warning');
+                return;
+            }
+            
+            formData.append('bukti_pdf', file);
+            formData.append('periode_awal', $('#periode_awal').val());
+            formData.append('periode_akhir', $('#periode_akhir').val());
+            formData.append('unit_kantor', '<?= $pegawai_detail->unit_kantor ?? "unit" ?>');
+            
+            Swal.fire({
+                title: 'Mengupload...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            $.ajax({
+                url: '<?= base_url("Pegawai/uploadBukti") ?>',
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                dataType: 'json',
+                success: function(res) {
+                    if (res.status === 'success') {
+                        Swal.fire('Berhasil', res.message, 'success').then(() => {
+                            $('#modalUploadBukti').modal('hide');
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Gagal', res.message, 'error');
+                    }
+                },
+                error: function() {
+                    Swal.fire('Error', 'Terjadi kesalahan saat mengupload file.', 'error');
+                }
+            });
+        });
+    });
 </script>
+
+<!-- Modal Upload Bukti -->
+<div class="modal fade" id="modalUploadBukti" tabindex="-1" role="dialog" aria-labelledby="modalUploadBuktiLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+            <div class="modal-header bg-primary text-white text-center d-block position-relative pb-4">
+                <h5 class="modal-title font-weight-bold text-white mb-2" id="modalUploadBuktiLabel">
+                    <i class="mdi mdi-upload d-block mb-1" style="font-size: 36px; opacity: 0.9;"></i>
+                    Upload Bukti PDF
+                </h5>
+                <small class="text-white-50">Upload bukti penilaian (Format: PDF, Maks 10MB)</small>
+                <button type="button" class="close position-absolute" data-dismiss="modal" aria-label="Close" style="top: 15px; right: 20px; color: #fff; text-shadow: none; opacity: 0.8;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <form id="formUploadBukti">
+                    <div class="form-group text-center p-4 bg-white rounded shadow-sm border border-primary">
+                        <label for="bukti_pdf" class="font-weight-bold text-dark d-block mb-3">Pilih File Bukti</label>
+                        <input type="file" class="form-control-file d-none" id="bukti_pdf" name="bukti_pdf" accept=".pdf">
+                        
+                        <div class="upload-area cursor-pointer" onclick="$('#bukti_pdf').click();">
+                            <div class="upload-icon-wrapper mb-3">
+                                <div class="icon-circle bg-primary-light d-inline-flex align-items-center justify-content-center rounded-circle" style="width: 64px; height: 64px; background-color: rgba(0, 123, 255, 0.1);">
+                                    <i class="mdi mdi-cloud-upload text-primary" style="font-size: 32px;"></i>
+                                </div>
+                            </div>
+                            <p class="mb-1 text-secondary" id="file-name-display">Klik disini untuk memilih file</p>
+                            <small class="text-muted d-block">Atau drag & drop file PDF kesini</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-white border-top p-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary px-4 py-2 font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">
+                    <i class="mdi mdi-close mr-1"></i> Batal
+                </button>
+                <button type="button" class="btn btn-primary px-4 py-2 font-weight-bold shadow-sm" id="btnSubmitUploadBukti" style="border-radius: 8px;">
+                    <i class="mdi mdi-content-save mr-1"></i> Upload Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('bukti_pdf').addEventListener('change', function() {
+        var fileName = this.files[0] ? this.files[0].name : "Klik disini untuk memilih file";
+        document.getElementById('file-name-display').innerHTML = "<strong>" + fileName + "</strong>";
+    });
+</script>
+
 <style>
     /* Kustomisasi untuk tooltip kuning */
     .tooltip-kuning .tooltip-inner {
