@@ -30,10 +30,10 @@
                                 <!-- Header Aksi -->
                                 <div class="mb-3 d-flex justify-content-between align-items-center">
                                     <h5 class="card-title mb-0">📋 Daftar Role User</h5>
-                                    <!-- <button class="btn btn-primary btn-sm" data-toggle="modal"
+                                    <button class="btn btn-primary btn-sm" data-toggle="modal"
                                         data-target="#tambahUserModal">
                                         <i class="fas fa-plus"></i> Tambah User
-                                    </button> -->
+                                    </button>
                                 </div>
 
                                 <!-- Tabel Role User -->
@@ -97,44 +97,73 @@
 
     <!-- Modal Tambah User -->
     <div class="modal fade" id="tambahUserModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <form action="<?= base_url('superadmin/tambahRoleUser') ?>" method="post" class="modal-content">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title"><i class="fas fa-user-plus"></i> Tambah User</h5>
                     <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>NIP</label>
-                        <input type="text" name="nik" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <div class="input-group">
-                            <input type="password" name="password" id="add_password" class="form-control" required>
-                            <div class="input-group-append">
-                                <span class="input-group-text" style="cursor: pointer;" onclick="togglePassword('add_password', this)">
-                                    <i class="fas fa-eye"></i>
-                                </span>
-                            </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>NIP</label>
+                            <input type="text" name="nik" class="form-control" required maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                         </div>
-                        <small class="form-text text-muted">Password minimal 8 karakter, mengandung huruf besar, kecil, angka, dan simbol.</small>
-                    </div>
-                    <div class="form-group">
-                        <label>Role</label>
-                        <select name="role" class="form-control" required>
-                            <option value="pegawai">pegawai</option>
-                            <option value="administrator">administrator</option>
-                            <option value="administrator_renstra">administrator_renstra</option>
-                            <option value="superadmin">superadmin</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select name="is_active" class="form-control" required>
-                            <option value="1">Aktif</option>
-                            <option value="0">Nonaktif</option>
-                        </select>
+                        <div class="form-group col-md-6">
+                            <label>Nama</label>
+                            <input type="text" name="nama" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Jenis Unit</label>
+                            <select name="unit_kerja" id="sa_unitKerja" class="form-control select2" required>
+                                <option value="">Pilih Jenis Unit</option>
+                                <?php if(isset($unitkerja_list)): ?>
+                                <?php foreach ($unitkerja_list as $u): ?>
+                                    <option value="<?= $u->unit_kerja ?>"><?= $u->unit_kerja ?></option>
+                                <?php endforeach; ?>
+                                <?php endif; ?>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Unit Kantor</label>
+                            <select name="unit_kantor" id="sa_unitKantor" class="form-control select2" required disabled>
+                                <option value="">Pilih Jenis Unit terlebih dahulu</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Jabatan</label>
+                            <select name="jabatan" id="sa_jabatan" class="form-control select2" required disabled>
+                                <option value="">Pilih Unit Kantor terlebih dahulu</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Role</label>
+                            <select name="role" class="form-control" required>
+                                <option value="pegawai">pegawai</option>
+                                <option value="administrator">administrator</option>
+                                <option value="administrator_renstra">administrator_renstra</option>
+                                <option value="superadmin">superadmin</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Password</label>
+                            <div class="input-group">
+                                <input type="password" name="password" id="add_password" class="form-control" required>
+                                <div class="input-group-append">
+                                    <span class="input-group-text" style="cursor: pointer;" onclick="togglePassword('add_password', this)">
+                                        <i class="fas fa-eye"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted">Password minimal 8 karakter, mengandung huruf besar, kecil, angka, dan simbol.</small>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Status</label>
+                            <select name="is_active" class="form-control" required>
+                                <option value="1">Aktif</option>
+                                <option value="0">Nonaktif</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -235,6 +264,54 @@
                     title: 'Password Lemah!',
                     text: 'Password wajib minimal 8 karakter, serta mengandung huruf besar, huruf kecil, angka, dan karakter spesial/simbol.'
                 });
+            }
+        });
+    });
+
+    // JS untuk dropdown dinamis (Unit Kerja -> Unit Kantor -> Jabatan)
+    $(document).ready(function () {
+        $('#sa_unitKerja').change(function () {
+            const unitKerja = $(this).val();
+            $('#sa_unitKantor').prop('disabled', true).html('<option value="">Loading...</option>');
+            $('#sa_jabatan').prop('disabled', true).html('<option value="">Pilih Unit Kantor terlebih dahulu</option>');
+
+            if (unitKerja) {
+                $.get('<?= base_url("Superadmin/getUnitKantorByUnitKerjatambah") ?>', {
+                    unit_kerja: unitKerja
+                }, function (data) {
+                    let options = '<option value="">Pilih Unit Kantor</option>';
+                    if (typeof data === 'string') {
+                        try { data = JSON.parse(data); } catch(e) { data = []; }
+                    }
+                    data.forEach(function (item) {
+                        options += `<option value="${item.unit_kantor}">${item.unit_kantor}</option>`;
+                    });
+                    $('#sa_unitKantor').html(options).prop('disabled', false);
+                });
+            } else {
+                $('#sa_unitKantor').html('<option value="">Pilih Jenis Unit terlebih dahulu</option>').prop('disabled', true);
+            }
+        });
+
+        $('#sa_unitKantor').change(function () {
+            const unitKantor = $(this).val();
+            $('#sa_jabatan').prop('disabled', true).html('<option value="">Loading...</option>');
+
+            if (unitKantor) {
+                $.get('<?= base_url("Superadmin/getJabatanByUnitKantortambah") ?>', {
+                    unit_kantor: unitKantor
+                }, function (data) {
+                    let options = '<option value="">Pilih Jabatan</option>';
+                    if (typeof data === 'string') {
+                        try { data = JSON.parse(data); } catch(e) { data = []; }
+                    }
+                    data.forEach(function (item) {
+                        options += `<option value="${item.jabatan}">${item.jabatan}</option>`;
+                    });
+                    $('#sa_jabatan').html(options).prop('disabled', false);
+                });
+            } else {
+                $('#sa_jabatan').html('<option value="">Pilih Unit Kantor terlebih dahulu</option>').prop('disabled', true);
             }
         });
     });

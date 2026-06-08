@@ -71,6 +71,8 @@
                                         <th>NIP</th>
                                         <th>Nama</th>
                                         <th>Jabatan</th>
+                                        <th>Status Penilai 1</th>
+                                        <th>Status Penilai 2</th>
                                         <th>Status Penilaian</th>
                                         <th>Aksi</th>
                                     </tr>
@@ -127,6 +129,24 @@
                 { data: 'nik' },
                 { data: 'nama' },
                 { data: 'jabatan' },
+                {
+                    data: 'status_penilai1',
+                    render: function (data) {
+                        if (!data) return '';
+                        let cls = 'badge bg-secondary text-white';
+                        if (data === 'Disetujui') cls = 'badge bg-success';
+                        return `<span class="${cls}">${data}</span>`;
+                    }
+                },
+                {
+                    data: 'status_penilai2',
+                    render: function (data) {
+                        if (!data) return '';
+                        let cls = 'badge bg-secondary text-white';
+                        if (data === 'Disetujui') cls = 'badge bg-success';
+                        return `<span class="${cls}">${data}</span>`;
+                    }
+                },
                 {
                     data: 'status_penilaian',
                     render: function (data) {

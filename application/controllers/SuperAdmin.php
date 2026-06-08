@@ -62,6 +62,9 @@ class SuperAdmin extends CI_Controller
     {
         $data['title'] = "Kelola Role User";
         $data['users'] = $this->SuperAdmin_model->getAllUsers();
+        
+        $this->load->model('DataPegawai_model');
+        $data['unitkerja_list'] = $this->DataPegawai_model->getAllUnitKerja();
 
         $this->load->view('layoutsuperadmin/header', $data);
         $this->load->view('superadmin/kelolaroleuser', $data);
@@ -79,14 +82,42 @@ class SuperAdmin extends CI_Controller
         if ($this->form_validation->run() == false) {
             $this->session->set_flashdata('error', strip_tags(validation_errors()));
         } else {
-            $data = [
-                'nik'       => $this->input->post('nik', true),
-                'password'  => password_hash($this->input->post('password'), PASSWORD_DEFAULT),
-                'role'      => strtolower($this->input->post('role')),
-                'is_active' => $this->input->post('is_active') ? 1 : 0
+            $nik = $this->input->post('nik', true);
+            $nama = $this->input->post('nama', true);
+            $jabatan = $this->input->post('jabatan', true);
+            $unit_kerja = $this->input->post('unit_kerja', true);
+            $unit_kantor = $this->input->post('unit_kantor', true);
+            $password_plain = $this->input->post('password');
+            $role = strtolower($this->input->post('role'));
+            $is_active = $this->input->post('is_active') ? 1 : 0;
+
+            $password_hashed = password_hash($password_plain, PASSWORD_DEFAULT);
+            
+            // 1. Simpan ke tabel pegawai jika belum ada
+            $this->load->model('DataPegawai_model');
+            $cek_pegawai = $this->db->get_where('pegawai', ['nik' => $nik])->row();
+            if (!$cek_pegawai) {
+                $data_pegawai = [
+                    'nik' => $nik,
+                    'nama' => $nama,
+                    'jabatan' => $jabatan,
+                    'unit_kerja' => $unit_kerja,
+                    'unit_kantor' => $unit_kantor,
+                    'password' => $password_hashed,
+                ];
+                $this->DataPegawai_model->insertPegawai($data_pegawai);
+                $this->DataPegawai_model->insertRiwayatAwal($nik, $jabatan, $unit_kerja, $unit_kantor);
+            }
+            
+            // 2. Simpan ke tabel users
+            $data_user = [
+                'nik'       => $nik,
+                'password'  => $password_hashed,
+                'role'      => $role,
+                'is_active' => $is_active
             ];
-            $this->SuperAdmin_model->insertUser($data);
-            $this->session->set_flashdata('success', 'User baru berhasil ditambahkan.');
+            $this->SuperAdmin_model->insertUser($data_user);
+            $this->session->set_flashdata('success', 'User dan Pegawai baru berhasil ditambahkan.');
         }
         redirect('superadmin/kelolaroleuser');
     }
@@ -256,6 +287,32 @@ class SuperAdmin extends CI_Controller
         $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode($list));
+    }
+
+    // Ajax: ambil Unit Kantor berdasarkan Unit Kerja
+    public function getUnitKantorByUnitKerjatambah()
+    {
+        $this->load->model('DataPegawai_model');
+        $unit_kerja = $this->input->get('unit_kerja');
+        if (!$unit_kerja) {
+            $this->output->set_content_type('application/json')->set_output(json_encode([]));
+            return;
+        }
+        $data = $this->DataPegawai_model->getUnitKantorByUnitKerja($unit_kerja);
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
+    }
+
+    // Ajax: ambil Jabatan berdasarkan Unit Kantor
+    public function getJabatanByUnitKantortambah()
+    {
+        $this->load->model('DataPegawai_model');
+        $unit_kantor = $this->input->get('unit_kantor');
+        if (!$unit_kantor) {
+            $this->output->set_content_type('application/json')->set_output(json_encode([]));
+            return;
+        }
+        $data = $this->DataPegawai_model->getJabatanByUnitKantor($unit_kantor);
+        $this->output->set_content_type('application/json')->set_output(json_encode($data));
     }
 
     //Kelola Rumus

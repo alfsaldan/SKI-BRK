@@ -2866,6 +2866,29 @@ class Administrator extends CI_Controller
                 ->where('periode_akhir', $periode_akhir)
                 ->from('penilaian')->count_all_results();
 
+            $status_penilai1 = 'Belum Disetujui';
+            $status_penilai2 = 'Belum Disetujui';
+
+            if ($penilaian_count > 0) {
+                // Cek status Penilai 1 (jika ada yang bukan disetujui, maka belum disetujui)
+                $not_approved_1 = $this->db->where('nik', $p->nik)
+                    ->where('periode_awal', $periode_awal)
+                    ->where('periode_akhir', $periode_akhir)
+                    ->where('status !=', 'disetujui')
+                    ->from('penilaian')->count_all_results();
+                
+                if ($not_approved_1 == 0) $status_penilai1 = 'Disetujui';
+
+                // Cek status Penilai 2
+                $not_approved_2 = $this->db->where('nik', $p->nik)
+                    ->where('periode_awal', $periode_awal)
+                    ->where('periode_akhir', $periode_akhir)
+                    ->where('status2 !=', 'disetujui')
+                    ->from('penilaian')->count_all_results();
+                
+                if ($not_approved_2 == 0) $status_penilai2 = 'Disetujui';
+            }
+
             // nama field bisa berbeda antar query (nama / nama_pegawai) -> fallback
             $namaPegawai = $p->nama ?? $p->nama_pegawai ?? $p->nama_peg ?? '';
 
@@ -2894,6 +2917,8 @@ class Administrator extends CI_Controller
                 'nik' => $p->nik,
                 'nama' => $namaPegawai,
                 'jabatan' => $p->jabatan ?? ($p->jabatan ?? ''),
+                'status_penilai1' => $status_penilai1,
+                'status_penilai2' => $status_penilai2,
                 'status_penilaian' => $statusLabel,
                 'action' => site_url('administrator/detailverifikasi/' . $p->nik) . '?awal=' . $periode_awal . '&akhir=' . $periode_akhir
             ];
