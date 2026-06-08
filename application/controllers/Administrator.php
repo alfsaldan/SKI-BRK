@@ -1017,7 +1017,10 @@ class Administrator extends CI_Controller
         }
 
         $successCount = 0;
+        $successList = [];
         $errors = [];
+
+        $this->load->model('Administrator_model');
 
         foreach ($sheetData as $i => $row) {
             if ($i == 1) continue;
@@ -1054,23 +1057,25 @@ class Administrator extends CI_Controller
                 continue;
             }
 
+            $nama_pegawai = $pegawai->nama;
+
             if (empty($unit_kerja)) {
-                $errors[] = "Baris $i: Jenis Unit kosong.";
+                $errors[] = "Baris $i ($nama_pegawai - $nik): Jenis Unit kosong.";
                 continue;
             }
 
             if (empty($unit_kantor)) {
-                $errors[] = "Baris $i: Unit Kantor kosong.";
+                $errors[] = "Baris $i ($nama_pegawai - $nik): Unit Kantor kosong.";
                 continue;
             }
 
             if (empty($jabatan_baru)) {
-                $errors[] = "Baris $i: Jabatan Baru kosong.";
+                $errors[] = "Baris $i ($nama_pegawai - $nik): Jabatan Baru kosong.";
                 continue;
             }
 
             if (empty($tgl_mulai_raw)) {
-                $errors[] = "Baris $i: Tanggal Mulai kosong.";
+                $errors[] = "Baris $i ($nama_pegawai - $nik): Tanggal Mulai kosong.";
                 continue;
             }
 
@@ -1081,32 +1086,67 @@ class Administrator extends CI_Controller
                     $dt = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($tgl_mulai_raw);
                     $tgl_mulai = $dt->format('Y-m-d');
                 } catch (Exception $e) {
-                    $errors[] = "Baris $i: Tanggal tidak valid.";
+                    $errors[] = "Baris $i ($nama_pegawai - $nik): Tanggal tidak valid.";
                     continue;
                 }
             } else {
                 $parsed = date_create($tgl_mulai_raw);
                 if ($parsed) $tgl_mulai = $parsed->format('Y-m-d');
                 else {
-                    $errors[] = "Baris $i: Tanggal tidak valid.";
+                    $errors[] = "Baris $i ($nama_pegawai - $nik): Tanggal tidak valid.";
                     continue;
                 }
             }
 
+            // Cek persetujuan penilaian
+            $hasPenilaian = $this->Administrator_model->hasPenilaian($nik);
+            if ($hasPenilaian) {
+                $allApproved = $this->Administrator_model->semuaPenilaianDisetujui($nik);
+                if (!$allApproved) {
+                    $errors[] = "Baris $i: Mutasi gagal. Pegawai $nama_pegawai ($nik) masih memiliki status penilaian yang belum disetujui.";
+                    continue;
+                }
+            }
+
+            $tgl_selesai_lama = date('Y-m-d', strtotime('-1 day', strtotime($tgl_mulai)));
+
+            $this->db->trans_start();
+
+            if ($hasPenilaian) {
+                $this->Administrator_model->markPenilaianSelesai($nik);
+            }
+
+            // Akhiri periode penilaian yang sedang berjalan
+            $data_update_periode = ['periode_akhir' => $tgl_selesai_lama];
+            $this->db->where('nik', $nik)->where('periode_awal <=', $tgl_mulai)->where('periode_akhir >=', $tgl_mulai)->update('penilaian', $data_update_periode);
+            $this->db->where('nik', $nik)->where('periode_awal <=', $tgl_mulai)->where('periode_akhir >=', $tgl_mulai)->update('nilai_akhir', $data_update_periode);
+            $this->db->where('nik_pegawai', $nik)->where('periode_awal <=', $tgl_mulai)->where('periode_akhir >=', $tgl_mulai)->update('budaya_nilai', $data_update_periode);
+
             // perform riwayat update
             try {
                 $this->DataPegawai_model->tambahRiwayatJabatan($nik, $jabatan_baru, $unit_kerja, $unit_kantor, $tgl_mulai);
-                $successCount++;
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === false) {
+                    $errors[] = "Baris $i: Gagal menyimpan mutasi $nama_pegawai ($nik) - kesalahan database.";
+                } else {
+                    $successCount++;
+                    $successList[] = "✓ $nama_pegawai ($nik)";
+                }
             } catch (Exception $e) {
-                $errors[] = "Baris $i: Gagal menyimpan mutasi - " . htmlspecialchars($e->getMessage());
+                $this->db->trans_rollback();
+                $errors[] = "Baris $i: Gagal menyimpan mutasi $nama_pegawai ($nik) - " . htmlspecialchars($e->getMessage());
             }
         }
 
         if ($successCount > 0) {
-            $this->session->set_flashdata('success', "$successCount data mutasi berhasil diproses.");
+            $success_html = '<div style="max-height: 150px; overflow-y: auto; text-align: left; font-size: 13px; background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 10px;"><strong>Pegawai Berhasil Dimutasi (' . $successCount . '):</strong><br>' . implode('<br>', $successList) . '</div>';
+            $success_html = str_replace(["\r", "\n", "'"], [" ", " ", "\\'"], $success_html);
+            $this->session->set_flashdata('success', $success_html);
         }
+
         if (!empty($errors)) {
-            $error_html = '<div style="max-height: 250px; overflow-y: auto; text-align: left; font-size: 13px; background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;"><strong>Detail Error:</strong><br>' . implode('<br>', $errors) . '</div>';
+            $error_html = '<div style="max-height: 250px; overflow-y: auto; text-align: left; font-size: 13px; background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px;"><strong>Detail Gagal / Error:</strong><br>' . implode('<br>', $errors) . '</div>';
             $error_html = str_replace(["\r", "\n", "'"], [" ", " ", "\\'"], $error_html);
             $this->session->set_flashdata('warning', $error_html);
         }
@@ -2418,6 +2458,9 @@ class Administrator extends CI_Controller
         // DOWNLOAD FILE
         // =======================
         $filename = "Data_Penilaian_{$pegawai->nama}_{$pegawai->nik}.xlsx";
+        if (ob_get_level() > 0) {
+            ob_clean();
+        }
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header("Content-Disposition: attachment;filename=\"{$filename}\"");
         header('Cache-Control: max-age=0');

@@ -1162,8 +1162,9 @@ class Pegawai extends CI_Controller
         }
 
         // Bersihkan buffer agar tidak ada output selain Excel
-        ob_end_clean();
-        ob_start();
+        if (ob_get_level() > 0) {
+            ob_clean();
+        }
 
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -2388,6 +2389,9 @@ class Pegawai extends CI_Controller
         // DOWNLOAD FILE
         // =======================
         $filename = "Data_Penilaian_{$pegawai->nama}_{$pegawai->nik}.xlsx";
+        if (ob_get_level() > 0) {
+            ob_clean();
+        }
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header("Content-Disposition: attachment;filename=\"{$filename}\"");
         header('Cache-Control: max-age=0');
