@@ -85,6 +85,39 @@ class DataPegawai_model extends CI_Model
 
     public function deletePegawai($nik)
     {
+        // Hapus data terkait PPK
+        $this->db->delete('ppk', ['nik' => $nik]);
+        $this->db->delete('ppk_evaluasi', ['nik' => $nik]);
+        $this->db->delete('ppk_responses', ['nik' => $nik]);
+        
+        // Hapus catatan dan aktivitas coaching (sebagai pegawai, penilai, atau pengirim)
+        $this->db->delete('catatan_pegawai', ['nik' => $nik]);
+        $this->db->delete('catatan_penilai', ['nik_pegawai' => $nik]);
+        $this->db->delete('catatan_penilai', ['nik_penilai' => $nik]);
+        
+        $this->db->delete('aktivitas_coaching', ['nik_pegawai' => $nik]);
+        $this->db->delete('aktivitas_coaching', ['nik_penilai1' => $nik]);
+        $this->db->delete('aktivitas_coaching', ['nik_penilai2' => $nik]);
+        $this->db->delete('aktivitas_coaching', ['pengirim_nik' => $nik]);
+
+        // Hapus data penilaian kinerja dan monitoring
+        $this->db->delete('budaya_nilai', ['nik_pegawai' => $nik]);
+        $this->db->delete('monitoring_bulanan', ['nik' => $nik]);
+        $this->db->delete('nilai_akhir', ['nik' => $nik]);
+        $this->db->delete('penilaian', ['nik' => $nik]);
+        
+        // Hapus indikator dan sasaran kerja yang secara spesifik dimiliki oleh pegawai ini
+        if ($this->db->field_exists('owner_nik', 'indikator')) {
+            $this->db->delete('indikator', ['owner_nik' => $nik]);
+        }
+        if ($this->db->field_exists('owner_nik', 'sasaran_kerja')) {
+            $this->db->delete('sasaran_kerja', ['owner_nik' => $nik]);
+        }
+
+        // Hapus riwayat jabatan
+        $this->db->delete('riwayat_jabatan', ['nik' => $nik]);
+
+        // Terakhir, hapus data pegawai
         return $this->db->delete('pegawai', ['nik' => $nik]);
     }
     // Tambah riwayat jabatan baru & tutup jabatan lama otomatis
