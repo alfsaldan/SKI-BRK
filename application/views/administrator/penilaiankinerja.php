@@ -881,27 +881,30 @@
                 rumus3: ["outstanding", "pertumbuhan"]
             };
             const containsKeyword = (list, text) => list.some(k => new RegExp(`\\b${k}\\b`, "i").test(text));
+
             let pencapaian = 0;
-            if (target <= 0.999) {
+
+            if (target === 0) {
+                if (realisasi === 0) {
+                    pencapaian = 130; 
+                } else {
+                    pencapaian = 0; 
+                }
+            } else if (target <= 0.999) {
                 pencapaian = (realisasi / target) * 100;
             } else {
                 if (containsKeyword(keywords.rumus1, indikatorText)) {
                     pencapaian = ((target + (target - realisasi)) / target) * 100;
-                    if (pencapaian < 0) {
-                        pencapaian = 0; // pastikan tidak negatif 
-                    }
+                    if (pencapaian < 0) pencapaian = 0;
                 } else if (containsKeyword(keywords.rumus3, indikatorText)) {
                     pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
-                    if (pencapaian < 0) {
-                        pencapaian = 0; // pastikan tidak negatif 
-                    }
+                    if (pencapaian < 0) pencapaian = 0;
                 } else {
                     pencapaian = (realisasi / target) * 100;
-                    if (pencapaian < 0) {
-                        pencapaian = 0; // pastikan tidak negatif 
-                    }
+                    if (pencapaian < 0) pencapaian = 0;
                 }
             }
+
             return Math.min(pencapaian, 130);
         }
 
@@ -1025,18 +1028,19 @@
                 const rataBudaya = rataBudayaEl ? (parseFloat(rataBudayaEl.textContent) || 0) : 0;
                 const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
 
-                // nilai sasaran dihitung berdasarkan bobot sasaran yang disesuaikan
-                const nilaiSasaran = totalSasaran * (isNaN(bobotSasaran) ? 0.95 : bobotSasaran);
-                const nilaiBudaya = rataBudaya * bobotBudaya;
+                // nilai sasaran dihitung berdasarkan bobot sasaran yang disesuaikan (dibulatkan ke 2 desimal)
+                const nilaiSasaran = parseFloat((totalSasaran * (isNaN(bobotSasaran) ? 0.95 : bobotSasaran)).toFixed(2));
+                const nilaiBudaya = parseFloat((rataBudaya * bobotBudaya).toFixed(2));
 
                 // Ambil nilai share KPI (hasil) dari DOM jika sudah dihitung
                 var shareValEl = document.getElementById('share-kpi-nilai');
                 var shareValue = 0;
                 if (shareValEl) {
                     shareValue = parseFloat(String(shareValEl.innerText).replace(/[^0-9.-]+/g, '')) || 0;
+                    shareValue = parseFloat(shareValue.toFixed(2));
                 }
 
-                // Total nilai sekarang adalah penjumlahan nilai sasaran + nilai budaya + nilai share
+                // Total nilai sekarang adalah penjumlahan nilai sasaran + nilai budaya + nilai share (sudah dibulatkan masing-masing)
                 const totalNilai = parseFloat((nilaiSasaran + nilaiBudaya + shareValue).toFixed(2));
                 const nilaiAkhir = (fraud === 1) ? totalNilai - fraud : totalNilai;
 

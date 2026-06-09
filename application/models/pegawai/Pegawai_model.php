@@ -113,16 +113,19 @@ class Pegawai_model extends CI_Model
             $this->db->join('penilaian', 'penilaian.indikator_id = indikator.id', 'left');
         }
 
-        // Hanya ambil sasaran_kerja yang sesuai jabatan/unit
-        $this->db->where('sasaran_kerja.jabatan', $jabatan);
-        $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
-        // Jika $nik diberikan (tampilan pegawai), tampilkan juga item personal milik pegawai
         if ($nik) {
-            $this->db->where('(sasaran_kerja.owner_nik IS NULL OR sasaran_kerja.owner_nik = ' . $this->db->escape($nik) . ')');
-            // Pastikan indikator yang di-join juga default atau milik pegawai
-            $this->db->where('(indikator.owner_nik IS NULL OR indikator.owner_nik = ' . $this->db->escape($nik) . ')');
+            $this->db->group_start();
+                $this->db->group_start();
+                    $this->db->where('sasaran_kerja.jabatan', $jabatan);
+                    $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+                    $this->db->where('(sasaran_kerja.owner_nik IS NULL OR sasaran_kerja.owner_nik = ' . $this->db->escape($nik) . ')');
+                    $this->db->where('(indikator.owner_nik IS NULL OR indikator.owner_nik = ' . $this->db->escape($nik) . ')');
+                $this->db->group_end();
+                $this->db->or_where('penilaian.id IS NOT NULL', null, false);
+            $this->db->group_end();
         } else {
-            // Jika tidak ada nik (mis. admin/overview), hanya ambil default (owner NULL)
+            $this->db->where('sasaran_kerja.jabatan', $jabatan);
+            $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
             $this->db->where('sasaran_kerja.owner_nik IS NULL');
             $this->db->where('indikator.owner_nik IS NULL');
         }
@@ -396,6 +399,11 @@ class Pegawai_model extends CI_Model
             // 2. Cek apakah ini adalah data tahunan -- ubah menjadi periode 1 Okt hingga 31 Des
             $isTahunan = ($start->format('m-d') == '10-01' && $end->format('m-d') == '12-31');
 
+            // Fetch historical job for this specific period
+            $history = $this->get_pegawai_history_by_date($nik, $row->periode_awal, $row->periode_akhir);
+            $jabatan_periode = $history ? $history->jabatan : '-';
+            $unit_kantor_periode = $history ? $history->unit_kantor : '-';
+
             if ($isTahunan) {
                 // Jika ya, simpan juga sebagai data rekapitulasi tahunan
                 $rekap[$tahun]->rata_nilai_sasaran = round($row->nilai_sasaran, 2);
@@ -410,15 +418,16 @@ class Pegawai_model extends CI_Model
                     'periode'        => date('d M Y', strtotime($row->periode_awal)) . ' - ' . date('d M Y', strtotime($row->periode_akhir)),
                     'periode_awal'   => $row->periode_awal,
                     'periode_akhir'  => $row->periode_akhir,
-                    'nilai_sasaran' => round($row->nilai_sasaran, 2),
+                    'jabatan'        => $jabatan_periode,
+                    'unit_kantor'    => $unit_kantor_periode,
+                    'nilai_sasaran'  => round($row->nilai_sasaran, 2),
                     'nilai_budaya'   => round($row->nilai_budaya, 2),
-                    'share_kpi_value' => $row->share_kpi_value ?? '0',
+                    'share_kpi_value'=> $row->share_kpi_value ?? '0',
                     'total_nilai'    => round($row->total_nilai, 2),
                     'fraud'          => $row->fraud ?? '0',
                     'nilai_akhir'    => round($row->nilai_akhir, 2),
                     'pencapaian'     => round(floatval(str_replace('%', '', $row->pencapaian)), 2),
                     'predikat'       => $row->predikat,
-                    'fraud'          => $row->fraud ?? '0',
                     'is_tahunan'     => true
                 ];
             } else {
@@ -427,15 +436,16 @@ class Pegawai_model extends CI_Model
                     'periode'        => date('d M Y', strtotime($row->periode_awal)) . ' - ' . date('d M Y', strtotime($row->periode_akhir)),
                     'periode_awal'   => $row->periode_awal,
                     'periode_akhir'  => $row->periode_akhir,
-                    'nilai_sasaran' => round($row->nilai_sasaran, 2),
+                    'jabatan'        => $jabatan_periode,
+                    'unit_kantor'    => $unit_kantor_periode,
+                    'nilai_sasaran'  => round($row->nilai_sasaran, 2),
                     'nilai_budaya'   => round($row->nilai_budaya, 2),
-                    'share_kpi_value' => $row->share_kpi_value ?? '0',
+                    'share_kpi_value'=> $row->share_kpi_value ?? '0',
                     'total_nilai'    => round($row->total_nilai, 2),
                     'fraud'          => $row->fraud ?? '0',
                     'nilai_akhir'    => round($row->nilai_akhir, 2),
                     'pencapaian'     => round(floatval(str_replace('%', '', $row->pencapaian)), 2),
-                    'predikat'       => $row->predikat,
-                    'fraud'          => $row->fraud ?? '0'
+                    'predikat'       => $row->predikat
                 ];
             }
 
@@ -444,7 +454,10 @@ class Pegawai_model extends CI_Model
 
             // Pisahkan berdasarkan status penilaian
             if (isset($periode_data)) {
-                if (strtolower($row->status_penilaian) === 'selesai') {
+                $is_past_job = ($history && strtolower($history->status_jabatan ?? 'nonaktif') === 'nonaktif');
+                $is_selesai = (strtolower($row->status_penilaian) === 'selesai' || ($is_past_job && strtolower($row->status_penilaian) === 'disetujui'));
+
+                if ($is_selesai) {
                     $rekap[$tahun]->periode_selesai[] = $periode_data;
                     $has_arsip = true; // Tandai bahwa ada arsip
                 } else {
@@ -666,7 +679,9 @@ class Pegawai_model extends CI_Model
             p.nama AS nama_pegawai,
             rj.nik,
             rj.jabatan,
+            rj.unit_kerja,
             rj.unit_kantor,
+            rj.status AS status_jabatan,
             NULL AS penilai1_nama,
             NULL AS penilai2_nama
         ', FALSE);
@@ -674,13 +689,13 @@ class Pegawai_model extends CI_Model
         // Join ke riwayat jabatan
         $this->db->join('riwayat_jabatan rj', 'p.nik = rj.nik', 'left');
         $this->db->where('rj.nik', $nik);
-        $this->db->where('rj.status', 'nonaktif');
+        $this->db->where('rj.tgl_mulai <=', $akhir);
+        $this->db->group_start();
+            $this->db->where('rj.tgl_selesai >=', $awal);
+            $this->db->or_where('rj.tgl_selesai IS NULL');
+        $this->db->group_end();
 
-        // Ambil riwayat jabatan yang relevan dengan periode arsip.
-        // Logikanya: cari riwayat jabatan yang tanggal selesainya paling mendekati (tapi setelah) tanggal akhir periode penilaian.
-        $this->db->where('DATE(rj.tgl_selesai) >=', $akhir);
-
-        $this->db->order_by('rj.tgl_selesai', 'ASC'); // Urutkan dari yang paling mendekati
+        $this->db->order_by('rj.tgl_selesai', 'DESC'); // Ambil yang paling baru jika ada overlap
         $this->db->limit(1);
 
         $query = $this->db->get();

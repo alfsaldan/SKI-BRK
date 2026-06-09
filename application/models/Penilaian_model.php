@@ -45,13 +45,18 @@ class Penilaian_model extends CI_Model
             $this->db->join('penilaian', 'penilaian.indikator_id = indikator.id', 'left');
         }
 
-        $this->db->where('sasaran_kerja.jabatan', $jabatan);
-        $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
-
-        // ❌ JANGAN filter unit_kantor di sini, karena tabel sasaran_kerja tidak punya field itu
-        // if ($unit_kantor) {
-        //     $this->db->where('sasaran_kerja.unit_kantor', $unit_kantor);
-        // }
+        if ($nik) {
+            $this->db->group_start();
+                $this->db->group_start();
+                    $this->db->where('sasaran_kerja.jabatan', $jabatan);
+                    $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+                $this->db->group_end();
+                $this->db->or_where('penilaian.id IS NOT NULL', null, false);
+            $this->db->group_end();
+        } else {
+            $this->db->where('sasaran_kerja.jabatan', $jabatan);
+            $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+        }
 
         $this->db->order_by('sasaran_kerja.perspektif', 'ASC');
         $this->db->order_by('sasaran_kerja.sasaran_kerja', 'ASC');
@@ -329,8 +334,7 @@ class Penilaian_model extends CI_Model
     {
         $this->db->where('nik', $nik)
             ->where('periode_awal', $periode_awal)
-            ->where('periode_akhir', $periode_akhir)
-            ->where("LOWER(status_penilaian) !=", 'selesai');
+            ->where('periode_akhir', $periode_akhir);
         return $this->db
             ->get('nilai_akhir')
             ->row_array();
@@ -560,9 +564,6 @@ class Penilaian_model extends CI_Model
         if ($periode_akhir) {
             $this->db->where('periode_akhir', $periode_akhir);
         }
-
-        // ❌ Jangan ambil data yang sudah selesai
-        $this->db->where("LOWER(status_penilaian) !=", 'selesai');
 
         $result = $this->db->get('budaya_nilai')->row(); // gunakan row() biar object
 

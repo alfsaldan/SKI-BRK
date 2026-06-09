@@ -966,15 +966,35 @@
         function hitungPencapaianOtomatis(target, realisasi, indikatorText = "") {
             indikatorText = (indikatorText || "").toLowerCase();
             const keywords = {
-                rumus1: ["biaya", "beban", "efisiensi", "npf pembiayaan"],
+                rumus1: ["biaya", "beban", "efisiensi", "npf pembiayaan", "npf nominal"],
                 rumus3: ["outstanding", "pertumbuhan"]
             };
             const containsKeyword = (list, text) => list.some(k => new RegExp(`\\b${k}\\b`, "i").test(text));
 
-            if (target <= 0.999) return (realisasi / (target || 1)) * 100;
-            if (containsKeyword(keywords.rumus1, indikatorText)) return ((target + (target - realisasi)) / target) * 100;
-            if (containsKeyword(keywords.rumus3, indikatorText)) return ((realisasi - target) / Math.abs(target || 1) + 1) * 100;
-            return (realisasi / (target || 1)) * 100;
+            let pencapaian = 0;
+
+            if (target === 0) {
+                if (realisasi === 0) {
+                    pencapaian = 130; 
+                } else {
+                    pencapaian = 0; 
+                }
+            } else if (target <= 0.999) {
+                pencapaian = (realisasi / target) * 100;
+            } else {
+                if (containsKeyword(keywords.rumus1, indikatorText)) {
+                    pencapaian = ((target + (target - realisasi)) / target) * 100;
+                    if (pencapaian < 0) pencapaian = 0;
+                } else if (containsKeyword(keywords.rumus3, indikatorText)) {
+                    pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
+                    if (pencapaian < 0) pencapaian = 0;
+                } else {
+                    pencapaian = (realisasi / target) * 100;
+                    if (pencapaian < 0) pencapaian = 0;
+                }
+            }
+
+            return Math.min(pencapaian, 130);
         }
 
         function hitungNilai(pencapaian) {
@@ -1093,9 +1113,9 @@
             const shareKpiNilai = parseFloat(document.getElementById("share-kpi-nilai")?.textContent) || 0;
 
 
-            const nilaiSasaran = totalSasaran * bobotSasaran;
-            const nilaiBudaya = rataBudaya * bobotBudaya;
-            const totalNilai = nilaiSasaran + nilaiBudaya + shareKpiNilai;
+            const nilaiSasaran = parseFloat((totalSasaran * bobotSasaran).toFixed(2)) || 0;
+            const nilaiBudaya = parseFloat((rataBudaya * bobotBudaya).toFixed(2)) || 0;
+            const totalNilai = parseFloat((nilaiSasaran + nilaiBudaya + shareKpiNilai).toFixed(2)) || 0;
             const nilaiAkhir = fraud === 1 ? totalNilai - fraud : totalNilai;
             const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
 
@@ -1151,6 +1171,9 @@
                 else pencapaian = 130;
             } else {
                 pencapaian = 0;
+            }
+            if (pencapaianAkhirEl) {
+                pencapaianAkhirEl.textContent = pencapaian === "" ? "" : pencapaian.toFixed(2) + "%";
             }
         }
 

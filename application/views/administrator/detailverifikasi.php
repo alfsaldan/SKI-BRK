@@ -469,9 +469,9 @@
                     $bobot_sasaran = $nilai_akhir['bobot_sasaran'] ?? 95;
                     $bobot_budaya = $nilai_akhir['bobot_budaya'] ?? 5;
                     $bobot_share_kpi = $nilai_akhir['bobot_share_kpi'] ?? 0;
-                    $nilai_sasaran = $total_skor * $bobot_sasaran / 100;
-                    $nilai_budaya = $avg_budaya * $bobot_budaya / 100;
-                    $nilai_kpi = $share_kpi_value * $bobot_share_kpi / 100;
+                    $nilai_sasaran = round($total_skor * $bobot_sasaran / 100, 2);
+                    $nilai_budaya = round($avg_budaya * $bobot_budaya / 100, 2);
+                    $nilai_kpi = round($share_kpi_value * $bobot_share_kpi / 100, 2);
                     $total_nilai = $nilai_akhir['total_nilai'] ?? $nilai_sasaran + $nilai_budaya + $nilai_kpi;
                     $pencapaian_pct = floatval(str_replace('%', '', $nilai_akhir['pencapaian'] ?? 0));
                     $predikat = $nilai_akhir['predikat'] ?? 'Minus (M)';

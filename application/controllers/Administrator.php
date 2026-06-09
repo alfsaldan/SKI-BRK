@@ -501,9 +501,27 @@ class Administrator extends CI_Controller
         $pegawai = $this->Penilaian_model->getPegawaiWithPenilai($nik);
 
         if ($pegawai) {
+            // --- FIX UNTUK JABATAN LAMA ---
+            $jabatan_aktif = $pegawai->jabatan;
+            $unit_kerja_aktif = $pegawai->unit_kerja;
+            $unit_kantor_aktif = $pegawai->unit_kantor;
+
+            $this->load->model('pegawai/Pegawai_model');
+            $history = $this->Pegawai_model->get_pegawai_history_by_date($nik, $periode_awal, $periode_akhir);
+            if ($history) {
+                $jabatan_aktif = $history->jabatan;
+                $unit_kerja_aktif = $history->unit_kerja;
+                $unit_kantor_aktif = $history->unit_kantor;
+                
+                // Override data pegawai detail supaya di view juga muncul jabatan lama
+                $pegawai->jabatan = $jabatan_aktif;
+                $pegawai->unit_kerja = $unit_kerja_aktif;
+                $pegawai->unit_kantor = $unit_kantor_aktif;
+            }
+
             $indikator = $this->Penilaian_model->get_indikator_by_jabatan_dan_unit(
-                $pegawai->jabatan,
-                $pegawai->unit_kerja,
+                $jabatan_aktif,
+                $unit_kerja_aktif,
                 $nik,
                 $periode_awal,
                 $periode_akhir
@@ -1427,6 +1445,16 @@ class Administrator extends CI_Controller
 
         // Ambil data pegawai
         $pegawai   = $this->DataPegawai_model->getPegawaiWithPenilai($nik);
+
+        if ($pegawai) {
+            $this->load->model('pegawai/Pegawai_model');
+            $history = $this->Pegawai_model->get_pegawai_history_by_date($nik, $awal, $akhir);
+            if ($history) {
+                $pegawai->jabatan = $history->jabatan;
+                $pegawai->unit_kerja = $history->unit_kerja;
+                $pegawai->unit_kantor = $history->unit_kantor;
+            }
+        }
 
         // Ambil penilaian detail untuk periode yang sudah ditentukan
         $penilaian = $this->DataPegawai_model->getPenilaianByNik($nik, $awal, $akhir);
@@ -3000,6 +3028,15 @@ class Administrator extends CI_Controller
         }
         // penilai1_nama / penilai2_nama assumed provided by model
 
+        // --- FIX UNTUK JABATAN LAMA ---
+        $this->load->model('pegawai/Pegawai_model');
+        $history = $this->Pegawai_model->get_pegawai_history_by_date($nik, $awal, $akhir);
+        if ($history) {
+            $pegawai->jabatan = $history->jabatan;
+            $pegawai->unit_kerja = $history->unit_kerja;
+            $pegawai->unit_kantor = $history->unit_kantor;
+        }
+
         // Ambil data penilaian berdasarkan periode
         $penilaian = $this->Penilaian_model->getPenilaianDetail($nik, $awal, $akhir);
         $status_penilaian = $this->Penilaian_model->getStatusPenilaian($nik, $awal, $akhir);
@@ -3187,6 +3224,23 @@ class Administrator extends CI_Controller
         $tahun_list = $query->result();
 
         if ($pegawai) {
+            // --- FIX UNTUK JABATAN LAMA ---
+            $jabatan_aktif = $pegawai->jabatan;
+            $unit_kerja_aktif = $pegawai->unit_kerja;
+            $unit_kantor_aktif = $pegawai->unit_kantor;
+
+            $this->load->model('pegawai/Pegawai_model');
+            $history = $this->Pegawai_model->get_pegawai_history_by_date($nik, $periode_awal, $periode_akhir);
+            if ($history) {
+                $jabatan_aktif = $history->jabatan;
+                $unit_kerja_aktif = $history->unit_kerja;
+                $unit_kantor_aktif = $history->unit_kantor;
+
+                $pegawai->jabatan = $jabatan_aktif;
+                $pegawai->unit_kerja = $unit_kerja_aktif;
+                $pegawai->unit_kantor = $unit_kantor_aktif;
+            }
+
             $monitoring_bulanan = $this->Monitoring_model->getMonitoringBulanan($nik, $bulan, $tahun);
 
             $awal_tahun = "$tahun-10-01";
@@ -3201,8 +3255,8 @@ class Administrator extends CI_Controller
                 }
 
                 $indicators = $this->Monitoring_model->get_indikator_by_jabatan_dan_unit(
-                    $pegawai->jabatan,
-                    $pegawai->unit_kerja,
+                    $jabatan_aktif,
+                    $unit_kerja_aktif,
                     $nik,
                     $awal_tahun,
                     $akhir_tahun
@@ -3235,8 +3289,8 @@ class Administrator extends CI_Controller
                 $nilai_akhir = $monitoring_bulanan->nilai_akhir;
             } else {
                 $penilaian_tahunan = $this->Monitoring_model->get_indikator_by_jabatan_dan_unit(
-                    $pegawai->jabatan,
-                    $pegawai->unit_kerja,
+                    $jabatan_aktif,
+                    $unit_kerja_aktif,
                     $nik,
                     $awal_tahun,
                     $akhir_tahun

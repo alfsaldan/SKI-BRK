@@ -49,8 +49,18 @@ class Monitoring_model extends CI_Model
             $this->db->join('penilaian', 'penilaian.indikator_id = indikator.id', 'left');
         }
 
-        $this->db->where('sasaran_kerja.jabatan', $jabatan);
-        $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+        if ($nik) {
+            $this->db->group_start();
+                $this->db->group_start();
+                    $this->db->where('sasaran_kerja.jabatan', $jabatan);
+                    $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+                $this->db->group_end();
+                $this->db->or_where('penilaian.id IS NOT NULL', null, false);
+            $this->db->group_end();
+        } else {
+            $this->db->where('sasaran_kerja.jabatan', $jabatan);
+            $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+        }
         $this->db->order_by('sasaran_kerja.perspektif', 'ASC');
         $this->db->order_by('sasaran_kerja.sasaran_kerja', 'ASC');
 

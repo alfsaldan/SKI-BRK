@@ -444,17 +444,21 @@
                     // 🔹 Pastikan data aman
                     $total_skor = number_format(round(floatval($total_nilai ?? 0), 2), 2);
                     $avg_budaya = $rata_rata_budaya ?? 0;
+                    
                     $share_kpi_value = $nilai_akhir->share_kpi_value ?? 0;
                     $bobot_sasaran = $nilai_akhir->bobot_sasaran ?? 95;
                     $bobot_budaya = $nilai_akhir->bobot_budaya ?? 5;
                     $bobot_share_kpi = $nilai_akhir->bobot_share_kpi ?? 0;
-                    $nilai_sasaran = $total_skor * $bobot_sasaran / 100;
-                    $nilai_budaya = $avg_budaya * $bobot_budaya / 100;
-                    $nilai_kpi = $share_kpi_value * $bobot_share_kpi / 100;
-                    $total_nilai = $nilai_sasaran + $nilai_budaya + $nilai_kpi;
+                    
+                    $nilai_sasaran = $nilai_akhir->nilai_sasaran ?? round($total_skor * $bobot_sasaran / 100, 2);
+                    $nilai_budaya = $nilai_akhir->nilai_budaya ?? round($avg_budaya * $bobot_budaya / 100, 2);
+                    $nilai_kpi = round($share_kpi_value * $bobot_share_kpi / 100, 2);
+                    
+                    $total_nilai = $nilai_akhir->total_nilai ?? ($nilai_sasaran + $nilai_budaya + $nilai_kpi);
+                    
                     $fraud = $nilai_akhir->fraud ?? 0;
                     $koefisien = $nilai_akhir->koefisien ?? 100;
-                    $nilai_akhir_value = ($fraud == 1) ? ($total_nilai - 1) : $total_nilai;
+                    $nilai_akhir_value = $nilai_akhir->nilai_akhir ?? (($fraud == 1) ? ($total_nilai - 1) : $total_nilai);
                     $pencapaian_pct = floatval(str_replace('%', '', $nilai_akhir->pencapaian ?? 0));
                     $predikat = $nilai_akhir->predikat ?? 'Minus (M)';
                     ?>

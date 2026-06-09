@@ -1633,64 +1633,39 @@ if ($message): ?>
         }
 
         function hitungPencapaianOtomatis(target, realisasi, indikatorText = "") {
+            indikatorText = (indikatorText || "").toLowerCase();
+            const keywords = {
+                rumus1: ["biaya", "beban", "efisiensi", "npf pembiayaan", "npf nominal"],
+                rumus3: ["outstanding", "pertumbuhan"]
+            };
+            const containsKeyword = (list, text) => list.some(k => new RegExp(`\\b${k}\\b`, "i").test(text));
+
             let pencapaian = 0;
 
-            // Normalisasi teks
-            indikatorText = indikatorText.toLowerCase();
-
-            // 🔹 Daftar keyword
-            const keywords = {
-                rumus1: ["biaya", "beban", "efisiensi", "npf pembiayaan"], // indikator biaya / beban
-                rumus3: ["outstanding", "pertumbuhan"] // indikator outstanding / pertumbuhan
-            };
-
-            // Fungsi cek keyword pakai regex \b...\b
-            const containsKeyword = (list, text) => {
-                return list.some(k => new RegExp(`\\b${k}\\b`, "i").test(text));
-            };
-
-
-            // 🔹 Target > 3 digit → pilih rumus 1 atau 3 berdasarkan kata kunci indikator
-            if (containsKeyword(keywords.rumus1, indikatorText)) {
-                // Rumus 1 → biasanya indikator biaya/beban
-                pencapaian = ((target + (target - realisasi)) / target) * 100;
-                if (pencapaian < 0) {
-                    pencapaian = 0; // pastikan tidak negatif 
+            if (target === 0) {
+                if (realisasi === 0) {
+                    pencapaian = 130; 
+                } else {
+                    pencapaian = 0; 
                 }
-            } else if (containsKeyword(keywords.rumus3, indikatorText)) {
-                // Rumus 3 → biasanya indikator outstanding/pertumbuhan
-                pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
-                if (pencapaian < 0) {
-                    pencapaian = 0; // pastikan tidak negatif 
-                }
-            } else {
-                // fallback default (anggap rumus 2)
+            } else if (target <= 0.999) {
                 pencapaian = (realisasi / target) * 100;
-                if (pencapaian < 0) {
-                    pencapaian = 0; // pastikan tidak negatif 
+            } else {
+                if (containsKeyword(keywords.rumus1, indikatorText)) {
+                    pencapaian = ((target + (target - realisasi)) / target) * 100;
+                    if (pencapaian < 0) pencapaian = 0;
+                } else if (containsKeyword(keywords.rumus3, indikatorText)) {
+                    pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
+                    if (pencapaian < 0) pencapaian = 0;
+                } else {
+                    pencapaian = (realisasi / target) * 100;
+                    if (pencapaian < 0) pencapaian = 0;
                 }
             }
 
-
-            // if (target <= 999) {
-            //     // 🔹 Rumus 2 (default untuk target ≤ 3 digit)
-            //     pencapaian = (realisasi / target) * 100;
-            // } else {
-            //     // 🔹 Target > 3 digit → pilih rumus 1 atau 3 berdasarkan kata kunci indikator
-            //     if (containsKeyword(keywords.rumus1, indikatorText)) {
-            //         // Rumus 1 → biasanya indikator biaya/beban
-            //         pencapaian = ((target + (target - realisasi)) / target) * 100;
-            //     } else if (containsKeyword(keywords.rumus3, indikatorText)) {
-            //         // Rumus 3 → biasanya indikator outstanding/pertumbuhan
-            //         pencapaian = ((realisasi - target) / Math.abs(target) + 1) * 100;
-            //     } else {
-            //         // fallback default (anggap rumus 2)
-            //         pencapaian = (realisasi / target) * 100;
-            //     }
-            // }
-            // 🔹 Batas maksimal 130%
             return Math.min(pencapaian, 130);
         }
+
 
         function hitungNilai(pencapaian) {
             let nilai = 0;
@@ -1809,7 +1784,7 @@ if ($message): ?>
             const shareValue = parseFloat(document.getElementById('share-kpi-nilai')?.innerText) || 0;
 
             // Total nilai = nilaiSasaran + nilaiBudaya + shareValue
-            const totalNilai = nilaiSasaran + nilaiBudaya + shareValue;
+            const totalNilai = parseFloat((nilaiSasaran + nilaiBudaya + shareValue).toFixed(2));
 
             // Nilai akhir sesuai rumus Excel
             let nilaiAkhir;

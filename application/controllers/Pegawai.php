@@ -114,14 +114,61 @@ class Pegawai extends CI_Controller
         // 🔹 Ambil status verifikasi penilaian
         $status_penilaian = $this->Penilaian_model->getStatusPenilaian($nik, $periode_awal, $periode_akhir);
 
-        // Selalu panggil fungsi biasa untuk periode spesifik, tidak ada lagi agregasi
+        // --- FIX UNTUK JABATAN LAMA ---
+        $jabatan_aktif = $pegawai->jabatan;
+        $unit_kerja_aktif = $pegawai->unit_kerja;
+        $unit_kantor_aktif = $pegawai->unit_kantor;
+
+        // Cek riwayat jabatan untuk melihat apakah periode yang dibuka adalah periode lama
+        $history = $this->Pegawai_model->get_pegawai_history_by_date($nik, $periode_awal, $periode_akhir);
+        if ($history) {
+            $jabatan_aktif = $history->jabatan;
+            $unit_kerja_aktif = $history->unit_kerja;
+            $unit_kantor_aktif = $history->unit_kantor;
+            
+            // Override data pegawai detail supaya di view juga muncul jabatan lama
+            $pegawai->jabatan = $jabatan_aktif;
+            $pegawai->unit_kerja = $unit_kerja_aktif;
+            $pegawai->unit_kantor = $unit_kantor_aktif;
+        }
+
+        // Selalu panggil fungsi biasa untuk periode spesifik, menggunakan jabatan dan unit yang sesuai
         $indikator = $this->Pegawai_model->get_indikator_by_jabatan_dan_unit(
-            $pegawai->jabatan,
-            $pegawai->unit_kerja,
+            $jabatan_aktif,
+            $unit_kerja_aktif,
             $nik,
             $periode_awal,
             $periode_akhir
         );
+
+        // --- FIX UNTUK JABATAN LAMA YANG TEMPLATENYA HILANG ---
+        // Jika tidak ada template indikator (mungkin dihapus admin) tapi periode ini adalah periode lama,
+        // kita ambil indikator langsung dari tabel penilaian yang sudah tersimpan sebelumnya.
+        if (empty($indikator) || count($indikator) == 0) {
+            $this->load->model('pegawai/Nilai_model');
+            $indikator_saved = $this->Nilai_model->getIndikatorPegawai($nik, $periode_awal, $periode_akhir);
+            if (!empty($indikator_saved)) {
+                $indikator = [];
+                foreach ($indikator_saved as $ind) {
+                    $obj = new stdClass();
+                    $obj->id = $ind->indikator_id; // id indikator
+                    $obj->indikator = $ind->indikator;
+                    $obj->bobot = $ind->bobot;
+                    $obj->perspektif = $ind->perspektif;
+                    $obj->sasaran_kerja = $ind->sasaran_kerja;
+                    $obj->target = $ind->target;
+                    $obj->batas_waktu = $ind->batas_waktu;
+                    $obj->realisasi = $ind->realisasi;
+                    $obj->nilai = $ind->nilai;
+                    $obj->nilai_dibobot = $ind->nilai_dibobot;
+                    $obj->status = $ind->status;
+                    $obj->periode_awal = $ind->periode_awal;
+                    $obj->periode_akhir = $ind->periode_akhir;
+                    $obj->status2 = isset($ind->status2) ? $ind->status2 : null;
+                    $indikator[] = $obj;
+                }
+            }
+        }
 
 
         // 🟢 FIX: Ambil dan gabungkan data 'status2' yang hilang dari query model
@@ -714,6 +761,15 @@ class Pegawai extends CI_Controller
         }
 
         $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik);
+
+        // --- FIX UNTUK JABATAN LAMA ---
+        $this->load->model('pegawai/Pegawai_model');
+        $history = $this->Pegawai_model->get_pegawai_history_by_date($nik, $awal, $akhir);
+        if ($history) {
+            $pegawai->jabatan = $history->jabatan;
+            $pegawai->unit_kerja = $history->unit_kerja;
+            $pegawai->unit_kantor = $history->unit_kantor;
+        }
         $indikator = $this->Nilai_model->getIndikatorPegawai($nik, $awal, $akhir);
 
         // 🔹 Ambil nilai akhir
@@ -791,6 +847,15 @@ class Pegawai extends CI_Controller
         }
 
         $pegawai = $this->Nilai_model->getPegawaiWithPenilai($nik);
+
+        // --- FIX UNTUK JABATAN LAMA ---
+        $this->load->model('pegawai/Pegawai_model');
+        $history = $this->Pegawai_model->get_pegawai_history_by_date($nik, $awal, $akhir);
+        if ($history) {
+            $pegawai->jabatan = $history->jabatan;
+            $pegawai->unit_kerja = $history->unit_kerja;
+            $pegawai->unit_kantor = $history->unit_kantor;
+        }
         $indikator = $this->Nilai_model->getIndikatorPegawai($nik, $awal, $akhir);
 
         // 🟢 FIX: Ambil dan gabungkan data 'status2' yang hilang dari query model
@@ -2529,6 +2594,18 @@ class Pegawai extends CI_Controller
             $pegawai = $this->MonitoringPegawai_model->getPegawaiWithPenilai($nik);
 
             if ($pegawai) {
+                // --- FIX UNTUK JABATAN LAMA ---
+                $this->load->model('pegawai/Pegawai_model');
+                $periode_awal_hist = "$tahun-$bulan-01";
+                $periode_akhir_hist = date('Y-m-t', strtotime($periode_awal_hist));
+                $history = $this->Pegawai_model->get_pegawai_history_by_date($nik, $periode_awal_hist, $periode_akhir_hist);
+                
+                if ($history) {
+                    $pegawai->jabatan = $history->jabatan;
+                    $pegawai->unit_kerja = $history->unit_kerja;
+                    $pegawai->unit_kantor = $history->unit_kantor;
+                }
+
                 $monitoring_bulanan = $this->MonitoringPegawai_model->getMonitoringBulanan($nik, $bulan, $tahun);
 
                 $awal_tahun = "$tahun-10-01";
@@ -2550,6 +2627,26 @@ class Pegawai extends CI_Controller
                         $awal_tahun,
                         $akhir_tahun
                     );
+
+                    // --- FIX UNTUK JABATAN LAMA YANG TEMPLATENYA HILANG ---
+                    if (empty($indicators)) {
+                        $this->load->model('pegawai/Nilai_model');
+                        $indicators_saved = $this->Nilai_model->getIndikatorPegawai($nik, $awal_tahun, $akhir_tahun);
+                        if (!empty($indicators_saved)) {
+                            $indicators = [];
+                            foreach ($indicators_saved as $ind) {
+                                $obj = new stdClass();
+                                $obj->id = $ind->indikator_id; // id indikator
+                                $obj->indikator = $ind->indikator;
+                                $obj->bobot = $ind->bobot;
+                                $obj->perspektif = $ind->perspektif;
+                                $obj->sasaran_kerja = $ind->sasaran_kerja;
+                                $obj->target = $ind->target;
+                                $obj->batas_waktu = $ind->batas_waktu;
+                                $indicators[] = $obj;
+                            }
+                        }
+                    }
 
                     $penilaian_bulanan = [];
                     foreach ($indicators as $ind) {

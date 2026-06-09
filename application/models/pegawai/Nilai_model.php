@@ -247,7 +247,6 @@ class Nilai_model extends CI_Model
             'periode_awal'  => $periode_awal,
             'periode_akhir' => $periode_akhir
         ]);
-        $this->db->where("LOWER(status_penilaian) !=", 'selesai');
         return $this->db->get()->row();
     }
 
