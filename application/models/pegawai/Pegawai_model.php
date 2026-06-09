@@ -681,9 +681,7 @@ class Pegawai_model extends CI_Model
             rj.jabatan,
             rj.unit_kerja,
             rj.unit_kantor,
-            rj.status AS status_jabatan,
-            NULL AS penilai1_nama,
-            NULL AS penilai2_nama
+            rj.status AS status_jabatan
         ', FALSE);
         $this->db->from('pegawai p');
         // Join ke riwayat jabatan
@@ -698,8 +696,76 @@ class Pegawai_model extends CI_Model
         $this->db->order_by('rj.tgl_selesai', 'DESC'); // Ambil yang paling baru jika ada overlap
         $this->db->limit(1);
 
-        $query = $this->db->get();
-        return $query->row();
+        $row = $this->db->get()->row();
+
+        if ($row) {
+            $row->penilai1_nik = null;
+            $row->penilai1_nama = '-';
+            $row->penilai1_jabatan_detail = '-';
+            $row->penilai2_nik = null;
+            $row->penilai2_nama = '-';
+            $row->penilai2_jabatan_detail = '-';
+
+            // Find mapping for this historical jabatan and unit
+            $mapping = $this->db->get_where('penilai_mapping', [
+                'jabatan' => $row->jabatan,
+                'unit_kerja' => $row->unit_kerja
+            ])->row();
+
+            if ($mapping) {
+                // Penilai 1
+                if (!empty($mapping->penilai1_jabatan)) {
+                    $p1_mapping = $this->db->get_where('penilai_mapping', ['key' => $mapping->penilai1_jabatan])->row();
+                    if ($p1_mapping) {
+                        $p1_history = $this->db->select('p.nik, p.nama, rj.jabatan')
+                            ->from('riwayat_jabatan rj')
+                            ->join('pegawai p', 'p.nik = rj.nik')
+                            ->where('rj.jabatan', $p1_mapping->jabatan)
+                            ->where('rj.tgl_mulai <=', $akhir)
+                            ->group_start()
+                                ->where('rj.tgl_selesai >=', $awal)
+                                ->or_where('rj.tgl_selesai IS NULL')
+                            ->group_end()
+                            ->order_by('rj.tgl_selesai', 'DESC')
+                            ->limit(1)
+                            ->get()->row();
+                        
+                        if ($p1_history) {
+                            $row->penilai1_nik = $p1_history->nik;
+                            $row->penilai1_nama = $p1_history->nama;
+                            $row->penilai1_jabatan_detail = $p1_history->jabatan;
+                        }
+                    }
+                }
+                
+                // Penilai 2
+                if (!empty($mapping->penilai2_jabatan)) {
+                    $p2_mapping = $this->db->get_where('penilai_mapping', ['key' => $mapping->penilai2_jabatan])->row();
+                    if ($p2_mapping) {
+                        $p2_history = $this->db->select('p.nik, p.nama, rj.jabatan')
+                            ->from('riwayat_jabatan rj')
+                            ->join('pegawai p', 'p.nik = rj.nik')
+                            ->where('rj.jabatan', $p2_mapping->jabatan)
+                            ->where('rj.tgl_mulai <=', $akhir)
+                            ->group_start()
+                                ->where('rj.tgl_selesai >=', $awal)
+                                ->or_where('rj.tgl_selesai IS NULL')
+                            ->group_end()
+                            ->order_by('rj.tgl_selesai', 'DESC')
+                            ->limit(1)
+                            ->get()->row();
+
+                        if ($p2_history) {
+                            $row->penilai2_nik = $p2_history->nik;
+                            $row->penilai2_nama = $p2_history->nama;
+                            $row->penilai2_jabatan_detail = $p2_history->jabatan;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $row;
     }
 
     /**

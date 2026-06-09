@@ -517,6 +517,18 @@ class Administrator extends CI_Controller
                 $pegawai->jabatan = $jabatan_aktif;
                 $pegawai->unit_kerja = $unit_kerja_aktif;
                 $pegawai->unit_kantor = $unit_kantor_aktif;
+                
+                // Override penilai lama
+                if (!empty($history->penilai1_nik)) {
+                    $pegawai->penilai1_nik = $history->penilai1_nik;
+                    $pegawai->penilai1_nama = $history->penilai1_nama;
+                    $pegawai->penilai1_jabatan_detail = $history->penilai1_jabatan_detail;
+                }
+                if (!empty($history->penilai2_nik)) {
+                    $pegawai->penilai2_nik = $history->penilai2_nik;
+                    $pegawai->penilai2_nama = $history->penilai2_nama;
+                    $pegawai->penilai2_jabatan_detail = $history->penilai2_jabatan_detail;
+                }
             }
 
             $indikator = $this->Penilaian_model->get_indikator_by_jabatan_dan_unit(
@@ -1453,6 +1465,17 @@ class Administrator extends CI_Controller
                 $pegawai->jabatan = $history->jabatan;
                 $pegawai->unit_kerja = $history->unit_kerja;
                 $pegawai->unit_kantor = $history->unit_kantor;
+                
+                if (!empty($history->penilai1_nik)) {
+                    $pegawai->penilai1_nik = $history->penilai1_nik;
+                    $pegawai->penilai1_nama = $history->penilai1_nama;
+                    $pegawai->penilai1_jabatan_detail = $history->penilai1_jabatan_detail;
+                }
+                if (!empty($history->penilai2_nik)) {
+                    $pegawai->penilai2_nik = $history->penilai2_nik;
+                    $pegawai->penilai2_nama = $history->penilai2_nama;
+                    $pegawai->penilai2_jabatan_detail = $history->penilai2_jabatan_detail;
+                }
             }
         }
 
@@ -3035,6 +3058,17 @@ class Administrator extends CI_Controller
             $pegawai->jabatan = $history->jabatan;
             $pegawai->unit_kerja = $history->unit_kerja;
             $pegawai->unit_kantor = $history->unit_kantor;
+            
+            if (!empty($history->penilai1_nik)) {
+                $pegawai->penilai1_nik = $history->penilai1_nik;
+                $pegawai->penilai1_nama = $history->penilai1_nama;
+                $pegawai->penilai1_jabatan_detail = $history->penilai1_jabatan_detail;
+            }
+            if (!empty($history->penilai2_nik)) {
+                $pegawai->penilai2_nik = $history->penilai2_nik;
+                $pegawai->penilai2_nama = $history->penilai2_nama;
+                $pegawai->penilai2_jabatan_detail = $history->penilai2_jabatan_detail;
+            }
         }
 
         // Ambil data penilaian berdasarkan periode
@@ -3239,6 +3273,17 @@ class Administrator extends CI_Controller
                 $pegawai->jabatan = $jabatan_aktif;
                 $pegawai->unit_kerja = $unit_kerja_aktif;
                 $pegawai->unit_kantor = $unit_kantor_aktif;
+                
+                if (!empty($history->penilai1_nik)) {
+                    $pegawai->penilai1_nik = $history->penilai1_nik;
+                    $pegawai->penilai1_nama = $history->penilai1_nama;
+                    $pegawai->penilai1_jabatan_detail = $history->penilai1_jabatan_detail;
+                }
+                if (!empty($history->penilai2_nik)) {
+                    $pegawai->penilai2_nik = $history->penilai2_nik;
+                    $pegawai->penilai2_nama = $history->penilai2_nama;
+                    $pegawai->penilai2_jabatan_detail = $history->penilai2_jabatan_detail;
+                }
             }
 
             $monitoring_bulanan = $this->Monitoring_model->getMonitoringBulanan($nik, $bulan, $tahun);
