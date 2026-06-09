@@ -21,11 +21,35 @@ class SuperAdmin_model extends CI_Model
 
     public function updateUser($id, $data)
     {
-        return $this->db->where('id', $id)->update($this->table, $data);
+        $user = $this->db->get_where($this->table, ['id' => $id])->row();
+        
+        $result = $this->db->where('id', $id)->update($this->table, $data);
+        
+        // Sync ke pegawai jika user ditemukan
+        if ($user) {
+            $updatePegawai = [];
+            if (isset($data['password'])) {
+                $updatePegawai['password'] = $data['password'];
+            }
+            if (isset($data['is_active'])) {
+                $updatePegawai['status'] = $data['is_active'] ? 'aktif' : 'nonaktif';
+            }
+            if (!empty($updatePegawai)) {
+                $this->db->where('nik', $user->nik)->update('pegawai', $updatePegawai);
+            }
+        }
+        
+        return $result;
     }
 
     public function deleteUser($id)
     {
+        $user = $this->db->get_where($this->table, ['id' => $id])->row();
+        if ($user && $user->nik) {
+            // Hapus data pegawai secara keseluruhan (termasuk cascade delete)
+            $this->load->model('DataPegawai_model');
+            $this->DataPegawai_model->deletePegawai($user->nik);
+        }
         return $this->db->delete($this->table, ['id' => $id]);
     }
 
