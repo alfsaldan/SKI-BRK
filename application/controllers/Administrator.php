@@ -3191,6 +3191,78 @@ class Administrator extends CI_Controller
     }
 
     // ==================== Halaman Monitoring Kinerja Pegawai ====================
+    public function laporanKinerja()
+    {
+        $this->load->model('Penilaian_model');
+        $this->load->model('DataPegawai_model');
+        
+        $data['judul'] = "Laporan Kinerja Tahunan";
+        
+        // Ambil daftar tahun dari database
+        $queryTahun = $this->db->query("
+            SELECT DISTINCT(YEAR(periode_akhir)) AS tahun 
+            FROM nilai_akhir 
+            ORDER BY tahun DESC
+        ");
+        $data['tahun_list'] = $queryTahun->result();
+
+        $tahun_selected = $this->input->get('tahun');
+        if (empty($tahun_selected)) {
+            $tahun_selected = date('Y');
+        }
+        $data['tahun_selected'] = $tahun_selected;
+
+        // 🔹 Ambil daftar unit kantor untuk dropdown
+        $queryUnitKantor = $this->db->query("
+            SELECT DISTINCT unit_kantor 
+            FROM penilai_mapping 
+            WHERE unit_kantor IS NOT NULL AND unit_kantor != ''
+            ORDER BY unit_kantor ASC
+        ");
+        $data['unit_kantor_list'] = $queryUnitKantor->result();
+
+        // 🔹 Ambil nilai filter unit kantor yang dipilih
+        $unit_kantor_selected = $this->input->get('unit_kantor');
+        $data['unit_kantor_selected'] = $unit_kantor_selected;
+
+        // Siapkan parameter dan filter tambahan
+        $params = [$tahun_selected];
+        $unit_kantor_filter = "";
+        if (!empty($unit_kantor_selected) && $unit_kantor_selected !== 'all') {
+            $unit_kantor_filter = " AND p.unit_kantor = ? ";
+            $params[] = $unit_kantor_selected;
+        }
+
+        // Kriteria: 
+        // 1. periode_akhir di bulan Desember tahun yang dipilih.
+        // 2. Semua status (di nilai_akhir, penilaian, budaya_nilai) harus 'disetujui' atau 'selesai'.
+        $queryData = $this->db->query("
+            SELECT p.nik, p.nama, p.jabatan, p.unit_kantor, na.total_nilai as nilai_akhir, na.predikat as yudisium, na.pencapaian as persentase_pencapaian
+            FROM nilai_akhir na
+            JOIN pegawai p ON na.nik = p.nik
+            WHERE YEAR(na.periode_akhir) = ? AND MONTH(na.periode_akhir) = 12
+              AND LOWER(na.status_penilaian) IN ('disetujui', 'selesai')
+              $unit_kantor_filter
+              AND NOT EXISTS (
+                  SELECT 1 FROM penilaian pn 
+                  WHERE pn.nik = na.nik AND pn.periode_akhir = na.periode_akhir 
+                  AND (LOWER(pn.status) NOT IN ('disetujui', 'selesai') OR LOWER(pn.status2) NOT IN ('disetujui', 'selesai'))
+              )
+              AND NOT EXISTS (
+                  SELECT 1 FROM budaya_nilai bn
+                  WHERE bn.nik_pegawai = na.nik AND bn.periode_akhir = na.periode_akhir
+                  AND LOWER(bn.status_penilaian) NOT IN ('disetujui', 'selesai')
+              )
+            ORDER BY p.unit_kantor ASC, p.nama ASC
+        ", $params);
+        
+        $data['laporan'] = $queryData->result();
+
+        $this->load->view('layout/header', $data);
+        $this->load->view('administrator/laporankinerja', $data);
+        $this->load->view('layout/footer');
+    }
+
     public function monitoringKinerja()
     {
         $this->load->model('Penilaian_model');

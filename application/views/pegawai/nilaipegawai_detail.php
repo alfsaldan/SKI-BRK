@@ -1167,9 +1167,13 @@
             row.querySelector('.nilai-output').value = nilai === "" ? "" : formatAngka(nilai);
             row.querySelector('.nilai-bobot-output').value = nilaiBobot === "" ? "" : formatAngka(nilaiBobot);
 
+            row.dataset.rawPencapaian = pencapaian === "" ? "" : pencapaian;
+            row.dataset.rawNilai = nilai === "" ? "" : nilai;
+            row.dataset.rawNilaiBobot = nilaiBobot === "" ? "" : nilaiBobot;
+
             return {
                 bobot,
-                nilaiBobot: nilaiBobot === "" ? 0 : parseFloat(formatAngka(nilaiBobot)),
+                nilaiBobot: nilaiBobot === "" ? 0 : nilaiBobot, // unrounded
                 perspektif: row.dataset.perspektif
             };
         }
@@ -1206,7 +1210,11 @@
             });
 
             // Tambahkan baris ini agar total-sasaran sama dengan total-nilai-bobot
-            document.getElementById('total-sasaran').textContent = formatAngka(totalNilai);
+            const totalSasaranEl = document.getElementById('total-sasaran');
+            if (totalSasaranEl) {
+                totalSasaranEl.textContent = formatAngka(totalNilai);
+                window.totalNilaiUnroundedGlobal = totalNilai; // Simpan untuk perhitungan raw
+            }
 
             // Jika ada Share KPI di UI, hitung nilai sasaran & nilai akhir berdasarkan share
             if (document.getElementById('share-kpi-value')) {
@@ -1221,26 +1229,34 @@
             const fraud = parseFloat(document.getElementById("fraud-input").value) || 0;
             const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
 
-            // Ambil nilai sasaran yang sudah dikalikan bobot (element 'nilai-sasaran')
-            const nilaiSasaran = parseFloat(document.getElementById('nilai-sasaran')?.textContent) || 0;
+            // Gunakan nilai raw dari sasaran (bila tersedia dari window)
+            const sasaranScoreRaw = window.totalNilaiUnroundedGlobal || (parseFloat(document.getElementById('total-sasaran')?.textContent) || 0);
+            const bobotSasaranRaw = parseFloat(document.getElementById('bobot-sasaran')?.value) || 95;
+            const nilaiSasaranRaw = sasaranScoreRaw * (bobotSasaranRaw / 100);
+            const nilaiSasaran = parseFloat(nilaiSasaranRaw.toFixed(2)); // Display
+            
             // Hitung nilai budaya = rata-rata * (bobot_budaya / 100)
             const rataBudaya = parseFloat(document.getElementById('ratarata-budaya')?.textContent) || 0;
             // ambil bobot-budaya (misal '5%') -> dapatkan angka 5
             const bobotBudayaRaw = (document.getElementById('bobot-budaya')?.value || '').toString().replace('%','') || '0';
             const bobotBudaya = parseFloat(bobotBudayaRaw) || 0;
-            const nilaiBudaya = parseFloat((rataBudaya * (bobotBudaya/100)).toFixed(2)) || 0;
+            const nilaiBudayaRaw = rataBudaya * (bobotBudaya/100);
+            const nilaiBudaya = parseFloat(nilaiBudayaRaw.toFixed(2)); // Display
+            
             // Ambil nilai share yang sudah dihitung dan ditampilkan di 'share-kpi-nilai'
-            const shareValue = parseFloat(document.getElementById('share-kpi-nilai')?.innerText) || 0;
+            const shareValueRaw = parseFloat(document.getElementById('share-kpi-nilai')?.innerText) || 0;
+            const shareValue = parseFloat(shareValueRaw.toFixed(2));
 
             // Total nilai = nilaiSasaran + nilaiBudaya + shareValue
-            const totalNilai = parseFloat((nilaiSasaran + nilaiBudaya + shareValue).toFixed(2));
+            const totalNilaiRaw = nilaiSasaranRaw + nilaiBudayaRaw + shareValueRaw;
+            const totalNilai = parseFloat(totalNilaiRaw.toFixed(2));
 
             // Nilai akhir sesuai rumus Excel
-            let nilaiAkhir;
+            let nilaiAkhirRaw = totalNilaiRaw;
+            let nilaiAkhir = totalNilai;
             if (fraud === 1) {
-                nilaiAkhir = totalNilai - fraud;
-            } else {
-                nilaiAkhir = totalNilai;
+                nilaiAkhirRaw = totalNilaiRaw - 1;
+                nilaiAkhir = parseFloat(nilaiAkhirRaw.toFixed(2));
             }
 
             // Predikat
@@ -1270,16 +1286,15 @@
                 predikatClass = "text-success font-weight-bold"; // hijau tua (lebih tebal)
             }
 
-            // Pencapaian Akhir
             let pencapaian = "";
             if (nilaiAkhir !== "Tidak ada nilai") {
-                const v = parseFloat(nilaiAkhir) || 0;
+                const v = parseFloat(nilaiAkhir); // Gunakan nilai yang dibulatkan agar hasil match dengan hitungan manual layar
                 if (v < 0) pencapaian = 0;
-                else if (v < 2 * koef) pencapaian = (v / 2) * 0.8 * 100;
-                else if (v < 3 * koef) pencapaian = 80 + ((v - 2) / 1) * 10;
-                else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3) / 0.5) * 20;
-                else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5) / 1) * 10;
-                else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
+                else if (v < 2 * koef) pencapaian = (v / (2 * koef)) * 80;
+                else if (v < 3 * koef) pencapaian = 80 + ((v - 2 * koef) / (1 * koef)) * 10;
+                else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3 * koef) / (0.5 * koef)) * 20;
+                else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5 * koef) / (1 * koef)) * 10;
+                else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5 * koef) / (0.5 * koef)) * 10;
                 else pencapaian = 130;
             } else {
                 pencapaian = 0;
@@ -1368,9 +1383,9 @@
 
                 const status = row.querySelector('.status-select').value;
                 const realisasi = row.querySelector('.realisasi-input')?.value || '';
-                const pencapaian = row.querySelector('.pencapaian-output')?.value || '';
-                const nilai = row.querySelector('.nilai-output')?.value || '';
-                const nilai_dibobot = row.querySelector('.nilai-bobot-output')?.value || '';
+                const pencapaian = row.dataset.rawPencapaian !== undefined ? row.dataset.rawPencapaian : (row.querySelector('.pencapaian-output')?.value || '');
+                const nilai = row.dataset.rawNilai !== undefined ? row.dataset.rawNilai : (row.querySelector('.nilai-output')?.value || '');
+                const nilai_dibobot = row.dataset.rawNilaiBobot !== undefined ? row.dataset.rawNilaiBobot : (row.querySelector('.nilai-bobot-output')?.value || '');
 
                 if (status === "Ada Catatan") {
                     // buka modal catatan

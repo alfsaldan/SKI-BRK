@@ -54,12 +54,16 @@ class MonitoringPegawai_model extends CI_Model
                 $this->db->group_start();
                     $this->db->where('sasaran_kerja.jabatan', $jabatan);
                     $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+                    $this->db->where('(sasaran_kerja.owner_nik IS NULL OR sasaran_kerja.owner_nik = ' . $this->db->escape($nik) . ')');
+                    $this->db->where('(indikator.owner_nik IS NULL OR indikator.owner_nik = ' . $this->db->escape($nik) . ')');
                 $this->db->group_end();
                 $this->db->or_where('penilaian.id IS NOT NULL', null, false);
             $this->db->group_end();
         } else {
             $this->db->where('sasaran_kerja.jabatan', $jabatan);
             $this->db->where('sasaran_kerja.unit_kerja', $unit_kerja);
+            $this->db->where('sasaran_kerja.owner_nik IS NULL');
+            $this->db->where('indikator.owner_nik IS NULL');
         }
         $this->db->order_by('sasaran_kerja.perspektif', 'ASC');
         $this->db->order_by('sasaran_kerja.sasaran_kerja', 'ASC');

@@ -950,9 +950,13 @@
                 if (nilaiEl) nilaiEl.value = nilai === "" ? "" : formatAngka(nilai);
                 if (nilaiBobotEl) nilaiBobotEl.value = nilaiBobot === "" ? "" : formatAngka(nilaiBobot);
 
+                row.dataset.rawPencapaian = pencapaian === "" ? "" : pencapaian;
+                row.dataset.rawNilai = nilai === "" ? "" : nilai;
+                row.dataset.rawNilaiBobot = nilaiBobot === "" ? "" : nilaiBobot;
+
                 return {
                     bobot,
-                    nilaiBobot: nilaiBobot === "" ? 0 : parseFloat(formatAngka(nilaiBobot)),
+                    nilaiBobot: nilaiBobot === "" ? 0 : nilaiBobot, // unrounded
                     perspektif: row.dataset.perspektif
                 };
             } catch (err) {
@@ -994,7 +998,10 @@
 
                 if (totalBobotEl) totalBobotEl.innerText = formatAngka(totalBobot);
                 if (totalNilaiBobotEl) totalNilaiBobotEl.innerText = formatAngka(totalNilai);
-                if (totalSasaranEl) totalSasaranEl.textContent = formatAngka(totalNilai);
+                if (totalSasaranEl) {
+                    totalSasaranEl.textContent = formatAngka(totalNilai);
+                    window.totalNilaiUnroundedGlobal = totalNilai; // Simpan untuk perhitungan raw
+                }
 
                 document.querySelectorAll('.subtotal-row').forEach(row => {
                     const p = row.dataset.perspektif;
@@ -1029,20 +1036,25 @@
                 const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
 
                 // nilai sasaran dihitung berdasarkan bobot sasaran yang disesuaikan (dibulatkan ke 2 desimal)
-                const nilaiSasaran = parseFloat((totalSasaran * (isNaN(bobotSasaran) ? 0.95 : bobotSasaran)).toFixed(2));
-                const nilaiBudaya = parseFloat((rataBudaya * bobotBudaya).toFixed(2));
+                const sasaranScoreRaw = window.totalNilaiUnroundedGlobal || (parseFloat(totalSasaran) || 0);
+                const nilaiSasaran = sasaranScoreRaw * (isNaN(bobotSasaran) ? 0.95 : bobotSasaran);
+                const nilaiBudaya = rataBudaya * bobotBudaya;
 
                 // Ambil nilai share KPI (hasil) dari DOM jika sudah dihitung
                 var shareValEl = document.getElementById('share-kpi-nilai');
                 var shareValue = 0;
                 if (shareValEl) {
                     shareValue = parseFloat(String(shareValEl.innerText).replace(/[^0-9.-]+/g, '')) || 0;
-                    shareValue = parseFloat(shareValue.toFixed(2));
                 }
+                const nilaiKpi = shareValue * (bobotShare / 100);
 
                 // Total nilai sekarang adalah penjumlahan nilai sasaran + nilai budaya + nilai share (sudah dibulatkan masing-masing)
-                const totalNilai = parseFloat((nilaiSasaran + nilaiBudaya + shareValue).toFixed(2));
-                const nilaiAkhir = (fraud === 1) ? totalNilai - fraud : totalNilai;
+                const totalNilaiRaw = nilaiSasaran + nilaiBudaya + nilaiKpi;
+                const totalNilai = parseFloat(totalNilaiRaw.toFixed(2));
+                
+                const nilaiAkhirRaw = (fraud === 1) ? totalNilaiRaw - 1 : totalNilaiRaw;
+                const nilaiAkhir = parseFloat(nilaiAkhirRaw.toFixed(2));
+                window.totalKinerjaRawGlobal = nilaiAkhirRaw;
 
                 let predikat = '',
                     predikatClass = '';
@@ -1073,10 +1085,10 @@
                 const elPredikat = document.getElementById("predikat");
                 const elPencapaianAkhir = document.getElementById("pencapaian-akhir");
 
-                if (elNilaiSasaran) elNilaiSasaran.textContent = (isNaN(nilaiSasaran) ? 0 : nilaiSasaran).toFixed(2);
-                if (elNilaiBudaya) elNilaiBudaya.textContent = (isNaN(nilaiBudaya) ? 0 : nilaiBudaya).toFixed(2);
-                if (elTotalNilai) elTotalNilai.textContent = (isNaN(totalNilai) ? 0 : totalNilai).toFixed(2);
-                if (elNilaiAkhir) elNilaiAkhir.textContent = (isNaN(nilaiAkhir) ? 0 : nilaiAkhir).toFixed(2);
+                if (elNilaiSasaran) elNilaiSasaran.textContent = nilaiSasaran.toFixed(2);
+                if (elNilaiBudaya) elNilaiBudaya.textContent = nilaiBudaya.toFixed(2);
+                if (elTotalNilai) elTotalNilai.textContent = totalNilai.toFixed(2);
+                if (elNilaiAkhir) elNilaiAkhir.textContent = nilaiAkhir.toFixed(2);
                 if (elPredikat) {
                     elPredikat.textContent = predikat;
                     elPredikat.className = predikatClass;
@@ -1085,13 +1097,13 @@
                 // Hitung pencapaian akhir (persentase) — agar kompatibel dengan kode lama
                 if (elPencapaianAkhir) {
                     let pencapaian = 0;
-                    const v = parseFloat(nilaiAkhir) || 0;
+                    const v = parseFloat(nilaiAkhir); // Gunakan nilai yang dibulatkan agar hasil match dengan hitungan manual layar
                     if (v < 0) pencapaian = 0;
-                    else if (v < 2 * koef) pencapaian = (v / 2) * 0.8 * 100;
-                    else if (v < 3 * koef) pencapaian = 80 + ((v - 2) / 1) * 10;
-                    else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3) / 0.5) * 20;
-                    else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5) / 1) * 10;
-                    else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
+                    else if (v < 2 * koef) pencapaian = (v / (2 * koef)) * 80;
+                    else if (v < 3 * koef) pencapaian = 80 + ((v - 2 * koef) / (1 * koef)) * 10;
+                    else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3 * koef) / (0.5 * koef)) * 20;
+                    else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5 * koef) / (1 * koef)) * 10;
+                    else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5 * koef) / (0.5 * koef)) * 10;
                     else pencapaian = 130;
                     elPencapaianAkhir.textContent = isNaN(pencapaian) ? '' : pencapaian.toFixed(2) + '%';
                 }
@@ -1135,12 +1147,14 @@
 
             // Pencapaian akhir
             let pencapaian = 0;
-            if (nilaiAkhir < 0) pencapaian = 0;
-            else if (nilaiAkhir < 2 * koef) pencapaian = (nilaiAkhir / 2) * 80;
-            else if (nilaiAkhir < 3 * koef) pencapaian = 80 + ((nilaiAkhir - 2) / 1) * 10;
-            else if (nilaiAkhir < 3.5 * koef) pencapaian = 90 + ((nilaiAkhir - 3) / 0.5) * 20;
-            else if (nilaiAkhir < 4.5 * koef) pencapaian = 110 + ((nilaiAkhir - 3.5) / 1) * 10;
-            else if (nilaiAkhir < 5 * koef) pencapaian = 120 + ((nilaiAkhir - 4.5) / 0.5) * 10;
+            const v = parseFloat(nilaiAkhir); // Gunakan nilai yang dibulatkan agar hasil match dengan hitungan manual layar
+            
+            if (v < 0) pencapaian = 0;
+            else if (v < 2 * koef) pencapaian = (v / (2 * koef)) * 80;
+            else if (v < 3 * koef) pencapaian = 80 + ((v - 2 * koef) / (1 * koef)) * 10;
+            else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3 * koef) / (0.5 * koef)) * 20;
+            else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5 * koef) / (1 * koef)) * 10;
+            else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5 * koef) / (0.5 * koef)) * 10;
             else pencapaian = 130;
 
             const elPencapaian = document.getElementById("pencapaian-akhir");
@@ -1190,9 +1204,9 @@
                 const target = (row.querySelector('.target-input') || {}).value || '';
                 const batas_waktu = (row.querySelector('input[type="date"]') || {}).value || '';
                 const realisasi = (row.querySelector('.realisasi-input') || {}).value || '';
-                const pencapaian = (row.querySelector('.pencapaian-output') || {}).value || '';
-                const nilai = (row.querySelector('.nilai-output') || {}).value || '';
-                const nilai_dibobot = (row.querySelector('.nilai-bobot-output') || {}).value || '';
+                const pencapaian = row.dataset.rawPencapaian !== undefined ? row.dataset.rawPencapaian : ((row.querySelector('.pencapaian-output') || {}).value || '');
+                const nilai = row.dataset.rawNilai !== undefined ? row.dataset.rawNilai : ((row.querySelector('.nilai-output') || {}).value || '');
+                const nilai_dibobot = row.dataset.rawNilaiBobot !== undefined ? row.dataset.rawNilaiBobot : ((row.querySelector('.nilai-bobot-output') || {}).value || '');
                 const periode_awal = periodeAwalInput ? periodeAwalInput.value : '';
                 const periode_akhir = periodeAkhirInput ? periodeAkhirInput.value : '';
                 const nik = getNik();
@@ -1321,9 +1335,9 @@
                     const target = (row.querySelector('.target-input') || {}).value || '';
                     const batas_waktu = (row.querySelector('input[type="date"]') || {}).value || '';
                     const realisasi = (row.querySelector('.realisasi-input') || {}).value || '';
-                    const pencapaian = (row.querySelector('.pencapaian-output') || {}).value || '';
-                    const nilai = (row.querySelector('.nilai-output') || {}).value || '';
-                    const nilai_dibobot = (row.querySelector('.nilai-bobot-output') || {}).value || '';
+                    const pencapaian = row.dataset.rawPencapaian !== undefined ? row.dataset.rawPencapaian : ((row.querySelector('.pencapaian-output') || {}).value || '');
+                    const nilai = row.dataset.rawNilai !== undefined ? row.dataset.rawNilai : ((row.querySelector('.nilai-output') || {}).value || '');
+                    const nilai_dibobot = row.dataset.rawNilaiBobot !== undefined ? row.dataset.rawNilaiBobot : ((row.querySelector('.nilai-bobot-output') || {}).value || '');
 
                     // 🛑 Skip jika target atau realisasi masih kosong/null
                     if (target.trim() === '' || realisasi.trim() === '') {
@@ -1357,17 +1371,16 @@
                     }
 
                     // 🔹 Ambil semua nilai akhir dari DOM
-                    const nilai_sasaran = document.getElementById('total-sasaran')?.textContent || '';
-                    const nilai_budaya = document.getElementById('rata-budaya')?.textContent || '';
+                    const nilai_sasaran = document.getElementById('nilai-sasaran')?.textContent || '';
+                    const nilai_budaya = document.getElementById('nilai-budaya')?.textContent || '';
                     const total_nilai = document.getElementById('total-nilai')?.textContent || '';
                     const fraud = document.getElementById('fraud-input')?.value || '';
                     const nilai_akhir = document.getElementById('nilai-akhir')?.textContent || '';
                     const predikat = document.getElementById('predikat')?.textContent || '';
                     const pencapaian = document.getElementById('pencapaian-akhir')?.textContent || '';
-                    const koefisien = document.getElementById('koefisien-input')?.value || 100; // 🟢 Tambahan ini
-                    const share_kpi_value = document.getElementById('share-kpi-value')?.value || ''; // 🟢 Ambil nilai mentah
+                    const koefisien = document.getElementById('koefisien-input')?.value || 100;
+                    const share_kpi_value = document.getElementById('share-kpi-value')?.value || '';
                     const bobot_share_kpi = document.getElementById('bobot-share-kpi')?.value || '';
-                    // juga ambil bobot sasaran & bobot budaya (nilai tanpa %)
                     const bobot_sasaran = (document.getElementById('bobot-sasaran')?.value || '').toString().replace('%', '') || '';
                     const bobot_budaya = (document.getElementById('bobot-budaya')?.value || '').toString().replace('%', '') || '';
 

@@ -207,10 +207,13 @@
                                             <?php
                                             $order = ['Keuangan (F)', 'Pelanggan (C)', 'Proses Internal (IP)', 'Pembelajaran & Pertumbuhan (LG)'];
                                             $grouped = [];
+                                            $total_bobot_all = 0;
+                                            $total_skor_calculated = 0; // Tambahkan variabel ini untuk mengakumulasi skor yang dihitung ulang
                                             foreach ($penilaian_pegawai as $row) {
                                                 $p = $row->perspektif ?? '';
                                                 $s = $row->sasaran_kerja ?? '';
                                                 $grouped[$p][$s][] = $row;
+                                                $total_bobot_all += floatval($row->bobot ?? 0);
                                             }
 
                                             function count_rows($arr)
@@ -220,6 +223,62 @@
                                                     $sum += count($items);
                                                 }
                                                 return $sum;
+                                            }
+
+                                            function hitungPencapaianOtomatisPHP($target, $realisasi, $indikatorText = "") {
+                                                $indikatorText = strtolower(trim($indikatorText ?? ""));
+                                                $keywords = [
+                                                    'rumus1' => ["biaya", "beban", "efisiensi", "npf pembiayaan", "npf nominal"],
+                                                    'rumus3' => ["outstanding", "pertumbuhan"]
+                                                ];
+
+                                                $containsKeyword = function($list, $text) {
+                                                    foreach ($list as $k) {
+                                                        if (preg_match("/\b" . preg_quote($k, '/') . "\b/i", $text)) {
+                                                            return true;
+                                                        }
+                                                    }
+                                                    return false;
+                                                };
+
+                                                $pencapaian = 0;
+                                                $target = (float)$target;
+                                                $realisasi = (float)$realisasi;
+
+                                                if ($target === 0.0) {
+                                                    if ($realisasi === 0.0) {
+                                                        $pencapaian = 130; 
+                                                    } else {
+                                                        $pencapaian = 0; 
+                                                    }
+                                                } else if ($target <= 0.999) {
+                                                    $pencapaian = ($realisasi / $target) * 100;
+                                                } else {
+                                                    if ($containsKeyword($keywords['rumus1'], $indikatorText)) {
+                                                        $pencapaian = (($target + ($target - $realisasi)) / $target) * 100;
+                                                        if ($pencapaian < 0) $pencapaian = 0;
+                                                    } else if ($containsKeyword($keywords['rumus3'], $indikatorText)) {
+                                                        $pencapaian = (($realisasi - $target) / abs($target) + 1) * 100;
+                                                        if ($pencapaian < 0) $pencapaian = 0;
+                                                    } else {
+                                                        $pencapaian = ($realisasi / $target) * 100;
+                                                        if ($pencapaian < 0) $pencapaian = 0;
+                                                    }
+                                                }
+
+                                                return min($pencapaian, 130);
+                                            }
+
+                                            function hitungNilaiPHP($pencapaian) {
+                                                $nilai = 0;
+                                                if ($pencapaian < 0) $nilai = 0;
+                                                else if ($pencapaian < 80) $nilai = ($pencapaian / 80) * 2;
+                                                else if ($pencapaian < 90) $nilai = 2 + (($pencapaian - 80) / 10);
+                                                else if ($pencapaian < 110) $nilai = 3 + (($pencapaian - 90) / 20 * 0.5);
+                                                else if ($pencapaian < 120) $nilai = 3.5 + (($pencapaian - 110) / 10 * 1);
+                                                else if ($pencapaian < 130) $nilai = 4.5 + (($pencapaian - 120) / 10 * 0.5);
+                                                else $nilai = 5;
+                                                return $nilai;
                                             }
                                             ?>
 
@@ -240,7 +299,17 @@
                                                     <?php foreach ($items as $i): ?>
                                                         <?php
                                                         $subtotal_bobot += (float) $i->bobot;
-                                                        $subtotal_nilai += (float) ($i->nilai_dibobot ?? 0);
+                                                        $b = (float) $i->bobot;
+                                                        $t = (float) $i->target;
+                                                        $r = (float) $i->realisasi;
+                                                        
+                                                        // Gunakan indikator, jika null, coba fallback ke hal lain yang relevan jika diperlukan (tapi indikator selalu ada harusnya)
+                                                        $calc_pencapaian = hitungPencapaianOtomatisPHP($t, $r, $i->indikator ?? '');
+                                                        $calc_nilai = hitungNilaiPHP($calc_pencapaian);
+                                                        
+                                                        $calc_dibobot = ($total_bobot_all > 0) ? ($calc_nilai * $b / $total_bobot_all) : 0;
+                                                        $subtotal_nilai += $calc_dibobot;
+                                                        $total_skor_calculated += $calc_dibobot;
                                                         ?>
                                                         <tr>
                                                             <?php if ($first_persp_cell): ?>
@@ -273,9 +342,9 @@
                                                                 <?= ($i->realisasi >= 1000) ? 'Rp. ' . number_format($i->realisasi, 0, ',', '.') : $i->realisasi; ?>
                                                             </td>
 
-                                                            <td class="text-center align-middle"><?= $i->pencapaian ?? '-'; ?></td>
-                                                            <td class="text-center align-middle"><?= $i->nilai ?? '-'; ?></td>
-                                                            <td class="text-center align-middle"><?= $i->nilai_dibobot ?? '-'; ?></td>
+                                                            <td class="text-center align-middle"><?= number_format($calc_pencapaian, 2); ?></td>
+                                                            <td class="text-center align-middle"><?= number_format($calc_nilai, 2); ?></td>
+                                                            <td class="text-center align-middle"><?= number_format($calc_dibobot, 2); ?></td>
                                                         </tr>
                                                     <?php endforeach; ?>
                                                 <?php endforeach; ?>
@@ -301,10 +370,7 @@
                                                 <td colspan="3">Total</td>
                                                 <td><?= array_sum(array_column($penilaian_pegawai, 'bobot')); ?></td>
                                                 <td colspan="5">Total Nilai Dibobot</td>
-                                                <?php
-                                                $total_nilai = array_sum(array_map('floatval', array_column($penilaian_pegawai, 'nilai_dibobot')));
-                                                ?>
-                                                <td><?= number_format(round($total_nilai, 2), 2); ?></td>
+                                                <td><?= number_format(round($total_skor_calculated, 2), 2); ?></td>
                                             </tr>
                                         </tfoot>
                                     <?php endif; ?>
@@ -442,25 +508,47 @@
 
                     <?php
                     // 🔹 Pastikan data aman
-                    $total_skor = number_format(round(floatval($total_nilai ?? 0), 2), 2);
-                    $avg_budaya = $rata_rata_budaya ?? 0;
+                    $total_skor_raw = floatval($total_skor_calculated ?? 0);
+                    $total_skor = number_format(round($total_skor_raw, 2), 2); // Hanya untuk display
+                    $avg_budaya_raw = floatval($rata_rata_budaya ?? 0);
+                    $avg_budaya = number_format($avg_budaya_raw, 2); // Hanya untuk display
                     
                     $share_kpi_value = $nilai_akhir->share_kpi_value ?? 0;
                     $bobot_sasaran = $nilai_akhir->bobot_sasaran ?? 95;
                     $bobot_budaya = $nilai_akhir->bobot_budaya ?? 5;
                     $bobot_share_kpi = $nilai_akhir->bobot_share_kpi ?? 0;
                     
-                    $nilai_sasaran = $nilai_akhir->nilai_sasaran ?? round($total_skor * $bobot_sasaran / 100, 2);
-                    $nilai_budaya = $nilai_akhir->nilai_budaya ?? round($avg_budaya * $bobot_budaya / 100, 2);
-                    $nilai_kpi = round($share_kpi_value * $bobot_share_kpi / 100, 2);
+                    // Hitung unrounded untuk kalkulasi akurat
+                    $nilai_sasaran_raw = $total_skor_raw * $bobot_sasaran / 100;
+                    $nilai_budaya_raw = $avg_budaya_raw * $bobot_budaya / 100;
+                    $nilai_kpi_raw = (float)$share_kpi_value * $bobot_share_kpi / 100;
                     
-                    $total_nilai = $nilai_akhir->total_nilai ?? ($nilai_sasaran + $nilai_budaya + $nilai_kpi);
+                    $total_nilai_raw = $nilai_sasaran_raw + $nilai_budaya_raw + $nilai_kpi_raw;
+                    
+                    // Nilai untuk display
+                    $nilai_sasaran = round($nilai_sasaran_raw, 2);
+                    $nilai_budaya = round($nilai_budaya_raw, 2);
+                    $nilai_kpi = round($nilai_kpi_raw, 2);
+                    $total_nilai = round($total_nilai_raw, 2);
                     
                     $fraud = $nilai_akhir->fraud ?? 0;
                     $koefisien = $nilai_akhir->koefisien ?? 100;
-                    $nilai_akhir_value = $nilai_akhir->nilai_akhir ?? (($fraud == 1) ? ($total_nilai - 1) : $total_nilai);
-                    $pencapaian_pct = floatval(str_replace('%', '', $nilai_akhir->pencapaian ?? 0));
-                    $predikat = $nilai_akhir->predikat ?? 'Minus (M)';
+                    
+                    $nilai_akhir_value_raw = ($fraud == 1) ? ($total_nilai_raw - 1) : $total_nilai_raw;
+                    $nilai_akhir_value = round($nilai_akhir_value_raw, 2); // Display
+                    
+                    // HITUNG PENCAPAIAN AKHIR DAN PREDIKAT SECARA OTOMATIS BERDASARKAN HASIL BARU
+                    $v = round($nilai_akhir_value_raw, 2); // Gunakan nilai yang dibulatkan (sesuai layar)
+                    $koef = $koefisien ? floatval($koefisien) / 100 : 1;
+                    $pencapaian_akhir_calc = 0;
+                    if ($v < 0) $pencapaian_akhir_calc = 0;
+                    else if ($v < 2 * $koef) $pencapaian_akhir_calc = ($v / 2) * 0.8 * 100;
+                    else if ($v < 3 * $koef) $pencapaian_akhir_calc = 80 + (($v - 2) / 1) * 10;
+                    else if ($v < 3.5 * $koef) $pencapaian_akhir_calc = 90 + (($v - 3) / 0.5) * 20;
+                    else if ($v < 4.5 * $koef) $pencapaian_akhir_calc = 110 + (($v - 3.5) / 1) * 10;
+                    else if ($v < 5 * $koef) $pencapaian_akhir_calc = 120 + (($v - 4.5) / 0.5) * 10;
+                    else $pencapaian_akhir_calc = 130;
+                    $pencapaian_pct = min($pencapaian_akhir_calc, 130);
                     ?>
 
                     <!-- Bagian Atas: Perhitungan -->
@@ -504,7 +592,6 @@
 
                     <?php
                     // Tentukan predikat & warna berdasarkan nilai akhir
-                    $nilai_akhir_value = $nilai_akhir->nilai_akhir ?? 0; // pastikan ada nilai
                     $predikat = "";
                     $predikatClass = "";
                     $koef = $koefisien ? $koefisien / 100 : 1; // default 1 jika koefisien tidak ada

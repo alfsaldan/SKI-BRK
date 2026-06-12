@@ -1035,9 +1035,13 @@
             if (nilEl) nilEl.value = nilai === "" ? "" : formatAngka(nilai);
             if (nbEl) nbEl.value = nilaiBobot === "" ? "" : formatAngka(nilaiBobot);
 
+            row.dataset.rawPencapaian = pencapaian === "" ? "" : pencapaian;
+            row.dataset.rawNilai = nilai === "" ? "" : nilai;
+            row.dataset.rawNilaiBobot = nilaiBobot === "" ? "" : nilaiBobot;
+
             return {
                 bobot,
-                nilaiBobot: nilaiBobot === "" ? 0 : parseFloat(formatAngka(nilaiBobot)),
+                nilaiBobot: nilaiBobot === "" ? 0 : nilaiBobot, // unrounded
                 perspektif: row.dataset.perspektif
             };
         }
@@ -1072,7 +1076,10 @@
             });
 
             const totalSasaranEl = document.getElementById('total-sasaran');
-            if (totalSasaranEl) totalSasaranEl.textContent = formatAngka(totalNilai);
+            if (totalSasaranEl) {
+                totalSasaranEl.textContent = formatAngka(totalNilai);
+                window.totalNilaiUnroundedGlobal = totalNilai; // Simpan untuk perhitungan raw
+            }
 
             hitungNilaiAkhir();
         }
@@ -1108,15 +1115,27 @@
             const bobotBudaya = 0.05;
 
             const fraud = parseFloat(document.getElementById("fraud-input")?.value) || 0;
-            const totalSasaran = parseFloat(document.getElementById("total-nilai-bobot")?.textContent) || 0;
+            // Gunakan nilai raw dari sasaran (bila tersedia dari window)
+            const sasaranScoreRaw = window.totalNilaiUnroundedGlobal || (parseFloat(document.getElementById('total-sasaran')?.textContent) || 0);
+            const nilaiSasaranRaw = sasaranScoreRaw * bobotSasaran;
+            const nilaiSasaran = parseFloat(nilaiSasaranRaw.toFixed(2)); // Display
+            
             const rataBudaya = parseFloat(document.getElementById("ratarata-budaya")?.textContent) || 0;
-            const shareKpiNilai = parseFloat(document.getElementById("share-kpi-nilai")?.textContent) || 0;
+            const nilaiBudayaRaw = rataBudaya * bobotBudaya;
+            const nilaiBudaya = parseFloat(nilaiBudayaRaw.toFixed(2)); // Display
+            
+            const shareKpiNilaiRaw = parseFloat(document.getElementById('share-kpi-nilai')?.innerText) || 0;
+            const shareKpiNilai = parseFloat(shareKpiNilaiRaw.toFixed(2));
 
-
-            const nilaiSasaran = parseFloat((totalSasaran * bobotSasaran).toFixed(2)) || 0;
-            const nilaiBudaya = parseFloat((rataBudaya * bobotBudaya).toFixed(2)) || 0;
-            const totalNilai = parseFloat((nilaiSasaran + nilaiBudaya + shareKpiNilai).toFixed(2)) || 0;
-            const nilaiAkhir = fraud === 1 ? totalNilai - fraud : totalNilai;
+            const totalNilaiRaw = nilaiSasaranRaw + nilaiBudayaRaw + shareKpiNilaiRaw;
+            const totalNilai = parseFloat(totalNilaiRaw.toFixed(2));
+            
+            let nilaiAkhirRaw = totalNilaiRaw;
+            let nilaiAkhir = totalNilai;
+            if (fraud === 1) {
+                nilaiAkhirRaw = totalNilaiRaw - 1;
+                nilaiAkhir = parseFloat(nilaiAkhirRaw.toFixed(2));
+            }
             const koef = koefInput ? (parseFloat(koefInput.value) || 100) / 100 : 1;
 
             // predikat simple mapping
@@ -1161,13 +1180,13 @@
             // pencapaian akhir (approx)
             let pencapaian = "";
             if (nilaiAkhir !== "Tidak ada nilai") {
-                const v = parseFloat(nilaiAkhir) || 0;
+                const v = parseFloat(nilaiAkhir); // Gunakan nilai yang dibulatkan agar hasil match dengan hitungan manual layar
                 if (v < 0) pencapaian = 0;
-                else if (v < 2 * koef) pencapaian = (v / 2) * 0.8 * 100;
-                else if (v < 3 * koef) pencapaian = 80 + ((v - 2) / 1) * 10;
-                else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3) / 0.5) * 20;
-                else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5) / 1) * 10;
-                else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5) / 0.5) * 10;
+                else if (v < 2 * koef) pencapaian = (v / (2 * koef)) * 80;
+                else if (v < 3 * koef) pencapaian = 80 + ((v - 2 * koef) / (1 * koef)) * 10;
+                else if (v < 3.5 * koef) pencapaian = 90 + ((v - 3 * koef) / (0.5 * koef)) * 20;
+                else if (v < 4.5 * koef) pencapaian = 110 + ((v - 3.5 * koef) / (1 * koef)) * 10;
+                else if (v < 5 * koef) pencapaian = 120 + ((v - 4.5 * koef) / (0.5 * koef)) * 10;
                 else pencapaian = 130;
             } else {
                 pencapaian = 0;

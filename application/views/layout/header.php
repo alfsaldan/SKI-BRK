@@ -326,6 +326,7 @@
                                 'caridatapegawai',
                                 'monitoringkinerja',
                                 'caripenilaianbulanan',
+                                'laporankinerja'
                             ]));
                             ?>
                             <li class="<?= $fiturUtamaActive ? 'active' : '' ?>">
@@ -380,6 +381,14 @@
                                         <a href="<?= base_url('administrator/monitoringkinerja') ?>">
                                             <i class="mdi mdi-clipboard-pulse"></i>
                                             <span> Monitoring Kinerja </span>
+                                        </a>
+                                    </li>
+
+                                    <li
+                                        class="<?= ($activeController == 'administrator' && in_array($activeMethod, ['laporankinerja'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('administrator/laporankinerja') ?>">
+                                            <i class="mdi mdi-file-document-box-multiple-outline"></i>
+                                            <span> Laporan Kinerja </span>
                                         </a>
                                     </li>
                                 </ul>
