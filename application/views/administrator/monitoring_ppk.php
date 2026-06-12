@@ -86,56 +86,7 @@
 
 <script>
     // Pastikan dropdown periode hanya menampilkan periode Oktober-Desember.
-    (function enforceOctDecOptions() {
-        try {
-            const sel = document.getElementById('filter_periode');
-            if (!sel) return;
 
-            function isOctDecOption(opt) {
-                try {
-                    const parts = opt.value.split('|');
-                    if (parts.length !== 2) return false;
-                    const awal = parts[0];
-                    const akhir = parts[1];
-                    const ma = new Date(awal).getMonth() + 1; // 1-12
-                    const mb = new Date(akhir).getMonth() + 1;
-                    return ma === 10 && mb === 12;
-                } catch (e) {
-                    return false;
-                }
-            }
-
-            function filterOnce() {
-                const opts = Array.from(sel.options);
-                for (const opt of opts) {
-                    if (!isOctDecOption(opt)) {
-                        sel.removeChild(opt);
-                    }
-                }
-            }
-
-            filterOnce();
-
-            const mo = new MutationObserver(function (muts) {
-                let changed = false;
-                for (const m of muts) {
-                    if (m.type === 'childList' && m.addedNodes.length > 0) {
-                        changed = true;
-                        break;
-                    }
-                }
-                if (changed) {
-                    setTimeout(filterOnce, 20);
-                }
-            });
-            mo.observe(sel, {
-                childList: true
-            });
-
-        } catch (e) {
-            console.warn('enforceOctDecOptions error', e);
-        }
-    })();
 
     document.addEventListener('DOMContentLoaded', function () {
 

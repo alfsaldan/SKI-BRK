@@ -3233,30 +3233,154 @@ class Administrator extends CI_Controller
             $params[] = $unit_kantor_selected;
         }
 
-        // Kriteria: 
-        // 1. periode_akhir di bulan Desember tahun yang dipilih.
-        // 2. Semua status (di nilai_akhir, penilaian, budaya_nilai) harus 'disetujui' atau 'selesai'.
-        $queryData = $this->db->query("
-            SELECT p.nik, p.nama, p.jabatan, p.unit_kantor, na.total_nilai as nilai_akhir, na.predikat as yudisium, na.pencapaian as persentase_pencapaian
-            FROM nilai_akhir na
-            JOIN pegawai p ON na.nik = p.nik
-            WHERE YEAR(na.periode_akhir) = ? AND MONTH(na.periode_akhir) = 12
-              AND LOWER(na.status_penilaian) IN ('disetujui', 'selesai')
-              $unit_kantor_filter
-              AND NOT EXISTS (
-                  SELECT 1 FROM penilaian pn 
-                  WHERE pn.nik = na.nik AND pn.periode_akhir = na.periode_akhir 
-                  AND (LOWER(pn.status) NOT IN ('disetujui', 'selesai') OR LOWER(pn.status2) NOT IN ('disetujui', 'selesai'))
-              )
-              AND NOT EXISTS (
-                  SELECT 1 FROM budaya_nilai bn
-                  WHERE bn.nik_pegawai = na.nik AND bn.periode_akhir = na.periode_akhir
-                  AND LOWER(bn.status_penilaian) NOT IN ('disetujui', 'selesai')
-              )
-            ORDER BY p.unit_kantor ASC, p.nama ASC
-        ", $params);
+        $current_year = date('Y');
+        $laporan_final = [];
         
-        $data['laporan'] = $queryData->result();
+        if ($tahun_selected < $current_year) {
+            // ==========================================
+            // LOGIC TAHUN LALU: Rata-Rata Tertimbang
+            // ==========================================
+            $params[] = $tahun_selected;
+            $queryData = $this->db->query("
+                SELECT p.nik, p.nama, p.jabatan, p.unit_kantor, 
+                       na.periode_awal, na.periode_akhir, 
+                       na.nilai_akhir, na.pencapaian, na.koefisien, na.predikat
+                FROM nilai_akhir na
+                JOIN pegawai p ON na.nik = p.nik
+                WHERE YEAR(na.periode_akhir) = ?
+                  AND LOWER(na.status_penilaian) IN ('disetujui', 'selesai')
+                  $unit_kantor_filter
+                  AND na.nik IN (
+                      SELECT na_dec.nik 
+                      FROM nilai_akhir na_dec 
+                      WHERE YEAR(na_dec.periode_akhir) = ? AND MONTH(na_dec.periode_akhir) = 12
+                        AND LOWER(na_dec.status_penilaian) IN ('disetujui', 'selesai')
+                  )
+                  AND NOT EXISTS (
+                      SELECT 1 FROM penilaian pn 
+                      WHERE pn.nik = na.nik AND pn.periode_akhir = na.periode_akhir 
+                      AND (LOWER(pn.status) NOT IN ('disetujui', 'selesai') OR LOWER(pn.status2) NOT IN ('disetujui', 'selesai'))
+                  )
+                  AND NOT EXISTS (
+                      SELECT 1 FROM budaya_nilai bn
+                      WHERE bn.nik_pegawai = na.nik AND bn.periode_akhir = na.periode_akhir
+                      AND LOWER(bn.status_penilaian) NOT IN ('disetujui', 'selesai')
+                  )
+                ORDER BY p.unit_kantor ASC, p.nama ASC, na.periode_awal ASC
+            ", $params);
+            
+            $raw_data = $queryData->result();
+            
+            $laporan_map = [];
+            foreach ($raw_data as $row) {
+                if (!isset($laporan_map[$row->nik])) {
+                    $laporan_map[$row->nik] = [
+                        'nik' => $row->nik,
+                        'nama' => $row->nama,
+                        'jabatan' => $row->jabatan,
+                        'unit_kantor' => $row->unit_kantor,
+                        'total_hari' => 0,
+                        'bobot_nilai_akhir' => 0,
+                        'koefisien' => 100,
+                        'last_end_date' => null
+                    ];
+                }
+                
+                $tgl_awal = new DateTime($row->periode_awal);
+                $last_end_date = $laporan_map[$row->nik]['last_end_date'];
+                
+                if ($last_end_date && $tgl_awal <= $last_end_date) {
+                    $tgl_awal = (clone $last_end_date)->modify('+1 day');
+                }
+                
+                $tgl_akhir = new DateTime($row->periode_akhir);
+                
+                $durasi_hari = 0;
+                if ($tgl_akhir >= $tgl_awal) {
+                    $durasi_hari = $tgl_akhir->diff($tgl_awal)->days + 1;
+                }
+                
+                if ($durasi_hari > 0) {
+                    $laporan_map[$row->nik]['total_hari'] += $durasi_hari;
+                    $laporan_map[$row->nik]['bobot_nilai_akhir'] += ($row->nilai_akhir * $durasi_hari);
+                    $laporan_map[$row->nik]['koefisien'] = $row->koefisien ?? 100;
+                    $laporan_map[$row->nik]['last_end_date'] = $tgl_akhir;
+                }
+            }
+            
+            foreach ($laporan_map as $nik => $data_pegawai) {
+                if ($data_pegawai['total_hari'] > 0) {
+                    $rata_nilai_akhir = $data_pegawai['bobot_nilai_akhir'] / $data_pegawai['total_hari'];
+                    $koef = ($data_pegawai['koefisien'] ?: 100) / 100;
+                    $v = $rata_nilai_akhir;
+                    $pencapaian = 0;
+                    $predikat = "Minus";
+
+                    if ($v < 0) {
+                        $pencapaian = 0;
+                        $predikat = "Minus";
+                    } else if ($v < 2 * $koef) {
+                        $pencapaian = ($v / 2) * 0.8 * 100;
+                        $predikat = "Minus";
+                    } else if ($v < 3 * $koef) {
+                        $pencapaian = 80 + (($v - 2) / 1) * 10;
+                        $predikat = "Fair";
+                    } else if ($v < 3.5 * $koef) {
+                        $pencapaian = 90 + (($v - 3) / 0.5) * 20;
+                        $predikat = "Good";
+                    } else if ($v < 4.5 * $koef) {
+                        $pencapaian = 110 + (($v - 3.5) / 1) * 10;
+                        $predikat = "Very Good";
+                    } else if ($v < 5 * $koef) {
+                        $pencapaian = 120 + (($v - 4.5) / 0.5) * 10;
+                        $predikat = "Excellent";
+                    } else {
+                        $pencapaian = 130;
+                        $predikat = "Excellent";
+                    }
+                    
+                    $data_pegawai['nilai_akhir'] = round($rata_nilai_akhir, 2);
+                    $data_pegawai['persentase_pencapaian'] = round(min($pencapaian, 130), 2);
+                    $data_pegawai['yudisium'] = $predikat;
+                    
+                    $laporan_final[] = (object) $data_pegawai;
+                }
+            }
+        } else {
+            // ==========================================
+            // LOGIC TAHUN BERJALAN: Ambil periode TERAKHIR
+            // ==========================================
+            $queryData = $this->db->query("
+                SELECT p.nik, p.nama, p.jabatan, p.unit_kantor, 
+                       na.nilai_akhir, 
+                       na.predikat as yudisium, 
+                       na.pencapaian
+                FROM nilai_akhir na
+                JOIN pegawai p ON na.nik = p.nik
+                WHERE YEAR(na.periode_akhir) = ?
+                  AND LOWER(na.status_penilaian) IN ('disetujui', 'selesai')
+                  $unit_kantor_filter
+                  AND na.id = (
+                      SELECT na_last.id 
+                      FROM nilai_akhir na_last 
+                      WHERE na_last.nik = na.nik 
+                        AND YEAR(na_last.periode_akhir) = ?
+                        AND LOWER(na_last.status_penilaian) IN ('disetujui', 'selesai')
+                      ORDER BY na_last.periode_akhir DESC 
+                      LIMIT 1
+                  )
+                ORDER BY p.unit_kantor ASC, p.nama ASC
+            ", array_merge($params, [$tahun_selected]));
+            
+            $raw_data = $queryData->result();
+            foreach ($raw_data as $row) {
+                // Konversi string pencapaian menjadi float (misal "109.36%")
+                $row->persentase_pencapaian = floatval(str_replace('%', '', $row->pencapaian));
+                $laporan_final[] = $row;
+            }
+        }
+        
+        $data['laporan'] = $laporan_final;
 
         $this->load->view('layout/header', $data);
         $this->load->view('administrator/laporankinerja', $data);
@@ -3554,7 +3678,7 @@ class Administrator extends CI_Controller
         $this->db->where('na.periode_awal', $awal);
         $this->db->where('na.periode_akhir', $akhir);
         $this->db->where('na.predikat', 'Minus');
-        $this->db->where('na.status_penilaian', 'disetujui');
+        $this->db->where_in('LOWER(na.status_penilaian)', ['disetujui', 'selesai']);
 
         $query = $this->db->get();
         $rows = $query->result();

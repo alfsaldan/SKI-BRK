@@ -40,7 +40,7 @@
                                     </div>
                                     <div class="col-md-3">
                                         <label for="unit_kantor">Pilih Unit Kantor</label>
-                                        <select class="form-control" name="unit_kantor" id="unit_kantor">
+                                        <select class="form-control select2" name="unit_kantor" id="unit_kantor">
                                             <option value="all" <?= (empty($unit_kantor_selected) || $unit_kantor_selected == 'all') ? 'selected' : '' ?>>Semua Unit Kantor</option>
                                             <?php if (!empty($unit_kantor_list)): ?>
                                                 <?php foreach ($unit_kantor_list as $uk): ?>
@@ -112,6 +112,14 @@
 <!-- Tambahkan script DataTables Buttons (Excel, dll) -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        if ($('.select2').length > 0) {
+            $('.select2').select2({
+                width: '100%',
+                placeholder: 'Pilih Unit Kantor',
+                allowClear: true
+            });
+        }
+
         if ($.fn.DataTable.isDataTable('#datatable-laporan')) {
             $('#datatable-laporan').DataTable().destroy();
         }
