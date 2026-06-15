@@ -778,13 +778,15 @@ class Pegawai_model extends CI_Model
      */
     public function get_arsip_penilaian_by_periode($nik, $awal, $akhir)
     {
-        // Cek dulu apakah ada penilaian 'selesai' di tabel nilai_akhir
-        $nilai_akhir_check = $this->db->get_where('nilai_akhir', [
-            'nik' => $nik,
-            'periode_awal' => $awal,
-            'periode_akhir' => $akhir,
-            'status_penilaian' => 'selesai'
-        ])->row();
+        // Cek dulu apakah ada penilaian 'selesai' atau 'disetujui' di tabel nilai_akhir
+        $this->db->where('nik', $nik);
+        $this->db->where('periode_awal', $awal);
+        $this->db->where('periode_akhir', $akhir);
+        $this->db->group_start();
+        $this->db->where('status_penilaian', 'selesai');
+        $this->db->or_where('status_penilaian', 'disetujui');
+        $this->db->group_end();
+        $nilai_akhir_check = $this->db->get('nilai_akhir')->row();
 
         if (!$nilai_akhir_check) {
             return null; // Tidak ada data arsip yang selesai untuk periode ini
