@@ -3,7 +3,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-md-6">
-                <span id="footerYear"></span> &copy; KPI Online-BRKS by
+                <span id="footerYear"></span> &copy; SKI Online-BRKS by
                 <a href="https://www.brksyariah.co.id/brkweb_syariah/" target="_blank">Bank Riau Kepri Syariah</a>
             </div>
             <div class="col-md-6">

@@ -8,7 +8,7 @@
                     <div class="page-title-box">
                         <div class="page-title-right">
                             <ol class="breadcrumb m-0">
-                                <li class="breadcrumb-item"><a href="javascript:void(0);">KPI Online-BRKS</a></li>
+                                <li class="breadcrumb-item"><a href="javascript:void(0);">SKI Online-BRKS</a></li>
                                 <li class="breadcrumb-item active">Monitoring Kinerja Bulanan</li>
                             </ol>
                         </div>
@@ -190,9 +190,17 @@
                     <div class="col-12">
                         <div class="card shadow-sm border-0 mt-0">
                             <div class="card-body">
-                                <h5 class="text-success font-weight-bold mb-3">
-                                    <i class="mdi mdi-star-circle mr-2"></i> Hasil Penilaian
-                                </h5>
+                                <?php $is_approved = (isset($monitoring_bulanan) && $monitoring_bulanan->status == 'approved'); ?>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="text-success font-weight-bold m-0">
+                                        <i class="mdi mdi-star-circle mr-2"></i> Hasil Penilaian
+                                    </h5>
+                                    <?php if ($is_approved) { ?>
+                                        <span class="badge badge-success px-3 py-2" style="font-size: 14px;"><i class="mdi mdi-check-circle mr-1"></i> Diverifikasi (Data Terkunci)</span>
+                                    <?php } else { ?>
+                                        <span class="badge badge-warning px-3 py-2" style="font-size: 14px;"><i class="mdi mdi-clock-outline mr-1"></i> Belum Diverifikasi</span>
+                                    <?php } ?>
+                                </div>
                                 <!-- TABEL PENILAIAN -->
                                 <div class="table-responsive">
                                     <table class="table table-bordered" id="tabel-penilaian">
@@ -271,10 +279,16 @@
                                                                 <td><?= htmlspecialchars($i->indikator ?? '-') ?></td>
                                                                 <td class="text-center align-middle"><?= htmlspecialchars($i->bobot ?? 0) ?></td>
                                                                 <td class="text-center align-middle" style="min-width:150px;">
-                                                                    <?= ($i->target >= 1000) ? 'Rp. ' . number_format($i->target, 0, ',', '.') : htmlspecialchars($i->target ?? 0); ?>
+                                                                    <div class="currency-wrapper">
+                                                                        <input type="text"
+                                                                            class="form-control form-control-sm text-center target-input"
+                                                                            value="<?= htmlspecialchars($i->target ?? 0) ?>"
+                                                                            oninput="this.value = this.value.replace(/[^0-9.]/g, '');" <?= $is_approved ? 'disabled' : '' ?>>
+                                                                        <div class="format-currency text-muted small"></div>
+                                                                    </div>
                                                                 </td>
                                                                 <td class="text-center align-middle" style="min-width:110px;">
-                                                                    <?= (!empty($i->batas_waktu) && strpos($i->batas_waktu, '0000') === false) ? date('d-m-Y', strtotime($i->batas_waktu)) : '-'; ?>
+                                                                    <input type="date" class="form-control form-control-sm batas-waktu-input" value="<?= (!empty($i->batas_waktu) && strpos($i->batas_waktu, '0000') === false) ? date('Y-m-d', strtotime($i->batas_waktu)) : ''; ?>" <?= $is_approved ? 'disabled' : '' ?>>
                                                                 </td>
 
                                                                 <style>
@@ -312,7 +326,7 @@
                                                                             data-target="<?= htmlspecialchars($i->target ?? 0) ?>"
                                                                             data-bobot="<?= htmlspecialchars($i->bobot ?? 0) ?>"
                                                                             data-indikator="<?= htmlspecialchars($i->indikator ?? '') ?>"
-                                                                            oninput="this.value = this.value.replace(/[^0-9.]/g, '');">
+                                                                            oninput="this.value = this.value.replace(/[^0-9.]/g, '');" <?= $is_approved ? 'disabled' : '' ?>>
                                                                         <div class="format-currency text-muted small"></div>
                                                                     </div>
                                                                 </td>
@@ -797,7 +811,10 @@
         function autosaveRow(row) {
             const indikatorId = row.dataset.id || '';
             const indikatorText = row.dataset.indikator || '';
-            const target = parseFloat(row.querySelector('.realisasi-input').dataset.target || 0);
+            const targetEl = row.querySelector('.target-input');
+            const target = targetEl ? parseFloat(targetEl.value.replace(/[^0-9.-]+/g,"") || 0) : parseFloat(row.querySelector('.realisasi-input').dataset.target || 0);
+            const batasWaktuEl = row.querySelector('.batas-waktu-input');
+            const batasWaktu = batasWaktuEl ? batasWaktuEl.value : '';
             const bobot = parseFloat(row.querySelector('.realisasi-input').dataset.bobot || 0);
             const realisasi = parseFloat(row.querySelector('.realisasi-input').value || 0);
 
@@ -828,6 +845,7 @@
                     indikator: indikatorText,
                     bobot,
                     target,
+                    batas_waktu: batasWaktu,
                     realisasi,
                     pencapaian: parseFloat(penc.toFixed(2)),
                     nilai: parseFloat(nilai.toFixed(2)),
@@ -867,12 +885,15 @@
             }, 300);
         }
 
-        // Event listener input realisasi
+        // Event listener input
         document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach((row) => {
-            const input = row.querySelector('.realisasi-input');
-            if (!input) return;
-            input.addEventListener('input', () => autosaveRow(row));
-            input.addEventListener('blur', () => autosaveRow(row));
+            ['.realisasi-input', '.target-input', '.batas-waktu-input'].forEach(selector => {
+                const input = row.querySelector(selector);
+                if (input) {
+                    input.addEventListener('input', () => autosaveRow(row));
+                    input.addEventListener('blur', () => autosaveRow(row));
+                }
+            });
         });
 
         // Hitung semua row saat load halaman

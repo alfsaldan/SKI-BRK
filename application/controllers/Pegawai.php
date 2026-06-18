@@ -735,6 +735,185 @@ class Pegawai extends CI_Controller
         $this->load->view('layoutpegawai/footer');
     }
 
+    public function monitoringPegawai()
+    {
+        $nik = $this->session->userdata('nik');
+        $this->load->model('pegawai/Nilai_model');
+
+        $pegawai_penilai1 = $this->Nilai_model->getPegawaiSebagaiPenilai1($nik);
+        $pegawai_penilai2 = $this->Nilai_model->getPegawaiSebagaiPenilai2($nik);
+
+        $data = [
+            'judul' => 'Approval Monitoring Bulanan',
+            'pegawai_penilai1' => $pegawai_penilai1,
+            'pegawai_penilai2' => $pegawai_penilai2
+        ];
+
+        $this->load->view('layoutpegawai/header', $data);
+        $this->load->view('pegawai/monitoringpegawai', $data);
+        $this->load->view('layoutpegawai/footer');
+    }
+
+    public function monitoringPegawaiDetail($nik)
+    {
+        $this->session->set_userdata('monitoring_pegawai_nik', $nik);
+        redirect('Pegawai/approvalMonitoringPegawai?nik=' . $nik);
+    }
+    
+    public function approvalMonitoringPegawai()
+    {
+        $nik = $this->input->get('nik') ?? $this->session->userdata('monitoring_pegawai_nik');
+        if (!$nik) {
+            show_error('NIK tidak ditemukan.');
+            return;
+        }
+
+        $tahun = $this->input->post('tahun') ?? $this->input->get('tahun') ?? date('Y');
+        $bulan = $this->input->post('bulan') ?? $this->input->get('bulan') ?? date('m');
+
+        $periode_awal = "$tahun-$bulan-01";
+        $periode_akhir = date('Y-m-t', strtotime($periode_awal));
+        $data['tahun_dipilih'] = $tahun;
+        $data['bulan_dipilih'] = $bulan;
+        $data['periode_awal'] = $periode_awal;
+        $data['periode_akhir'] = $periode_akhir;
+        $data['tahun_list'] = $this->MonitoringPegawai_model->getTahunList();
+
+        $bulanSekarang = (int)$bulan;
+
+        $pegawai = $this->MonitoringPegawai_model->getPegawaiWithPenilai($nik);
+        if (!$pegawai) {
+            show_error('Pegawai tidak ditemukan.');
+            return;
+        }
+
+        // --- FIX UNTUK JABATAN LAMA ---
+        $this->load->model('pegawai/Pegawai_model');
+        $history = $this->Pegawai_model->get_pegawai_history_by_date($nik, $periode_awal, $periode_akhir);
+        if ($history) {
+            $pegawai->jabatan = $history->jabatan;
+            $pegawai->unit_kerja = $history->unit_kerja;
+            $pegawai->unit_kantor = $history->unit_kantor;
+            
+            if (!empty($history->penilai1_nik)) {
+                $pegawai->penilai1_nik = $history->penilai1_nik;
+                $pegawai->penilai1_nama = $history->penilai1_nama;
+                $pegawai->penilai1_jabatan_detail = $history->penilai1_jabatan_detail;
+            }
+            if (!empty($history->penilai2_nik)) {
+                $pegawai->penilai2_nik = $history->penilai2_nik;
+                $pegawai->penilai2_nama = $history->penilai2_nama;
+                $pegawai->penilai2_jabatan_detail = $history->penilai2_jabatan_detail;
+            }
+        }
+
+        $monitoring_bulanan = $this->MonitoringPegawai_model->getMonitoringBulanan($nik, $bulan, $tahun);
+
+        $awal_tahun  = "$tahun-10-01";
+        $akhir_tahun = "$tahun-12-31";
+        $indicators = $this->MonitoringPegawai_model->get_indikator_by_jabatan_dan_unit(
+            $pegawai->jabatan,
+            $pegawai->unit_kerja,
+            $nik,
+            $awal_tahun,
+            $akhir_tahun
+        );
+
+        $penilaian_bulanan = [];
+        $storedMap = [];
+        if ($monitoring_bulanan) {
+            $stored = json_decode($monitoring_bulanan->data_json, true) ?: [];
+            foreach ($stored as $s) {
+                $key = isset($s['indikator_id']) ? (string)$s['indikator_id'] : (isset($s['id']) ? (string)$s['id'] : null);
+                if ($key !== null) $storedMap[$key] = $s;
+            }
+        }
+
+        foreach ($indicators as $ind) {
+            $idKey = (string)($ind->id ?? $ind->indikator_id ?? '');
+            $row = new stdClass();
+            $row->id = $ind->id ?? $ind->indikator_id ?? null;
+            $row->indikator = $ind->indikator ?? '';
+            $row->perspektif = $ind->perspektif ?? '';
+            $row->sasaran_kerja = $ind->sasaran_kerja ?? '';
+            $row->bobot = isset($ind->bobot) ? floatval($ind->bobot) : 0;
+
+            if (isset($storedMap[$idKey]['target'])) {
+                $row->target = floatval($storedMap[$idKey]['target']);
+            } else {
+                $row->target = isset($ind->target) ? (float)$ind->target : 0;
+            }
+
+            if (isset($storedMap[$idKey]['batas_waktu'])) {
+                $row->batas_waktu = $storedMap[$idKey]['batas_waktu'];
+            } else {
+                $row->batas_waktu = $ind->batas_waktu ?? '';
+            }
+
+            $row->realisasi = isset($storedMap[$idKey]['realisasi']) ? floatval($storedMap[$idKey]['realisasi']) : 0;
+            $row->pencapaian = isset($storedMap[$idKey]['pencapaian']) ? floatval($storedMap[$idKey]['pencapaian']) : 0;
+            $row->nilai = isset($storedMap[$idKey]['nilai']) ? floatval($storedMap[$idKey]['nilai']) : 0;
+            $row->nilai_dibobot = isset($storedMap[$idKey]['nilai_dibobot'])
+                ? floatval($storedMap[$idKey]['nilai_dibobot'])
+                : $row->nilai;
+
+            $penilaian_bulanan[] = $row;
+        }
+
+        $nilai_akhir = $monitoring_bulanan ? $monitoring_bulanan->nilai_akhir : 0;
+        
+        $budayaData = $this->MonitoringPegawai_model->getBudayaNilaiByNik($nik, $awal_tahun, $akhir_tahun);
+        $nilaiAkhirData = $this->MonitoringPegawai_model->getNilaiAkhir($nik, "$tahun-10-01", "$tahun-12-31");
+        $nilai_budaya = $nilaiAkhirData->nilai_budaya ?? 0;
+        $share_kpi_value = $nilaiAkhirData->share_kpi_value ?? 0;
+        $bobot_sasaran = $nilaiAkhirData->bobot_sasaran ?? 95;
+        $bobot_budaya = $nilaiAkhirData->bobot_budaya ?? 5;
+        $bobot_share_kpi = $nilaiAkhirData->bobot_share_kpi ?? 0;
+        $fraud = $nilaiAkhirData->fraud ?? 0;
+        $koefisien = $nilaiAkhirData->koefisien ?? 100;
+        $monitoring_bulanan_tahun = $this->MonitoringPegawai_model->getMonitoringBulananTahun($nik, $tahun);
+
+        $data['judul'] = 'Approval Monitoring Bulanan';
+        $data['pegawai_detail'] = $pegawai;
+        $data['penilaian_pegawai'] = $penilaian_bulanan;
+        $data['monitoring_bulanan'] = $monitoring_bulanan; // pass to view to read status
+        $data['nilai_akhir'] = $nilai_akhir;
+        $data['budaya_nilai'] = $budayaData['nilai_budaya'];
+        $data['rata_rata_budaya'] = $budayaData['rata_rata'];
+        $data['budaya'] = $this->MonitoringPegawai_model->getAllBudaya();
+        $data['nilai_budaya'] = $nilai_budaya;
+        $data['share_kpi_value'] = $share_kpi_value;
+        $data['bobot_sasaran'] = $bobot_sasaran;
+        $data['bobot_budaya'] = $bobot_budaya;
+        $data['bobot_share_kpi'] = $bobot_share_kpi;
+        $data['fraud'] = $fraud;
+        $data['koefisien'] = $koefisien;
+        $data['monitoring_bulanan_tahun'] = $monitoring_bulanan_tahun;
+
+        $this->load->view('layoutpegawai/header', $data);
+        $this->load->view('pegawai/monitoringpegawaidetail', $data);
+        $this->load->view('layoutpegawai/footer');
+    }
+
+    public function setApprovalMonitoring()
+    {
+        $nik = $this->input->post('nik');
+        $bulan = $this->input->post('bulan');
+        $tahun = $this->input->post('tahun');
+        $status = $this->input->post('status');
+
+        $this->db->where('nik', $nik);
+        $this->db->where('bulan', $bulan);
+        $this->db->where('tahun', $tahun);
+        $updated = $this->db->update('monitoring_bulanan', ['status' => $status]);
+
+        if ($updated) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Gagal mengubah status approval']);
+        }
+    }
+
     public function nilaiPegawaiDetail($nik)
     {
         $this->load->model('pegawai/Nilai_model');
@@ -2704,16 +2883,17 @@ class Pegawai extends CI_Controller
                         $row->sasaran_kerja = $ind->sasaran_kerja ?? '';
                         $row->bobot = isset($ind->bobot) ? floatval($ind->bobot) : 0;
 
-                        // ✅ Target akumulatif
-                        $targetTahunan = isset($ind->target) ? (float)$ind->target : 0;
-                        $row->target = $targetTahunan > 0 ? round(($targetTahunan / 12) * $bulanSekarang, 2) : 0;
+                        if (isset($storedMap[$idKey]['target'])) {
+                            $row->target = floatval($storedMap[$idKey]['target']);
+                        } else {
+                            $row->target = isset($ind->target) ? (float)$ind->target : 0;
+                        }
 
-                        // // Override target jika ada di stored data
-                        // if (isset($storedMap[$idKey]['target'])) {
-                        //     $row->target = floatval($storedMap[$idKey]['target']);
-                        // }
-
-                        $row->batas_waktu = $ind->batas_waktu ?? '';
+                        if (isset($storedMap[$idKey]['batas_waktu'])) {
+                            $row->batas_waktu = $storedMap[$idKey]['batas_waktu'];
+                        } else {
+                            $row->batas_waktu = $ind->batas_waktu ?? '';
+                        }
                         $row->realisasi = isset($storedMap[$idKey]['realisasi']) ? floatval($storedMap[$idKey]['realisasi']) : 0;
                         $row->pencapaian = isset($storedMap[$idKey]['pencapaian']) ? floatval($storedMap[$idKey]['pencapaian']) : 0;
                         $row->nilai = isset($storedMap[$idKey]['nilai']) ? floatval($storedMap[$idKey]['nilai']) : 0;
@@ -2737,8 +2917,7 @@ class Pegawai extends CI_Controller
 
                     $penilaian_bulanan = [];
                     foreach ($penilaian_tahunan as $p) {
-                        $targetTahunan = $p->target ? (float)$p->target : 0;
-                        $p->target = $targetTahunan > 0 ? round(($targetTahunan / 12) * $bulanSekarang, 2) : 0;
+                        $p->target = $p->target ? (float)$p->target : 0;
                         $p->realisasi = 0;
                         $p->pencapaian = 0;
                         $p->nilai = 0;
@@ -2775,6 +2954,7 @@ class Pegawai extends CI_Controller
                     'budaya_nilai' => $budayaData['nilai_budaya'],
                     'rata_rata_budaya' => $budayaData['rata_rata'],
                     'budaya' => $this->MonitoringPegawai_model->getAllBudaya(),
+                    'monitoring_bulanan' => $monitoring_bulanan ?? null,
                     'message' => ['type' => 'success', 'text' => 'Data monitoring bulanan siap ditampilkan!']
                 ];
             }
@@ -2809,6 +2989,15 @@ class Pegawai extends CI_Controller
         $pegawai = $this->MonitoringPegawai_model->getPegawaiWithPenilai($nik);
 
         if ($pegawai) {
+            // --- FIX UNTUK JABATAN LAMA ---
+            $this->load->model('pegawai/Pegawai_model');
+            $history = $this->Pegawai_model->get_pegawai_history_by_date($nik, $periode_awal, $periode_akhir);
+            if ($history) {
+                $pegawai->jabatan = $history->jabatan;
+                $pegawai->unit_kerja = $history->unit_kerja;
+                $pegawai->unit_kantor = $history->unit_kantor;
+            }
+
             $monitoring_bulanan = $this->MonitoringPegawai_model->getMonitoringBulanan($nik, $bulan, $tahun);
 
             if ($monitoring_bulanan) {
@@ -2847,15 +3036,19 @@ class Pegawai extends CI_Controller
                     $row->sasaran_kerja = $ind->sasaran_kerja ?? '';
                     $row->bobot = isset($ind->bobot) ? floatval($ind->bobot) : 0;
 
-                    // ✅ Target akumulatif
-                    $targetTahunan = isset($ind->target) ? (float)$ind->target : 0;
-                    $row->target = $targetTahunan > 0 ? round(($targetTahunan / 12) * $bulanSekarang, 2) : 0;
+                    // ✅ Target dan batas waktu dari storage bulanan
+                    if (isset($storedMap[$idKey]['target'])) {
+                        $row->target = floatval($storedMap[$idKey]['target']);
+                    } else {
+                        $row->target = isset($ind->target) ? (float)$ind->target : 0;
+                    }
 
-                    // if (isset($storedMap[$idKey]['target'])) {
-                    //     $row->target = floatval($storedMap[$idKey]['target']);
-                    // }
+                    if (isset($storedMap[$idKey]['batas_waktu'])) {
+                        $row->batas_waktu = $storedMap[$idKey]['batas_waktu'];
+                    } else {
+                        $row->batas_waktu = $ind->batas_waktu ?? '';
+                    }
 
-                    $row->batas_waktu = $ind->batas_waktu ?? '';
                     $row->realisasi = isset($storedMap[$idKey]['realisasi']) ? floatval($storedMap[$idKey]['realisasi']) : 0;
                     $row->pencapaian = isset($storedMap[$idKey]['pencapaian']) ? floatval($storedMap[$idKey]['pencapaian']) : 0;
                     $row->nilai = isset($storedMap[$idKey]['nilai']) ? floatval($storedMap[$idKey]['nilai']) : 0;
@@ -2881,8 +3074,7 @@ class Pegawai extends CI_Controller
 
                 $penilaian_bulanan = [];
                 foreach ($penilaian_tahunan as $p) {
-                    $targetTahunan = $p->target ? (float)$p->target : 0;
-                    $p->target = $targetTahunan > 0 ? round(($targetTahunan / 12) * $bulanSekarang, 2) : 0;
+                    $p->target = $p->target ? (float)$p->target : 0;
                     $p->realisasi = 0;
                     $p->pencapaian = 0;
                     $p->nilai = 0;
@@ -2940,6 +3132,7 @@ class Pegawai extends CI_Controller
                 'periode_awal' => $periode_awal,
                 'periode_akhir' => $periode_akhir,
                 'monitoring_bulanan_tahun' => $monitoring_bulanan_tahun,
+                'monitoring_bulanan' => isset($monitoring_bulanan) && $monitoring_bulanan ? $monitoring_bulanan : null,
                 'message' => ['type' => 'success', 'text' => "Data monitoring bulan {$bulan} berhasil ditampilkan!"]
             ];
         } else {
@@ -3001,6 +3194,10 @@ class Pegawai extends CI_Controller
         $data_json = [];
 
         if ($existing) {
+            if ($existing->status == 'approved') {
+                echo json_encode(['status' => 'failed', 'msg' => 'Data sudah di-approve dan tidak dapat diubah']);
+                return;
+            }
             $data_json = json_decode($existing->data_json, true) ?: [];
             $found = false;
             foreach ($data_json as &$it) {

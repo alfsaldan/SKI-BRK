@@ -13,7 +13,7 @@
                             <i class="mdi mdi-briefcase mr-2 text-primary"></i> Kelola Tingkatan Jabatan
                         </h3>
                         <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a href="#">KPI Online-BRKS</a></li>
+                            <li class="breadcrumb-item"><a href="#">SKI Online-BRKS</a></li>
                             <li class="breadcrumb-item active">Kelola Jabatan</li>
                         </ol>
                     </div>

@@ -12,7 +12,7 @@
                             <i class="mdi mdi-shield-alert-outline mr-2 text-danger"></i> Verifikasi PPK
                         </h3>
                         <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a href="#">KPI Online-BRKS</a></li>
+                            <li class="breadcrumb-item"><a href="#">SKI Online-BRKS</a></li>
                             <li class="breadcrumb-item active">Verifikasi PPK</li>
                         </ol>
                     </div>

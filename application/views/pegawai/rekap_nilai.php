@@ -13,7 +13,7 @@
               <i class="mdi mdi-chart-bar mr-2"></i> Rekap Nilai Akhir Pegawai
             </h3>
             <ol class="breadcrumb m-0">
-              <li class="breadcrumb-item"><a href="#">KPI Online-BRKS</a></li>
+              <li class="breadcrumb-item"><a href="#">SKI Online-BRKS</a></li>
               <li class="breadcrumb-item active">Rekap Nilai</li>
             </ol>
           </div>

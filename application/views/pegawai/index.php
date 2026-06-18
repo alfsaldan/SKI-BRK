@@ -151,13 +151,13 @@
                     <div class="page-title-box mb-3">
                         <div class="page-title-right">
                             <ol class="breadcrumb m-0">
-                                <li class="breadcrumb-item"><a href="javascript:void(0);">KPI Online-BRKS</a></li>
+                                <li class="breadcrumb-item"><a href="javascript:void(0);">SKI Online-BRKS</a></li>
                                 <li class="breadcrumb-item active">Dashboard Pegawai</li>
                             </ol>
                         </div>
                         <h5 class="page-title">Selamat Datang, <b><?= $pegawai_detail->nama; ?></b>!</h5>
                         <p class="text-muted mb-0">
-                        <h5>Sistem Penilaian Kinerja Insani PT Bank Riau Kepri Syariah</h5>
+                        <h5>Sistem Penilaian Kinerja Individu PT Bank Riau Kepri Syariah</h5>
                         </p>
                     </div>
                 </div>

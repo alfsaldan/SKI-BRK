@@ -62,7 +62,7 @@
                                                     <td><?= $p->unit_kerja; ?></td>
                                                     <td><?= $p->unit_kantor; ?></td>
                                                     <td class="text-center">
-                                                        <a href="<?= base_url('Pegawai/nilaiPegawaiDetail/' . $p->nik) ?>" class="btn btn-sm btn-success">Nilai</a>
+                                                        <a href="<?= base_url('Pegawai/monitoringPegawaiDetail/' . $p->nik) ?>" class="btn btn-sm btn-primary">Verifikasi Monitoring Bulanan</a>
                                                     </td>
                                                 </tr>
                                             <?php } ?>
@@ -110,7 +110,7 @@
                                                     <td><?= $p->unit_kerja; ?></td>
                                                     <td><?= $p->unit_kantor; ?></td>
                                                     <td class="text-center">
-                                                        <a href="<?= base_url('Pegawai/nilaiPegawaiDetail2/' . $p->nik) ?>" class="btn btn-sm btn-success">Nilai</a>
+                                                        <a href="<?= base_url('Pegawai/monitoringPegawaiDetail/' . $p->nik) ?>" class="btn btn-sm btn-info">View Monitoring</a>
                                                     </td>
                                                 </tr>
                                             <?php } ?>

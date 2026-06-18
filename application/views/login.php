@@ -231,7 +231,7 @@
             <a href="<?= base_url(); ?>">
                 <img src="<?= base_url('assets/images/Logo_BRK_Syariah.png'); ?>" alt="Logo" height="70">
             </a>
-            <h4 class="mt-3">Login Sistem KPI Online-BRKS</h4>
+            <h4 class="mt-3">Login Sistem SKI Online-BRKS</h4>
         </div>
 
         <?php if ($this->session->flashdata('error')): ?>
@@ -261,7 +261,7 @@
             </button>
         </form>
 
-        <p class="text-center text-muted mt-4 mb-0">KPI Online - BRKS</p>
+        <p class="text-center text-muted mt-4 mb-0">SKI Online - BRKS</p>
     </div>
 
     <script src="<?= base_url('assets/js/vendor.min.js'); ?>"></script>

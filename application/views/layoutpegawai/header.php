@@ -556,7 +556,10 @@
                             'ppk_penilaiformulir',
                             'ppk_pimpinanformulir',
                             'ppk_penilaievaluasi',
-                            'ppk_pimpinanevaluasi'
+                            'ppk_pimpinanevaluasi',
+                            'monitoringpegawai',
+                            'monitoringpegawaidetail',
+                            'approvalMonitoringPegawai'
                         ]));
                         ?>
                         <?php
@@ -588,6 +591,12 @@
                                         <a href="<?= base_url('pegawai/nilaipegawai') ?>">
                                             <i class="mdi mdi-account-edit"></i>
                                             <span> Nilai Pegawai </span>
+                                        </a>
+                                    </li>
+                                    <li class="<?= ($activeController == 'pegawai' && in_array(strtolower($activeMethod), ['monitoringpegawai', 'monitoringpegawaidetail', 'approvalmonitoringpegawai'])) ? 'active' : '' ?>">
+                                        <a href="<?= base_url('pegawai/monitoringpegawai') ?>">
+                                            <i class="mdi mdi-clipboard-check-outline"></i>
+                                            <span> Verif Monitoring Bulanan </span>
                                         </a>
                                     </li>
                                     <li class="<?= ($activeController == 'pegawai' && in_array($activeMethod, ['ppk_penilai', 'ppk_penilaiformulir', 'ppk_pimpinanformulir', 'ppk_penilaievaluasi', 'ppk_pimpinanevaluasi'])) ? 'active' : '' ?>">

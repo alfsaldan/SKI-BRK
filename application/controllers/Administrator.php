@@ -3487,10 +3487,18 @@ class Administrator extends CI_Controller
                     $row->sasaran_kerja = $ind->sasaran_kerja ?? '';
                     $row->bobot = isset($ind->bobot) ? floatval($ind->bobot) : 0;
 
-                    $monthlyTarget = isset($ind->target) ? (float)$ind->target : 0;
-                    $row->target = $monthlyTarget > 0 ? round(($monthlyTarget / 12) * $bulanSekarang, 2) : 0;
+                    if (isset($storedMap[$idKey]['target'])) {
+                        $row->target = floatval($storedMap[$idKey]['target']);
+                    } else {
+                        $row->target = isset($ind->target) ? (float)$ind->target : 0;
+                    }
 
-                    $row->batas_waktu = $ind->batas_waktu ?? '';
+                    if (isset($storedMap[$idKey]['batas_waktu'])) {
+                        $row->batas_waktu = $storedMap[$idKey]['batas_waktu'];
+                    } else {
+                        $row->batas_waktu = $ind->batas_waktu ?? '';
+                    }
+
                     $row->realisasi = isset($storedMap[$idKey]['realisasi']) ? floatval($storedMap[$idKey]['realisasi']) : 0;
                     $row->pencapaian = isset($storedMap[$idKey]['pencapaian']) ? floatval($storedMap[$idKey]['pencapaian']) : 0;
                     $row->nilai = isset($storedMap[$idKey]['nilai']) ? floatval($storedMap[$idKey]['nilai']) : 0;
@@ -3513,7 +3521,7 @@ class Administrator extends CI_Controller
 
                 $penilaian_bulanan = [];
                 foreach ($penilaian_tahunan as $p) {
-                    $p->target = $p->target ? round(($p->target / 12) * $bulanSekarang, 2) : 0;
+                    $p->target = $p->target ? (float)$p->target : 0;
                     $p->realisasi = 0;
                     $p->pencapaian = 0;
                     $p->nilai = 0;
@@ -3543,6 +3551,7 @@ class Administrator extends CI_Controller
                 'budaya_nilai' => $budayaData['nilai_budaya'],
                 'rata_rata_budaya' => $budayaData['rata_rata'],
                 'budaya' => $this->Monitoring_model->getAllBudaya(),
+                'monitoring_bulanan' => $monitoring_bulanan ?? null,
                 'nilai_budaya' => $nilai_budaya,
                 'share_kpi_value' => $share_kpi_value,
                 'bobot_sasaran' => $bobot_sasaran,

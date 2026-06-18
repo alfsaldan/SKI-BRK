@@ -687,13 +687,12 @@ class Pegawai_model extends CI_Model
         // Join ke riwayat jabatan
         $this->db->join('riwayat_jabatan rj', 'p.nik = rj.nik', 'left');
         $this->db->where('rj.nik', $nik);
-        $this->db->where('rj.tgl_mulai <=', $akhir);
         $this->db->group_start();
             $this->db->where('rj.tgl_selesai >=', $awal);
             $this->db->or_where('rj.tgl_selesai IS NULL');
         $this->db->group_end();
 
-        $this->db->order_by('rj.tgl_selesai', 'DESC'); // Ambil yang paling baru jika ada overlap
+        $this->db->order_by('rj.tgl_mulai', 'ASC'); // Ambil yang tgl_mulai paling awal di antara yang tgl_selesai >= awal
         $this->db->limit(1);
 
         $row = $this->db->get()->row();
@@ -721,12 +720,11 @@ class Pegawai_model extends CI_Model
                             ->from('riwayat_jabatan rj')
                             ->join('pegawai p', 'p.nik = rj.nik')
                             ->where('rj.jabatan', $p1_mapping->jabatan)
-                            ->where('rj.tgl_mulai <=', $akhir)
                             ->group_start()
                                 ->where('rj.tgl_selesai >=', $awal)
                                 ->or_where('rj.tgl_selesai IS NULL')
                             ->group_end()
-                            ->order_by('rj.tgl_selesai', 'DESC')
+                            ->order_by('rj.tgl_mulai', 'ASC')
                             ->limit(1)
                             ->get()->row();
                         
@@ -746,12 +744,11 @@ class Pegawai_model extends CI_Model
                             ->from('riwayat_jabatan rj')
                             ->join('pegawai p', 'p.nik = rj.nik')
                             ->where('rj.jabatan', $p2_mapping->jabatan)
-                            ->where('rj.tgl_mulai <=', $akhir)
                             ->group_start()
                                 ->where('rj.tgl_selesai >=', $awal)
                                 ->or_where('rj.tgl_selesai IS NULL')
                             ->group_end()
-                            ->order_by('rj.tgl_selesai', 'DESC')
+                            ->order_by('rj.tgl_mulai', 'ASC')
                             ->limit(1)
                             ->get()->row();
 

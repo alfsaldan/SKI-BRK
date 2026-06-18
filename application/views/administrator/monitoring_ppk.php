@@ -12,7 +12,7 @@
                             <i class="mdi mdi-clipboard-pulse-outline mr-2 text-primary"></i> Monitoring PPK
                         </h3>
                         <ol class="breadcrumb m-0">
-                            <li class="breadcrumb-item"><a href="#">KPI Online-BRKS</a></li>
+                            <li class="breadcrumb-item"><a href="#">SKI Online-BRKS</a></li>
                             <li class="breadcrumb-item active">Monitoring PPK</li>
                         </ol>
                     </div>

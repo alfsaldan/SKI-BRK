@@ -8,7 +8,7 @@
                     <div class="page-title-box">
                         <div class="page-title-right">
                             <ol class="breadcrumb m-0">
-                                <li class="breadcrumb-item"><a href="javascript:void(0);">KPI Online-BRKS</a></li>
+                                <li class="breadcrumb-item"><a href="javascript:void(0);">SKI Online-BRKS</a></li>
                                 <li class="breadcrumb-item active">Monitoring Kinerja Bulanan</li>
                             </ol>
                         </div>
@@ -25,13 +25,13 @@
                             <h5 class="text-primary font-weight-bold mb-3">
                                 <i class="mdi mdi-calendar-month-outline mr-2"></i> Pilih Periode Bulanan & Pegawai
                             </h5>
-                            <form id="formMonitoring" action="<?= base_url('Administrator/cariPenilaianBulanan'); ?>"
+                            <form id="formMonitoring" action="<?= base_url('Pegawai/approvalMonitoringPegawai'); ?>"
                                 method="post" class="row">
 
                                 <!-- Pilih Bulan -->
                                 <div class="col-md-4 mb-3">
                                     <label class="text-dark font-weight-medium">Pilih Bulan:</label>
-                                    <select id="periode_select" name="periode" class="form-control mb-2" required>
+                                    <select id="bulan_select" name="bulan" class="form-control mb-2" required>
                                         <option value="">-- Pilih Bulan --</option>
                                         <?php
                                         $bulanList = [
@@ -48,14 +48,10 @@
                                             '11' => 'November',
                                             '12' => 'Desember'
                                         ];
-                                        $tahunNow = isset($tahun_dipilih) ? $tahun_dipilih : date('Y');
                                         foreach ($bulanList as $bln => $namaBulan):
-                                            $awal = "$tahunNow-$bln-01";
-                                            $akhir = date('Y-m-t', strtotime($awal));
-                                            $val = "$awal|$akhir";
-                                            $selected = (isset($periode_awal) && isset($periode_akhir) && $periode_awal == $awal && $periode_akhir == $akhir) ? 'selected' : '';
+                                            $selected = (isset($bulan_dipilih) && $bulan_dipilih == $bln) ? 'selected' : '';
                                             ?>
-                                            <option value="<?= $val ?>" <?= $selected ?>>
+                                            <option value="<?= $bln ?>" <?= $selected ?>>
                                                 <?= $namaBulan ?>
                                             </option>
                                         <?php endforeach; ?>
@@ -75,13 +71,11 @@
                                     </select>
                                 </div>
 
-                                <!-- Input NIK -->
-                                <div class="col-md-4 mb-3">
+                                <!-- Input NIK Hidden -->
+                                <div class="col-md-4 mb-3 d-none">
                                     <label class="text-dark font-weight-medium">Masukkan NIK Pegawai:</label>
                                     <input type="text" id="nik_input" name="nik" class="form-control mb-2"
-                                        placeholder="Masukkan NIK Pegawai"
-                                        value="<?= isset($nik) ? htmlspecialchars($nik) : '' ?>" required maxlength="6"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                                        value="<?= isset($pegawai_detail) ? htmlspecialchars($pegawai_detail->nik) : '' ?>">
                                 </div>
 
                                 <div class="col-12 text-right">
@@ -205,15 +199,24 @@
                     <div class="col-12">
                         <div class="card shadow-sm border-0 mt-0">
                             <div class="card-body">
-                                <?php $is_approved = (isset($monitoring_bulanan) && $monitoring_bulanan->status == 'approved'); ?>
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h5 class="text-success font-weight-bold m-0">
                                         <i class="mdi mdi-star-circle mr-2"></i> Hasil Penilaian
                                     </h5>
-                                    <?php if ($is_approved) { ?>
-                                        <span class="badge badge-success px-3 py-2" style="font-size: 14px;"><i class="mdi mdi-check-circle mr-1"></i> Diverifikasi</span>
+                                    <?php if (isset($monitoring_bulanan) && $monitoring_bulanan) { ?>
+                                        <?php if ($monitoring_bulanan->status == 'approved') { ?>
+                                            <span class="badge badge-success px-3 py-2" style="font-size: 14px;"><i class="mdi mdi-check-circle mr-1"></i> Diverifikasi</span>
+                                        <?php } else { ?>
+                                            <?php if ($pegawai_detail->penilai1_nik == $this->session->userdata('nik')) { ?>
+                                                <button type="button" class="btn btn-primary" id="btn-approve">
+                                                    <i class="mdi mdi-check mr-1"></i> Verif Monitoring Bulanan
+                                                </button>
+                                            <?php } else { ?>
+                                                <span class="badge badge-warning px-3 py-2" style="font-size: 14px;"><i class="mdi mdi-clock-outline mr-1"></i> Belum Diverifikasi</span>
+                                            <?php } ?>
+                                        <?php } ?>
                                     <?php } else { ?>
-                                        <span class="badge badge-warning px-3 py-2" style="font-size: 14px;"><i class="mdi mdi-clock-outline mr-1"></i> Belum Diverifikasi</span>
+                                        <span class="badge badge-secondary px-3 py-2" style="font-size: 14px;">Belum Ada Data</span>
                                     <?php } ?>
                                 </div>
                                 <!-- TABEL PENILAIAN -->
@@ -489,8 +492,8 @@
                         $fraud = $fraud ?? 0;
                         $koefisien = $koefisien ?? 100;
                         $nilai_akhir_value = ($fraud == 1) ? ($total_nilai - 1) : $total_nilai;
-                        $pencapaian_pct = floatval(str_replace('%', '', $monitoring_bulanan->pencapaian_akhir ?? 0));
-                        $predikat = $nilai_akhir->predikat ?? 'Minus (M)';
+                        $pencapaian_pct = floatval(str_replace('%', '', isset($monitoring_bulanan) ? ($monitoring_bulanan->pencapaian_akhir ?? 0) : 0));
+                        $predikat = isset($monitoring_bulanan) ? ($monitoring_bulanan->predikat ?? 'Minus (M)') : 'Minus (M)';
                         ?>
 
                         <!-- Bagian Atas: Perhitungan -->
@@ -642,12 +645,12 @@
 <!-- minimal CSS/JS untuk formatting dan autosave per baris (view-only formatting, autosave tetap kirim angka mentah) -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const periodeSelect = document.getElementById('periode_select');
+        const bulanSelect = document.getElementById('bulan_select');
         const nikInput = document.getElementById('nik_input');
         const form = document.getElementById('formMonitoring');
 
-        if (periodeSelect && form) {
-            periodeSelect.addEventListener('change', function () {
+        if (bulanSelect && form) {
+            bulanSelect.addEventListener('change', function () {
                 const nikInputAtas = document.getElementById('nik_input');
                 const nikHidden = document.getElementById('nik'); // dari detail pegawai
                 const nik = nikHidden ? nikHidden.value.trim() : (nikInputAtas ? nikInputAtas.value.trim() : '');
@@ -687,7 +690,7 @@
         }
 
         // attach handlers
-        function attach(el, row) {
+        function attach(el) {
             if (!el) return;
             if (el.dataset.raw === undefined) setRaw(el, el.value || '');
             // initial display
@@ -696,81 +699,63 @@
                 el.value = formatRpDisplay(raw0);
                 el.classList.add('hide-text');
             }
-            el.addEventListener('focus', function () {
-                el.value = el.dataset.raw || '';
-                el.classList.remove('hide-text');
-                try {
-                    el.setSelectionRange(el.value.length, el.value.length);
-                } catch (e) { }
-            });
-            el.addEventListener('input', function () {
-                var cleaned = cleanNumericString(el.value);
-                setRaw(el, cleaned);
-                // trigger calculation
-                if (window.hitungTotal) window.hitungTotal();
-            });
-            el.addEventListener('blur', function () {
-                var cleaned = cleanNumericString(el.value);
-                setRaw(el, cleaned);
-                var v = parseFloat(cleaned || 0);
-                if (!isNaN(v) && Math.abs(v) >= 1000) {
-                    el.value = formatRpDisplay(v);
-                    el.classList.add('hide-text');
-                } else {
-                    el.value = cleaned;
-                    el.classList.remove('hide-text');
-                }
-                // autosave per baris
-                var rowEl = row || el.closest('tr[data-id]');
-                if (rowEl) autosaveBarisBulanan(rowEl);
-            });
         }
 
         // attach to all existing inputs
         document.querySelectorAll('#tabel-penilaian tbody tr[data-id]').forEach(function (row) {
-            attach(row.querySelector('.target-input'), row);
-            attach(row.querySelector('.realisasi-input'), row);
+            attach(row.querySelector('.target-input'));
+            attach(row.querySelector('.realisasi-input'));
         });
 
-        // observe new rows
-        var tbody = document.querySelector('#tabel-penilaian tbody');
-        if (tbody) {
-            new MutationObserver(function (muts) {
-                muts.forEach(function (m) {
-                    m.addedNodes && m.addedNodes.forEach(function (n) {
-                        if (n.nodeType === 1) {
-                            attach(n.querySelector('.target-input'), n);
-                            attach(n.querySelector('.realisasi-input'), n);
-                        }
-                    });
+        // Approve button logic
+        const btnApprove = document.getElementById('btn-approve');
+        if (btnApprove) {
+            btnApprove.addEventListener('click', function() {
+                const nikHidden = document.getElementById('nik');
+                const nik = nikHidden ? nikHidden.value.trim() : '';
+                const bulanSelect = document.getElementById('bulan_select');
+                const tahunSelect = document.querySelector('select[name="tahun"]');
+                
+                const bulan = bulanSelect ? parseInt(bulanSelect.value) : '';
+                const tahun = tahunSelect ? parseInt(tahunSelect.value) : '';
+
+                if (!nik || !bulan || !tahun) {
+                    Swal.fire('Error', 'Data tidak lengkap untuk verifikasi', 'error');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Verifikasi Monitoring?',
+                    text: 'Apakah Anda yakin ingin melakukan verifikasi untuk bulan ini? Data tidak dapat diubah setelah diverifikasi.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Verifikasi',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch('<?= base_url("Pegawai/setApprovalMonitoring") ?>', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: `nik=${encodeURIComponent(nik)}&bulan=${encodeURIComponent(bulan)}&tahun=${encodeURIComponent(tahun)}&status=approved`
+                        })
+                        .then(r => r.json())
+                        .then(res => {
+                            if (res.success) {
+                                Swal.fire('Berhasil', 'Monitoring berhasil diverifikasi', 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error', res.message || 'Gagal diverifikasi', 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            Swal.fire('Error', 'Terjadi kesalahan sistem', 'error');
+                        });
+                    }
                 });
-            }).observe(tbody, {
-                childList: true,
-                subtree: true
-            });
-        }
-
-        // autosave per baris (kirim raw values)
-        function autosaveBarisBulanan(row) {
-            var indikator_id = row.dataset.id || '';
-            var target = cleanNumericString(getRawFromInput(row.querySelector('.target-input')) || '');
-            var batas_waktu = (row.querySelector('input[type="date"]') || {}).value || '';
-            var realisasi = cleanNumericString(getRawFromInput(row.querySelector('.realisasi-input')) || '');
-            var pencapaian = (row.querySelector('.pencapaian-output') || {}).value || '';
-            var nilai = (row.querySelector('.nilai-output') || {}).value || '';
-            var nilai_dibobot = (row.querySelector('.nilai-bobot-output') || {}).value || '';
-            var periode_awal = document.getElementById('periode_awal') ? document.getElementById('periode_awal').value : '';
-            var periode_akhir = document.getElementById('periode_akhir') ? document.getElementById('periode_akhir').value : '';
-            var nik = document.getElementById('nik') ? document.getElementById('nik').value : '';
-
-            if ((target === '' && realisasi === '')) return;
-
-            fetch('<?= base_url("Administrator/simpanPenilaianBarisBulanan") ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `nik=${encodeURIComponent(nik)}&indikator_id=${encodeURIComponent(indikator_id)}&target=${encodeURIComponent(target)}&batas_waktu=${encodeURIComponent(batas_waktu)}&realisasi=${encodeURIComponent(realisasi)}&pencapaian=${encodeURIComponent(pencapaian)}&nilai=${encodeURIComponent(nilai)}&nilai_dibobot=${encodeURIComponent(nilai_dibobot)}&periode_awal=${encodeURIComponent(periode_awal)}&periode_akhir=${encodeURIComponent(periode_akhir)}`
             });
         }
 
