@@ -241,7 +241,7 @@
                                             <!-- Dropdown periode history -->
 
                                             <div class="form-inline mb-2">
-                                                <select id="periode_history" class="form-control w-auto ml-2">
+                                                <select id="periode_history" class="form-control ml-2" style="width: 300px;">
                                                     <option value="">Pilih Periode</option>
                                                     <?php foreach ($periode_list as $p): ?>
                                                         <option value="<?= $p->periode_awal . '|' . $p->periode_akhir ?>"
@@ -954,6 +954,120 @@
         const btnSimpanSemua = document.getElementById('btn-simpan-semua');
         const statusSemua = document.getElementById('status-semua');
         const koefInput = document.getElementById('koefisien-input');
+
+        // ===== Dropdown Periode History =====
+        // Inisialisasi Select2 dengan custom matcher untuk filter tahun berjalan
+        function matchCustomPeriode(params, data) {
+            // Jika tidak ada pencarian, tampilkan opsi tahun ini, atau jika sudah terpilih, atau opsi default
+            if ($.trim(params.term) === '') {
+                var currentYear = "<?= date('Y') ?>";
+                if (data.text.indexOf(currentYear) > -1 || data.id === '') {
+                    return data;
+                }
+                if (data.element && data.element.selected) {
+                    return data;
+                }
+                return null;
+            }
+
+            if (typeof data.text === 'undefined') {
+                return null;
+            }
+
+            var term = params.term.toLowerCase();
+            var text = data.text.toLowerCase();
+            
+            // Memungkinkan pencarian dengan beberapa kata seperti "januari 2025"
+            var termWords = term.split(' ');
+            var matchesAll = true;
+            for (var i = 0; i < termWords.length; i++) {
+                if (text.indexOf(termWords[i]) === -1) {
+                    matchesAll = false;
+                    break;
+                }
+            }
+
+            if (matchesAll) {
+                return data;
+            }
+
+            return null;
+        }
+
+        if (periodeHistory) {
+            $('#periode_history').select2({
+                matcher: matchCustomPeriode,
+                placeholder: "Pilih Periode"
+            });
+
+            // Simpan nilai terpilih saat halaman dimuat
+            let previousPeriodeValue = $('#periode_history').val();
+
+            $('#periode_history').on('select2:select', function (e) {
+                const val = e.params.data.id;
+                const periodeText = e.params.data.text;
+
+                // Jangan lakukan apa-apa jika memilih placeholder "Pilih Periode"
+                if (!val) {
+                    previousPeriodeValue = val;
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Ganti Periode Penilaian?',
+                    html: `Anda akan mengubah periode ke:<br><b>${periodeText}</b><br><br>Perubahan akan memuat ulang halaman.`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Ganti',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#2E7D32', // Warna hijau BRK
+                    cancelButtonColor: '#d33'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Proses navigasi
+                        const parts = val.split('|');
+                        const awal = parts[0];
+                        const akhir = parts[1];
+
+                        // Tampilkan loading sebelum navigasi
+                        Swal.fire({
+                            title: 'Memuat data...',
+                            text: 'Mohon tunggu sebentar.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        window.location.href = `<?= base_url('Pegawai/nilaiPegawaiDetail2/') ?>${nik}?awal=${awal}&akhir=${akhir}&periode_changed=1`;
+
+                    } else {
+                        // Jika batal, kembalikan dropdown ke pilihan sebelumnya
+                        $('#periode_history').val(previousPeriodeValue).trigger('change.select2');
+                    }
+                });
+            });
+        }
+
+        // Tombol sesuaikan periode → redirect ke URL dengan periode
+        if (btnSesuaikan) {
+            btnSesuaikan.addEventListener('click', () => {
+                const awal = periodeAwal ? periodeAwal.value : '';
+                const akhir = periodeAkhir ? periodeAkhir.value : '';
+
+                if (!awal || !akhir) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Periode belum lengkap',
+                        text: 'Silakan pilih periode awal dan akhir.'
+                    });
+                    return;
+                }
+
+                // Redirect ke halaman nilai pegawai dengan periode terpilih
+                window.location.href = `<?= base_url('Pegawai/nilaiPegawaiDetail2/') ?>${nik}?awal=${awal}&akhir=${akhir}&periode_changed=1`;
+            });
+        }
 
         // Utility: angka format
         function formatAngka(nilai) {

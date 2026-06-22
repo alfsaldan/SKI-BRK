@@ -643,11 +643,29 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const periodeSelect = document.getElementById('periode_select');
+        const tahunSelect = document.querySelector('select[name="tahun"]');
         const nikInput = document.getElementById('nik_input');
         const form = document.getElementById('formMonitoring');
 
+        // Apply Select2 untuk pencarian dan scroll
+        if (typeof $ !== 'undefined') {
+            if (periodeSelect) {
+                $(periodeSelect).select2({
+                    placeholder: "-- Pilih Bulan --",
+                    width: '100%'
+                });
+            }
+            if (tahunSelect) {
+                $(tahunSelect).select2({
+                    placeholder: "-- Pilih Tahun --",
+                    width: '100%'
+                });
+            }
+        }
+
         if (periodeSelect && form) {
-            periodeSelect.addEventListener('change', function () {
+            // Karena menggunakan select2, bind event jquery change
+            $(periodeSelect).on('change', function () {
                 const nikInputAtas = document.getElementById('nik_input');
                 const nikHidden = document.getElementById('nik'); // dari detail pegawai
                 const nik = nikHidden ? nikHidden.value.trim() : (nikInputAtas ? nikInputAtas.value.trim() : '');

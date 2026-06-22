@@ -699,6 +699,50 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        // Custom Matcher Select2 untuk pencarian fleksibel dan prioritas tahun berjalan
+        function matchCustomPeriode(params, data) {
+            if ($.trim(params.term) === '') {
+                var currentYear = "<?= date('Y') ?>";
+                if (data.text.indexOf(currentYear) > -1 || data.id === '' || data.id === 'baru') {
+                    return data;
+                }
+                if (data.element && data.element.selected) {
+                    return data;
+                }
+                return null;
+            }
+
+            if (typeof data.text === 'undefined') {
+                return null;
+            }
+
+            var term = params.term.toLowerCase();
+            var text = data.text.toLowerCase();
+            
+            var termWords = term.split(' ');
+            var matchesAll = true;
+            for (var i = 0; i < termWords.length; i++) {
+                if (text.indexOf(termWords[i]) === -1) {
+                    matchesAll = false;
+                    break;
+                }
+            }
+
+            if (matchesAll) {
+                return data;
+            }
+
+            return null;
+        }
+
+        if (typeof $ !== 'undefined') {
+            $('#select_periode').select2({
+                matcher: matchCustomPeriode,
+                placeholder: "-- Pilih Periode --",
+                width: '100%'
+            });
+        }
+
         const btnVerifikasi = document.getElementById("btn-verifikasi");
         if (!btnVerifikasi) return;
 
@@ -714,7 +758,7 @@
 
         function syncPeriodeInputs() {
             if (!selectPeriode || !inputAwal || !inputAkhir) return;
-            const parts = (selectPeriode.value || '').split('|');
+            const parts = ($(selectPeriode).val() || selectPeriode.value || '').split('|');
             if (parts.length === 2) {
                 inputAwal.value = parts[0];
                 inputAkhir.value = parts[1];
@@ -726,7 +770,11 @@
 
         // initialize and bind
         syncPeriodeInputs();
-        if (selectPeriode) selectPeriode.addEventListener('change', syncPeriodeInputs);
+        if (typeof $ !== 'undefined') {
+            $('#select_periode').on('change', syncPeriodeInputs);
+        } else if (selectPeriode) {
+            selectPeriode.addEventListener('change', syncPeriodeInputs);
+        }
         if (formPeriode) formPeriode.addEventListener('submit', syncPeriodeInputs);
 
         btnVerifikasi.addEventListener("click", function () {

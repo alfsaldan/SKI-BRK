@@ -774,42 +774,88 @@
 <?php endif; ?>
 
 <script>
-    // Ganti handler lama dengan versi yang menampilkan SweetAlert sukses sebelum redirect
-    document.getElementById('btn-sesuaikan-periode').addEventListener('click', function () {
-        const select = document.getElementById('periode_select');
-        const val = select ? select.value : '';
-        if (!val) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Pilih Periode',
-                text: 'Silakan pilih periode terlebih dahulu.',
-                confirmButtonColor: '#d33'
-            });
-            return;
-        }
-
-        // Jika pengguna memilih opsi "baru" (tambah periode), biarkan logika lama (buka manual)
-        if (val === 'baru') {
-            // tampilkan manual UI (jika ada) atau lakukan nothing
-            // ...existing code may handle this case...
-            return;
-        }
-
-        const [awal, akhir] = val.split('|');
-        const nik = "<?= $pegawai_detail->nik ?? '' ?>";
-
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil',
-            text: 'Periode penilaian telah diperbarui',
-            timer: 2500,
-            showConfirmButton: false,
-            willClose: () => {
-                // Redirect setelah alert close
-                window.location.href = "<?= base_url('Administrator/cariDataPegawai') ?>?nik=" + encodeURIComponent(nik) + "&awal=" + encodeURIComponent(awal) + "&akhir=" + encodeURIComponent(akhir);
+    document.addEventListener('DOMContentLoaded', function () {
+        // Inisialisasi Select2 dengan custom matcher untuk filter tahun berjalan
+        function matchCustomPeriode(params, data) {
+            if ($.trim(params.term) === '') {
+                var currentYear = "<?= date('Y') ?>";
+                if (data.text.indexOf(currentYear) > -1 || data.id === '' || data.id === 'baru') {
+                    return data;
+                }
+                if (data.element && data.element.selected) {
+                    return data;
+                }
+                return null;
             }
+
+            if (typeof data.text === 'undefined') {
+                return null;
+            }
+
+            var term = params.term.toLowerCase();
+            var text = data.text.toLowerCase();
+            
+            var termWords = term.split(' ');
+            var matchesAll = true;
+            for (var i = 0; i < termWords.length; i++) {
+                if (text.indexOf(termWords[i]) === -1) {
+                    matchesAll = false;
+                    break;
+                }
+            }
+
+            if (matchesAll) {
+                return data;
+            }
+
+            return null;
+        }
+
+        if (typeof $ !== 'undefined') {
+            $('#periode_select').select2({
+                matcher: matchCustomPeriode,
+                placeholder: "-- Pilih Periode --",
+                width: '300px'
+            });
+        }
+
+        // Ganti handler lama dengan versi yang menampilkan SweetAlert sukses sebelum redirect
+        document.getElementById('btn-sesuaikan-periode').addEventListener('click', function () {
+            // Kita dapat menggunakan jQuery val() jika select2 aktif, atau value native
+            const val = $('#periode_select').val();
+            if (!val) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Pilih Periode',
+                    text: 'Silakan pilih periode terlebih dahulu.',
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+
+            // Jika pengguna memilih opsi "baru" (tambah periode), biarkan logika lama (buka manual)
+            if (val === 'baru') {
+                // tampilkan manual UI (jika ada) atau lakukan nothing
+                return;
+            }
+
+            const [awal, akhir] = val.split('|');
+            const nik = "<?= $pegawai_detail->nik ?? '' ?>";
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Periode penilaian telah diperbarui',
+                timer: 2500,
+                showConfirmButton: false,
+                willClose: () => {
+                    // Redirect setelah alert close
+                    window.location.href = "<?= base_url('Administrator/cariDataPegawai') ?>?nik=" + encodeURIComponent(nik) + "&awal=" + encodeURIComponent(awal) + "&akhir=" + encodeURIComponent(akhir);
+                }
+            });
         });
     });
+
     // Auto scroll ke bawah saat halaman dibuka
     document.addEventListener("DOMContentLoaded", function () {
         var chatBox = document.getElementById("chat-box");

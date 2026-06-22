@@ -1433,9 +1433,53 @@
         // ---------------------------
         // Periode select -> tampilkan info atau manual
         // ---------------------------
+        // Inisialisasi Select2 dengan custom matcher untuk filter tahun berjalan
+        function matchCustomPeriode(params, data) {
+            // Jika tidak ada pencarian, tampilkan opsi tahun ini, opsi baru, atau yang terpilih
+            if ($.trim(params.term) === '') {
+                var currentYear = "<?= date('Y') ?>";
+                if (data.text.indexOf(currentYear) > -1 || data.id === '' || data.id === 'baru') {
+                    return data;
+                }
+                if (data.element && data.element.selected) {
+                    return data;
+                }
+                return null;
+            }
+
+            if (typeof data.text === 'undefined') {
+                return null;
+            }
+
+            var term = params.term.toLowerCase();
+            var text = data.text.toLowerCase();
+            
+            // Memungkinkan pencarian dengan beberapa kata seperti "januari 2025"
+            var termWords = term.split(' ');
+            var matchesAll = true;
+            for (var i = 0; i < termWords.length; i++) {
+                if (text.indexOf(termWords[i]) === -1) {
+                    matchesAll = false;
+                    break;
+                }
+            }
+
+            if (matchesAll) {
+                return data;
+            }
+
+            return null;
+        }
+
         if (periodeSelect) {
-            periodeSelect.addEventListener('change', function () {
-                const value = this.value;
+            $('#periode_select').select2({
+                matcher: matchCustomPeriode,
+                placeholder: "-- Pilih Periode --",
+                width: '100%'
+            });
+
+            $('#periode_select').on('select2:select', function (e) {
+                const value = e.params.data.id;
                 if (value && value !== 'baru') {
                     const [awal, akhir] = value.split('|');
                     const opt = {
@@ -1444,6 +1488,16 @@
                         year: 'numeric'
                     };
                     const nik = getNik();
+                    
+                    Swal.fire({
+                        title: 'Memuat data...',
+                        text: 'Mohon tunggu sebentar.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
                     if (nik) {
                         window.location.href = `<?= base_url("Administrator/cariPenilaian") ?>?nik=${encodeURIComponent(nik)}&awal=${encodeURIComponent(awal)}&akhir=${encodeURIComponent(akhir)}`;
                     } else {

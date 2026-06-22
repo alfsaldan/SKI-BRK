@@ -39,6 +39,49 @@
 <!-- Vendor js -->
 <script src="<?= base_url('assets/js/vendor.min.js') ?>"></script>
 
+<!-- CSS Select2 -->
+<link rel="stylesheet" href="<?= base_url('assets/libs/select2/select2.min.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/libs/select2/select2-bootstrap4.min.css') ?>">
+<script src="<?= base_url('assets/libs/select2/select2.min.js') ?>"></script>
+<!-- Small Select2 CSS tweaks to match Bootstrap form-control -->
+<style>
+    /* Make Select2 single select look like .form-control (Bootstrap4) */
+    .select2-container--bootstrap4 .select2-selection--single {
+        height: calc(2.25rem + 2px);
+        padding: .375rem .75rem;
+        border: 1px solid #ced4da;
+        border-radius: .25rem;
+        background-color: #fff;
+        box-sizing: border-box;
+        /* inherit font from surrounding form */
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+        color: inherit;
+    }
+
+    .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered,
+    .select2-container--bootstrap4 .select2-selection--single .select2-selection__placeholder {
+        /* ensure rendered text matches other inputs */
+        font-family: inherit;
+        font-size: inherit;
+        line-height: inherit;
+        color: #495057;
+        padding: 0;
+        margin: 0;
+    }
+
+    .select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+        height: 100%;
+        right: .5rem;
+    }
+
+    /* Ensure the dropdown matches width of form control */
+    .select2-container .select2-selection--single {
+        box-sizing: border-box;
+    }
+</style>
+
 <!-- Bootstrap select plugin -->
 <script src="<?= base_url('assets/libs/bootstrap-select/bootstrap-select.min.js') ?>"></script>
 

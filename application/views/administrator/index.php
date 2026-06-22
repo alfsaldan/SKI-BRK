@@ -390,9 +390,64 @@
         const btnClose = document.getElementById('btn_close_filter');
         const popup = document.getElementById('filter_popup');
 
+        // Custom Matcher Select2 untuk pencarian fleksibel dan prioritas tahun berjalan
+        function matchCustomPeriode(params, data) {
+            if ($.trim(params.term) === '') {
+                var currentYear = "<?= date('Y') ?>";
+                if (data.text.indexOf(currentYear) > -1 || data.id === '' || data.id === 'baru') {
+                    return data;
+                }
+                if (data.element && data.element.selected) {
+                    return data;
+                }
+                return null;
+            }
+
+            if (typeof data.text === 'undefined') {
+                return null;
+            }
+
+            var term = params.term.toLowerCase();
+            var text = data.text.toLowerCase();
+            
+            var termWords = term.split(' ');
+            var matchesAll = true;
+            for (var i = 0; i < termWords.length; i++) {
+                if (text.indexOf(termWords[i]) === -1) {
+                    matchesAll = false;
+                    break;
+                }
+            }
+
+            if (matchesAll) {
+                return data;
+            }
+
+            return null;
+        }
+
+        if (typeof $ !== 'undefined') {
+            $('#filter_periode').select2({
+                matcher: matchCustomPeriode,
+                width: '100%',
+                dropdownParent: $('#filter_popup')
+            });
+        }
+
         // tampil/sembunyikan popup
         btnShow.addEventListener('click', () => {
             popup.style.display = (popup.style.display === 'none' ? 'block' : 'none');
+            if (popup.style.display === 'block' && typeof $ !== 'undefined') {
+                // Ensure Select2 is rendered properly when container becomes visible
+                if ($('#filter_periode').hasClass("select2-hidden-accessible")) {
+                    $('#filter_periode').select2('destroy');
+                }
+                $('#filter_periode').select2({
+                    matcher: matchCustomPeriode,
+                    width: '100%',
+                    dropdownParent: $('#filter_popup')
+                });
+            }
         });
         btnClose.addEventListener('click', () => {
             popup.style.display = 'none';
@@ -401,7 +456,10 @@
         // klik di luar popup = tutup
         document.addEventListener('click', function (e) {
             if (!popup.contains(e.target) && !btnShow.contains(e.target)) {
-                popup.style.display = 'none';
+                // Only close if it's not a select2 dropdown click
+                if (!$(e.target).closest('.select2-container').length) {
+                    popup.style.display = 'none';
+                }
             }
         });
 

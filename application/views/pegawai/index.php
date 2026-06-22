@@ -341,7 +341,7 @@
 
                                             <!-- Dropdown periode history -->
                                             <div class="form-inline mb-2">
-                                                <select id="periode_history" class="form-control w-auto ml-2">
+                                                <select id="periode_history" class="form-control ml-2" style="width: 300px;">
                                                     <option value="">Pilih Periode</option>
                                                     <?php foreach ($periode_list as $p): ?>
                                                         <?php
@@ -1557,21 +1557,62 @@ if ($message): ?>
         });
 
         // ===== Dropdown Periode History =====
-        // Simpan index terpilih saat halaman dimuat
-        let previousPeriodeIndex = periodeHistory.selectedIndex;
+        // Inisialisasi Select2 dengan custom matcher untuk filter tahun berjalan
+        function matchCustomPeriode(params, data) {
+            // Jika tidak ada pencarian, tampilkan opsi tahun ini, atau jika sudah terpilih, atau opsi default
+            if ($.trim(params.term) === '') {
+                var currentYear = "<?= date('Y') ?>";
+                if (data.text.indexOf(currentYear) > -1 || data.id === '') {
+                    return data;
+                }
+                if (data.element && data.element.selected) {
+                    return data;
+                }
+                return null;
+            }
 
-        periodeHistory.addEventListener('change', function () {
-            const selectedIndex = this.selectedIndex;
-            const selectedOption = this.options[selectedIndex];
+            if (typeof data.text === 'undefined') {
+                return null;
+            }
+
+            var term = params.term.toLowerCase();
+            var text = data.text.toLowerCase();
+            
+            // Memungkinkan pencarian dengan beberapa kata seperti "januari 2025"
+            var termWords = term.split(' ');
+            var matchesAll = true;
+            for (var i = 0; i < termWords.length; i++) {
+                if (text.indexOf(termWords[i]) === -1) {
+                    matchesAll = false;
+                    break;
+                }
+            }
+
+            if (matchesAll) {
+                return data;
+            }
+
+            return null;
+        }
+
+        $('#periode_history').select2({
+            matcher: matchCustomPeriode,
+            placeholder: "Pilih Periode"
+        });
+
+        // Simpan nilai terpilih saat halaman dimuat
+        let previousPeriodeValue = $('#periode_history').val();
+
+        $('#periode_history').on('select2:select', function (e) {
+            const val = e.params.data.id;
+            const periodeText = e.params.data.text;
 
             // Jangan lakukan apa-apa jika memilih placeholder "Pilih Periode"
-            if (!this.value) {
-                previousPeriodeIndex = selectedIndex;
+            if (!val) {
+                previousPeriodeValue = val;
                 return;
             }
 
-            const periodeText = selectedOption.text;
-            const val = this.value;
             const nik = "<?= $pegawai_detail->nik ?? '' ?>";
 
             Swal.fire({
@@ -1608,15 +1649,15 @@ if ($message): ?>
 
                 } else {
                     // Jika batal, kembalikan dropdown ke pilihan sebelumnya
-                    this.selectedIndex = previousPeriodeIndex;
+                    $('#periode_history').val(previousPeriodeValue).trigger('change.select2');
                 }
             });
         });
 
 
         // Reset dropdown jika user ubah tanggal manual
-        periodeAwal.addEventListener('input', () => periodeHistory.value = '');
-        periodeAkhir.addEventListener('input', () => periodeHistory.value = '');
+        periodeAwal.addEventListener('input', () => $('#periode_history').val('').trigger('change.select2'));
+        periodeAkhir.addEventListener('input', () => $('#periode_history').val('').trigger('change.select2'));
 
         // ===== Tombol Sesuaikan Periode =====
         document.getElementById('btn-sesuaikan-periode').addEventListener('click', function () {

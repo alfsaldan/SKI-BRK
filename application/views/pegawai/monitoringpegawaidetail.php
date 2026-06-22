@@ -61,7 +61,7 @@
                                 <!-- Pilih Tahun -->
                                 <div class="col-md-4 mb-3">
                                     <label class="text-dark font-weight-medium">Pilih Tahun:</label>
-                                    <select name="tahun" class="form-control mb-2" required>
+                                    <select id="tahun_select" name="tahun" class="form-control mb-2" required>
                                         <option value="">-- Pilih Tahun --</option>
                                         <?php foreach ($tahun_list as $t): ?>
                                             <option value="<?= $t->tahun ?>" <?= (isset($tahun_dipilih) && $tahun_dipilih == $t->tahun) ? 'selected' : '' ?>>
@@ -645,22 +645,34 @@
 <!-- minimal CSS/JS untuk formatting dan autosave per baris (view-only formatting, autosave tetap kirim angka mentah) -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        if (typeof $ !== 'undefined') {
+            $('#bulan_select').select2({ placeholder: '-- Pilih Bulan --', width: '100%' });
+            $('#tahun_select').select2({ placeholder: '-- Pilih Tahun --', width: '100%' });
+        }
+
         const bulanSelect = document.getElementById('bulan_select');
         const nikInput = document.getElementById('nik_input');
         const form = document.getElementById('formMonitoring');
 
-        if (bulanSelect && form) {
-            bulanSelect.addEventListener('change', function () {
-                const nikInputAtas = document.getElementById('nik_input');
-                const nikHidden = document.getElementById('nik'); // dari detail pegawai
-                const nik = nikHidden ? nikHidden.value.trim() : (nikInputAtas ? nikInputAtas.value.trim() : '');
+        function triggerSubmit() {
+            const nikInputAtas = document.getElementById('nik_input');
+            const nikHidden = document.getElementById('nik'); // dari detail pegawai
+            const nik = nikHidden ? nikHidden.value.trim() : (nikInputAtas ? nikInputAtas.value.trim() : '');
 
-                if (nik !== '' && this.value !== '') {
-                    // masukkan NIK ke form sebelum submit
-                    if (nikInputAtas) nikInputAtas.value = nik;
-                    form.submit();
-                }
-            });
+            const val = $(bulanSelect).val() || bulanSelect.value;
+            if (nik !== '' && val !== '') {
+                // masukkan NIK ke form sebelum submit
+                if (nikInputAtas) nikInputAtas.value = nik;
+                form.submit();
+            }
+        }
+
+        if (bulanSelect && form) {
+            if (typeof $ !== 'undefined') {
+                $('#bulan_select').on('change', triggerSubmit);
+            } else {
+                bulanSelect.addEventListener('change', triggerSubmit);
+            }
         }
 
 

@@ -673,6 +673,11 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        if (typeof $ !== 'undefined') {
+            $('#bulan_select').select2({ placeholder: '-- Pilih Bulan --', width: '100%' });
+            $('#tahun_select').select2({ placeholder: '-- Pilih Tahun --', width: '100%' });
+        }
+
         const nik = document.getElementById('nik')?.value?.trim() || '';
         const periodeAwalEl = document.getElementById('periode_awal');
         const periodeAkhirEl = document.getElementById('periode_akhir');

@@ -250,8 +250,52 @@
             table.ajax.reload();
         });
 
+        // Custom Matcher Select2 untuk pencarian fleksibel dan prioritas tahun berjalan
+        function matchCustomPeriode(params, data) {
+            if ($.trim(params.term) === '') {
+                var currentYear = "<?= date('Y') ?>";
+                if (data.text.indexOf(currentYear) > -1 || data.id === '' || data.id === 'baru') {
+                    return data;
+                }
+                if (data.element && data.element.selected) {
+                    return data;
+                }
+                return null;
+            }
+
+            if (typeof data.text === 'undefined') {
+                return null;
+            }
+
+            var term = params.term.toLowerCase();
+            var text = data.text.toLowerCase();
+            
+            var termWords = term.split(' ');
+            var matchesAll = true;
+            for (var i = 0; i < termWords.length; i++) {
+                if (text.indexOf(termWords[i]) === -1) {
+                    matchesAll = false;
+                    break;
+                }
+            }
+
+            if (matchesAll) {
+                return data;
+            }
+
+            return null;
+        }
+
         const selFilter = document.getElementById('filter_periode');
-        if (selFilter) {
+        if (typeof $ !== 'undefined') {
+            $('#filter_periode').select2({
+                matcher: matchCustomPeriode,
+                width: '350px'
+            });
+            $('#filter_periode').on('change', function () {
+                table.ajax.reload();
+            });
+        } else if (selFilter) {
             selFilter.addEventListener('change', function () {
                 table.ajax.reload();
             });
